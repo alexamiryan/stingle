@@ -8,6 +8,5 @@ if(!empty($_SERVER['REMOTE_ADDR'])){
 }
 
 define("IS_CGI",1);
-
 include("index.php");
 ?>

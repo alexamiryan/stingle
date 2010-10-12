@@ -22,7 +22,7 @@ class InvalidArrayArgumentException extends InvalidArgumentException {
 		 * Setting default message if message is empty
 		 */
 		if($message === null){
-			$message = self::EXCEPTION_STRING;
+			$message = static::EXCEPTION_STRING;
 		}
 		
 		/*

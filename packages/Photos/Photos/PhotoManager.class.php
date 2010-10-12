@@ -109,7 +109,7 @@ class PhotoManager extends DbAccessor{
 		$sex = $owner->sex;
 
 		// Determine file name the images will be stored with
-		$fileName = self::generateUniqueImgName();
+		$fileName = static::generateUniqueImgName();
 
 		// check if the user has reached maximum upload limit
 		$this->query->exec("select count(*) as `ph_cnt` from `users_photos` where `user_id`='" . $owner->getId() . "'");
@@ -122,7 +122,7 @@ class PhotoManager extends DbAccessor{
 		foreach($this->imageStorageDirs as $dir){
 			if(!$this->uploadPhoto($file, $dir['imgWidth'], $dir['imgHeight'], $dir['minImgWidth'], $dir['minImgHeight'], $dir['path'], $fileName, $sex)){
 				$error->add('ERR_PHOTO_UPLOAD_FAILED');
-				self::deletePhotoFromFolders($fileName, $alreadyCopiedTo);
+				static::deletePhotoFromFolders($fileName, $alreadyCopiedTo);
 				return;
 			}
 
@@ -147,7 +147,7 @@ class PhotoManager extends DbAccessor{
 		}
 		else{
 			$error->add('UNEXPECTED_ERROR');
-			self::deletePhotoFromFolders($fileName, $alreadyCopiedTo);
+			static::deletePhotoFromFolders($fileName, $alreadyCopiedTo);
 		}
 	}
 
@@ -185,7 +185,7 @@ class PhotoManager extends DbAccessor{
 		$this->query->exec("select `filename`, `user_id` from `users_photos` where `id` in (" . implode(', ', $photoIds) . ")");
 		list($fileName, $userId) = $this->query->fetchRecord(0);
 		// delete photo files
-		self::deletePhotoFromFolders($fileName, array_keys($this->imageStorageDirs));
+		static::deletePhotoFromFolders($fileName, array_keys($this->imageStorageDirs));
 
 		// Deleting the corresponding photo information from the database
 		if($this->query->exec("delete from `users_photos` where `id` in (" . implode(', ', $photoIds) . ")")){

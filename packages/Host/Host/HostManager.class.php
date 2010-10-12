@@ -46,6 +46,11 @@ class HostManager{
 	 * @return unknown
 	 */
 	public static function pageURL(){
+		$hostConfig = ConfigManager::getConfig("Host");
+		if(empty($_SERVER["SERVER_NAME"])){
+			$_SERVER["SERVER_NAME"] = $hostConfig->cgiHost;
+		}
+		
 		$page_url = "";
 		if($_SERVER["SERVER_PORT"] != "80"){
 			$page_url .= $_SERVER["SERVER_NAME"] . ":" . $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
@@ -65,8 +70,13 @@ class HostManager{
 	 */
 
 	public static function getHostName(){
-		if(Debug::getMode() and self::getDebugHostName() !==false ){
-			$host_name = self::getDebugHostName();
+		$hostConfig = ConfigManager::getConfig("Host");
+		if(empty($_SERVER['HTTP_HOST'])){
+			$_SERVER['HTTP_HOST'] = $hostConfig->cgiHost;
+		}
+		
+		if(Debug::getMode() and static::getDebugHostName() !==false ){
+			$host_name = static::getDebugHostName();
 		}
 		else{
 			$host_name = $_SERVER['HTTP_HOST'];
@@ -75,12 +85,12 @@ class HostManager{
 	}
 	
 	public static function getSiteUrl(){
-		return self::protocol() . self::getHostName();		
+		return static::protocol() . static::getHostName();		
 	}
 	
 	private static function getDebugHostName(){
 		if(!empty($_GET["host"])){
-			$_SESSION["debug_host"] = self::noWWW($_GET['host']);
+			$_SESSION["debug_host"] = static::noWWW($_GET['host']);
 		}
 		if(isset($_SESSION["debug_host"]) and !empty($_SESSION["debug_host"])){
 			return $_SESSION["debug_host"];
@@ -89,7 +99,7 @@ class HostManager{
 	}
 
 	private static function getHostFromUrl($url){
-		$nowww = self::noWWW($url);
+		$nowww = static::noWWW($url);
 		$domain = parse_url($nowww);
 		if(!empty($domain["host"])){
 			return $domain["host"];

@@ -71,7 +71,7 @@ class PageInfo extends DbAccessor
 		$module_where = "module ". ($module === null ? "IS NULL " : "='".$module."'");
 		$page_where = "page ". ($page === null ? "IS NULL " : "='".$page."'");
 		
-		$query = "SELECT `title`,	`meta_keywords`, `meta_description` FROM `".self::TBL_PAGE_INFO."` 
+		$query = "SELECT `title`,	`meta_keywords`, `meta_description` FROM `".static::TBL_PAGE_INFO."` 
 		WHERE  ".$lang_where."
 		AND ".$host_where."
 		AND ".$module_where."

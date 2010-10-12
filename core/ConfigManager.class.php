@@ -11,10 +11,10 @@ class ConfigManager
 	 */
 	public static function setGlobalConfig($config){
 		if(is_object($config) and is_a($config, "Config")){
-			self::$globalConfig = $config;
+			static::$globalConfig = $config;
 		}
 		elseif(is_array($config)){
-			self::$globalConfig = new Config($config);
+			static::$globalConfig = new Config($config);
 		}
 		else{
 			throw new InvalidArgumentException("Invalid value for \$config parameter");
@@ -26,7 +26,7 @@ class ConfigManager
 	 * @return Config
 	 */
 	public static function getGlobalConfig(){
-		return self::$globalConfig;
+		return static::$globalConfig;
 	}
 	
 	/**
@@ -39,8 +39,8 @@ class ConfigManager
 			throw new InvalidArgumentException("\$packageName is empty");
 		}
 		
-		if(isset(self::$globalConfig->$packageName)){
-			return self::$globalConfig->$packageName;
+		if(isset(static::$globalConfig->$packageName)){
+			return static::$globalConfig->$packageName;
 		}
 		else{
 			return new Config();
@@ -61,8 +61,8 @@ class ConfigManager
 			$pluginName = $packageName;
 		}
 		
-		if(isset(self::$cache->$packageName) and isset(self::$cache->$packageName->$pluginName)){
-			return self::$cache->$packageName->$pluginName;
+		if(isset(static::$cache->$packageName) and isset(static::$cache->$packageName->$pluginName)){
+			return static::$cache->$packageName->$pluginName;
 		}
 		
 		if(file_exists(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/DefaultConfig.inc.php")){
@@ -76,16 +76,16 @@ class ConfigManager
 		}
 		$defaultConfigObj = new Config($defaultConfig);
 		
-		if(isset(self::$globalConfig->$packageName) and isset(self::$globalConfig->$packageName->$pluginName)){
-			$globalConfig = self::$globalConfig->$packageName->$pluginName;
+		if(isset(static::$globalConfig->$packageName) and isset(static::$globalConfig->$packageName->$pluginName)){
+			$globalConfig = static::$globalConfig->$packageName->$pluginName;
 		}
 		
-		$result = self::mergeConfigs($globalConfig, $defaultConfigObj);
+		$result = static::mergeConfigs($globalConfig, $defaultConfigObj);
 		
-		if(!isset(self::$cache->$packageName)){
-			self::$cache->$packageName = new Config();
+		if(!isset(static::$cache->$packageName)){
+			static::$cache->$packageName = new Config();
 		}
-		self::$cache->$packageName->$pluginName = $result;
+		static::$cache->$packageName->$pluginName = $result;
 		
 		return $result;
 	}
@@ -112,7 +112,7 @@ class ConfigManager
 				if(!isset($slaveConfig->$key)){
 					$slaveConfig->$key = new Config();
 				}
-				$slaveConfig->$key = self::mergeConfigs($masterConfig->$key, $slaveConfig->$key);
+				$slaveConfig->$key = static::mergeConfigs($masterConfig->$key, $slaveConfig->$key);
 			}
 			else{
 				$slaveConfig->$key = $value;
@@ -122,8 +122,8 @@ class ConfigManager
 	}
 	
 	public static function addConfig($where, $key, $value){
-		$currentObj = &self::$globalConfig;
-		$currentCache = &self::$cache;
+		$currentObj = &static::$globalConfig;
+		$currentCache = &static::$cache;
 		
 		$objCounter = 0;
 		$cacheCounter = 0;

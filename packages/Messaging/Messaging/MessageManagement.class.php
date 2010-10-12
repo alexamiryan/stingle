@@ -73,14 +73,14 @@ class MessageManagement extends Filterable
 
 	protected function getFilterableFieldAlias($field){
 		switch($field){
-			case self::FILTER_ID_FIELD :
-			case self::FILTER_DATE_FIELD :
+			case static::FILTER_ID_FIELD :
+			case static::FILTER_DATE_FIELD :
 				return "main";
-			case self::FILTER_SENDER_FIELD :
-			case self::FILTER_RECEIVER_FIELD :
-			case self::FILTER_READ_FIELD :
-			case self::FILTER_DELETED_FIELD :
-			case self::FILTER_TRASHED_FIELD :
+			case static::FILTER_SENDER_FIELD :
+			case static::FILTER_RECEIVER_FIELD :
+			case static::FILTER_READ_FIELD :
+			case static::FILTER_DELETED_FIELD :
+			case static::FILTER_TRASHED_FIELD :
 				return "extra";
 		}
 

@@ -7,7 +7,7 @@ class PageInfoManager extends PageInfo
 		$host_id = ($lang === null ? null : $host->id);
 		
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec(self::queryString($lang_id, $host_id, $module, $page));
+		$sql->exec(static::queryString($lang_id, $host_id, $module, $page));
 		$pageInfo = $sql->fetchRecord();
 		return $pageInfo;		
 	}
@@ -56,27 +56,27 @@ class PageInfoManager extends PageInfo
 		$sql = MySqlDbManager::getQueryObject();
 				
 		if($lang === null){
-			if($id = self::exists()){
-				$query =  self::updateQueryString($pageInfo, $id);
+			if($id = static::exists()){
+				$query =  static::updateQueryString($pageInfo, $id);
 			}
 			else{
-				$query =  self::insertQueryString($pageInfo);
+				$query =  static::insertQueryString($pageInfo);
 			}
 		}
 		elseif ($host === null){
-			if($id = self::exists($lang->id)){
-				$query =  self::updateQueryString($pageInfo, $id);
+			if($id = static::exists($lang->id)){
+				$query =  static::updateQueryString($pageInfo, $id);
 			}
 			else{
-				$query = self::insertQueryString($pageInfo, $lang->id);
+				$query = static::insertQueryString($pageInfo, $lang->id);
 			}			
 		}
 		else{
-			if($id = self::exists($lang->id,$host->id, $module, $page)){
-				$query =  self::updateQueryString($pageInfo, $id);
+			if($id = static::exists($lang->id,$host->id, $module, $page)){
+				$query =  static::updateQueryString($pageInfo, $id);
 			}
 			else{
-				$query = self::insertQueryString($pageInfo, $lang->id, $host->id, $module, $page);
+				$query = static::insertQueryString($pageInfo, $lang->id, $host->id, $module, $page);
 			}
 		}
 		$sql->exec($query);
@@ -100,7 +100,7 @@ class PageInfoManager extends PageInfo
 		$page_where = "page ". ($page === null ? "IS NULL " : "='".$page."'");
 
 		$sql = MySqlDbManager::getQueryObject();
-		$query = "SELECT id FROM `".self::TBL_PAGE_INFO."` 
+		$query = "SELECT id FROM `".static::TBL_PAGE_INFO."` 
 		WHERE  ".$lang_where."
 		AND ".$host_where."
 		AND ".$module_where."
@@ -128,13 +128,13 @@ class PageInfoManager extends PageInfo
 		$module = ($module === null? 'NULL' : "'".$module."'");
 		$page  	= ($page === null? 'NULL' : "'".$page."'");
 				
-		$query = "INSERT INTO `".self::TBL_PAGE_INFO."` (`lang_id`, `host_id`, `module`, `page`, `title`, `meta_keywords`, `meta_description`) 
+		$query = "INSERT INTO `".static::TBL_PAGE_INFO."` (`lang_id`, `host_id`, `module`, `page`, `title`, `meta_keywords`, `meta_description`) 
 				VALUES ($langId, $hostId, $module, $page, '".mysql_real_escape_string($pageInfo['title'])."', '".mysql_real_escape_string($pageInfo['keywords'])."', '".mysql_real_escape_string($pageInfo['description'])."')";
 		return $query;
 	}
 	
 	private static function updateQueryString(array $pageInfo, $id){
-		$query = "UPDATE `".self::TBL_PAGE_INFO."` 
+		$query = "UPDATE `".static::TBL_PAGE_INFO."` 
 		SET `title`='".mysql_real_escape_string($pageInfo['title'])."',  `meta_keywords` ='".mysql_real_escape_string($pageInfo['keywords'])."',  `meta_description`='".mysql_real_escape_string($pageInfo['description'])."'
 		WHERE id=".$id;
 		return $query;		

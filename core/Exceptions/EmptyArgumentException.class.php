@@ -22,10 +22,10 @@ class EmptyArgumentException extends InvalidArgumentException {
 		 * it is not null
 		 */
 		if($argumentName !== null){
-			$message = sprintf(self::EXCEPTION_STRING, "`".$argumentName."`");
+			$message = sprintf(static::EXCEPTION_STRING, "`".$argumentName."`");
 		}
 		else{
-			$message = sprintf(self::EXCEPTION_STRING, "");
+			$message = sprintf(static::EXCEPTION_STRING, "");
 		}
 		
 		/*

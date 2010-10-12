@@ -36,7 +36,7 @@ class UserProfile extends Profile{
 	 *
 	 */
 	private function initUserAnswers($cacheMinutes = 0){
-		$this->query->exec("SELECT `profile_id` FROM `".self::TBL_PROFILE_SAVE."` WHERE `user_id`='{$this->userId}'", $cacheMinutes);
+		$this->query->exec("SELECT `profile_id` FROM `".static::TBL_PROFILE_SAVE."` WHERE `user_id`='{$this->userId}'", $cacheMinutes);
 		$this->profileAnswers = $this->query->fetchFields("profile_id");
 	}
 	
@@ -87,11 +87,11 @@ class UserProfile extends Profile{
 	 */
 	public function setAnswersByIds($answers){
 		if(is_array($answers)){
-			$this->query->exec("DELETE FROM `".self::TBL_PROFILE_SAVE."` WHERE `user_id`='{$this->userId}'");
+			$this->query->exec("DELETE FROM `".static::TBL_PROFILE_SAVE."` WHERE `user_id`='{$this->userId}'");
 			
 			foreach($answers as $answer){
 				if(is_numeric($answer)){
-					$this->query->exec("INSERT INTO `".self::TBL_PROFILE_SAVE."` (`user_id`,`profile_id`) VALUES('{$this->userId}','$answer')");
+					$this->query->exec("INSERT INTO `".static::TBL_PROFILE_SAVE."` (`user_id`,`profile_id`) VALUES('{$this->userId}','$answer')");
 				}
 			}
 			$this->initUserAnswers();

@@ -57,7 +57,7 @@ abstract class Pager{
 			$this->pageNumber = intval($_GET[$this->getUrlParam()]);
 		}
 		
-		self::$pagerInstances[$this->id] = $this;
+		static::$pagerInstances[$this->id] = $this;
 	}
 	
 	/**
@@ -160,7 +160,7 @@ abstract class Pager{
 	 * @return Pager
 	 */
 	public static function getPager($id = null){
-		return self::$pagerInstances[$id];
+		return static::$pagerInstances[$id];
 	}
 }
 ?>

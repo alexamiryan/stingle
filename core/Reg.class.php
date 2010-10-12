@@ -10,14 +10,14 @@ class Reg
 		if(empty($value)){
 			throw new InvalidArgumentException("\$value have to be non empty mixed variable.");
 		}
-		if(!$override and isset(self::$reg[$key])){
+		if(!$override and isset(static::$reg[$key])){
 			throw new RuntimeException("Key $key is already registered in registry.");
 		}
-		self::$reg[$key] = $value;
+		static::$reg[$key] = $value;
 	}
 	
 	public static function get($key, $throwException = true){
-		if(!isset(self::$reg[$key]) or empty(self::$reg[$key])){
+		if(!isset(static::$reg[$key]) or empty(static::$reg[$key])){
 			if($throwException){
 				throw new RuntimeException("There is no object in registry with key $key.");
 			}
@@ -25,7 +25,7 @@ class Reg
 				return null;
 			}
 		}
-		return self::$reg[$key];
+		return static::$reg[$key];
 	}
 }
 ?>

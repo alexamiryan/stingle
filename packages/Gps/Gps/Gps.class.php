@@ -34,10 +34,10 @@ class Gps extends DbAccessor
 	 */
 	public function getChildren($node_id=0, $cacheMinutes = null){
 		if(empty($node_id) or $node_id<0){
-			$node_id=self::ROOT_NODE;
+			$node_id=static::ROOT_NODE;
 		}
 		$this->query->exec("	SELECT `id`,`name` 
-								FROM `".self::TBL_TREE."` 
+								FROM `".static::TBL_TREE."` 
 								WHERE `parent_id`='$node_id' AND `type_id`<>1 
 								ORDER BY `name`", $cacheMinutes);
 		if($this->query->countRecords()){
@@ -54,10 +54,10 @@ class Gps extends DbAccessor
 	 */
 	public function getChildrenCount($node_id=0, $cacheMinutes = null){
 		if(empty($node_id) or $node_id<0){
-			$node_id=self::ROOT_NODE;
+			$node_id=static::ROOT_NODE;
 		}
 		$this->query->exec("	SELECT count(*) AS `count` 
-								FROM `".self::TBL_TREE."` 
+								FROM `".static::TBL_TREE."` 
 								WHERE `parent_id`='$node_id' AND `type_id`<>1", $cacheMinutes);
 		return $this->query->fetchField('count');
 	}
@@ -70,9 +70,9 @@ class Gps extends DbAccessor
 	 */
 	public function getParent($node_id, $cacheMinutes = null){
 		$this->query->exec("	SELECT `id`,`name`,`type_id` 
-								FROM `".self::TBL_TREE."` 
+								FROM `".static::TBL_TREE."` 
 								WHERE `id` = (	SELECT `parent_id` 
-												FROM `".self::TBL_TREE."` 
+												FROM `".static::TBL_TREE."` 
 												WHERE `id`='$node_id' AND `type_id`<>1) 
 										AND `type_id`<>1", $cacheMinutes);
 		if($this->query->countRecords()){
@@ -90,21 +90,21 @@ class Gps extends DbAccessor
 	 */
 	public function getParentByType($node_id, $type_id, $cacheMinutes = null){
 		if(empty($node_id) or $node_id<0){
-			$node_id = self::ROOT_NODE;
+			$node_id = static::ROOT_NODE;
 		}
 
 		$my_id = $node_id;
-		while ($my_id!=self::ROOT_NODE){
+		while ($my_id!=static::ROOT_NODE){
 			$this->query->exec("SELECT `tree`.`id`,`tree`.`parent_id`, `tree`.`name`, `types`.`id` as `type_id`, `types`.`type`
-								FROM `".self::TBL_TREE."` `tree`
-								LEFT JOIN ".self::TBL_TYPES." `types`
+								FROM `".static::TBL_TREE."` `tree`
+								LEFT JOIN ".static::TBL_TYPES." `types`
 								ON (`tree`.`type_id`=`types`.`id`)
 								WHERE `tree`.`id`='$my_id'", $cacheMinutes);
 			if($this->query->countRecords()){
 				$result=$this->query->fetchRecord();
 				$my_id = $result['parent_id'];
 				
-				if($type_id != self::ROOT_NODE and $result["type_id"] == $type_id){
+				if($type_id != static::ROOT_NODE and $result["type_id"] == $type_id){
 					return $result;
 				}
 			}
@@ -122,11 +122,11 @@ class Gps extends DbAccessor
 	 */
 	public function getChildrenType($node_id, $cacheMinutes = null){
 		if(empty($node_id) or $node_id<0){
-			$node_id=self::ROOT_NODE;
+			$node_id=static::ROOT_NODE;
 		}
 		$this->query->exec("SELECT `types`.`id`, `types`.`type`
-							FROM `".self::TBL_TREE."` AS `tree`
-							LEFT JOIN `".self::TBL_TYPES."` AS `types`
+							FROM `".static::TBL_TREE."` AS `tree`
+							LEFT JOIN `".static::TBL_TYPES."` AS `types`
 							ON (`tree`.`type_id`=`types`.`id`)
 							WHERE `parent_id`='$node_id' AND `type_id`<>1 LIMIT 1", $cacheMinutes);
 		if($this->query->countRecords()){
@@ -143,16 +143,16 @@ class Gps extends DbAccessor
 	 */
 	public function fieldsToShow($node_id=0, $cacheMinutes = null){
 		if(empty($node_id) or $node_id<0){
-			$node_id=self::ROOT_NODE;
+			$node_id=static::ROOT_NODE;
 		}
 		$return_array=array();
-		$this->query->exec("SELECT * FROM `".self::TBL_TREE."` WHERE `id`='$node_id'", $cacheMinutes);
+		$this->query->exec("SELECT * FROM `".static::TBL_TREE."` WHERE `id`='$node_id'", $cacheMinutes);
 		if(!$this->query->countRecords()){
 			return false;
 		}
 		$node=$this->query->fetchRecord();
 		
-		$this->query->exec("SELECT * FROM `".self::TBL_CUST_FIELDS."` ORDER BY `const_name`", $cacheMinutes);
+		$this->query->exec("SELECT * FROM `".static::TBL_CUST_FIELDS."` ORDER BY `const_name`", $cacheMinutes);
 		if(!$this->query->countRecords()){
 			return $return_array;
 		}
@@ -160,7 +160,7 @@ class Gps extends DbAccessor
 
 		$config_array=array();
 		foreach ($fields as $field){
-			$this->query->exec("SELECT * FROM `".self::TBL_CONFIG."` WHERE `field_id`='{$field['id']}'", $cacheMinutes);
+			$this->query->exec("SELECT * FROM `".static::TBL_CONFIG."` WHERE `field_id`='{$field['id']}'", $cacheMinutes);
 			if($this->query->countRecords()){
 				if(($act_rule=$this->findActualRule($node_id, $node['type_id'], $this->query->fetchRecords()))){
 					array_push($config_array, $act_rule);
@@ -183,7 +183,7 @@ class Gps extends DbAccessor
 	 * @return string
 	 */
 	public function getFieldName($field_id, $cacheMinutes = null){
-		$this->query->exec("SELECT `const_name` FROM `".self::TBL_CUST_FIELDS."` WHERE `id`='$field_id'", $cacheMinutes);
+		$this->query->exec("SELECT `const_name` FROM `".static::TBL_CUST_FIELDS."` WHERE `id`='$field_id'", $cacheMinutes);
 		return $this->query->fetchField('const_name');
 	}
 	
@@ -194,7 +194,7 @@ class Gps extends DbAccessor
 	 * @return string
 	 */
 	public function getTypeName($type_id, $cacheMinutes = null){
-		$this->query->exec("SELECT `type` FROM `".self::TBL_TYPES."` WHERE `id`='$type_id'", $cacheMinutes);
+		$this->query->exec("SELECT `type` FROM `".static::TBL_TYPES."` WHERE `id`='$type_id'", $cacheMinutes);
 		return $this->query->fetchField('type');
 	}
 	
@@ -205,7 +205,7 @@ class Gps extends DbAccessor
 	 * @return string
 	 */
 	public function getTypeId($type, $cacheMinutes = null){
-		$this->query->exec("SELECT `id` FROM `".self::TBL_TYPES."` WHERE `type`='$type'", $cacheMinutes);
+		$this->query->exec("SELECT `id` FROM `".static::TBL_TYPES."` WHERE `type`='$type'", $cacheMinutes);
 		return $this->query->fetchField('id');
 	}
 
@@ -217,14 +217,14 @@ class Gps extends DbAccessor
 	 */
 	public function getNodeTree($node_id, $cacheMinutes = null){
 		if(empty($node_id) or $node_id<0){
-			$node_id=self::ROOT_NODE;
+			$node_id=static::ROOT_NODE;
 		}
 		$node_tree=array();
 		$my_id=$node_id;
-		while ($my_id!=self::ROOT_NODE){
+		while ($my_id!=static::ROOT_NODE){
 			$this->query->exec("SELECT `tree`.`id`,`tree`.`parent_id`, `tree`.`name`, `types`.`id` as `type_id`, `types`.`type`
-								FROM `".self::TBL_TREE."` `tree`
-								LEFT JOIN `".self::TBL_TYPES."` `types`
+								FROM `".static::TBL_TREE."` `tree`
+								LEFT JOIN `".static::TBL_TYPES."` `types`
 								ON (`tree`.`type_id`=`types`.`id`)
 								WHERE `tree`.`id`='$my_id'", $cacheMinutes);
 			if($this->query->countRecords()){
@@ -252,7 +252,7 @@ class Gps extends DbAccessor
 		}
 		
 		$this->query->exec("SELECT `name`
-							FROM `".self::TBL_TREE."`
+							FROM `".static::TBL_TREE."`
 							WHERE `id`='$nodeId'", $cacheMinutes);
 		return $this->query->fetchField("name");
 	}
@@ -270,8 +270,8 @@ class Gps extends DbAccessor
 		}
 		
 		$this->query->exec("SELECT types.*
-							FROM `".self::TBL_TREE."` tree
-							LEFT JOIN `".self::TBL_TYPES."` types
+							FROM `".static::TBL_TREE."` tree
+							LEFT JOIN `".static::TBL_TYPES."` types
 							ON (tree.`type_id`=types.`id`)
 							WHERE tree.`id`='$nodeId'", $cacheMinutes);
 		return $this->query->fetchRecord();
@@ -285,7 +285,7 @@ class Gps extends DbAccessor
 	 * @return string Constant name
 	 */
 	public function getTypeLabel($typeName,$countryId){
-		$this->query->exec("SELECT `constant` FROM `".self::TBL_LABELS."`
+		$this->query->exec("SELECT `constant` FROM `".static::TBL_LABELS."`
 							WHERE `country_id`='{$countryId}' AND `type`='{$typeName}'");
 		if($this->query->countRecords()){
 			return $this->query->fetchField('constant');
@@ -295,7 +295,7 @@ class Gps extends DbAccessor
 	
 	public function getNodesByZip($zip, $countryNodeId){
 		$gpsNodes = array();
-		$this->query->exec("SELECT gps_id, zip FROM `".self::TBL_ZIP_CODES."`
+		$this->query->exec("SELECT gps_id, zip FROM `".static::TBL_ZIP_CODES."`
 							WHERE `country_id`='{$countryNodeId}' AND `zip` LIKE '{$zip}%'
 							LIMIT 20");
 		$zipNodes = $this->query->fetchRecords();
@@ -318,7 +318,7 @@ class Gps extends DbAccessor
 		if(!is_numeric($nodeId)){
 			throw new InvalidIntegerArgumentException();
 		}
-		$this->query->exec("SELECT * FROM `".self::TBL_TREE."`
+		$this->query->exec("SELECT * FROM `".static::TBL_TREE."`
 							WHERE `id`='$nodeId'", $cacheMinutes);
 		return $this->query->fetchRecord();
 	}
@@ -333,8 +333,8 @@ class Gps extends DbAccessor
 	 */
 	public function saveField($user_id, $field_id, $value){
 		$value=addslashes($value);
-		$this->query->exec("DELETE FROM ".self::TBL_CUST_SAVE." WHERE `user_id`='$user_id' AND `field_id`='$field_id'");
-		if($this->query->exec("INSERT INTO ".self::TBL_CUST_SAVE." (`user_id`,`field_id`,`text`) VALUES('$user_id','$field_id','$value')")){
+		$this->query->exec("DELETE FROM ".static::TBL_CUST_SAVE." WHERE `user_id`='$user_id' AND `field_id`='$field_id'");
+		if($this->query->exec("INSERT INTO ".static::TBL_CUST_SAVE." (`user_id`,`field_id`,`text`) VALUES('$user_id','$field_id','$value')")){
 			return true;
 		}
 		return false;
@@ -348,7 +348,7 @@ class Gps extends DbAccessor
 	 * @return string
 	 */
 	public function getField($user_id, $field_id, $cacheMinutes = null){
-		$this->query->exec("SELECT `text` FROM `".self::TBL_CUST_SAVE."` WHERE `user_id`='$user_id' AND `field_id`='$field_id'", $cacheMinutes);
+		$this->query->exec("SELECT `text` FROM `".static::TBL_CUST_SAVE."` WHERE `user_id`='$user_id' AND `field_id`='$field_id'", $cacheMinutes);
 		return $this->query->fetchField('text');
 	}
 	
@@ -359,7 +359,7 @@ class Gps extends DbAccessor
 	 * @return array
 	 */
 	public function getUserFields($user_id){
-		$this->query->exec("SELECT `field_id`, `text` FROM `".self::TBL_CUST_SAVE."` WHERE `user_id`='$user_id'");
+		$this->query->exec("SELECT `field_id`, `text` FROM `".static::TBL_CUST_SAVE."` WHERE `user_id`='$user_id'");
 		return $this->query->fetchRecords();
 	}
 	
@@ -370,7 +370,7 @@ class Gps extends DbAccessor
 	 * @return int
 	 */
 	public function getIdByName($node_name, $type_id = 0, $do_like = false, $cacheMinutes = null){
-		$sql_query = "SELECT `id` FROM `".self::TBL_TREE."` WHERE ";
+		$sql_query = "SELECT `id` FROM `".static::TBL_TREE."` WHERE ";
 		
 		if($do_like){
 			$sql_query .= "`name` LIKE '$node_name'";
@@ -398,7 +398,7 @@ class Gps extends DbAccessor
 	 */
 	public function getNodesByName($node_name, $type_id, $do_like = false, $cacheMinutes = null){
 
-		$sql_query = "SELECT * FROM `".self::TBL_TREE."` WHERE ";
+		$sql_query = "SELECT * FROM `".static::TBL_TREE."` WHERE ";
 		
 		if($do_like){
 			$sql_query .= "`name` LIKE '$node_name'";
@@ -429,7 +429,7 @@ class Gps extends DbAccessor
 			$where = " WHERE $where";
 		}
 		
-		$this->query->exec("SELECT * FROM `".self::TBL_TYPES."`
+		$this->query->exec("SELECT * FROM `".static::TBL_TYPES."`
 							$where
 							ORDER BY $order");
 							
@@ -456,8 +456,8 @@ class Gps extends DbAccessor
 				return $parent;
 			}
 		}
-		while ($my_id!=self::ROOT_NODE){
-			$this->query->exec("SELECT `parent_id` FROM `".self::TBL_TREE."` WHERE `id`='$my_id'", $cacheMinutes);
+		while ($my_id!=static::ROOT_NODE){
+			$this->query->exec("SELECT `parent_id` FROM `".static::TBL_TREE."` WHERE `id`='$my_id'", $cacheMinutes);
 			$par_id=$this->query->fetchField('parent_id');
 			foreach ($parents as $parent){
 				if($par_id==$parent['node_id']){

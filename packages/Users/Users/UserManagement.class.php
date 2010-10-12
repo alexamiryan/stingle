@@ -47,19 +47,19 @@ class UserManagement extends Filterable{
 
 	protected function getFilterableFieldAlias($field){
 		switch($field){
-			case self::FILTER_USER_ID_FIELD :
-			case self::FILTER_ENABLED_FIELD :
-			case self::FILTER_LOGIN_FIELD :
-			case self::FILTER_EMAIL_FIELD :
-			case self::FILTER_CREATION_DATE_FIELD :
-			case self::FILTER_ONLINE_FIELD :
-			case self::FILTER_LAST_PING_FIELD :
-			case self::FILTER_LAST_LOGIN_FIELD :
-			case self::FILTER_EMAIL_CONFIRMED_FIELD :
+			case static::FILTER_USER_ID_FIELD :
+			case static::FILTER_ENABLED_FIELD :
+			case static::FILTER_LOGIN_FIELD :
+			case static::FILTER_EMAIL_FIELD :
+			case static::FILTER_CREATION_DATE_FIELD :
+			case static::FILTER_ONLINE_FIELD :
+			case static::FILTER_LAST_PING_FIELD :
+			case static::FILTER_LAST_LOGIN_FIELD :
+			case static::FILTER_EMAIL_CONFIRMED_FIELD :
 				return "users";
-			case self::FILTER_GROUP_ID_FIELD :
+			case static::FILTER_GROUP_ID_FIELD :
 				return "ug";
-			case self::FILTER_GROUP_NAME_FIELD :
+			case static::FILTER_GROUP_NAME_FIELD :
 				return "groups";
 		}
 
@@ -76,7 +76,7 @@ class UserManagement extends Filterable{
 		$perms_ids = array();
 		if(is_array($perms_names)){
 			foreach($perms_names as $perm_name){
-				$this->query->exec("select `id` from `".self::TBL_PERMISSIONS."` where `name`='$perm_name'", $cacheMinutes);
+				$this->query->exec("select `id` from `".static::TBL_PERMISSIONS."` where `name`='$perm_name'", $cacheMinutes);
 				$perm_id = $this->query->fetchField("id");
 				if($perm_id){
 					$perms_ids[] = $perm_id;
@@ -91,7 +91,7 @@ class UserManagement extends Filterable{
 				return $perms_ids;
 			}
 			else{
-				$this->query->exec("select `id` from `".self::TBL_PERMISSIONS."` where `name`='$perms_names'", $cacheMinutes);
+				$this->query->exec("select `id` from `".static::TBL_PERMISSIONS."` where `name`='$perms_names'", $cacheMinutes);
 				$perm_id = $this->query->fetchField("id");
 				if($perm_id){
 					$perms_ids[] = $perm_id;
@@ -114,7 +114,7 @@ class UserManagement extends Filterable{
 		$groups_ids = array();
 		if(is_array($groups_names)){
 			foreach($groups_names as $group_name){
-				$this->query->exec("select `id` from `".self::TBL_GROUPS."` where `name`='$group_name'", $cacheMinutes);
+				$this->query->exec("select `id` from `".static::TBL_GROUPS."` where `name`='$group_name'", $cacheMinutes);
 				$group_id = $this->query->fetchField("id");
 				if($group_id){
 					$groups_ids[] = $group_id;
@@ -129,7 +129,7 @@ class UserManagement extends Filterable{
 				return $groups_ids;
 			}
 			else{
-				$this->query->exec("select `id` from `".self::TBL_GROUPS."` where `name`='$groups_names'", $cacheMinutes);
+				$this->query->exec("select `id` from `".static::TBL_GROUPS."` where `name`='$groups_names'", $cacheMinutes);
 				$group_id = $this->query->fetchField("id");
 				if($group_id){
 					$groups_ids[] = $group_id;
@@ -158,7 +158,7 @@ class UserManagement extends Filterable{
 	 * @return bool
 	 */
 	public function createPermission($name, $description = ""){
-		if($this->query->exec("insert into `".self::TBL_PERMISSIONS."`(`name`,`description`) values('$name','$description')")){
+		if($this->query->exec("insert into `".static::TBL_PERMISSIONS."`(`name`,`description`) values('$name','$description')")){
 			return true;
 		}
 		else{
@@ -173,7 +173,7 @@ class UserManagement extends Filterable{
 	 * @return bool
 	 */
 	public function deletePermission($name){
-		if($this->query->exec("delete from `".self::TBL_PERMISSIONS."` where `name`='$name'")){
+		if($this->query->exec("delete from `".static::TBL_PERMISSIONS."` where `name`='$name'")){
 			return true;
 		}
 		else{
@@ -190,7 +190,7 @@ class UserManagement extends Filterable{
 	 * @return bool
 	 */
 	public function updatePermission($name, $new_name, $new_description = ""){
-		if($this->query->exec("update `".self::TBL_PERMISSIONS."` set `name`='$new_name', `description` ='$new_description' where `name`='$name'")){
+		if($this->query->exec("update `".static::TBL_PERMISSIONS."` set `name`='$new_name', `description` ='$new_description' where `name`='$name'")){
 			return true;
 		}
 		else{
@@ -205,7 +205,7 @@ class UserManagement extends Filterable{
 	 * @return  bool
 	 */
 	public function isGroupTypeExists($type_name, $cacheMinutes = null){
-		if($this->query->exec("SELECT count(*) as `count` FROM `".self::TBL_GROUPS_TYPES."` WHERE `name`='$type_name'", $cacheMinutes)){
+		if($this->query->exec("SELECT count(*) as `count` FROM `".static::TBL_GROUPS_TYPES."` WHERE `name`='$type_name'", $cacheMinutes)){
 			if($this->query->fetchField("count") == 1){
 				return true;
 			}
@@ -219,7 +219,7 @@ class UserManagement extends Filterable{
 	 * @return int
 	 */
 	public function getGroupTypeIdByName($type_name, $cacheMinutes = null){
-		$this->query->exec("SELECT id FROM `".self::TBL_GROUPS_TYPES."` WHERE `name`='$type_name'", $cacheMinutes);
+		$this->query->exec("SELECT id FROM `".static::TBL_GROUPS_TYPES."` WHERE `name`='$type_name'", $cacheMinutes);
 		$group_type_id = $this->query->fetchField("id");
 		if($group_type_id){
 			return $group_type_id;
@@ -241,12 +241,12 @@ class UserManagement extends Filterable{
 		if(!$this->isGroupTypeExists($type)){
 			return false;
 		}
-		elseif($this->query->exec("insert into `".self::TBL_GROUPS."`(`name`,`type`,`description`) values('$name','{$this->getGroupTypeIdByName($type)}','$description')")){
+		elseif($this->query->exec("insert into `".static::TBL_GROUPS."`(`name`,`type`,`description`) values('$name','{$this->getGroupTypeIdByName($type)}','$description')")){
 			$group_id = $this->query->getLastInsertId();
 			if(!empty($permissions_list) and !(($perms_ids = $this->getPermsIds($permissions_list)) === false)){
 				if(count($perms_ids)){
 					foreach($perms_ids as $perm_id){
-						$this->query->exec("insert into `".self::TBL_GROUPS_PERMISSIONS."`(`group_id`,`permission_id`) values($group_id,$perm_id)");
+						$this->query->exec("insert into `".static::TBL_GROUPS_PERMISSIONS."`(`group_id`,`permission_id`) values($group_id,$perm_id)");
 					}
 				}
 			}
@@ -264,7 +264,7 @@ class UserManagement extends Filterable{
 	 * @return bool
 	 */
 	public function deleteGroup($name){
-		if($this->query->exec("delete from `".self::TBL_GROUPS."` where `name`='$name'")){
+		if($this->query->exec("delete from `".static::TBL_GROUPS."` where `name`='$name'")){
 			return true;
 		}
 		else{
@@ -288,13 +288,13 @@ class UserManagement extends Filterable{
 		if(empty($new_name)){
 			$new_name = $name;
 		}
-		if($this->query->exec("update `".self::TBL_GROUPS."` set `name`='$new_name', `description` ='$new_description' where `name`='$name'")){
+		if($this->query->exec("update `".static::TBL_GROUPS."` set `name`='$new_name', `description` ='$new_description' where `name`='$name'")){
 			if(!empty($perms_ids)){
-				$this->query->exec("select `id` from `".self::TBL_GROUPS."` where `name`='$new_name'");
+				$this->query->exec("select `id` from `".static::TBL_GROUPS."` where `name`='$new_name'");
 				$group_id = $this->query->fetchField("id");
-				$this->query->exec("delete from `".self::TBL_GROUPS_PERMISSIONS."` where `group_id`=$group_id");
+				$this->query->exec("delete from `".static::TBL_GROUPS_PERMISSIONS."` where `group_id`=$group_id");
 				foreach($perms_ids as $perm_id){
-					$this->query->exec("insert into `".self::TBL_GROUPS_PERMISSIONS."`(`group_id`,`permission_id`) values($group_id,$perm_id)");
+					$this->query->exec("insert into `".static::TBL_GROUPS_PERMISSIONS."`(`group_id`,`permission_id`) values($group_id,$perm_id)");
 				}
 			}
 			return true;
@@ -311,9 +311,9 @@ class UserManagement extends Filterable{
 	 * @return bool
 	 */
 	public function groupClearPermissions($name){
-		if($this->query->exec("select `id` from `".self::TBL_GROUPS."` where `name`='$name'")){
+		if($this->query->exec("select `id` from `".static::TBL_GROUPS."` where `name`='$name'")){
 			$group_id = $this->query->fetchField("id");
-			$this->query->exec("delete from `".self::TBL_GROUPS_PERMISSIONS."` where `group_id`=$group_id");
+			$this->query->exec("delete from `".static::TBL_GROUPS_PERMISSIONS."` where `group_id`=$group_id");
 			return true;
 		}
 		else{
@@ -333,10 +333,10 @@ class UserManagement extends Filterable{
 		if(empty($perms_ids)){
 			return false;
 		}
-		if($this->query->exec("select `id` from `".self::TBL_GROUPS."` where `name`='$name'")){
+		if($this->query->exec("select `id` from `".static::TBL_GROUPS."` where `name`='$name'")){
 			$group_id = $this->query->fetchField("id");
 			foreach($perms_ids as $perm_id){
-				$this->query->exec("insert into `".self::TBL_GROUPS_PERMISSIONS."`(`group_id`,`permission_id`) values($group_id,$perm_id)");
+				$this->query->exec("insert into `".static::TBL_GROUPS_PERMISSIONS."`(`group_id`,`permission_id`) values($group_id,$perm_id)");
 			}
 			return true;
 		}
@@ -357,9 +357,9 @@ class UserManagement extends Filterable{
 		if(empty($perms_ids)){
 			return false;
 		}
-		if($this->query->exec("select `id` from `".self::TBL_GROUPS."` where `name`='$name'")){
+		if($this->query->exec("select `id` from `".static::TBL_GROUPS."` where `name`='$name'")){
 			$group_id = $this->query->fetchField("id");
-			$sql_statement = "delete from `".self::TBL_GROUPS_PERMISSIONS."` where `group_id`=$group_id and (";
+			$sql_statement = "delete from `".static::TBL_GROUPS_PERMISSIONS."` where `group_id`=$group_id and (";
 			$count = count($perms_ids) - 1;
 			for($i = 0; $i < $count; ++$i){
 				$sql_statement .= "`permission_id`=$perms_ids[$i] or ";
@@ -379,7 +379,7 @@ class UserManagement extends Filterable{
 	 * @return array
 	 */
 	public function getPermissionsList($cacheMinutes = null){
-		if($this->query->exec("select `name` from `".self::TBL_PERMISSIONS."`", $cacheMinutes)){
+		if($this->query->exec("select `name` from `".static::TBL_PERMISSIONS."`", $cacheMinutes)){
 			return $this->query->fetchFields(0, true);
 		}
 		else{
@@ -394,10 +394,10 @@ class UserManagement extends Filterable{
 	 */
 	public function getGroupsList($type = 'all', $cacheMinutes = null){
 		if($type == 'all'){
-			$query = "SELECT * FROM `".self::TBL_GROUPS."`";
+			$query = "SELECT * FROM `".static::TBL_GROUPS."`";
 		}
 		elseif($this->isGroupTypeExists($type)){
-			$query = "SELECT * FROM `".self::TBL_GROUPS."` WHERE `type` = '{$this->getGroupTypeIdByName($type)}'";
+			$query = "SELECT * FROM `".static::TBL_GROUPS."` WHERE `type` = '{$this->getGroupTypeIdByName($type)}'";
 		}
 		else{
 			return false;
@@ -415,7 +415,7 @@ class UserManagement extends Filterable{
 	 * @return string
 	 */
 	public function getGroupName($group_id, $cacheMinutes = null){
-		if($this->query->exec("SELECT `name` FROM `".self::TBL_GROUPS."` WHERE id = '$group_id'", $cacheMinutes)){
+		if($this->query->exec("SELECT `name` FROM `".static::TBL_GROUPS."` WHERE id = '$group_id'", $cacheMinutes)){
 			return $this->query->fetchField("name");
 		}
 		return false;
@@ -428,13 +428,13 @@ class UserManagement extends Filterable{
 	 * @return array
 	 */
 	public function getGroupPermissionsList($name, $cacheMinutes = null){
-		if($this->query->exec("SELECT `id` FROM `".self::TBL_GROUPS."` WHERE `name`='$name'", $cacheMinutes)){
+		if($this->query->exec("SELECT `id` FROM `".static::TBL_GROUPS."` WHERE `name`='$name'", $cacheMinutes)){
 			$group_id = $this->query->fetchField("id");
-			$this->query->exec("SELECT `permission_id` FROM `".self::TBL_GROUPS_PERMISSIONS."` WHERE `group_id`='$group_id'", $cacheMinutes);
+			$this->query->exec("SELECT `permission_id` FROM `".static::TBL_GROUPS_PERMISSIONS."` WHERE `group_id`='$group_id'", $cacheMinutes);
 			$perms_ids_count = $this->query->countRecords();
 			if($perms_ids_count){
 				$perms_ids = $this->query->fetchFields(0, true);
-				$sql_statement = "SELECT `name` FROM `".self::TBL_PERMISSIONS."` WHERE `id` IN (" . implode(", ", $perms_ids) . ")";
+				$sql_statement = "SELECT `name` FROM `".static::TBL_PERMISSIONS."` WHERE `id` IN (" . implode(", ", $perms_ids) . ")";
 				$this->query->exec($sql_statement, $cacheMinutes);
 				return $this->query->fetchFields(0, true);
 			}
@@ -454,7 +454,7 @@ class UserManagement extends Filterable{
 	 * @return string
 	 */
 	public function getPermissionDescription($name, $cacheMinutes = null){
-		if($this->query->exec("select `description` from `".self::TBL_PERMISSIONS."` where `name`='$name'", $cacheMinutes)){
+		if($this->query->exec("select `description` from `".static::TBL_PERMISSIONS."` where `name`='$name'", $cacheMinutes)){
 			return $this->query->fetchField("description");
 		}
 		else{
@@ -469,7 +469,7 @@ class UserManagement extends Filterable{
 	 * @return string
 	 */
 	public function getGroupDescription($name, $cacheMinutes = null){
-		if($this->query->exec("select `description` from `".self::TBL_GROUPS."` where `name`='$name'", $cacheMinutes)){
+		if($this->query->exec("select `description` from `".static::TBL_GROUPS."` where `name`='$name'", $cacheMinutes)){
 			return $this->query->fetchField("description");
 		}
 		else{
@@ -484,7 +484,7 @@ class UserManagement extends Filterable{
 	 * @return bool
 	 */
 	public function isPermissionExists($permission_name, $cacheMinutes = null){
-		if($this->query->exec("select count(*) as `count` from `".self::TBL_PERMISSIONS."` where `name`='$permission_name'", $cacheMinutes)){
+		if($this->query->exec("select count(*) as `count` from `".static::TBL_PERMISSIONS."` where `name`='$permission_name'", $cacheMinutes)){
 			if($this->query->fetchField("count")){
 				return true;
 			}
@@ -499,7 +499,7 @@ class UserManagement extends Filterable{
 	 * @return bool
 	 */
 	public function isGroupExists($group_name, $cacheMinutes = null){
-		if($this->query->exec("select `id` from `".self::TBL_GROUPS."` where `name`='$group_name'", $cacheMinutes)){
+		if($this->query->exec("select `id` from `".static::TBL_GROUPS."` where `name`='$group_name'", $cacheMinutes)){
 			if($this->query->fetchField("id")){
 				return true;
 			}
@@ -562,18 +562,18 @@ class UserManagement extends Filterable{
 			$enable = 0;
 		}
 
-		if($this->query->exec("insert into `".self::TBL_USERS."`(`login`,`password`,`enable`,`creation_date`" . $keys . ") values('$login','" . md5($password) . "','$enable',$creation_date" . $values . ")")){
+		if($this->query->exec("insert into `".static::TBL_USERS."`(`login`,`password`,`enable`,`creation_date`" . $keys . ") values('$login','" . md5($password) . "','$enable',$creation_date" . $values . ")")){
 			if(!is_null($user)){
 				$user_id = $this->query->getLastInsertId();
 				foreach($perms_ids as $perm_id){
-					$this->query->exec("insert into `".self::TBL_USERS_PERMISSIONS."`(`user_id`,`permission_id`) values($user_id,$perm_id)");
+					$this->query->exec("insert into `".static::TBL_USERS_PERMISSIONS."`(`user_id`,`permission_id`) values($user_id,$perm_id)");
 				}
 				foreach($groups_ids as $group_id){
 					if($group_id == $primary_group_id){
-						$this->query->exec("insert into `".self::TBL_USERS_GROUPS."` (`user_id`,`group_id`,`is_primary`) values($user_id,$group_id,1)");
+						$this->query->exec("insert into `".static::TBL_USERS_GROUPS."` (`user_id`,`group_id`,`is_primary`) values($user_id,$group_id,1)");
 					}
 					else{
-						$this->query->exec("insert into `".self::TBL_USERS_GROUPS."` (`user_id`,`group_id`) values($user_id,$group_id)");
+						$this->query->exec("insert into `".static::TBL_USERS_GROUPS."` (`user_id`,`group_id`) values($user_id,$group_id)");
 					}
 				}
 				return $user_id;
@@ -590,7 +590,7 @@ class UserManagement extends Filterable{
 	 */
 	public function deleteUser($user_id){
 		$user_id = intval($user_id);
-		if($this->query->exec("delete from `".self::TBL_USERS."` where `id`='$user_id'")){
+		if($this->query->exec("delete from `".static::TBL_USERS."` where `id`='$user_id'")){
 			return true;
 		}
 		else{
@@ -624,7 +624,7 @@ class UserManagement extends Filterable{
 		unset($primary_group);
 
 		$fields = array_diff_key($fields, array('id' => 0, 'login' => "", 'permissions' => array(), 'groups' => array(), 'primary_group' => ''));
-		$sql_statement = "update `".self::TBL_USERS."` set ";
+		$sql_statement = "update `".static::TBL_USERS."` set ";
 		foreach($fields as $key => $value){
 			$sql_statement .= "`$key` = '" . addslashes($value) . "', ";
 		}
@@ -644,18 +644,18 @@ class UserManagement extends Filterable{
 		$user_groups_perms_ids = $this->getPermsIds($groups_permissions);
 		$perms_ids = array_diff($perms_ids, $user_groups_perms_ids);
 
-		$this->query->exec("delete from `".self::TBL_USERS_PERMISSIONS."` where `user_id`='$user_id'");
-		$this->query->exec("delete from `".self::TBL_USERS_GROUPS."` where `user_id`='$user_id'");
+		$this->query->exec("delete from `".static::TBL_USERS_PERMISSIONS."` where `user_id`='$user_id'");
+		$this->query->exec("delete from `".static::TBL_USERS_GROUPS."` where `user_id`='$user_id'");
 
 		foreach($perms_ids as $perm_id){
-			$this->query->exec("insert into `".self::TBL_USERS_PERMISSIONS."` (`user_id`,`permission_id`) values('$user_id', '$perm_id')");
+			$this->query->exec("insert into `".static::TBL_USERS_PERMISSIONS."` (`user_id`,`permission_id`) values('$user_id', '$perm_id')");
 		}
 		foreach($groups_ids as $group_id){
 			if($group_id == $primary_group_id){
-				$this->query->exec("insert into `".self::TBL_USERS_GROUPS."`(`user_id`,`group_id`,`is_primary`) values('$user_id', '$group_id',1)");
+				$this->query->exec("insert into `".static::TBL_USERS_GROUPS."`(`user_id`,`group_id`,`is_primary`) values('$user_id', '$group_id',1)");
 			}
 			else{
-				$this->query->exec("insert into `".self::TBL_USERS_GROUPS."`(`user_id`,`group_id`) values('$user_id', '$group_id')");
+				$this->query->exec("insert into `".static::TBL_USERS_GROUPS."`(`user_id`,`group_id`) values('$user_id', '$group_id')");
 			}
 		}
 		return true;
@@ -671,7 +671,7 @@ class UserManagement extends Filterable{
 	public function updateUserExtra($user_id, $extra_fields){
 		$user_id = intval($user_id);
 		if($this->isUserExists(addslashes($this->getLoginById($user_id))) and count($extra_fields)){
-			$sql_statement = "update `".self::TBL_USERS."` set ";
+			$sql_statement = "update `".static::TBL_USERS."` set ";
 			foreach($extra_fields as $key => $value){
 				$sql_statement .= "`$key` = '$value', ";
 			}
@@ -692,7 +692,7 @@ class UserManagement extends Filterable{
 	 */
 	public function isEnabledUser($user_id){
 		$user_id = intval($user_id);
-		if($this->query->exec("select `enable` from `".self::TBL_USERS."` where `id`='$user_id'")){
+		if($this->query->exec("select `enable` from `".static::TBL_USERS."` where `id`='$user_id'")){
 			if($this->query->fetchField("enable")){
 				return true;
 			}
@@ -708,7 +708,7 @@ class UserManagement extends Filterable{
 	 */
 	public function enableUser($user_id){
 		$user_id = intval($user_id);
-		if($this->query->exec("update `".self::TBL_USERS."` set `enable`='1' where `id`='$user_id'")){
+		if($this->query->exec("update `".static::TBL_USERS."` set `enable`='1' where `id`='$user_id'")){
 			return true;
 		}
 		else{
@@ -724,7 +724,7 @@ class UserManagement extends Filterable{
 	 */
 	public function disableUser($user_id){
 		$user_id = intval($user_id);
-		if($this->query->exec("update `".self::TBL_USERS."` set `enable`='0' where `id`='$user_id'")){
+		if($this->query->exec("update `".static::TBL_USERS."` set `enable`='0' where `id`='$user_id'")){
 			return true;
 		}
 		else{
@@ -740,7 +740,7 @@ class UserManagement extends Filterable{
 	 */
 	public function getCreationDate($user_id, $cacheMinutes = null){
 		$user_id = intval($user_id);
-		if($this->query->exec("select `creation_date` from `".self::TBL_USERS."` where `id`='$user_id'", $cacheMinutes)){
+		if($this->query->exec("select `creation_date` from `".static::TBL_USERS."` where `id`='$user_id'", $cacheMinutes)){
 			return $this->query->fetchField("creation_date");
 		}
 		else{
@@ -762,7 +762,7 @@ class UserManagement extends Filterable{
 		}
 		else{
 			$date = date("Y-m-d", $utime);
-			if($this->query->exec("update `".self::TBL_USERS."` set `creation_date`='$date' where `id`='$user_id'")){
+			if($this->query->exec("update `".static::TBL_USERS."` set `creation_date`='$date' where `id`='$user_id'")){
 				return true;
 			}
 			else{
@@ -783,7 +783,7 @@ class UserManagement extends Filterable{
 		if(empty($new_login)){
 			return false;
 		}
-		if($this->query->exec("update `".self::TBL_USERS."` set `login`='$new_login' where `id`='$user_id'")){
+		if($this->query->exec("update `".static::TBL_USERS."` set `login`='$new_login' where `id`='$user_id'")){
 			return true;
 		}
 		else{
@@ -799,7 +799,7 @@ class UserManagement extends Filterable{
 	 */
 	public function getPassword($user_id, $cacheMinutes = 0){
 		$user_id = intval($user_id);
-		if($this->query->exec("select `password` from `".self::TBL_USERS."` where `id`='$user_id'", $cacheMinutes)){
+		if($this->query->exec("select `password` from `".static::TBL_USERS."` where `id`='$user_id'", $cacheMinutes)){
 			return $this->query->fetchField("password");
 		}
 		else{
@@ -820,7 +820,7 @@ class UserManagement extends Filterable{
 			return false;
 		}
 
-		if($this->query->exec("update `".self::TBL_USERS."` set `password`='" . md5($password) . "' where `id`='$user_id'")){
+		if($this->query->exec("update `".static::TBL_USERS."` set `password`='" . md5($password) . "' where `id`='$user_id'")){
 			return true;
 		}
 		else{
@@ -847,7 +847,7 @@ class UserManagement extends Filterable{
 	 */
 	public function getObjectById($user_id, $cacheMinutes = 0){
 		$user_id = intval($user_id);
-		$this->query->exec("select * from `".self::TBL_USERS."` where `id`='$user_id'", $cacheMinutes);
+		$this->query->exec("select * from `".static::TBL_USERS."` where `id`='$user_id'", $cacheMinutes);
 		if($this->query->countRecords()){
 
 			$res = $this->query->fetchRecord();
@@ -862,12 +862,12 @@ class UserManagement extends Filterable{
 				}
 			}
 
-			$this->query->exec("select `permission_id` from `".self::TBL_USERS_PERMISSIONS."` where `user_id`='$user_id'", $cacheMinutes);
+			$this->query->exec("select `permission_id` from `".static::TBL_USERS_PERMISSIONS."` where `user_id`='$user_id'", $cacheMinutes);
 			$perms_ids_count = $this->query->countRecords();
 			if($perms_ids_count){
 				$perms_ids = $this->query->fetchFields(0, true);
 
-				$sql_statement = "select `name` from `".self::TBL_PERMISSIONS."` where `id` in (";
+				$sql_statement = "select `name` from `".static::TBL_PERMISSIONS."` where `id` in (";
 				$count = $perms_ids_count - 1;
 				for($i = 0; $i < $count; ++$i){
 					$sql_statement .= $perms_ids[$i] . ", ";
@@ -878,12 +878,12 @@ class UserManagement extends Filterable{
 				$user->setPermissions($this->query->fetchFields(0, true));
 			}
 
-			$this->query->exec("select `group_id` from `".self::TBL_USERS_GROUPS."` where `user_id`='$user_id'", $cacheMinutes);
+			$this->query->exec("select `group_id` from `".static::TBL_USERS_GROUPS."` where `user_id`='$user_id'", $cacheMinutes);
 			$groups_ids_count = $this->query->countRecords();
 			if($groups_ids_count){
 				$groups_ids = $this->query->fetchFields(0, true);
 
-				$sql_statement = "select `name` from `".self::TBL_GROUPS."` where `id` in (";
+				$sql_statement = "select `name` from `".static::TBL_GROUPS."` where `id` in (";
 				$count = $groups_ids_count - 1;
 				for($i = 0; $i < $count; ++$i){
 					$sql_statement .= $groups_ids[$i] . ", ";
@@ -916,7 +916,7 @@ class UserManagement extends Filterable{
 		if(empty($login) or empty($password)){
 			return false;
 		}
-		if($this->query->exec("select `id`, `enable`, `login`, `password` from `".self::TBL_USERS."` where `login`='$login'")){
+		if($this->query->exec("select `id`, `enable`, `login`, `password` from `".static::TBL_USERS."` where `login`='$login'")){
 			$res = $this->query->fetchRecord();
 			if($res["password"] == ($is_pass_md5 ? $password : md5($password)) and ($res["enable"] or $authorize_if_disabled)){
 				return true;
@@ -937,7 +937,7 @@ class UserManagement extends Filterable{
 			return false;
 		}
 
-		if($this->query->exec("select `enable`, `password` from `".self::TBL_USERS."` where `login`='$login'", $cacheMinutes)){
+		if($this->query->exec("select `enable`, `password` from `".static::TBL_USERS."` where `login`='$login'", $cacheMinutes)){
 			$res = $this->query->fetchRecord();
 			if($res["password"] == md5($password) and $res["enable"]){
 				return true;
@@ -953,7 +953,7 @@ class UserManagement extends Filterable{
 	 * @return bool
 	 */
 	public function isUserExists($login, $cacheMinutes = null){
-		if($this->query->exec("select count(*) as `count` from `".self::TBL_USERS."` where `login`='$login'", $cacheMinutes)){
+		if($this->query->exec("select count(*) as `count` from `".static::TBL_USERS."` where `login`='$login'", $cacheMinutes)){
 			if($this->query->fetchField("count") == 1){
 				return true;
 			}
@@ -977,7 +977,7 @@ class UserManagement extends Filterable{
 				$field_names .= "`" . $field_name . "`, ";
 			}
 			$field_names = substr($field_names, 0, -2);
-			if($this->query->exec("select $field_names from `".self::TBL_USERS."` where `id`='$user_id'", $cacheMinutes)){
+			if($this->query->exec("select $field_names from `".static::TBL_USERS."` where `id`='$user_id'", $cacheMinutes)){
 				return $this->query->fetchRecord();
 			}
 		}
@@ -993,11 +993,11 @@ class UserManagement extends Filterable{
 	 */
 	public function getUserGroups($user_id, $group_types = array(), $cacheMinutes = null){
 		$user_id = intval($user_id);
-		$this->query->exec("select `group_id` from `".self::TBL_USERS_GROUPS."` where `user_id`='$user_id'", $cacheMinutes);
+		$this->query->exec("select `group_id` from `".static::TBL_USERS_GROUPS."` where `user_id`='$user_id'", $cacheMinutes);
 		$groups_ids_count = $this->query->countRecords();
 		if($groups_ids_count){
 			$groups_ids = $this->query->fetchFields(0, true);
-			$sql_statement = "select `name` from `".self::TBL_GROUPS."` where `id` in (" . implode(', ', $groups_ids) . ")";
+			$sql_statement = "select `name` from `".static::TBL_GROUPS."` where `id` in (" . implode(', ', $groups_ids) . ")";
 
 			if(!empty($group_types)){
 				$group_types_ids = array();
@@ -1023,7 +1023,7 @@ class UserManagement extends Filterable{
 	 */
 	public function getGroupId($name, $cacheMinutes = null){
 		$name = mysql_real_escape_string($name);
-		$this->query->exec("select `id` from `".self::TBL_GROUPS."` where `name`='$name'", $cacheMinutes);
+		$this->query->exec("select `id` from `".static::TBL_GROUPS."` where `name`='$name'", $cacheMinutes);
 		if(($group_id = $this->query->fetchField("id"))){
 			return $group_id;
 		}
@@ -1041,7 +1041,7 @@ class UserManagement extends Filterable{
 	 */
 	public function isPrimaryGroup($user_id, $group_name, $cacheMinutes = null){
 		$group_name = mysql_real_escape_string($group_name);
-		$this->query->exec("select `is_primary` from `".self::TBL_USERS_GROUPS."` where `user_id`='$user_id' and `group_id`='" . $this->getGroupId($group_name) . "'", $cacheMinutes);
+		$this->query->exec("select `is_primary` from `".static::TBL_USERS_GROUPS."` where `user_id`='$user_id' and `group_id`='" . $this->getGroupId($group_name) . "'", $cacheMinutes);
 		if($this->query->fetchField("is_primary") == '1'){
 			return true;
 		}
@@ -1057,7 +1057,7 @@ class UserManagement extends Filterable{
 	 * @return String
 	 */
 	public function getPrimaryGroup($user_id, $cacheMinutes = null){
-		$this->query->exec("select g.`name` as `group_name` from `".self::TBL_USERS_GROUPS."` ug left join `".self::TBL_GROUPS."` g on (ug.`group_id`=g.`id`) where ug.`user_id`='$user_id' and ug.`is_primary`='1'", $cacheMinutes);
+		$this->query->exec("select g.`name` as `group_name` from `".static::TBL_USERS_GROUPS."` ug left join `".static::TBL_GROUPS."` g on (ug.`group_id`=g.`id`) where ug.`user_id`='$user_id' and ug.`is_primary`='1'", $cacheMinutes);
 		if(($group_name = $this->query->fetchField("group_name"))){
 			return $group_name;
 		}
@@ -1073,7 +1073,7 @@ class UserManagement extends Filterable{
 	 * @return bool
 	 */
 	public function isUserHasGroup($user_id, $group_name, $cacheMinutes = null){
-		$this->query->exec("select g.`name` as `group_name` from `".self::TBL_USERS_GROUPS."` ug left join `".self::TBL_GROUPS."` g on (ug.`group_id`=g.`id`) where `ug`.`user_id`='$user_id' and g.`name`='$group_name'", $cacheMinutes);
+		$this->query->exec("select g.`name` as `group_name` from `".static::TBL_USERS_GROUPS."` ug left join `".static::TBL_GROUPS."` g on (ug.`group_id`=g.`id`) where `ug`.`user_id`='$user_id' and g.`name`='$group_name'", $cacheMinutes);
 		if($this->query->countRecords()){
 			return true;
 		}
@@ -1090,12 +1090,12 @@ class UserManagement extends Filterable{
 	 */
 	public function getUserPermissions($user_id, $cacheMinutes = null){
 		$user_id = intval($user_id);
-		$this->query->exec("select `permission_id` from `".self::TBL_USERS_PERMISSIONS."` where `user_id`='$user_id'", $cacheMinutes);
+		$this->query->exec("select `permission_id` from `".static::TBL_USERS_PERMISSIONS."` where `user_id`='$user_id'", $cacheMinutes);
 		$permissions_ids_count = $this->query->countRecords();
 		if($permissions_ids_count){
 			$permissions_ids = $this->query->fetchFields(0, true);
 
-			$sql_statement = "select `name` from `".self::TBL_PERMISSIONS."` where `id` in (";
+			$sql_statement = "select `name` from `".static::TBL_PERMISSIONS."` where `id` in (";
 			$count = $permissions_ids_count - 1;
 			for($i = 0; $i < $count; ++$i){
 				$sql_statement .= $permissions_ids[$i] . ", ";
@@ -1126,14 +1126,14 @@ class UserManagement extends Filterable{
 			$primary_group_id = $groups_ids[0];
 		}
 
-		$this->query->exec("delete from `".self::TBL_USERS_GROUPS."` where `user_id`='$user_id'");
+		$this->query->exec("delete from `".static::TBL_USERS_GROUPS."` where `user_id`='$user_id'");
 
 		foreach($groups_ids as $group_id){
 			if($group_id == $primary_group_id){
-				$this->query->exec("insert into `".self::TBL_USERS_GROUPS."`(`user_id`,`group_id`,`is_primary`) values('$user_id', '$group_id',1)");
+				$this->query->exec("insert into `".static::TBL_USERS_GROUPS."`(`user_id`,`group_id`,`is_primary`) values('$user_id', '$group_id',1)");
 			}
 			else{
-				$this->query->exec("insert into `".self::TBL_USERS_GROUPS."`(`user_id`,`group_id`) values('$user_id', '$group_id')");
+				$this->query->exec("insert into `".static::TBL_USERS_GROUPS."`(`user_id`,`group_id`) values('$user_id', '$group_id')");
 			}
 		}
 		return true;
@@ -1150,10 +1150,10 @@ class UserManagement extends Filterable{
 		$user_id = intval($user_id);
 		$perms_ids = $this->getPermsIds($permissions_list);
 
-		$this->query->exec("delete from `".self::TBL_USERS_PERMISSIONS."` where `user_id`='$user_id'");
+		$this->query->exec("delete from `".static::TBL_USERS_PERMISSIONS."` where `user_id`='$user_id'");
 
 		foreach($perms_ids as $perm_id){
-			$this->query->exec("insert into `".self::TBL_USERS_PERMISSIONS."`(`user_id`,`permission_id`) values('$user_id', '$perm_id')");
+			$this->query->exec("insert into `".static::TBL_USERS_PERMISSIONS."`(`user_id`,`permission_id`) values('$user_id', '$perm_id')");
 		}
 		return true;
 	}
@@ -1170,7 +1170,7 @@ class UserManagement extends Filterable{
 		}
 
 		$sqlQuery = "SELECT count(`users`.`id`) as `cnt`
-						FROM `".self::TBL_USERS."` `users`
+						FROM `".static::TBL_USERS."` `users`
 						{$this->generateJoins($usersFilter)}
 						WHERE 1
 						{$this->generateWhere($usersFilter)}";
@@ -1194,7 +1194,7 @@ class UserManagement extends Filterable{
 		}
 
 		$sqlQuery = "SELECT `users`.`id`
-						FROM `".self::TBL_USERS."` `users`
+						FROM `".static::TBL_USERS."` `users`
 						{$this->generateJoins($usersFilter)}
 						WHERE 1
 						{$this->generateWhere($usersFilter)}
@@ -1226,7 +1226,7 @@ class UserManagement extends Filterable{
 		$user_id = intval($user_id);
 		if($this->isUserExists(addslashes($this->getLoginById($user_id)))){
 			$reg_code = md5(uniqid(rand(), true));
-			if(!$this->query->exec("insert into `".self::TBL_REG_CODES."` (`id`, `user_id`, `code`) values(0, '$user_id', '$reg_code')")){
+			if(!$this->query->exec("insert into `".static::TBL_REG_CODES."` (`id`, `user_id`, `code`) values(0, '$user_id', '$reg_code')")){
 				return false;
 			}
 			return $reg_code;
@@ -1243,7 +1243,7 @@ class UserManagement extends Filterable{
 	public function removeRegCode($user_id){
 		$user_id = intval($user_id);
 		if($this->isUserExists(addslashes($this->getLoginById($user_id)))){
-			if(!$this->query->exec("delete from `".self::TBL_REG_CODES."` where `user_id`=" . $user_id)){
+			if(!$this->query->exec("delete from `".static::TBL_REG_CODES."` where `user_id`=" . $user_id)){
 				return false;
 			}
 			return true;
@@ -1260,7 +1260,7 @@ class UserManagement extends Filterable{
 	 * @return bool
 	 */
 	public function validateRegistration($code, $enable_user = true, $delete_code = true){
-		$this->query->exec("select `id`, `user_id` from `".self::TBL_REG_CODES."` where `code`='$code'");
+		$this->query->exec("select `id`, `user_id` from `".static::TBL_REG_CODES."` where `code`='$code'");
 		if($this->query->countRecords()){
 			$code_row = $this->query->fetchRecord();
 			if($enable_user){
@@ -1269,7 +1269,7 @@ class UserManagement extends Filterable{
 				}
 			}
 			if($delete_code){
-				if(!$this->query->exec("delete from `".self::TBL_REG_CODES."` where `id`='" . $code_row['id'] . "'")){
+				if(!$this->query->exec("delete from `".static::TBL_REG_CODES."` where `id`='" . $code_row['id'] . "'")){
 					return false;
 				}
 			}
@@ -1286,7 +1286,7 @@ class UserManagement extends Filterable{
 	 */
 	public function getLoginById($user_id, $cacheMinutes = null){
 		$user_id = intval($user_id);
-		$this->query->exec("select `login` from `".self::TBL_USERS."` where `id`='$user_id'", $cacheMinutes);
+		$this->query->exec("select `login` from `".static::TBL_USERS."` where `id`='$user_id'", $cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchField('login');
 		}
@@ -1300,7 +1300,7 @@ class UserManagement extends Filterable{
 	 * @return int
 	 */
 	public function getIdByLogin($login, $cacheMinutes = null){
-		$this->query->exec("select `id` from `".self::TBL_USERS."` where `login`='$login'", $cacheMinutes);
+		$this->query->exec("select `id` from `".static::TBL_USERS."` where `login`='$login'", $cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchField('id');
 		}

@@ -39,7 +39,7 @@ class UserAuthorization extends DbAccessor{
 			$this->serializeUserObject($this->usr);
 			if($writeCookie){
 				$secs = getdate();
-				$exp_time = $secs[0] + (60 * 60 * 24 * self::REMEMBER_DAYS);
+				$exp_time = $secs[0] + (60 * 60 * 24 * static::REMEMBER_DAYS);
 				$cookie_value = $username . ":" . md5($password);
 				setcookie(LOGIN_COKIE, $cookie_value, $exp_time, '/');
 			}
@@ -47,14 +47,14 @@ class UserAuthorization extends DbAccessor{
 		elseif($this->um->isUserExists($username)){
 			$current_user = $this->um->getObjectById($this->um->getIdByLogin($username));
 			if($this->um->getPassword($current_user->getId()) == md5($password) and !$current_user->isEnabled()){
-				throw new RuntimeException("Account is disabled", self::EXCEPTION_ACCOUNT_DISABLED);
+				throw new RuntimeException("Account is disabled", static::EXCEPTION_ACCOUNT_DISABLED);
 			}
 			else{
-				throw new RuntimeException("Incorrect login/password combination", self::EXCEPTION_INCORRECT_LOGIN_PASSWORD);
+				throw new RuntimeException("Incorrect login/password combination", static::EXCEPTION_INCORRECT_LOGIN_PASSWORD);
 			}
 		}
 		else{
-			throw new RuntimeException("Incorrect login/password combination", self::EXCEPTION_INCORRECT_LOGIN_PASSWORD);
+			throw new RuntimeException("Incorrect login/password combination", static::EXCEPTION_INCORRECT_LOGIN_PASSWORD);
 		}
 	}
 	

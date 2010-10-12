@@ -16,7 +16,9 @@ function __autoload($className){
 }
 
 function default_exception_handler(Exception $e){
-	global $config, $packageMgr, $sql, $site_name;
+	global $site_name;
+	
+	$config = ConfigManager::getGlobalConfig();
 	
 	if(Debug::getMode()){
 		echo format_exception($e, true);
@@ -24,7 +26,7 @@ function default_exception_handler(Exception $e){
 	else{
 		HookManager::callHook('ExceptionHandler', array('e' => $e));
 	}
-	if($packageMgr->isPluginLoaded("Db","Db") and function_exists("write_log")){
+	if(Reg::get('packageMgr')->isPluginLoaded("Db","Db") and function_exists("write_log")){
 		@write_log("Exception", format_exception($e));
 	}
 	

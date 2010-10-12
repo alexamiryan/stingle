@@ -4,6 +4,6 @@ $defaultConfig = array(
 						'messages_count' => 150,
 						'connect_timeout' => 30,
 						'reconnect_timeout' => 100,
-						'Objects' => array(	'Chat' => 'chat' )
+						'Objects' => array(	'Chat' => 'wcs' )
 					);
 ?>

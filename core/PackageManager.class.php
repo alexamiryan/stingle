@@ -51,7 +51,11 @@ class PackageManager {
 		$this->customConfigs = new Config();
 	}
 	
-	public function usePlugin($packageName, $pluginName, Config $customConfig = null, $overrideObjects = false){
+	public function usePlugin($packageName, $pluginName = null, Config $customConfig = null, $overrideObjects = false){
+		if($pluginName === null){
+			$pluginName = $packageName;
+		}
+		
 		$this->checkPluginExistance($packageName, $pluginName);
 		
 		if(!isset($this->loadedPackages[$packageName])){

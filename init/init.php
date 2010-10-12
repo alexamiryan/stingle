@@ -8,7 +8,7 @@ set_error_handler('default_error_handler');
 
 $config = new Config($CONFIG);
 ConfigManager::setGlobalConfig($config);
-$packageMgr = new PackageManager();
+Reg::register('packageMgr', new PackageManager());
 
 error_reporting($config->site->error_reporting);
 session_name($config->site->site_id);

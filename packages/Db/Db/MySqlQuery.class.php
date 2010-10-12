@@ -85,7 +85,7 @@ class MySqlQuery
 	 * Execute SQL query
 	 *
 	 * @param string $sql_statement
-	 * @return bool
+	 * @return MysqlQuery
 	 */
 	public function exec($sql_statement){
 		$query_str='';

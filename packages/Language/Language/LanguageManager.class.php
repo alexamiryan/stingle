@@ -390,7 +390,7 @@ class LanguageManager extends DbAccessor {
 	protected function createValue($key, $value, $lang_id){
 		$this->query->exec("INSERT INTO `".Constant::TBL_VALUES."` (`id`, `lang_id`, `value`)
 							SELECT
-								(SELECT `id` FROM `{".Constant::TBL_CONSTANTS."}` WHERE `key` = '$key') as `id`,
+								(SELECT `id` FROM `".Constant::TBL_CONSTANTS."` WHERE `key` = '$key') as `id`,
 								'$lang_id',
 								'$value'");
 	}
@@ -435,17 +435,16 @@ class LanguageManager extends DbAccessor {
 	 * @access public
 	 * @return boolean
 	 */
-	public function addConstant($key, $value, $type, $language = null){
+	public function addConstant($key, $value, $type, Language $language = null){
 		if(empty($key) or empty($type)){
 			throw new EmptyArgumentException();
 		}
 
 		if($language === null){
-			$lang_id = $this->getDefaultLangId();
+			$language = $this->getDefaultLanguage();
 		}
-		else{
-			$lang_id = $this->parseLanguage($language);
-		}
+
+		$lang_id = $language->id;
 
 		if(!$this->keyExists($key)){
 			$id = $this->createKey($key, $type);
@@ -507,7 +506,7 @@ class LanguageManager extends DbAccessor {
 		}
 		// Removing last comma
 		$query = substr($query, 0, -1);
-		$query .= " WHERE `id`=(SELECT `id` FROM `{".Constant::TBL_CONSTANTS."}` WHERE `key`='{$identifier["key"]}')
+		$query .= " WHERE `id`=(SELECT `id` FROM `".Constant::TBL_CONSTANTS."` WHERE `key`='{$identifier["key"]}')
 					AND `lang_id`='{$identifier["lang_id"]}'";
 
 		$this->query->exec($query);
@@ -576,9 +575,14 @@ class LanguageManager extends DbAccessor {
 		if(!isset($identifier["key"]) or !isset($identifier["language"])){
 			throw new InvalidArrayArgumentException();
 		}
-
-		$identifier["lang_id"] = $this->parseLanguage($identifier["language"]);
-		$lang_id = $this->parseLanguage($language);
+		
+		$lang = $identifier["language"];
+		$identifier["lang_id"] = $lang->id;
+		
+		//$identifier["lang_id"] = $this->parseLanguage($identifier["language"]);
+		//$lang_id = $this->parseLanguage($language);
+		
+		$lang_id = $language;
 
 		$this->query->exec("SELECT @@AUTOCOMMIT AS ac");
 
@@ -615,7 +619,7 @@ class LanguageManager extends DbAccessor {
 	 * 				It looks like this:
 	 * 					array(
 	 * 						"key" => {string},
-	 * 						"language" => {int|string}[optinal]
+	 * 						"language" => Language[optinal]
 	 * 					)
 	 * @access public
 	 * @return boolean True if rows affected
@@ -633,15 +637,15 @@ class LanguageManager extends DbAccessor {
 
 
 		if(isset($identifier["language"])){
-			$identifier["lang_id"] = $this->parseLanguage($identifier["language"]);
-
+			$lang = $identifier["language"];
+			
 			$this->query->exec("SELECT count(`id`) AS cnt
 								FROM $tables $where_clause");
 
 			if($this->query->fetchField("cnt") > 1){
 				$this->query->exec("DELETE FROM cv
 									USING $tables $where_clause
-									AND cv.`lang_id`='{$identifier["lang_id"]}'");
+									AND cv.`lang_id`='{$lang->id}'");
 			}
 			else{
 				$this->query->exec("DELETE FROM

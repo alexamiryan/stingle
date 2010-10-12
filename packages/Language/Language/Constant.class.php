@@ -59,6 +59,5 @@ class Constant{
 		"CONSTS_TYPE_ADMIN" 	=> self::ADMIN_TYPE
 		);*/
 	}
-
 }
 ?>

@@ -29,7 +29,7 @@ class HostLanguageManager extends LanguageManager {
 	 */
 	public function languageExists($language, $cacheMinutes = null){
 		$this->query->exec("SELECT l.`id` FROM `".Language::TBL_LANGUAGES ."` l
-							LEFT JOIN `".self::TBL_HOST_LANGUAGE ."` hl ON hl.lang_id = l.id
+							LEFT JOIN `".static::TBL_HOST_LANGUAGE ."` hl ON hl.lang_id = l.id
 							WHERE hl.host_id=".$this->host->id."
 							AND l.`name`='$language'", $cacheMinutes);
 		if($this->query->countRecords()){
@@ -42,7 +42,7 @@ class HostLanguageManager extends LanguageManager {
 	}
 
 	public function getDefaultLanguage($cacheMinutes = null){
-		$this->query->exec("SELECT l.* FROM `".self::TBL_HOST_LANGUAGE."` hl
+		$this->query->exec("SELECT l.* FROM `".static::TBL_HOST_LANGUAGE."` hl
 					LEFT JOIN `".Language::TBL_LANGUAGES ."` l ON hl.lang_id=l.id
 					WHERE hl.host_id=".$this->host->id." AND hl.default=1", $cacheMinutes);
 		if($this->query->countRecords()){
@@ -67,7 +67,7 @@ class HostLanguageManager extends LanguageManager {
 	 */
 	protected function getHostLanguages($cacheMinutes = null){
 		$languages = array();
-		$this->query->exec("SELECT l.* FROM `".self::TBL_HOST_LANGUAGE."` hl
+		$this->query->exec("SELECT l.* FROM `".static::TBL_HOST_LANGUAGE."` hl
 					LEFT JOIN `".Language::TBL_LANGUAGES ."` l ON hl.lang_id=l.id
 					WHERE hl.host_id=".$this->host->id."", $cacheMinutes);
 		$langs_data = $this->query->fetchRecords();
@@ -82,7 +82,7 @@ class HostLanguageManager extends LanguageManager {
 	public static function getLanguageHosts(Language $lang, $cacheMinutes = null){
 		$hosts = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT h.* FROM `".self::TBL_HOST_LANGUAGE."` hl
+		$sql->exec("SELECT h.* FROM `".static::TBL_HOST_LANGUAGE."` hl
 					LEFT JOIN `".Host::TBL_HOSTS."` h ON hl.host_id=h.id
 					WHERE hl.lang_id=".$lang->id."", $cacheMinutes);
 		$hosts_data = $sql->fetchRecords();
@@ -104,27 +104,27 @@ class HostLanguageManager extends LanguageManager {
 			throw new InvalidArgumentException("host_languge id should be an integer");
 		}
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT host_id, lang_id FROM ".self::TBL_HOST_LANGUAGE ." WHERE id='$host_languge_id'", $cacheMinutes);
+		$sql->exec("SELECT host_id, lang_id FROM ".static::TBL_HOST_LANGUAGE ." WHERE id='$host_languge_id'", $cacheMinutes);
 		if($sql->countRecords()){
 			$res = $sql->fetchRecord();
 			$host = new Host($res['host_id']);		
 			$lang = new Language($res['lang_id']);	
 			return array("host"=>$host, "language"=>$lang);	
 		}
-		throw new InvalidArgumentException("Wrong host_languge id given. No record with id: $host_languge_id in table ".self::TBL_HOST_LANGUAGE );				
+		throw new InvalidArgumentException("Wrong host_languge id given. No record with id: $host_languge_id in table ".static::TBL_HOST_LANGUAGE );				
 	}
 	
 	private static function _getHostLanguageId($hostId, $languageId, $cacheMinutes = null){
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT id FROM ".self::TBL_HOST_LANGUAGE ." WHERE host_id=".$hostId." AND lang_id=".$languageId, $cacheMinutes);
+		$sql->exec("SELECT id FROM ".static::TBL_HOST_LANGUAGE ." WHERE host_id=".$hostId." AND lang_id=".$languageId, $cacheMinutes);
 		if($sql->countRecords()){
 			return $sql->fetchField("id");
 		}
-		throw new RuntimeException("No record with host_id ".$hostId." and lang_id ".$languageId." in ".self::TBL_HOST_LANGUAGE);
+		throw new RuntimeException("No record with host_id ".$hostId." and lang_id ".$languageId." in ".static::TBL_HOST_LANGUAGE);
 	}
 	
 	public static function getHostLanguageId(Host $host, Language $language){
-		return self::_getHostLanguageId($host->id,$language->id);
+		return static::_getHostLanguageId($host->id,$language->id);
 	}
 	/**
 	 * Get all possible pairs of Host Language
@@ -134,7 +134,7 @@ class HostLanguageManager extends LanguageManager {
 	public static function getAllPairs($cacheMinutes = null){
 		$pairs = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT *, hl.id host_lang_id FROM ".self::TBL_HOST_LANGUAGE ." hl
+		$sql->exec("SELECT *, hl.id host_lang_id FROM ".static::TBL_HOST_LANGUAGE ." hl
 					LEFT JOIN `".Language::TBL_LANGUAGES ."` l ON hl.lang_id=l.id
 					LEFT JOIN `".Host::TBL_HOSTS."` h ON hl.host_id=h.id", $cacheMinutes);
 

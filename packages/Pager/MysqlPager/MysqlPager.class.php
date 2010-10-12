@@ -129,19 +129,19 @@ class MysqlPager extends Pager{
 		}
 		
 		if($alterMethod === null){
-			$alterMethod = self::METHOD_REPLACE;
+			$alterMethod = static::METHOD_REPLACE;
 		}
 		
 		if(preg_match("/GROUP\\s+?BY/is", $query)){
-			$alterMethod = self::METHOD_CALC_ROWS;
+			$alterMethod = static::METHOD_CALC_ROWS;
 		}
 		
 		$queryWithResult = null;
 		switch ($alterMethod) {
-			case self::METHOD_REPLACE :
+			case static::METHOD_REPLACE :
 				$queryWithResult = $this->executePagedSQLUsingReplace($query, $cacheMinutes);
 				break;
-			case self::METHOD_CALC_ROWS :
+			case static::METHOD_CALC_ROWS :
 				$queryWithResult = $this->executePagedSQLUsingCalcRows($query);
 				break;
 			default :

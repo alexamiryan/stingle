@@ -31,17 +31,17 @@ class MySqlDbManager
      */
     public static function createInstance($server, $username, $password, $db_name, $persistency = true)
     {
-    	$key = self::generateInstanceKey($server);
+    	$key = static::generateInstanceKey($server);
 		try{
-			self::$instances[$key] = new self::$dbClassName($server, $username, $password, $db_name, $persistency);
+			static::$instances[$key] = new static::$dbClassName($server, $username, $password, $db_name, $persistency);
 		}
 		catch(MySqlException $e){
-			unset(self::$instances[$key]);
+			unset(static::$instances[$key]);
 			throw $e;
 		}
 
-		if( count(self::$instances) == 1 ){
-			self::setDefaultInstanceByKey($key);
+		if( count(static::$instances) == 1 ){
+			static::setDefaultInstanceByKey($key);
 		}
 
 		return $key;
@@ -57,14 +57,14 @@ class MySqlDbManager
      */
     public static function getDbObject($instanceKey = null){
     	if( $instanceKey === null ){
-    		$instanceKey = self::$default_key;
+    		$instanceKey = static::$default_key;
     	}
     	
-    	if( !isset(self::$instances[$instanceKey]) or !is_a(self::$instances[$instanceKey], "MySqlDatabase")){
+    	if( !isset(static::$instances[$instanceKey]) or !is_a(static::$instances[$instanceKey], "MySqlDatabase")){
     		throw new MySqlException("Database instance with given key $instanceKey not found.");
     	}
     	
-    	return self::$instances[$instanceKey];
+    	return static::$instances[$instanceKey];
     }
     
 	/**
@@ -76,8 +76,8 @@ class MySqlDbManager
      * @return MySqlDatabase
      */
     public static function getQueryObject($instanceKey = null){
-    	$db = self::getDbObject($instanceKey);
-    	return new self::$queryClassName($db);
+    	$db = static::getDbObject($instanceKey);
+    	return new static::$queryClassName($db);
     }
     
 	/**
@@ -88,7 +88,7 @@ class MySqlDbManager
     		throw new InvalidArgumentException("Class name is empty");
     	}
 
-    	self::$dbClassName = $name;
+    	static::$dbClassName = $name;
     }
     
 	/**
@@ -99,18 +99,18 @@ class MySqlDbManager
     		throw new InvalidArgumentException("Class name is empty");
     	}
 
-    	self::$queryClassName = $name;
+    	static::$queryClassName = $name;
     }
     
 	/**
      * Set default instance the instance that have given key 
      */
     public static function setDefaultInstanceByKey($key){
-    	if( !isset(self::$instances[$key]) ){
+    	if( !isset(static::$instances[$key]) ){
     		throw new InvalidArgumentException("Wrong key for database instance.");
     	}
 
-    	self::$default_key = $key;
+    	static::$default_key = $key;
     }
     
 	/**
@@ -118,7 +118,7 @@ class MySqlDbManager
      * @return string 
      */
     public static function getDefaultInstanceKey(){
-    	return self::$default_key;
+    	return static::$default_key;
     }
     
 	/**
@@ -127,7 +127,7 @@ class MySqlDbManager
 	 * @return string
 	 */
 	private static function generateInstanceKey($server){
-		return $server . "." . count(self::$instances);
+		return $server . "." . count(static::$instances);
 	}
 }
 ?>

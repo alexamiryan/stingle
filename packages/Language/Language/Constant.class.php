@@ -52,11 +52,11 @@ class Constant{
 	 * @return array
 	 */
 	static public function getAvailableTypes(){
-		return self::$available_types;
+		return static::$available_types;
 		/*return array(
-		"CONSTS_TYPE_SITE"		=> self::SITE_TYPE,
-		"CONSTS_TYPE_COMMON" 	=> self::COMMON_TYPE,
-		"CONSTS_TYPE_ADMIN" 	=> self::ADMIN_TYPE
+		"CONSTS_TYPE_SITE"		=> static::SITE_TYPE,
+		"CONSTS_TYPE_COMMON" 	=> static::COMMON_TYPE,
+		"CONSTS_TYPE_ADMIN" 	=> static::ADMIN_TYPE
 		);*/
 	}
 

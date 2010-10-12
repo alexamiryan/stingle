@@ -43,7 +43,7 @@ class IpFilter extends DbAccessor {
 	private function checkIpInBlockedIpList () {
 		$found = false;
 		
-		$this->query->exec("SELECT id FROM `".self::TBL_SECURITY_BLOCKEDIPS."`
+		$this->query->exec("SELECT id FROM `".static::TBL_SECURITY_BLOCKEDIPS."`
 							WHERE ip_address='".$this->remoteIp."'");
 		$iplist = $this->query->fetchRecords();
 		
@@ -66,7 +66,7 @@ class IpFilter extends DbAccessor {
 		
 		$found = false;
 		
-		$this->query->exec("SELECT id FROM `".self::TBL_SECURITY_BLOCKEDCOUNTRIES."` 
+		$this->query->exec("SELECT id FROM `".static::TBL_SECURITY_BLOCKEDCOUNTRIES."` 
 							WHERE country='".$countryCode."'");
 		
 		if ($this->query->countRecords() > 0) {
@@ -82,7 +82,7 @@ class IpFilter extends DbAccessor {
 		
 		$found = false;
 		
-		$this->query->exec("SELECT ip_range FROM `".self::TBL_SECURITY_BLOCKEDIPRANGES."`");
+		$this->query->exec("SELECT ip_range FROM `".static::TBL_SECURITY_BLOCKEDIPRANGES."`");
 		$ranges = $this->query->fetchRecords();
 		
 		foreach ($ranges as $range) {

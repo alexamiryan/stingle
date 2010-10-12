@@ -29,7 +29,7 @@ abstract class Filter {
 		$refl = new ReflectionClass(__CLASS__);
 		$possibleMatches = array();
 		foreach($refl->getConstants() as $const => $value){
-			if(self::detectMatchConstant($const)){
+			if(static::detectMatchConstant($const)){
 				array_push($possibleMatches, $value);
 			}
 		}
@@ -37,7 +37,7 @@ abstract class Filter {
 	}
 	
 	public static function matchExists($match){
-		$possibleMatches = self::getPossibleMatches();
+		$possibleMatches = static::getPossibleMatches();
 		if(in_array($match, $possibleMatches)){
 			return true;
 		}
@@ -47,7 +47,7 @@ abstract class Filter {
 	}
 	
 	protected static function checkMatchExistance($match){
-		if(!self::matchExists($match)){
+		if(!static::matchExists($match)){
 			// TODO create a special exception for this case
 			throw new Exception("Specified match type does not exist");
 		}
@@ -79,14 +79,14 @@ abstract class Filter {
 	}
 	
 	public function setCondition($fieldName, $match, $values){
-		self::checkMatchExistance($match);
+		static::checkMatchExistance($match);
 		
 		$this->conditions[] = array('field' => $fieldName, 'condition' => $match, 'params' => $values);
 		return $this;
 	}
 	
 	protected function setFieldsComparison($firstField, $secondField, $match = self::MATCH_EQUAL){
-		self::checkMatchExistance($match);
+		static::checkMatchExistance($match);
 		
 		array_push($this->comparisons, array($firstField, $secondField, $match));
 		return $this;
@@ -105,8 +105,8 @@ abstract class Filter {
 	}
 	
 	protected function setExtraWhere($tableAlias, $fieldName, $value, $match){
-		self::checkMatchExistance($match);
-		self::checkJoinedTableAliasExistance($tableAlias);
+		static::checkMatchExistance($match);
+		static::checkJoinedTableAliasExistance($tableAlias);
 		
 		array_push($this->extraWheres, array(
 			$tableAlias, $fieldName, $value, $match

@@ -45,15 +45,15 @@ class RewriteURL{
 		$page_flag = 1;
 		reset($this->parts);
 		if(strpos(current($this->parts), ":") === false){
-			$_GET[self::getSystemModuleName()] = current($this->parts);
-			$_REQUEST[self::getSystemModuleName()] = current($this->parts);
+			$_GET[static::getSystemModuleName()] = current($this->parts);
+			$_REQUEST[static::getSystemModuleName()] = current($this->parts);
 			$module_flag = true;
 		}
 		if($module_flag){ // Check is module have been setted in request string
 			next($this->parts);
 			if(current($this->parts) and strpos(current($this->parts), ":") === false){ //Check is second parameter present and is it a page name
-				$_GET[self::getSystemPageName()] = current($this->parts);
-				$_REQUEST[self::getSystemPageName()] = current($this->parts);
+				$_GET[static::getSystemPageName()] = current($this->parts);
+				$_REQUEST[static::getSystemPageName()] = current($this->parts);
 				$page_flag = 2;
 			}
 			$params = array_slice($this->parts, $page_flag); //Remove module and page parameters from $this->parts
@@ -78,8 +78,8 @@ class RewriteURL{
 		if(empty($page_name)){
 			throw new InvalidArgumentException("\$page_name have to be non empty string");
 		}
-		self::$module_name = $module_name;
-		self::$page_name = $page_name;
+		static::$module_name = $module_name;
+		static::$page_name = $page_name;
 	}
 
 	/**
@@ -112,7 +112,7 @@ class RewriteURL{
 		$vars = array();
 		parse_str($url['query'], $vars);
 		while(list($k, $v) = each($vars)){
-			if(in_array($k, array(self::getSystemModuleName(), self::getSystemPageName()))){
+			if(in_array($k, array(static::getSystemModuleName(), static::getSystemPageName()))){
 				$strUrl .= $v . "/";
 			}
 			else{
@@ -139,13 +139,13 @@ class RewriteURL{
 		reset($parts);
 
 		if(strpos(current($parts), ":") === false){
-			$return_string .= self::getSystemModuleName() . "=" . current($parts);
+			$return_string .= static::getSystemModuleName() . "=" . current($parts);
 			$module_flag = true;
 		}
 		if($module_flag){ // Check is module have been setted in request string
 			next($parts);
 			if(strpos(current($parts), ":") === false){
-				$return_string .= "&" . self::getSystemPageName() . "=" . current($parts);
+				$return_string .= "&" . static::getSystemPageName() . "=" . current($parts);
 				$page_flag = 2;
 			}
 			$params = array_slice($parts, $page_flag);
@@ -224,28 +224,28 @@ class RewriteURL{
 				$strUrl = $this->config->site_path . $strUrl;
 			}
 			elseif($this->config->output_link_style == 'default'){
-				$strUrl = self::alterLinkToDefault($strUrl);
+				$strUrl = static::alterLinkToDefault($strUrl);
 			}
 		}
 		elseif($this->config->source_link_style == 'default'){
 			$strUrl = $this->config->handler_script . "?" . $strUrl;
 			if($this->config->output_link_style == 'nice'){
-				$strUrl = self::alterLinkToNice($strUrl);
+				$strUrl = static::alterLinkToNice($strUrl);
 			}
 			if($this->config->output_link_style == 'default'){
 				$strUrl = $this->config->site_path . $strUrl;
 			}
 		}
-		$strUrl = self::ensureOutputLastDelimiter($strUrl);
+		$strUrl = static::ensureOutputLastDelimiter($strUrl);
 		return $strUrl;
 	}
 
 	public static function getSystemModuleName(){
-		return self::$module_name;
+		return static::$module_name;
 	}
 
 	public static function getSystemPageName(){
-		return self::$page_name;
+		return static::$page_name;
 	}
 
 }

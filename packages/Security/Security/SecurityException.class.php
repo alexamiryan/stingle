@@ -25,10 +25,10 @@ class SecurityException extends Exception {
 		 * it is not null
 		 */
 		if($securityMessage !== null){
-			$message = sprintf(self::EXCEPTION_STRING, "`".$securityMessage."`");
+			$message = sprintf(static::EXCEPTION_STRING, "`".$securityMessage."`");
 		}
 		else{
-			$message = sprintf(self::EXCEPTION_STRING, "");
+			$message = sprintf(static::EXCEPTION_STRING, "");
 		}
 		
 		/*

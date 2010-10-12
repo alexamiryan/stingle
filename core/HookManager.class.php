@@ -3,22 +3,22 @@ class HookManager{
 	private static $hooks = array();
 	
 	public static function registerHook($hookName, $method, $object = null){
-		if(!isset(self::$hooks[$hookName])){
-			self::$hooks[$hookName] = array();
+		if(!isset(static::$hooks[$hookName])){
+			static::$hooks[$hookName] = array();
 		}
-		array_push(self::$hooks[$hookName], array("method" => $method, "object" => $object));
+		array_push(static::$hooks[$hookName], array("method" => $method, "object" => $object));
 	}
 	
 	public static function unRegisterHook($hookName){
-		if(isset(self::$hooks[$hookName])){
-			unset(self::$hooks[$hookName]);
+		if(isset(static::$hooks[$hookName])){
+			unset(static::$hooks[$hookName]);
 		}
 	}
 	
 	public static function callHook($hookName, Array $arguments = null){
-		if(self::isAnyHooksRegistered($hookName)){
+		if(static::isAnyHooksRegistered($hookName)){
 			$results = array();
-			foreach (self::$hooks[$hookName] as $hook){
+			foreach (static::$hooks[$hookName] as $hook){
 				$hookMethod = $hook['method'];
 				$hookObj = $hook['object'];
 				
@@ -35,17 +35,17 @@ class HookManager{
 	}
 	
 	private static function isAnyHooksRegistered($hookName){
-		if(isset(self::$hooks[$hookName]) and !empty(self::$hooks[$hookName])){
+		if(isset(static::$hooks[$hookName]) and !empty(static::$hooks[$hookName])){
 			return true;
 		}
 		return false;
 	}
 	
 	public static function isHookRegistered($hookName, $method, $object = null){
-		if(isset(self::$hooks[$hookName]) and 
-			!empty(self::$hooks[$hookName]) and
-			self::$hooks[$hookName]["method"] == $method and  
-			self::$hooks[$hookName]["object"] == $object){
+		if(isset(static::$hooks[$hookName]) and 
+			!empty(static::$hooks[$hookName]) and
+			static::$hooks[$hookName]["method"] == $method and  
+			static::$hooks[$hookName]["object"] == $object){
 				return true;
 		}
 		return false;

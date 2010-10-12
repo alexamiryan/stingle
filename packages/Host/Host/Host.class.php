@@ -14,13 +14,13 @@ class Host{
 				throw new InvalidIntegerArgumentException("host_id argument should be an integer.");
 			}
 			$sql = MySqlDbManager::getQueryObject();
-			$sql->exec("SELECT * FROM `".self::TBL_HOSTS ."` WHERE `id` = '{$host_id}'");
+			$sql->exec("SELECT * FROM `".static::TBL_HOSTS ."` WHERE `id` = '{$host_id}'");
 			if($sql->countRecords()){
 				$res = $sql->fetchRecord();
-				self::setData($res, $this);
+				static::setData($res, $this);
 			}
 			else{
-				throw new InvalidArgumentException("Wrong host id is given. No record with id: $host_id in table ".self::TBL_HOSTS );				
+				throw new InvalidArgumentException("Wrong host id is given. No record with id: $host_id in table ".static::TBL_HOSTS );				
 			}
 		}
 	}

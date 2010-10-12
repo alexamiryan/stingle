@@ -29,15 +29,15 @@ class Chat extends DbAccessor{
 	}
 
 	private function archiveCache(){
-		$this->query->exec("LOCK TABLES `".self::TBL_MAIN."` WRITE,
-										`".self::TBL_ARCHIVE."` WRITE");
-		$this->query->exec("SELECT COUNT(`id`) AS msg_count FROM `" . self::TBL_MAIN . "`");
+		$this->query->exec("LOCK TABLES `".static::TBL_MAIN."` WRITE,
+										`".static::TBL_ARCHIVE."` WRITE");
+		$this->query->exec("SELECT COUNT(`id`) AS msg_count FROM `" . static::TBL_MAIN . "`");
 		$msg_count = $this->query->fetchField("msg_count");
 		if($msg_count >= $this->cache_count + $this->messages_count){
-			$this->query->exec("SELECT UNIX_TIMESTAMP(`insert_date`) AS `udate` FROM `" . $self::TBL_MAIN. "` ORDER BY `insert_date` ASC LIMIT " . $this->cache_count . ", 1");
+			$this->query->exec("SELECT UNIX_TIMESTAMP(`insert_date`) AS `udate` FROM `" . $static::TBL_MAIN. "` ORDER BY `insert_date` ASC LIMIT " . $this->cache_count . ", 1");
 			if(($date = $this->query->fetchField("udate"))){
-				if($this->query->exec("INSERT INTO `" . self::TBL_ARCHIVE . "` SELECT `transaction_id`,`sender`,`message`,`insert_date` FROM `" . self::TBL_MAIN . "` WHERE UNIX_TIMESTAMP(`insert_date`)< '$date'")){
-					$this->query->exec("DELETE from `" . self::TBL_MAIN . "` WHERE UNIX_TIMESTAMP(`insert_date`) < '$date'");
+				if($this->query->exec("INSERT INTO `" . static::TBL_ARCHIVE . "` SELECT `transaction_id`,`sender`,`message`,`insert_date` FROM `" . static::TBL_MAIN . "` WHERE UNIX_TIMESTAMP(`insert_date`)< '$date'")){
+					$this->query->exec("DELETE from `" . static::TBL_MAIN . "` WHERE UNIX_TIMESTAMP(`insert_date`) < '$date'");
 					$this->query->exec("UNLOCK TABLES");
 					return true;
 				}
@@ -52,13 +52,13 @@ class Chat extends DbAccessor{
 
 	private function getTableQuery($value){
 		switch($value){
-			case self::ARCHIVE_MESSAGES :
-				return "SELECT * FROM `" . self::TBL_ARCHIVE . "`";
-			case self::ALL_MESSAGES :
-				return "SELECT `transaction_id`,`sender`,`message`,`insert_date` FROM `" . self::TBL_MAIN . "` UNION SELECT `transaction_id`,`sender`,`message`,`insert_date` FROM `" . self::TBL_ARCHIVE . "`";
-			case self::LIVE_MESSAGES :
+			case static::ARCHIVE_MESSAGES :
+				return "SELECT * FROM `" . static::TBL_ARCHIVE . "`";
+			case static::ALL_MESSAGES :
+				return "SELECT `transaction_id`,`sender`,`message`,`insert_date` FROM `" . static::TBL_MAIN . "` UNION SELECT `transaction_id`,`sender`,`message`,`insert_date` FROM `" . static::TBL_ARCHIVE . "`";
+			case static::LIVE_MESSAGES :
 			default :
-				return "SELECT * FROM `" . self::TBL_MAIN . "`";
+				return "SELECT * FROM `" . static::TBL_MAIN . "`";
 		}
 	}
 
@@ -126,7 +126,7 @@ class Chat extends DbAccessor{
 
 	public function send($transaction_id, $sender, $message){
 		$this->archiveCache();
-		$this->query->exec("INSERT INTO `" . self::TBL_MAIN . "` (`transaction_id`, `sender`, `message`, `insert_date`) VALUES ('$transaction_id', '$sender', '$message', now())");
+		$this->query->exec("INSERT INTO `" . static::TBL_MAIN . "` (`transaction_id`, `sender`, `message`, `insert_date`) VALUES ('$transaction_id', '$sender', '$message', now())");
 		if($this->query->affected() == 1){
 			return $this->query->getLastInsertId();
 		}
@@ -188,7 +188,7 @@ class Chat extends DbAccessor{
 	public function makeRead($id_array){
 		if(count($id_array)){
 			foreach($id_array as $id){
-				$this->query->exec("UPDATE `".self::TBL_MAIN."` SET `read`=1 WHERE `id` = '$id'");
+				$this->query->exec("UPDATE `".static::TBL_MAIN."` SET `read`=1 WHERE `id` = '$id'");
 			}
 		}
 	}
@@ -202,12 +202,12 @@ class Chat extends DbAccessor{
 	 */
 	public function updateOnlineList($transaction_id, $field){
 		$now = time();
-		$this->query->exec("UPDATE `" . self::TBL_ONLINE . "` SET `$field`='$now' WHERE `id`='$transaction_id'");
+		$this->query->exec("UPDATE `" . static::TBL_ONLINE . "` SET `$field`='$now' WHERE `id`='$transaction_id'");
 		return $now;
 	}
 
 	function getTransaction($transaction_id){
-		$this->query->exec("SELECT * FROM `" . self::TBL_ONLINE . "` WHERE `id`='$transaction_id'");
+		$this->query->exec("SELECT * FROM `" . static::TBL_ONLINE . "` WHERE `id`='$transaction_id'");
 		if(($tran = $this->query->fetchRecord())){
 			return $tran;
 		}
@@ -217,7 +217,7 @@ class Chat extends DbAccessor{
 	}
 
 	public function getLastPing($transaction_id, $field){
-		$this->query->exec("SELECT `$field` FROM `" . self::TBL_ONLINE . "` WHERE `id`='$transaction_id'");
+		$this->query->exec("SELECT `$field` FROM `" . static::TBL_ONLINE . "` WHERE `id`='$transaction_id'");
 		if($this->query->countRecords() != 0){
 			return $this->query->fetchField($field);
 		}
@@ -227,7 +227,7 @@ class Chat extends DbAccessor{
 	}
 
 	public function deleteFromOnlineList($transaction_id){
-		if($this->query->exec("DELETE FROM `" . self::TBL_ONLINE . "` WHERE `id`='$transaction_id'")){
+		if($this->query->exec("DELETE FROM `" . static::TBL_ONLINE . "` WHERE `id`='$transaction_id'")){
 			return true;
 		}
 		else{
@@ -238,7 +238,7 @@ class Chat extends DbAccessor{
 	public function deleteArchive(){
 		$arguments = func_get_args();
 
-		$sql_query = "DELETE FROM `" . self::TBL_ARCHIVE . "`";
+		$sql_query = "DELETE FROM `" . static::TBL_ARCHIVE . "`";
 		$where_array = $this->getWhereClause($arguments);
 		if(isset($where_array["sql_query"])){
 			$sql_query .= " WHERE " . $where_array["sql_query"];

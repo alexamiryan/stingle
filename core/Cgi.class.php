@@ -1,5 +1,5 @@
 <?
-class Debug
+class Cgi
 {
 	private static $mode;
 	

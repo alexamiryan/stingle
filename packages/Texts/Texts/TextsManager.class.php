@@ -182,7 +182,7 @@ class  TextsManager extends DbAccessor{
 							WHERE  hl.host_id = ".$host->id,$cacheMinutes);
 			while ($rec = $this->query->fetchRecord()) {
 				if(empty($rec["value"])){
-					$rec["value"] = self::EMPTY_TEXT_FLAG ;
+					$rec["value"] = static::EMPTY_TEXT_FLAG ;
 				}
 				$values[$rec["lang_id"]] = array("hl_id"=>$rec["unic_id"], "value"=>$rec["value"],
 				"value_id"=>$rec["value_id"],"default"=>$rec["default"]);

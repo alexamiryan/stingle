@@ -9,7 +9,7 @@ class SessionLogger extends Logger
 		if($id === null){
 			$id = 0;
 			foreach($_SESSION as $key => $value){
-				preg_match("/".self::$prefix."(\d+)/", $key, $matches);
+				preg_match("/".static::$prefix."(\d+)/", $key, $matches);
 				if($matches[0] == $key and $matches[1] >= $id){
 					$id = $matches[1] + 1;
 				}
@@ -19,19 +19,19 @@ class SessionLogger extends Logger
 	}
 	
 	public static function setPrefix($prefix){
-		self::$prefix = $prefix;
+		static::$prefix = $prefix;
 	}
 	
 	public function log($message){
-		if(!is_array($_SESSION[self::$prefix . $this->id])){
-			$_SESSION[self::$prefix . $this->id] = array();
+		if(!is_array($_SESSION[static::$prefix . $this->id])){
+			$_SESSION[static::$prefix . $this->id] = array();
 		}
-		array_push($_SESSION[self::$prefix . $this->id], $message);
+		array_push($_SESSION[static::$prefix . $this->id], $message);
 	}
 	
 	public function getLog(){
-		if(is_array($_SESSION[self::$prefix . $this->id])){
-			return $_SESSION[self::$prefix . $this->id];
+		if(is_array($_SESSION[static::$prefix . $this->id])){
+			return $_SESSION[static::$prefix . $this->id];
 		}
 		else{
 			return array();
@@ -39,7 +39,7 @@ class SessionLogger extends Logger
 	}
 	
 	public function clearLog(){
-		$_SESSION[self::$prefix . $this->id] = array();
+		$_SESSION[static::$prefix . $this->id] = array();
 	}
 }
 

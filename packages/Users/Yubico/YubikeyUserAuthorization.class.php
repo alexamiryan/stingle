@@ -74,12 +74,12 @@ class YubikeyUserAuthorization extends UserAuthorization{
 			$available_yubikeys = $this->getAvailableYubikeysList($this->usr->getId());
 			try{
 				if(!in_array($this->getYubikeyKeyByOTP($yubikeyOTP), $available_yubikeys)){
-					throw new RuntimeException("Invalid Yubikey", self::EXCEPTION_INVALID_YUBIKEY);
+					throw new RuntimeException("Invalid Yubikey", static::EXCEPTION_INVALID_YUBIKEY);
 				}
 				else{
 					$authResult = $this->authYubikey->verify($yubikeyOTP);
 					if (PEAR::isError($authResult)) {
-						throw new RuntimeException("Yubikey Validation Failed", self::EXCEPTION_INVALID_YUBIKEY);
+						throw new RuntimeException("Yubikey Validation Failed", static::EXCEPTION_INVALID_YUBIKEY);
 					}
 				}
 			}
@@ -98,13 +98,13 @@ class YubikeyUserAuthorization extends UserAuthorization{
 	public function isYubikeyRequired($user_id, $cacheMinutes = null){
 		$this->query->exec("SELECT count(*) AS `cnt`
 								FROM `".UserManagement::TBL_USERS_GROUPS."` `ug`
-								INNER JOIN `".self::TBL_AUTH_GROUPS."` `yag` ON (`ug`.`group_id` = `yag`.`group_id`)
+								INNER JOIN `".static::TBL_AUTH_GROUPS."` `yag` ON (`ug`.`group_id` = `yag`.`group_id`)
 								WHERE `ug`.`user_id`='$user_id'",
 							$cacheMinutes);
 		$groups_count = $this->query->fetchField("cnt");
 		
 		$this->query->exec("SELECT count(*) AS `cnt`
-								FROM `".self::TBL_AUTH_USERS."` `yau`
+								FROM `".static::TBL_AUTH_USERS."` `yau`
 								WHERE `yau`.`user_id`='$user_id'",
 							$cacheMinutes);
 		$users_count = $this->query->fetchField("cnt");
@@ -125,14 +125,14 @@ class YubikeyUserAuthorization extends UserAuthorization{
 	protected function getAvailableYubikeysList($user_id, $cacheMinutes = null){
 		$this->query->exec("SELECT `yk`.`key`
 								FROM `".UserManagement::TBL_USERS_GROUPS."` `ug`
-								INNER JOIN `".self::TBL_KEYS_TO_GROUPS."` `yg` ON (`ug`.`group_id` = `yg`.`group_id`)
-								INNER JOIN `".self::TBL_KEYS."` `yk`  ON (`yk`.`id` = `yg`.`yubikey_id`)
-								WHERE `ug`.`user_id`='$user_id' AND `yk`.`status` = '".self::STATUS_YUBIKEY_ENABLED."'
+								INNER JOIN `".static::TBL_KEYS_TO_GROUPS."` `yg` ON (`ug`.`group_id` = `yg`.`group_id`)
+								INNER JOIN `".static::TBL_KEYS."` `yk`  ON (`yk`.`id` = `yg`.`yubikey_id`)
+								WHERE `ug`.`user_id`='$user_id' AND `yk`.`status` = '".static::STATUS_YUBIKEY_ENABLED."'
 							UNION
 							SELECT `yk`.`key`
-								FROM `".self::TBL_KEYS_TO_USERS."` `yu`
-								INNER JOIN `".self::TBL_KEYS."` `yk` ON (`yu`.`yubikey_id` = `yk`.`id`)
-								WHERE `yu`.`user_id`='$user_id'  AND `yk`.`status` = '".self::STATUS_YUBIKEY_ENABLED."'",
+								FROM `".static::TBL_KEYS_TO_USERS."` `yu`
+								INNER JOIN `".static::TBL_KEYS."` `yk` ON (`yu`.`yubikey_id` = `yk`.`id`)
+								WHERE `yu`.`user_id`='$user_id'  AND `yk`.`status` = '".static::STATUS_YUBIKEY_ENABLED."'",
 							$cacheMinutes);
 		return $this->query->fetchFields("key");
 	}

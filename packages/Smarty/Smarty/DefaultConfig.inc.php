@@ -2,7 +2,7 @@
 $defaultConfig = array(	'compile_dir' => "cache/templates_compile/",
 						'cache_dir' => "cache/templates_cache/",
 						'template_dir' => "templates/",
-						'default_layout' => "general",
+						'default_layout' => "clean",
 						'default_plugins_dir' => STINGLE_PATH . 'smarty_plugins/',
 						'pluginDirs' => array('incs/smarty_local_plugins/'),
 						

@@ -111,7 +111,7 @@ class RewriteURL{
 		$strUrl = '';
 		$vars = array();
 		parse_str($url['query'], $vars);
-		while(list($k, $v) = each($vars)){
+		while((list($k, $v) = each($vars)) != false){
 			if(in_array($k, array(static::getSystemModuleName(), static::getSystemPageName()))){
 				$strUrl .= $v . "/";
 			}

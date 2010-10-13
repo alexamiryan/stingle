@@ -5,6 +5,10 @@ class LoaderGps extends Loader{
 		require_once ('Gps.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('Gps');
+	}
+	
 	protected function loadGps(){
 		$this->gps = new Gps();
 		Reg::register($this->config->Objects->Gps, $this->gps);

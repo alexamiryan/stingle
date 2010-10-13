@@ -6,6 +6,10 @@ class LoaderMessaging extends Loader{
 		require_once ('MessageFilter.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('MessageManagement');
+	}
+	
 	protected function loadMessageManagement(){
 		$messageManagement = new MessageManagement();
 		Reg::register($this->config->Objects->MessageManagement, $messageManagement);

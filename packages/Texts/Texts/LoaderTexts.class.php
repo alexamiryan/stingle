@@ -5,6 +5,10 @@ class LoaderTexts extends Loader{
 		require_once ('TextsManager.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('Text');
+	}
+	
 	protected function loadTextsManager(){
 		$hostConfig = ConfigManager::getConfig("Host");
 		$languageConfig = ConfigManager::getConfig("Language");

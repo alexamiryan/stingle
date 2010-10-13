@@ -19,8 +19,8 @@ class UserProfile extends Profile{
 	 *
 	 * @param integer $user_id
 	 */
-	public function __construct($userId = 0, $cacheMinutes = 0){
-		parent::__construct();
+	public function __construct($userId = 0, $cacheMinutes = 0, $dbInstanceKey = null){
+		parent::__construct($dbInstanceKey);
 		
 		if(!is_numeric($userId)){
 			throw new InvalidArgumentException("Received invalid user_id");
@@ -36,7 +36,7 @@ class UserProfile extends Profile{
 	 *
 	 */
 	private function initUserAnswers($cacheMinutes = 0){
-		$this->query->exec("SELECT `profile_id` FROM `".static::TBL_PROFILE_SAVE."` WHERE `user_id`='{$this->userId}'", $cacheMinutes);
+		$this->query->exec("SELECT `profile_id` FROM `".Tbl::get('TBL_PROFILE_SAVE')."` WHERE `user_id`='{$this->userId}'", $cacheMinutes);
 		$this->profileAnswers = $this->query->fetchFields("profile_id");
 	}
 	
@@ -87,11 +87,11 @@ class UserProfile extends Profile{
 	 */
 	public function setAnswersByIds($answers){
 		if(is_array($answers)){
-			$this->query->exec("DELETE FROM `".static::TBL_PROFILE_SAVE."` WHERE `user_id`='{$this->userId}'");
+			$this->query->exec("DELETE FROM `".Tbl::get('TBL_PROFILE_SAVE')."` WHERE `user_id`='{$this->userId}'");
 			
 			foreach($answers as $answer){
 				if(is_numeric($answer)){
-					$this->query->exec("INSERT INTO `".static::TBL_PROFILE_SAVE."` (`user_id`,`profile_id`) VALUES('{$this->userId}','$answer')");
+					$this->query->exec("INSERT INTO `".Tbl::get('TBL_PROFILE_SAVE')."` (`user_id`,`profile_id`) VALUES('{$this->userId}','$answer')");
 				}
 			}
 			$this->initUserAnswers();

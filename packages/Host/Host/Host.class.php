@@ -8,19 +8,19 @@ class Host{
 
 	const TBL_HOSTS = "hosts";
 
-	function __construct($host_id = null){
+	function __construct($host_id = null, $dbInstanceKey = null){
 		if($host_id !== null){
 			if(!is_numeric($host_id)){
 				throw new InvalidIntegerArgumentException("host_id argument should be an integer.");
 			}
-			$sql = MySqlDbManager::getQueryObject();
-			$sql->exec("SELECT * FROM `".static::TBL_HOSTS ."` WHERE `id` = '{$host_id}'");
+			$sql = MySqlDbManager::getQueryObject($dbInstanceKey);
+			$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS') ."` WHERE `id` = '{$host_id}'");
 			if($sql->countRecords()){
 				$res = $sql->fetchRecord();
 				static::setData($res, $this);
 			}
 			else{
-				throw new InvalidArgumentException("Wrong host id is given. No record with id: $host_id in table ".static::TBL_HOSTS );				
+				throw new InvalidArgumentException("Wrong host id is given. No record with id: $host_id in table ".Tbl::get('TBL_HOSTS') );				
 			}
 		}
 	}

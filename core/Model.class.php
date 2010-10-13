@@ -6,7 +6,7 @@ abstract class Model
 		$reflection = new ReflectionClass(get_called_class());
 		foreach($reflection->getConstants() as $key=>$value){
 			if(substr($key, 0, strlen($constNameBegins)) == $constNameBegins){
-				array_push($returnArray, array($key=>$value));
+				$returnArray[$key] = $value;
 			}
 		}
 		return $returnArray;

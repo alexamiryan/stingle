@@ -5,6 +5,10 @@ class LoaderPageInfo extends Loader{
 		require_once ('PageInfoManager.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('PageInfo');
+	}
+	
 	protected function loadPageInfo(){
 		$hostConfig = ConfigManager::getConfig("Host");
 		$languageConfig = ConfigManager::getConfig("Language");

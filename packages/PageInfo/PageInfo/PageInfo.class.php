@@ -6,8 +6,8 @@ class PageInfo extends DbAccessor
 	
 	const TBL_PAGE_INFO = "site_pages_info";
 	
-	public  function __construct(Host $host, Language $language){
-		parent::__construct();
+	public  function __construct(Host $host, Language $language, $dbInstanceKey = null){
+		parent::__construct($dbInstanceKey);
 
 		$this->host = $host;
 		$this->language = $language;
@@ -18,19 +18,19 @@ class PageInfo extends DbAccessor
 		if(empty($module) or empty($page)){
 			throw new InvalidArrayArgumentException("module or page can not be empty");
 		}
-		if($info = $this->getExact($module, $page)){
+		if(($info = $this->getExact($module, $page)) != false){
 			return $info;
 		}
-		if($info = $this->getModuleDefault($module)){
+		if(($info = $this->getModuleDefault($module)) != false){
 			return $info;
 		}
-		if($info = $this->getHostLangDefault()){
+		if(($info = $this->getHostLangDefault()) != false){
 			return $info;
 		}
-		if($info = $this->getLangDefault()){
+		if(($info = $this->getLangDefault()) != false){
 			return $info;
 		}
-		if($info = $this->getDefault()){
+		if(($info = $this->getDefault()) != false){
 			return $info;
 		}
 		return array("title"=>'',"meta_keywords"=>'',"meta_description"=>'');
@@ -71,11 +71,12 @@ class PageInfo extends DbAccessor
 		$module_where = "module ". ($module === null ? "IS NULL " : "='".$module."'");
 		$page_where = "page ". ($page === null ? "IS NULL " : "='".$page."'");
 		
-		$query = "SELECT `title`,	`meta_keywords`, `meta_description` FROM `".static::TBL_PAGE_INFO."` 
-		WHERE  ".$lang_where."
-		AND ".$host_where."
-		AND ".$module_where."
-		AND ".$page_where;
+		$query = "SELECT `title`,	`meta_keywords`, `meta_description` FROM `".Tbl::get('TBL_PAGE_INFO')."` 
+					WHERE  ".$lang_where."
+					AND ".$host_where."
+					AND ".$module_where."
+					AND ".$page_where;
+		
 		return $query;
 	}
 }

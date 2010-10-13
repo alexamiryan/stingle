@@ -6,6 +6,10 @@ class LoaderChat extends Loader{
 		require_once ('Chat.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('Chat');
+	}
+	
 	protected function loadChat(){
 		Reg::register($this->config->Objects->Chat, new Chat());
 	}

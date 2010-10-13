@@ -70,8 +70,8 @@ class PhotoManager extends DbAccessor{
 	 *				$config['dirs'][0]['minImgWidth']	= 40; // is not currently used
 	 *				$config['dirs'][0]['minImgHeight']	= 30; // is not currently used
 	 */
-	public function __construct($config){
-		parent::__construct();
+	public function __construct($config, $dbInstanceKey = null){
+		parent::__construct($dbInstanceKey);
 
 		$this->imageBkgDir = $config->image_bkg_dir;
 		$this->maxPhotoNumber = $config->max_photo_count;

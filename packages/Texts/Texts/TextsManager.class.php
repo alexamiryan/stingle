@@ -10,8 +10,8 @@ class  TextsManager extends DbAccessor{
 	private $host; 		//Host object
 	private $language; //Language object
 
-	public  function __construct(Host $host, Language $language){
-		parent::__construct();
+	public  function __construct(Host $host, Language $language, $dbInstanceKey = null){
+		parent::__construct($dbInstanceKey);
 
 		$this->host = $host;
 		$this->language = $language;
@@ -74,8 +74,8 @@ class  TextsManager extends DbAccessor{
 		if(!is_numeric($text_id) or !is_numeric($lang_id) or !is_numeric($host_id) ){
 			throw new InvalidIntegerArgumentException("Method arguments must be integer!!!");
 		}
-		$this->query->exec("SELECT `display` FROM ".Text::TBL_TEXTS_VALUES ." tv
-							LEFT JOIN `".HostLanguageManager::TBL_HOST_LANGUAGE ."` hl ON hl.`id`=tv.`host_language` 
+		$this->query->exec("SELECT `display` FROM ".Tbl::get('TBL_TEXTS_VALUES', 'Text') ." tv
+							LEFT JOIN `".Tbl::get('TBL_HOST_LANGUAGE', 'HostLanguageManager') ."` hl ON hl.`id`=tv.`host_language` 
 							WHERE `text_id`  = $text_id AND hl.`host_id` = $host_id AND hl.`lang_id` = $lang_id",$cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchField("display");
@@ -93,25 +93,17 @@ class  TextsManager extends DbAccessor{
 	}
 
 	public function setDisplay($text_id, $host_language_id,$display){
-		$this->query->exec("INSERT INTO `".Text::TBL_TEXTS_VALUES ."` (`text_id`,`host_language`,`display`)
+		$this->query->exec("INSERT INTO `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` (`text_id`,`host_language`,`display`)
 							VALUES ('$text_id','$host_language_id','$display') 
 							ON DUPLICATE KEY UPDATE `display`='$display'");
-	}
-
-	public function setDefault($text_id, $host_language_id){
-		$this->query->exec("UPDATE `".Text::TBL_TEXTS_VALUES ."` SET `default`=0 WHERE `text_id`  = $text_id");
-
-		$this->query->exec("INSERT INTO `".Text::TBL_TEXTS_VALUES ."` (`text_id`,`host_language`,`default`)
-							VALUES ('$text_id','$host_language_id','$default') 
-							ON DUPLICATE KEY UPDATE `default`='1'");
 	}
 
 	public function isAliased($text_id, $host_lang_id){
 		if(!is_numeric($text_id) or !is_numeric($host_lang_id)){
 			throw new InvalidArgumentException("No numeric arguments given");
 		}
-		$this->query->exec("SELECT tv.id FROM `".Text::TBL_TEXTS_VALUES ."` tv
-							RIGHT JOIN ".Text::TBL_TEXTS_ALIASES ." ta ON tv.id = ta.value_id
+		$this->query->exec("SELECT tv.id FROM `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` tv
+							RIGHT JOIN ".Tbl::get('TBL_TEXTS_ALIASES', 'Text') ." ta ON tv.id = ta.value_id
 							WHERE ta.host_language = '$host_lang_id' AND tv.text_id = '$text_id'");
 		if($this->query->countRecords() == 1){
 			return true;
@@ -124,7 +116,7 @@ class  TextsManager extends DbAccessor{
 		if(!is_numeric($value_id)){
 			throw new InvalidArgumentException("value_id argument mast be integer");
 		}
-		$this->query->exec("DELETE FROM `". Text::TBL_TEXTS_ALIASES ."` WHERE value_id=".$value_id);
+		$this->query->exec("DELETE FROM `". Tbl::get('TBL_TEXTS_ALIASES', 'Text') ."` WHERE value_id=".$value_id);
 		if(!empty($hl_ids)){
 			if(!is_array($hl_ids)){
 				throw new InvalidArgumentException("hl_ids mast be an array");
@@ -132,7 +124,7 @@ class  TextsManager extends DbAccessor{
 			foreach ($hl_ids as $hl_id){
 				$values[]= "('$value_id','".intval($hl_id)."')";
 			}
-			$this->query->exec("INSERT INTO `". Text::TBL_TEXTS_ALIASES ."` (value_id, host_language)
+			$this->query->exec("INSERT INTO `". Tbl::get('TBL_TEXTS_ALIASES', 'Text') ."` (value_id, host_language)
 							VALUES ".implode(", ",$values)."");
 		}
 	}
@@ -141,7 +133,7 @@ class  TextsManager extends DbAccessor{
 		if(!is_numeric($text_id) or !is_numeric($host_language_id)){
 			throw new InvalidIntegerArgumentException("text id and host_language_id should be an integer. text_id: ". $text_id ." and host_lang_id:".$host_language_id." given.");
 		}
-		$this->query->exec("SELECT id FROM `".Text::TBL_TEXTS_VALUES ."` WHERE `text_id` = {$text_id} AND `host_language`={$host_language_id}");
+		$this->query->exec("SELECT id FROM `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` WHERE `text_id` = {$text_id} AND `host_language`={$host_language_id}");
 		return $this->query->fetchField("id");
 	}
 
@@ -149,7 +141,7 @@ class  TextsManager extends DbAccessor{
 		if(!is_numeric($text_id) or !is_numeric($host_language_id)){
 			throw new InvalidIntegerArgumentException("text id and host_language_id should be an integer. text_id: ". $text_id ." and host_lang_id:".$host_language_id." given.");
 		}
-		$this->query->exec("INSERT INTO `".Text::TBL_TEXTS_VALUES ."` (`text_id`,`value`,`host_language`)
+		$this->query->exec("INSERT INTO `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` (`text_id`,`value`,`host_language`)
 							VALUES ('$text_id','".mysql_real_escape_string($value)."','$host_language_id') 
 							ON DUPLICATE KEY UPDATE `value`='".mysql_real_escape_string($value)."'");
 	}
@@ -158,7 +150,7 @@ class  TextsManager extends DbAccessor{
 		if(!is_numeric($val_id)){
 			throw new InvalidIntegerArgumentException("value id should be an integer. ". $val_id ." given");
 		}
-		$this->query->exec("DELETE FROM `".Text::TBL_TEXTS_VALUES ."` WHERE id=".$val_id);
+		$this->query->exec("DELETE FROM `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` WHERE id=".$val_id);
 	}
 
 
@@ -177,10 +169,10 @@ class  TextsManager extends DbAccessor{
 			
 			$text_id = Text::getTextId($textName);
 
-			$this->query->exec("SELECT tv.*, tv.id value_id, hl.lang_id, hl.id unic_id  FROM `".HostLanguageManager::TBL_HOST_LANGUAGE ."` hl
-							LEFT JOIN `".Text::TBL_TEXTS_VALUES ."` tv ON (hl.`id`=tv.`host_language` AND tv.text_id=$text_id)
+			$this->query->exec("SELECT tv.*, tv.id value_id, hl.lang_id, hl.id unic_id  FROM `".Tbl::get('TBL_HOST_LANGUAGE', 'HostLanguageManager') ."` hl
+							LEFT JOIN `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` tv ON (hl.`id`=tv.`host_language` AND tv.text_id=$text_id)
 							WHERE  hl.host_id = ".$host->id,$cacheMinutes);
-			while ($rec = $this->query->fetchRecord()) {
+			while (($rec = $this->query->fetchRecord()) != false) {
 				if(empty($rec["value"])){
 					$rec["value"] = static::EMPTY_TEXT_FLAG ;
 				}
@@ -197,8 +189,8 @@ class  TextsManager extends DbAccessor{
 		if(!is_numeric($text_id) or !is_numeric($host_lang_id)){
 			throw new InvalidIntegerArgumentException("Method arguments must be integer!!!");
 		}
-		$this->query->exec("SELECT tv.`value` FROM `".TEXT::TBL_TEXTS_ALIASES."` ta
-					LEFT JOIN `".TEXT::TBL_TEXTS_VALUES."` tv ON tv.id = ta.value_id 
+		$this->query->exec("SELECT tv.`value` FROM `".Tbl::get('TBL_TEXTS_ALIASES', 'TEXT')."` ta
+					LEFT JOIN `".Tbl::get('TBL_TEXTS_VALUES', 'TEXT')."` tv ON tv.id = ta.value_id 
 					 WHERE ta.`host_language` = $host_lang_id 
 					AND text_id = $text_id");
 		return $this->query->fetchField("value");
@@ -208,8 +200,8 @@ class  TextsManager extends DbAccessor{
 		if(!is_numeric($text_id) or !is_numeric($lang_id) or !is_numeric($host_id) ){
 			throw new InvalidIntegerArgumentException("Method arguments must be integer!!!");
 		}
-		$this->query->exec("SELECT `value` FROM ".Text::TBL_TEXTS_VALUES ." tv
-							LEFT JOIN `".HostLanguageManager::TBL_HOST_LANGUAGE ."` hl ON hl.`id`=tv.`host_language` 
+		$this->query->exec("SELECT `value` FROM ".Tbl::get('TBL_TEXTS_VALUES', 'Text') ." tv
+							LEFT JOIN `".Tbl::get('TBL_HOST_LANGUAGE', 'HostLanguageManager') ."` hl ON hl.`id`=tv.`host_language` 
 							WHERE `text_id`  = $text_id AND hl.`host_id` = $host_id AND hl.`lang_id` = $lang_id",$cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchField("value");
@@ -220,7 +212,7 @@ class  TextsManager extends DbAccessor{
 		if(!is_numeric($text_id)){
 			throw new InvalidIntegerArgumentException("text_id argument must be integer.");
 		}
-		$this->query->exec("SELECT `value` FROM `".Text::TBL_TEXTS_VALUES ."` WHERE `text_id` = {$text_id} AND `default`=1");
+		$this->query->exec("SELECT `value` FROM `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` WHERE `text_id` = {$text_id} AND `default`=1");
 		if($this->query->countRecords()){
 			return $this->query->fetchField("value");
 		}
@@ -233,7 +225,7 @@ class  TextsManager extends DbAccessor{
 
 
 	private function textNameExists($textName){
-		if($this->query->exec("SELECT count(*) as `count` FROM `".Text::TBL_TEXTS ."` WHERE `name`='$textName'")){
+		if($this->query->exec("SELECT count(*) as `count` FROM `".Tbl::get('TBL_TEXTS', 'Text') ."` WHERE `name`='$textName'")){
 			if($this->query->fetchField("count") == 1){
 				return true;
 			}

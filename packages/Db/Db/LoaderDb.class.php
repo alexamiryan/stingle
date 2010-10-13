@@ -2,6 +2,7 @@
 class LoaderDb extends Loader{
 	protected function includes(){
 		require_once ('MySqlDbManager.class.php');
+		require_once ('Tbl.class.php');
 		require_once ('DbAccessor.class.php');
 		require_once ('MySqlDatabase.class.php');
 		require_once ('MySqlException.class.php');

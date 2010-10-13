@@ -5,6 +5,10 @@ class LoaderRewriteAliasURL extends Loader{
 		require_once ('RewriteAliasMap.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('RewriteAliasMap');
+	}
+	
 	protected function loadaliasMap(){
 		$hostConfig = ConfigManager::getConfig("Host","Host");
 		

@@ -13,8 +13,8 @@ class Chat extends Filterable
 	const FILTER_MESSAGE_FIELD = "message";
 	const FILTER_READ_FIELD = "read";
 	
-	public function __construct(){
-		parent::__construct();
+	public function __construct($dbInstanceKey = null){
+		parent::__construct($dbInstanceKey);
 	}
 	
 	protected function getFilterableFieldAlias($field){
@@ -37,7 +37,7 @@ class Chat extends Filterable
 		}
 		
 		$unreadsCount = $this->query->exec("	SELECT COUNT(*) as `cnt` 
-												FROM `".self::TBL_CHAT."` 
+												FROM `".Tbl::get('TBL_CHAT')."` 
 												WHERE `receiver_user_id`='$receiverUserId' and `read`=0")->fetchField('cnt');
 		if($unreadsCount > 0){
 			return true;
@@ -51,7 +51,7 @@ class Chat extends Filterable
 		}
 		
 		$unreadsInfo = $this->query->exec("	SELECT `sender_user_id`, COUNT(`sender_user_id`) as `unread_count` 
-												FROM `".self::TBL_CHAT."` 
+												FROM `".Tbl::get('TBL_CHAT')."` 
 												WHERE 	`receiver_user_id`='$receiverUserId' and 
 														`read`=0
 												GROUP BY `sender_user_id`")->fetchRecords();
@@ -68,7 +68,7 @@ class Chat extends Filterable
 		}
 		
 		$unreadMessages = $this->query->exec("	SELECT *, UNIX_TIMESTAMP(`datetime`) as `timestamp` 
-												FROM `".self::TBL_CHAT."` 
+												FROM `".Tbl::get('TBL_CHAT')."` 
 												WHERE 	`receiver_user_id`='$receiverUserId' and 
 														`sender_user_id`='$senderUserId' and
 														`read`=0");
@@ -99,7 +99,7 @@ class Chat extends Filterable
 			throw new InvalidArgumentException("Invalid lastReceivedMessageId specified!");
 		}
 		
-		$this->query->exec("	UPDATE `".self::TBL_CHAT."`
+		$this->query->exec("	UPDATE `".Tbl::get('TBL_CHAT')."`
 								SET `read` = 1 
 								WHERE 	`receiver_user_id`='$receiverUserId' and 
 										`sender_user_id`='$senderUserId' and
@@ -114,14 +114,14 @@ class Chat extends Filterable
 			throw new InvalidArgumentException("Invalid receiverUserId specified!");
 		}
 		
-		$this->query->exec("	INSERT INTO `".self::TBL_CHAT."`
+		$this->query->exec("	INSERT INTO `".Tbl::get('TBL_CHAT')."`
 										(`sender_user_id`, `receiver_user_id`, `message`) 
 								VALUES	('{$chatMessage->senderUserId}', '{$chatMessage->receiverUserId}', '{$chatMessage->message}')");
 	}
 	
 	public function getChatMessage($chatMessageId){
 		$messageRow = $this->query->exec("	SELECT *, UNIX_TIMESTAMP(`datetime`) as `timestamp` 
-												FROM `".self::TBL_CHAT."` 
+												FROM `".Tbl::get('TBL_CHAT')."` 
 												WHERE 	`id`='$chatMessageId'");
 		$chatMessageObj = new ChatMessage();
 		$chatMessageObj->id = $messageRow['id'];

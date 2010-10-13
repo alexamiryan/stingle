@@ -3,9 +3,9 @@ class LanguageManager extends DbAccessor {
 
 	protected $language; //Language object
 
-	public function __construct(Language $language=null){
+	public function __construct(Language $language=null, $dbInstanceKey = null){
 
-		parent::__construct();
+		parent::__construct($dbInstanceKey);
 		
 		if($language === null){
 			$shortName = false;
@@ -47,7 +47,7 @@ class LanguageManager extends DbAccessor {
 			throw new EmptyArgumentException();
 		}
 
-		$this->query->exec("INSERT INTO `".Language::TBL_LANGUAGES ."` (`name`, `description`)
+		$this->query->exec("INSERT INTO `".Tbl::get("TBL_LANGUAGES", "Language") ."` (`name`, `description`)
 							VALUES ('$language->shortName', '$language->longName')");
 
 		return $this->query->getLastInsertId();
@@ -65,7 +65,7 @@ class LanguageManager extends DbAccessor {
 	public function deleteLanguage(Language $language){
 		$lang_id = $language->id;
 
-		$this->query->exec("DELETE FROM `".Language::TBL_LANGUAGES ."` WHERE `id`='$lang_id'");
+		$this->query->exec("DELETE FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` WHERE `id`='$lang_id'");
 	}
 
 	public function getLanguage(){
@@ -101,7 +101,7 @@ class LanguageManager extends DbAccessor {
 	 */
 	public function languageExists($language, $cacheMinutes = null){
 		if(is_numeric($language)){
-			$this->query->exec("SELECT `name` FROM `".Language::TBL_LANGUAGES ."` WHERE `id`='$language'", $cacheMinutes);
+			$this->query->exec("SELECT `name` FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` WHERE `id`='$language'", $cacheMinutes);
 			if($this->query->countRecords()){
 				return true;
 			}
@@ -110,7 +110,7 @@ class LanguageManager extends DbAccessor {
 			}
 		}
 		else{
-			$this->query->exec("SELECT `id` FROM `".Language::TBL_LANGUAGES ."` WHERE `name`='$language'", $cacheMinutes);
+			$this->query->exec("SELECT `id` FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` WHERE `name`='$language'", $cacheMinutes);
 			if($this->query->countRecords()){
 				return true;
 			}
@@ -128,7 +128,7 @@ class LanguageManager extends DbAccessor {
 	 * @param array $types Type IDs
 	 * @return array
 	 */
-	public function getAllConsts(array $types = null, $cacheMinutes = null){
+	public function getAllConsts(array $types = null, $language = null, $cacheMinutes = null){
 		return $this->getConstsList($types, $language, false, null, $cacheMinutes);
 	}
 	
@@ -144,7 +144,6 @@ class LanguageManager extends DbAccessor {
 	 * @access public
 	 * @return array
 	 *
-	 * @TODO implement order functionality
 	 */
 	public function getConstsList($types = null, $language = null, $existing_only = false, MysqlPager $pager = null, $cacheMinutes = null){
 
@@ -160,7 +159,7 @@ class LanguageManager extends DbAccessor {
 		}
 
 		if($existing_only === true){
-			$consts_count = $this->getConstsCount($types, $lang_id, null, $cacheMinutes);
+			$consts_count = $this->getConstsCount($types, $language->id, null, $cacheMinutes);
 		}
 		else{
 			$consts_count = $this->getConstsCount($types, null,null, $cacheMinutes);
@@ -172,8 +171,8 @@ class LanguageManager extends DbAccessor {
 
 		$query = "SELECT lc.`id`, lc.`key`, lc.`type`,
 						 cv.`value`, cv.`lang_id`
-					FROM `".Constant::TBL_CONSTANTS."` lc
-					JOIN `".Constant::TBL_VALUES."` cv
+					FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` lc
+					JOIN `".Tbl::get("TBL_VALUES", "Constant")."` cv
 					USING (`id`)
 					WHERE cv.`lang_id`='$language->id'
 					$types_query";
@@ -195,7 +194,6 @@ class LanguageManager extends DbAccessor {
 						HAVING cv.`lang_id` = MIN(cv.`lang_id`) )";
 		}
 
-		//TODO implement order functionality
 		$query .= " ORDER BY `id` DESC";
 
 		if($pager !== null){
@@ -243,8 +241,8 @@ class LanguageManager extends DbAccessor {
 		}
 		
 		$this->query->exec("SELECT cv.`value`
-							FROM `".Constant::TBL_CONSTANTS."` lc
-							JOIN `".Constant::TBL_VALUES ."` cv
+							FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` lc
+							JOIN `".Tbl::get("TBL_VALUES", "Constant") ."` cv
 							USING (`id`)
 							WHERE lc.`key`='$key'
 							AND cv.`lang_id`='{$language->id}'", $cacheMinutes);
@@ -297,7 +295,7 @@ class LanguageManager extends DbAccessor {
 			throw new InvalidArgumentException("Specified key does not exist.");
 		}
 
-		$this->query->exec("SELECT `id` FROM `".Constant::TBL_CONSTANTS."` WHERE `key`='$key'", $cacheMinutes);
+		$this->query->exec("SELECT `id` FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key`='$key'", $cacheMinutes);
 		return $this->query->fetchField("id");
 	}
 
@@ -310,7 +308,7 @@ class LanguageManager extends DbAccessor {
 	 * @return boolean
 	 */
 	public function keyExists($key, $cacheMinutes = null){
-		$this->query->exec("SELECT COUNT(`id`) as cnt FROM `".Constant::TBL_CONSTANTS."` WHERE `key`='$key'", $cacheMinutes);
+		$this->query->exec("SELECT COUNT(`id`) as cnt FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key`='$key'", $cacheMinutes);
 		if($this->query->fetchField("cnt")){
 			return true;
 		}
@@ -331,7 +329,7 @@ class LanguageManager extends DbAccessor {
 	public function valueExists($id, $language, $cacheMinutes = null){
 		$lang_id = $this->parseLanguage($language);
 		$this->query->exec("SELECT COUNT(*) AS value_exists
-							FROM `".Constant::TBL_VALUES."`
+							FROM `".Tbl::get("TBL_VALUES", "Constant")."`
 							WHERE `id`='$id'
 							AND `lang_id`='$lang_id'", $cacheMinutes);
 
@@ -371,7 +369,7 @@ class LanguageManager extends DbAccessor {
 	 * @return integer Key ID
 	 */
 	protected function createKey($key, $type){
-		$this->query->exec("INSERT INTO `".Constant::TBL_CONSTANTS."` (`key`, `type`) VALUES ('$key', '$type')");
+		$this->query->exec("INSERT INTO `".Tbl::get("TBL_CONSTANTS", "Constant")."` (`key`, `type`) VALUES ('$key', '$type')");
 		return $this->query->getLastInsertId();
 	}
 
@@ -388,9 +386,9 @@ class LanguageManager extends DbAccessor {
 	 * @return boolean
 	 */
 	protected function createValue($key, $value, $lang_id){
-		$this->query->exec("INSERT INTO `".Constant::TBL_VALUES."` (`id`, `lang_id`, `value`)
+		$this->query->exec("INSERT INTO `".Tbl::get("TBL_VALUES", "Constant")."` (`id`, `lang_id`, `value`)
 							SELECT
-								(SELECT `id` FROM `".Constant::TBL_CONSTANTS."` WHERE `key` = '$key') as `id`,
+								(SELECT `id` FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key` = '$key') as `id`,
 								'$lang_id',
 								'$value'");
 	}
@@ -404,7 +402,7 @@ class LanguageManager extends DbAccessor {
 	 * @return void
 	 */
 	protected function removeKey($key){
-		$this->query->exec("DELETE FROM `".Constant::TBL_CONSTANTS."` WHERE `key`='$key'");
+		$this->query->exec("DELETE FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key`='$key'");
 	}
 
 	/**
@@ -417,7 +415,7 @@ class LanguageManager extends DbAccessor {
 			throw new InvalidArgumentException("Passed key doesn't exist");
 		}
 		$this->query->exec("SELECT `type`
-							FROM `{".Constant::TBL_CONSTANTS."}`
+							FROM `{".Tbl::get("TBL_CONSTANTS", "Constant")."}`
 							WHERE `key`='$key'", $cacheMinutes);
 		return $this->query->fetchField("type");
 	}
@@ -497,7 +495,7 @@ class LanguageManager extends DbAccessor {
 			return true;
 		}
 
-		$query = "UPDATE `".Constant::TBL_VALUES."` SET";
+		$query = "UPDATE `".Tbl::get("TBL_VALUES", "Constant")."` SET";
 		if($value !== null){
 			$query .= " `value`='$value',";
 		}
@@ -506,7 +504,7 @@ class LanguageManager extends DbAccessor {
 		}
 		// Removing last comma
 		$query = substr($query, 0, -1);
-		$query .= " WHERE `id`=(SELECT `id` FROM `".Constant::TBL_CONSTANTS."` WHERE `key`='{$identifier["key"]}')
+		$query .= " WHERE `id`=(SELECT `id` FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key`='{$identifier["key"]}')
 					AND `lang_id`='{$identifier["lang_id"]}'";
 
 		$this->query->exec($query);
@@ -535,7 +533,7 @@ class LanguageManager extends DbAccessor {
 			return true;
 		}
 
-		$query = "UPDATE `".Constant::TBL_CONSTANTS."` SET";
+		$query = "UPDATE `".Tbl::get("TBL_CONSTANTS", "Constant")."` SET";
 		if($new_key !== null){
 			$query .= " `key`='$new_key',";
 		}
@@ -566,8 +564,6 @@ class LanguageManager extends DbAccessor {
 	 * @access public
 	 * @return boolean
 	 *
-	 * @TODO change $identifier to filter instance for LanguageConstantsManagement
-	 * @TODO change all transaction queries to function from MySqlQuery when
 	 * 		 transaction functions moved from MySqlDatabase to MySqlQuery
 	 */
 	public function updateConstant(array $identifier, $key = null, $value = null, $language = null, $type = null){
@@ -630,8 +626,8 @@ class LanguageManager extends DbAccessor {
 			throw new InvalidArrayArgumentException();
 		}
 
-		$tables = " `".Constant::TBL_CONSTANTS."` lc
-					JOIN `".Constant::TBL_VALUES."` cv
+		$tables = " `".Tbl::get("TBL_CONSTANTS", "Constant")."` lc
+					JOIN `".Tbl::get("TBL_VALUES", "Constant")."` cv
 					USING (`id`)";
 		$where_clause = " WHERE `key`='{$identifier["key"]}'";
 
@@ -649,13 +645,13 @@ class LanguageManager extends DbAccessor {
 			}
 			else{
 				$this->query->exec("DELETE FROM
-										`".Constant::TBL_CONSTANTS."`
+										`".Tbl::get("TBL_CONSTANTS", "Constant")."`
 									$where_clause");
 			}
 		}
 		else{
 			$this->query->exec("DELETE FROM
-									`".Constant::TBL_CONSTANTS."`
+									`".Tbl::get("TBL_CONSTANTS", "Constant")."`
 								$where_clause");
 		}
 
@@ -707,13 +703,12 @@ class LanguageManager extends DbAccessor {
 	 * @param string $additional_where Mysql where clause
 	 * @return integer
 	 *
-	 * @todo Make filter for this function
 	 */
 	public function getConstsCount(array $types = null, $language = null,$additional_where = null, $cacheMinutes = null){
 
 		$query = "SELECT COUNT(*) as `count`
-					FROM `".Constant::TBL_CONSTANTS ."` lc
-					JOIN `".Constant::TBL_VALUES ."` cv
+					FROM `".Tbl::get("TBL_CONSTANTS", "Constant") ."` lc
+					JOIN `".Tbl::get("TBL_VALUES", "Constant") ."` cv
 					USING (`id`)";
 
 		if($language !== null){
@@ -755,11 +750,9 @@ class LanguageManager extends DbAccessor {
 	 * @param integer $length Length of fetched constants list
 	 * @param string $additional_where Mysql where clause
 	 *
-	 * @todo create filter for language manager
 	 * @access public
 	 * @return array
 	 *
-	 * @TODO implement order functionality
 	 */
 	public function search(
 		array $types = null, $language = null,
@@ -769,8 +762,8 @@ class LanguageManager extends DbAccessor {
 
 		$query = "SELECT lc.`id`, lc.`key`, lc.`type`,
 					 	cv.`value`, cv.`lang_id`
-					FROM `".Constant::TBL_CONSTANTS."` lc
-					JOIN `".Constant::TBL_VALUES ."` cv
+					FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` lc
+					JOIN `".Tbl::get("TBL_VALUES", "Constant") ."` cv
 					USING (`id`)";
 
 		if($language !== null){
@@ -801,7 +794,6 @@ class LanguageManager extends DbAccessor {
 			return array();
 		}
 
-		//TODO implement order functionality
 		$query .= " ORDER BY `id` DESC";
 
 		$this->absoluteOffsetLength($offset, $length, $consts_count);

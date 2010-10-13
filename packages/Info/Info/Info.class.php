@@ -15,7 +15,7 @@ class Info
 		if(!empty($session_variable)){
 			$sess_obj=unserialize($this->sess_ref);
 			if(is_object($sess_obj)){
-				if(($el_arr=$sess_obj->getAll(false))){
+				if(($el_arr=$sess_obj->getAll(false)) != false){
 					$this->elements=$el_arr;
 				}
 			}

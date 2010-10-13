@@ -1,6 +1,11 @@
 <?php
 class MessageManagement extends Filterable
 {
+	
+	const TBL_MESSAGES = "wmsg_messages";
+	const TBL_EXTRA = "wmsg_extra";
+	
+	
 	/**
 	 * Filterable fields
 	 */
@@ -31,44 +36,14 @@ class MessageManagement extends Filterable
 	const STATUS_DELETED_UNDELETED = 0;
 
 	/**
-	 *
-	 * @var string
-	 */
-	protected $messages_table = "wmsg_messages";
-
-	/**
-	 *
-	 * @var string
-	 */
-	protected $extra_table = "wmsg_extra";
-
-	/**
-	 *
-	 * @var string
-	 */
-	protected $drafts_table = "wmsg_draft";
-
-	/**
-	 *
-	 * @var string
-	 */
-	protected $deleted_table = "wmsg_trash";
-
-	/**
-	 *
-	 * @var string
-	 */
-	protected $attachs_table = "wmsg_attachs";
-
-	/**
 	 * Class constructor
 	 *
 	 * @return Message Object
 	 * @package PHP Web Messaging System Managment Class
 	 * @version 1.2
 	 */
-	public function __construct() {
-		parent::__construct();
+	public function __construct($dbInstanceKey = null) {
+		parent::__construct($dbInstanceKey);
 	}
 
 	protected function getFilterableFieldAlias($field){
@@ -95,8 +70,8 @@ class MessageManagement extends Filterable
 	 * @return Integer $message_id or Boolean FALSE, if something is wrong
 	 */
 	private function createMessage($subject, $message){
-		if($this->query->exec("insert into `" . $this->messages_table . "` (`subject`, `message`, `date`) values ('$subject', '$message', '".time()."')")){
-			if(($id = $this->query->getLastInsertId())){
+		if($this->query->exec("insert into `" . Tbl::get('TBL_MESSAGES') . "` (`subject`, `message`, `date`) values ('$subject', '$message', '".time()."')")){
+			if(($id = $this->query->getLastInsertId()) != false){
 				return $id;
 			}
 			else{
@@ -121,7 +96,7 @@ class MessageManagement extends Filterable
 		else{
 			$message_id = intval($param);
 		}
-		if($this->query->exec("delete from `" . $this->messages_table . "` where `id`=" . $message_id)){
+		if($this->query->exec("delete from `" . Tbl::get('TBL_MESSAGES') . "` where `id`=" . $message_id)){
 			return true;
 		}
 		else{
@@ -149,7 +124,7 @@ class MessageManagement extends Filterable
 
 		array_unshift($receivers, $sender);
 		if(!empty($receivers)){
-			$sql_query = "insert into `" . $this->extra_table . "` (`message_id`, `receiver`, `sender`";
+			$sql_query = "insert into `" . Tbl::get('TBL_EXTRA') . "` (`message_id`, `receiver`, `sender`";
 			if($replied != 0){
 				$sql_query .= ", `replied`";
 			}
@@ -191,8 +166,8 @@ class MessageManagement extends Filterable
 		else{
 			$message_id = intval($param);
 		}
-		if($this->query->exec("UPDATE `" . $this->extra_table . "` SET `deleted`=1 WHERE `message_id`=$message_id AND `receiver`=" . intval($receiver))){
-			$this->query->exec("SELECT COUNT(`message_id`) as `count` FROM `$this->extra_table` WHERE `message_id`=$message_id and `deleted`=0");
+		if($this->query->exec("UPDATE `" . Tbl::get('TBL_EXTRA') . "` SET `deleted`=1 WHERE `message_id`=$message_id AND `receiver`=" . intval($receiver))){
+			$this->query->exec("SELECT COUNT(`message_id`) as `count` FROM `".Tbl::get('TBL_EXTRA')."` WHERE `message_id`=$message_id and `deleted`=0");
 			if($this->query->fetchField("count") == 0){
 				$this->deleteMessage($message_id);
 			}
@@ -217,7 +192,7 @@ class MessageManagement extends Filterable
 		else{
 			$message_id = intval($param);
 		}
-		if($this->query->exec("update `" . $this->extra_table . "` set `trashed`=1 where `message_id`=" . $message_id . " and `receiver`=" . intval($receiver))){
+		if($this->query->exec("update `" . Tbl::get('TBL_EXTRA') . "` set `trashed`=1 where `message_id`=" . $message_id . " and `receiver`=" . intval($receiver))){
 			return true;
 		}
 		else{
@@ -239,7 +214,7 @@ class MessageManagement extends Filterable
 		else{
 			$message_id = intval($param);
 		}
-		if($this->query->exec("update `" . $this->extra_table . "` set `trashed`=0 where `message_id`=" . $message_id . " and `receiver`=" . intval($receiver))){
+		if($this->query->exec("update `" . Tbl::get('TBL_EXTRA') . "` set `trashed`=0 where `message_id`=" . $message_id . " and `receiver`=" . intval($receiver))){
 			return true;
 		}
 		else{
@@ -258,7 +233,7 @@ class MessageManagement extends Filterable
 	 * @return Boolean
 	 */
 	public function send($sender, $receivers, $subject, $message){
-		if(($msg_id = $this->createMessage($subject, $message))){
+		if(($msg_id = $this->createMessage($subject, $message)) != false){
 			if($this->createDuplicates($msg_id, $sender, $receivers)){
 				return $msg_id;
 			}
@@ -292,7 +267,7 @@ class MessageManagement extends Filterable
 			$parent = $this->getMessage($parent_id);
 		}
 
-		if(($msg_id = $this->createMessage($subject, $message))){
+		if(($msg_id = $this->createMessage($subject, $message)) != false){
 			if($this->createDuplicates($msg_id, $replyer, $parent->sender, $parent_id)){
 				return $msg_id;
 			}
@@ -327,7 +302,7 @@ class MessageManagement extends Filterable
 			$status = 0;
 		}
 
-		if($this->query->exec("update `" . $this->extra_table . "` set `read`=" . $status . " where `message_id`=" . $msg->getId() . " and `receiver`=" . intval($receiver))){
+		if($this->query->exec("update `" . Tbl::get('TBL_EXTRA') . "` set `read`=" . $status . " where `message_id`=" . $msg->getId() . " and `receiver`=" . intval($receiver))){
 			$msg->read = $status;
 			return $msg;
 		}
@@ -349,7 +324,7 @@ class MessageManagement extends Filterable
 			$message_id = intval($param);
 		}
 
-		$this->query->exec("select `read` from `" . $this->extra_table . "` where `receiver`=" . intval($receiver) . " and `message_id`=" . $message_id, $cacheMinutes);
+		$this->query->exec("select `read` from `" . Tbl::get('TBL_EXTRA') . "` where `receiver`=" . intval($receiver) . " and `message_id`=" . $message_id, $cacheMinutes);
 		if($this->query->fetchField("read")){
 			return true;
 		}
@@ -373,7 +348,7 @@ class MessageManagement extends Filterable
 			$message_id = intval($param);
 		}
 
-		$this->query->exec("select `trashed` from `" . $this->extra_table . "` where `receiver`=" . intval($receiver) . " and `message_id`=" . $message_id, $cacheMinutes);
+		$this->query->exec("select `trashed` from `" . Tbl::get('TBL_EXTRA') . "` where `receiver`=" . intval($receiver) . " and `message_id`=" . $message_id, $cacheMinutes);
 		if($this->query->fetchField("trashed")){
 			return true;
 		}
@@ -385,9 +360,9 @@ class MessageManagement extends Filterable
 	public function getMessage($id, $cacheMinutes = 0){
 		$sql_query = "SELECT main.*, extra.`sender`, extra.`replied`
 						FROM
-							`" . $this->messages_table . "` main
+							`" . Tbl::get('TBL_MESSAGES') . "` main
 						LEFT JOIN
-							`" . $this->extra_table . "` extra
+							`" . Tbl::get('TBL_EXTRA') . "` extra
 						ON (main.`id` = extra.`message_id`)
 						WHERE main.`id` = '" . intval($id) . "'
 						AND extra.`sender` = extra.`receiver`";
@@ -396,7 +371,7 @@ class MessageManagement extends Filterable
 			return false;
 		}
 
-		if(($message = $this->query->fetchRecord())){
+		if(($message = $this->query->fetchRecord()) != false){
 			$msg = new Message();
 			$msg->setId($message["id"]);
 			$msg->sender = $message["sender"];
@@ -442,7 +417,7 @@ class MessageManagement extends Filterable
 		}
 
 		$this->query->exec("SELECT COUNT(*) as cnt
-							FROM `" . $this->extra_table . "`
+							FROM `" . Tbl::get('TBL_EXTRA') . "`
 							WHERE `receiver`<>`sender`
 							AND `replied`='{$message_id}'", $cacheMinutes);
 
@@ -471,8 +446,8 @@ class MessageManagement extends Filterable
 			$with_sender = " and `receiver`<>`sender`";
 		}
 
-		$this->query->exec("select `receiver` from `" . $this->extra_table . "` where `message_id`=" . $message_id . $with_sender, $cacheMinutes);
-		while(($receiver = $this->query->fetchField("receiver"))){
+		$this->query->exec("select `receiver` from `" . Tbl::get('TBL_EXTRA') . "` where `message_id`=" . $message_id . $with_sender, $cacheMinutes);
+		while(($receiver = $this->query->fetchField("receiver")) != false){
 			$receivers[] = $receiver;
 		}
 
@@ -485,7 +460,7 @@ class MessageManagement extends Filterable
 	}
 
 	public function messageExists($message_id, $cacheMinutes = 0){
-		$this->query->exec("SELECT COUNT(`id`) AS cnt FROM `" . $this->messages_table . "` WHERE `id`={$message_id}", $cacheMinutes);
+		$this->query->exec("SELECT COUNT(`id`) AS cnt FROM `" . Tbl::get('TBL_MESSAGES') . "` WHERE `id`={$message_id}", $cacheMinutes);
 		if($this->query->fetchField("cnt") == 0){
 			return false;
 		}
@@ -495,7 +470,7 @@ class MessageManagement extends Filterable
 	}
 
 	public function getApproximateMessagesCount($cacheMinutes = 0){
-		$this->query->exec("SHOW TABLE STATUS LIKE '{$this->messages_table}'", $cacheMinutes);
+		$this->query->exec("SHOW TABLE STATUS LIKE '".Tbl::get('TBL_MESSAGES')."'", $cacheMinutes);
 		return $this->query->fetchField("Rows");
 	}
 
@@ -507,8 +482,8 @@ class MessageManagement extends Filterable
 	 */
 	public function getMessagesCount(MessageFilter $filter = null, $cacheMinutes = 0){
 		$sqlQuery = "SELECT count(*) as `cnt`
-					FROM `{$this->messages_table}` main
-					LEFT JOIN `{$this->extra_table}` extra
+					FROM `".Tbl::get('TBL_MESSAGES')."` main
+					LEFT JOIN `".Tbl::get('TBL_EXTRA')."` extra
 					ON (main.`id` = extra.`message_id`)
 					{$this->generateJoins($filter)}
 					WHERE 1 {$this->generateWhere($filter)}";
@@ -535,8 +510,8 @@ class MessageManagement extends Filterable
 		}
 
 		$sqlQuery = "SELECT $selectFields
-					FROM `{$this->messages_table}` main
-					LEFT JOIN `{$this->extra_table}` extra
+					FROM `".Tbl::get('TBL_MESSAGES')."` main
+					LEFT JOIN `".Tbl::get('TBL_EXTRA')."` extra
 					ON (main.`id` = extra.`message_id`)
 					{$this->generateJoins($filter)}
 					WHERE 1

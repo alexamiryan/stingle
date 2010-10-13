@@ -6,6 +6,12 @@ class LoaderLanguage extends Loader{
 		require_once ('LanguageManager.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('Language');
+		Tbl::registerTableNames('Constant');
+		Tbl::registerTableNames('LanguageManager');
+	}
+	
 	protected function loadLanguageManager(){
 		Reg::register($this->config->Objects->LanguageManager, new LanguageManager());
 	}

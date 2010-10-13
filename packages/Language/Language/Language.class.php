@@ -12,13 +12,13 @@ class Language extends DbAccessor{
 			if(!is_numeric($lang_id)){
 				throw new InvalidIntegerArgumentException("lang_id argument should be an integer.");
 			}
-			$this->query->exec("SELECT * FROM `".static::TBL_LANGUAGES ."` WHERE `id` = '{$lang_id}'", $cacheMinutes);
+			$this->query->exec("SELECT * FROM `". Tbl::get('TBL_LANGUAGES') ."` WHERE `id` = '{$lang_id}'", $cacheMinutes);
 			if($this->query->countRecords()){
 				$data = $this->query->fetchRecord();
 				static::setData($data, $this);
 			}
 			else{
-				throw new RuntimeException("Wrong languge id is given. No record with id: $lang_id in table ".static::TBL_LANGUAGES );				
+				throw new RuntimeException("Wrong languge id is given. No record with id: $lang_id in table ".Tbl::get('TBL_LANGUAGES') );				
 			}
 			
 		}
@@ -48,7 +48,7 @@ class Language extends DbAccessor{
 			throw new EmptyArgumentException("Empty shortName argument.");
 		}
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT * FROM `".static::TBL_LANGUAGES ."` WHERE `name` = '{$shortName}'", $cacheMinutes);
+		$sql->exec("SELECT * FROM `".Tbl::get('TBL_LANGUAGES') ."` WHERE `name` = '{$shortName}'", $cacheMinutes);
 		if($sql->countRecords()){
 			$l = new Language();
 			$data = $sql->fetchRecord();
@@ -61,8 +61,8 @@ class Language extends DbAccessor{
 	public static function getAllLanguages($cacheMinutes = null){
 		$languages = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT * FROM `".static::TBL_LANGUAGES ."`", $cacheMinutes);
-		while($lang_data = $sql->fetchRecord()){
+		$sql->exec("SELECT * FROM `".Tbl::get('TBL_LANGUAGES') ."`", $cacheMinutes);
+		while(($lang_data = $sql->fetchRecord()) != false){
 			$l = new Language();
 			static::setData($lang_data, $l);
 			$languages[] = $l;			

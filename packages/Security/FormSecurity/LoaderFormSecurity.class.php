@@ -5,6 +5,10 @@ class LoaderFormSecurity extends Loader{
 		require_once ('FormSecurity.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('FormSecurity');
+	}
+	
 	protected function loadFormSecurity(){
 		Reg::register($this->config->Objects->formSecurity, new FormSecurity());
 	}

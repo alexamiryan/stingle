@@ -5,6 +5,10 @@ class LoaderHost extends Loader{
 		require_once ('HostManager.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('Host');
+	}
+	
 	protected function loadPageUrl(){
 		$protocol 	= HostManager::protocol();
 		$this->pageUrl = $protocol . HostManager::pageURL();

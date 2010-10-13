@@ -1,10 +1,9 @@
 <?
 class HostManager{
-
 	
 	public static function getHostByName($hostName){
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT * FROM `".Host::TBL_HOSTS  ."` WHERE `host` = '{$hostName}'");
+		$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS', 'Host')  ."` WHERE `host` = '{$hostName}'");
 		if($sql->countRecords()){
 			$data = $sql->fetchRecord();
 			$host = new Host();
@@ -21,8 +20,8 @@ class HostManager{
 	public static function getAllHosts(){
 		$hosts = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT * FROM `".Host::TBL_HOSTS."`");
-		while(($host_data = $sql->fetchRecord())){
+		$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS', 'Host')."`");
+		while(($host_data = $sql->fetchRecord()) != false){
 			$h = new Host();
 			Host::setData($host_data, $h);
 			$hosts[] = $h;

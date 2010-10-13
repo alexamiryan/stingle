@@ -63,6 +63,16 @@ $stingle_autoloadList = array (
       array (
       ),
     ),
+    'Cgi' => 
+    array (
+      'path' => './stingle/core/Cgi.class.php',
+      'extends' => 
+      array (
+      ),
+      'implements' => 
+      array (
+      ),
+    ),
     'InvalidArrayArgumentException' => 
     array (
       'path' => './stingle/core/Exceptions/InvalidArrayArgumentException.class.php',

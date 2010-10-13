@@ -5,6 +5,10 @@ class LoaderYubico extends Loader{
 		require_once ('YubikeyUserAuthorization.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('YubikeyUserAuthorization');
+	}
+	
 	protected function loadYubikeyUserAuthorization(){
 		$usersConfig = ConfigManager::getConfig("Users","Users");
 		

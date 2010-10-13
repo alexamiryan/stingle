@@ -15,7 +15,7 @@ class PageInfoManager extends PageInfo
 	public static function getLanguageHosts(Language $lang){
 		$hosts = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT h.* FROM `".parent::TBL_PAGE_INFO."` pi 
+		$sql->exec("SELECT h.* FROM `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` pi 
 					LEFT JOIN `".Host::TBL_HOSTS."` h ON h.id = pi.host_id 
 					WHERE pi.lang_id='{$lang->id}' AND pi.host_id IS NOT NULL
 					GROUP BY h.id");	
@@ -31,7 +31,7 @@ class PageInfoManager extends PageInfo
 	public static function getModules(Language $lang, Host $host){
 		$modules = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT pi.module FROM `".parent::TBL_PAGE_INFO."` pi 
+		$sql->exec("SELECT pi.module FROM `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` pi 
 					WHERE pi.lang_id='$lang->id' AND pi.host_id ='$host->id' AND pi.module IS NOT NULL
 					GROUP BY pi.module");
 		if($sql->countRecords()){	
@@ -43,7 +43,7 @@ class PageInfoManager extends PageInfo
 	public static function getModulePages(Language $lang, Host $host, $module){
 		$pages = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT pi.page FROM `".parent::TBL_PAGE_INFO."` pi 
+		$sql->exec("SELECT pi.page FROM `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` pi 
 					WHERE pi.lang_id='{$lang->id}' AND pi.host_id ='$host->id' AND pi.module='$module' AND pi.page IS NOT NULL
 					GROUP BY pi.page");	
 		if($sql->countRecords()){	
@@ -56,15 +56,15 @@ class PageInfoManager extends PageInfo
 		$sql = MySqlDbManager::getQueryObject();
 				
 		if($lang === null){
-			if($id = static::exists()){
+			if(($id = static::exists()) != false){
 				$query =  static::updateQueryString($pageInfo, $id);
 			}
 			else{
 				$query =  static::insertQueryString($pageInfo);
 			}
 		}
-		elseif ($host === null){
-			if($id = static::exists($lang->id)){
+		elseif (($host === null) != false){
+			if(($id = static::exists($lang->id)) != false){
 				$query =  static::updateQueryString($pageInfo, $id);
 			}
 			else{
@@ -72,7 +72,7 @@ class PageInfoManager extends PageInfo
 			}			
 		}
 		else{
-			if($id = static::exists($lang->id,$host->id, $module, $page)){
+			if(($id = static::exists($lang->id,$host->id, $module, $page)) != false){
 				$query =  static::updateQueryString($pageInfo, $id);
 			}
 			else{
@@ -100,7 +100,7 @@ class PageInfoManager extends PageInfo
 		$page_where = "page ". ($page === null ? "IS NULL " : "='".$page."'");
 
 		$sql = MySqlDbManager::getQueryObject();
-		$query = "SELECT id FROM `".static::TBL_PAGE_INFO."` 
+		$query = "SELECT id FROM `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` 
 		WHERE  ".$lang_where."
 		AND ".$host_where."
 		AND ".$module_where."
@@ -128,13 +128,13 @@ class PageInfoManager extends PageInfo
 		$module = ($module === null? 'NULL' : "'".$module."'");
 		$page  	= ($page === null? 'NULL' : "'".$page."'");
 				
-		$query = "INSERT INTO `".static::TBL_PAGE_INFO."` (`lang_id`, `host_id`, `module`, `page`, `title`, `meta_keywords`, `meta_description`) 
+		$query = "INSERT INTO `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` (`lang_id`, `host_id`, `module`, `page`, `title`, `meta_keywords`, `meta_description`) 
 				VALUES ($langId, $hostId, $module, $page, '".mysql_real_escape_string($pageInfo['title'])."', '".mysql_real_escape_string($pageInfo['keywords'])."', '".mysql_real_escape_string($pageInfo['description'])."')";
 		return $query;
 	}
 	
 	private static function updateQueryString(array $pageInfo, $id){
-		$query = "UPDATE `".static::TBL_PAGE_INFO."` 
+		$query = "UPDATE `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` 
 		SET `title`='".mysql_real_escape_string($pageInfo['title'])."',  `meta_keywords` ='".mysql_real_escape_string($pageInfo['keywords'])."',  `meta_description`='".mysql_real_escape_string($pageInfo['description'])."'
 		WHERE id=".$id;
 		return $query;		

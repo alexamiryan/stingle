@@ -40,7 +40,7 @@ class User
 	}
 	
 	public function setId($id){
-		if(($id = intval($id))){
+		if(($id = intval($id)) != false){
 			$this->id = $id;
 		}
 		else{

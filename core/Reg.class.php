@@ -16,6 +16,12 @@ class Reg
 		static::$reg[$key] = $value;
 	}
 	
+	/**
+	 * 
+	 * @param string $key
+	 * @param bool $throwException
+	 * @return MysqlQuery|UserManagement|LanguageManager
+	 */
 	public static function get($key, $throwException = true){
 		if(!isset(static::$reg[$key]) or empty(static::$reg[$key])){
 			if($throwException){

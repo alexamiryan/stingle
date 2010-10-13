@@ -24,8 +24,8 @@ class Profile extends DbAccessor{
 	 * Class constructor
 	 *
 	 */
-	public function __construct(){
-		parent::__construct();
+	public function __construct($dbInstanceKey = null){
+		parent::__construct($dbInstanceKey);
 	}
 
 	/**
@@ -35,9 +35,9 @@ class Profile extends DbAccessor{
 	 */
 	public function getQuestions($cacheMinutes = 0){
 		$return_array = array();
-		$this->query->exec("SELECT * FROM `".static::TBL_PROFILE_KEYS."` ORDER BY `key`, `sort_id` ASC", $cacheMinutes);
+		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_PROFILE_KEYS')."` ORDER BY `key`, `sort_id` ASC", $cacheMinutes);
 		if($this->query->countRecords()){
-			while(($row = $this->query->fetchRecord())){
+			while(($row = $this->query->fetchRecord()) != false){
 				if(!isset($return_array[$row['key']])){
 					$return_array[$row['key']] = array("answers" => array(), "type" => $row['type']);
 				}
@@ -57,7 +57,7 @@ class Profile extends DbAccessor{
 			throw new InvalidArgumentException("\$question have to be string");
 		}
 
-		$this->query->exec("SELECT `value` FROM `".static::TBL_PROFILE_KEYS."` ORDER BY `sort_id` ASC", $cacheMinutes);
+		$this->query->exec("SELECT `value` FROM `".Tbl::get('TBL_PROFILE_KEYS')."` ORDER BY `sort_id` ASC", $cacheMinutes);
 		return $this->query->fetchFields("value");
 	}
 
@@ -71,7 +71,7 @@ class Profile extends DbAccessor{
 		if(empty($profile_id) or !is_numeric($profile_id)){
 			throw new InvalidArgumentException("\$profile have to be numeric id of the profile");
 		}
-		$this->query->exec("SELECT `key` FROM `".static::TBL_PROFILE_KEYS."` WHERE `id` = '$profile_id'", $cacheMinutes);
+		$this->query->exec("SELECT `key` FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `id` = '$profile_id'", $cacheMinutes);
 		return $this->query->fetchField("key");
 	}
 
@@ -85,7 +85,7 @@ class Profile extends DbAccessor{
 		if(empty($profile_id) or !is_numeric($profile_id)){
 			throw new InvalidArgumentException("\$profile have to be numeric id of the profile");
 		}
-		$this->query->exec("SELECT `value` FROM `".static::TBL_PROFILE_KEYS."` WHERE `id` = '$profile_id'", $cacheMinutes);
+		$this->query->exec("SELECT `value` FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `id` = '$profile_id'", $cacheMinutes);
 		return $this->query->fetchField("value");
 	}
 
@@ -107,7 +107,7 @@ class Profile extends DbAccessor{
 
 		$sort_id_counter = 10;
 		foreach($options as $answer){
-			$this->query->exec("INSERT INTO `".static::TBL_PROFILE_KEYS."`
+			$this->query->exec("INSERT INTO `".Tbl::get('TBL_PROFILE_KEYS')."`
 									(`key`, `value`, `type`, `sort_id`)
 									VALUES ('{$question}','$answer','$type','$sort_id_counter')");
 			$sort_id_counter += 10;
@@ -128,7 +128,7 @@ class Profile extends DbAccessor{
 			throw new InvalidArgumentException("\$new_sort_id have to be integer");
 		}
 
-		$this->query->exec("UPDATE `".static::TBL_PROFILE_KEYS."` SET `sort_id`='$new_sort_id' WHERE `id` = '$profile_id'");
+		$this->query->exec("UPDATE `".Tbl::get('TBL_PROFILE_KEYS')."` SET `sort_id`='$new_sort_id' WHERE `id` = '$profile_id'");
 	}
 
 	/**
@@ -146,13 +146,13 @@ class Profile extends DbAccessor{
 			throw new InvalidArgumentException("\$answer must not be a null string");
 		}
 
-		$this->query->exec("SELECT `type` FROM `".static::TBL_PROFILE_KEYS."` WHERE `key` = '$question' LIMIT 1");
+		$this->query->exec("SELECT `type` FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `key` = '$question' LIMIT 1");
 		if(!$this->query->countRecords()){
 			throw new OutOfRangeException("Can't add answer to non existent question");
 		}
 		$type = $this->query->fetchField("type");
 
-		$this->query->exec("INSERT INTO `".static::TBL_PROFILE_KEYS."`
+		$this->query->exec("INSERT INTO `".Tbl::get('TBL_PROFILE_KEYS')."`
 									(`key`, `value`, `type`, `sort_id`)
 									VALUES ('{$question}','$answer','$type','$sort_id')");
 	}
@@ -167,12 +167,12 @@ class Profile extends DbAccessor{
 			throw new InvalidArgumentException("\$question have be not null string");
 		}
 
-		$this->query->exec("SELECT `type` FROM `".static::TBL_PROFILE_KEYS."` WHERE `key` = '$question'");
+		$this->query->exec("SELECT `type` FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `key` = '$question'");
 		if(!$this->query->countRecords()){
 			throw new OutOfRangeException("Can't delete non existent question");
 		}
 
-		$this->query->exec("DELETE FROM `".static::TBL_PROFILE_KEYS."` WHERE `key` = '$question'");
+		$this->query->exec("DELETE FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `key` = '$question'");
 	}
 
 	/**
@@ -185,7 +185,7 @@ class Profile extends DbAccessor{
 			throw new InvalidArgumentException("\$profile have to be numeric id of the profile");
 		}
 
-		$this->query->exec("DELETE FROM `".static::TBL_PROFILE_KEYS."` WHERE `id` = '$profile_id'");
+		$this->query->exec("DELETE FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `id` = '$profile_id'");
 	}
 
 	/**
@@ -223,7 +223,7 @@ class Profile extends DbAccessor{
 			$additional_sql .= ", `sort_id`='$sort_id'";
 		}
 
-		$this->query->exec("UPDATE `".static::TBL_PROFILE_KEYS."`
+		$this->query->exec("UPDATE `".Tbl::get('TBL_PROFILE_KEYS')."`
 								SET `value`='$new_answer' $additional_sql
 								WHERE `id` = '$profile_id'");
 	}

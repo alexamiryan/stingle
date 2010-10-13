@@ -7,6 +7,10 @@ class LoaderUsers extends Loader{
 		require_once ('UsersFilter.class.php');
 	}
 	
+	protected function customInitBeforeObjects(){
+		Tbl::registerTableNames('UserManagement');
+	}
+	
 	protected function loadUserManagement(){
 		$this->userManagement = new UserManagement();
 		Reg::register($this->config->Objects->UserManagement, $this->userManagement);

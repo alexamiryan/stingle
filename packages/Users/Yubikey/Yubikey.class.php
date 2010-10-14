@@ -49,7 +49,9 @@ class Yubikey
 
 	public function __construct($id, $signatureKey = null)
 	{
-		if (is_int ($id) && $id > 0) $this->_id = $id;
+		if (is_numeric($id) && $id > 0){
+			$this->_id = $id;
+		}
 
 		if (strlen ($signatureKey) == 28)
 		{

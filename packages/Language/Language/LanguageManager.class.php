@@ -37,7 +37,7 @@ class LanguageManager extends DbAccessor {
 	 * Add new language to database.
 	 * Returns ID of the new language.
 	 *
-	 * @param Language object
+	 * @param Language $language
 	 *
 	 * @access public
 	 * @return integer
@@ -56,16 +56,14 @@ class LanguageManager extends DbAccessor {
 	/**
 	 * Deletes language by given ID or name
 	 *
-	 * @param Language object
+	 * @param Language $language
 	 *
 	 * @access public
 	 * @throws EmptyArgumentException, InvalidArgumentException
 	 * @return boolean
 	 */
 	public function deleteLanguage(Language $language){
-		$lang_id = $language->id;
-
-		$this->query->exec("DELETE FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` WHERE `id`='$lang_id'");
+		$this->query->exec("DELETE FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` WHERE `id`='{$language->id}'");
 	}
 
 	public function getLanguage(){
@@ -94,29 +92,18 @@ class LanguageManager extends DbAccessor {
 	/**
 	 * Returns flag, wheter language with given id or name exists
 	 *
-	 * @param integer|string $language (can be ID or shortName)
+	 * @param string $language_short_name
 	 *
 	 * @access public
 	 * @return boolean
 	 */
-	public function languageExists($language, $cacheMinutes = null){
-		if(is_numeric($language)){
-			$this->query->exec("SELECT `name` FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` WHERE `id`='$language'", $cacheMinutes);
-			if($this->query->countRecords()){
-				return true;
-			}
-			else{
-				return false;
-			}
+	public function languageExists($language_short_name, $cacheMinutes = null){
+		$this->query->exec("SELECT COUNT(*) as `cnt` FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` WHERE `name`='$language_short_name'", $cacheMinutes);
+		if($this->query->fetchField('cnt') > 0){
+			return true;
 		}
 		else{
-			$this->query->exec("SELECT `id` FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` WHERE `name`='$language'", $cacheMinutes);
-			if($this->query->countRecords()){
-				return true;
-			}
-			else{
-				return false;
-			}
+			return false;
 		}
 	}
 	
@@ -124,11 +111,11 @@ class LanguageManager extends DbAccessor {
 	 * Returns assoc array with all constants of given language and types
 	 * If $language is not given default language is taken
 	 *
-	 * @param integer|string $language Language ID or name
 	 * @param array $types Type IDs
+	 * @param Language $language
 	 * @return array
 	 */
-	public function getAllConsts(array $types = null, $language = null, $cacheMinutes = null){
+	public function getAllConsts(array $types = null, Language $language = null, $cacheMinutes = null){
 		return $this->getConstsList($types, $language, false, null, $cacheMinutes);
 	}
 	
@@ -137,7 +124,7 @@ class LanguageManager extends DbAccessor {
 	 * for given parameters.
 	 *
 	 * @param array $types Types of constants. All available types if empty
-	 * @param $language Language. If language is not specified default language taken.
+	 * @param Language $language
 	 * @param boolean $existing_only Gets all available constants which are not defined in current language if the value is false.
 	 * @param MysqlPager $pager
 	 *
@@ -145,7 +132,7 @@ class LanguageManager extends DbAccessor {
 	 * @return array
 	 *
 	 */
-	public function getConstsList($types = null, $language = null, $existing_only = false, MysqlPager $pager = null, $cacheMinutes = null){
+	public function getConstsList($types = null, Language $language = null, $existing_only = false, MysqlPager $pager = null, $cacheMinutes = null){
 
 		if($language === null){
 			$language = $this->language;
@@ -267,18 +254,17 @@ class LanguageManager extends DbAccessor {
 	 *
 	 * @param string $key Constant key
 	 * @param string $value Constant new value
-	 * @param integer|string $language Language ID or name
+	 * @param Language $language Language ID or name
 	 *
 	 * @access public
 	 * @return boolean
 	 */
-	public function setValueOf($key, $value, $language){
+	public function setValueOf($key, $value, Language $language){
 		if(empty($key)){
-			throw new EmptyArgumentException();
+			throw new InvalidArgumentException("\$key have to be non empty string.");
 		}
-		$lang_id = $this->parseLanguage($language);
 
-		$this->updateValuesRow(array("key" => $key, "lang_id" => $lang_id), $value);
+		$this->updateValuesRow($key, $language, $value);
 	}
 
 	/**
@@ -321,17 +307,16 @@ class LanguageManager extends DbAccessor {
 	 * Retruns true if constant with given language exists.
 	 *
 	 * @param integer $id Constant ID
-	 * @param integer|string $language Language ID or name
+	 * @param Language $language Language ID or name
 	 *
 	 * @access protected
 	 * @return boolean
 	 */
-	public function valueExists($id, $language, $cacheMinutes = null){
-		$lang_id = $this->parseLanguage($language);
+	public function valueExists($id, Language $language, $cacheMinutes = null){
 		$this->query->exec("SELECT COUNT(*) AS value_exists
 							FROM `".Tbl::get("TBL_VALUES", "Constant")."`
 							WHERE `id`='$id'
-							AND `lang_id`='$lang_id'", $cacheMinutes);
+							AND `lang_id`='{$language->id}'", $cacheMinutes);
 
 		if($this->query->fetchField('value_exists')){
 			return true;
@@ -345,14 +330,13 @@ class LanguageManager extends DbAccessor {
 	 * Returns true if constant with given parameters exists.
 	 *
 	 * @param string $key Key name of constant
-	 * @param integer|string $language Language ID or name
+	 * @param Language $language Language ID or name
 	 * @return boolean
 	 */
-	public function constantExists($key, $language, $cacheMinutes = null){
-		$lang_id = $this->parseLanguage($language);
+	public function constantExists($key, Language $language, $cacheMinutes = null){
 		if($this->keyExists($key)){
 			$id = $this->getKeyId($key, $cacheMinutes);
-			return $this->valueExists($id, $lang_id, $cacheMinutes);
+			return $this->valueExists($id, $language, $cacheMinutes);
 		}
 		else{
 			return false;
@@ -380,17 +364,15 @@ class LanguageManager extends DbAccessor {
 	 *
 	 * @param $key Key of given constant
 	 * @param $value Contant's text value
-	 * @param $lang_id Language ID
+	 * @param Language $language
 	 *
 	 * @access protected
 	 * @return boolean
 	 */
-	protected function createValue($key, $value, $lang_id){
+	protected function createValue($key, $value, Language $language){
 		$this->query->exec("INSERT INTO `".Tbl::get("TBL_VALUES", "Constant")."` (`id`, `lang_id`, `value`)
 							SELECT
-								(SELECT `id` FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key` = '$key') as `id`,
-								'$lang_id',
-								'$value'");
+							(SELECT `id` FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key` = '$key') as `id`,'{$language->id}','$value'");
 	}
 
 	/**
@@ -428,7 +410,7 @@ class LanguageManager extends DbAccessor {
 	 * @param string $key Key name for constant
 	 * @param string $value Constant value for given language
 	 * @param integer $type Type ID
-	 * @param integer|string $language Constant's language name or lnguage ID
+	 * @param Language $language Constant's language name or lnguage ID
 	 *
 	 * @access public
 	 * @return boolean
@@ -442,15 +424,13 @@ class LanguageManager extends DbAccessor {
 			$language = $this->getDefaultLanguage();
 		}
 
-		$lang_id = $language->id;
-
 		if(!$this->keyExists($key)){
 			$id = $this->createKey($key, $type);
 			$new_key_created = true;
 		}
 
 		try{
-			$this->createValue($key, $value, $lang_id);
+			$this->createValue($key, $value, $language);
 		}
 		catch(MySqlException $mysql_exception){
 			if($new_key_created === true){
@@ -466,70 +446,60 @@ class LanguageManager extends DbAccessor {
 	 * <b>Note:</b> all protected methods must receive only
 	 * integer language ID
 	 *
-	 * @param array $identifier Array which identifies current value uniquely.
-	 * 				Array must be like this:
-	 * 				array(
-	 * 					"key"		=> {string} <key>,
-	 * 					"lang_id"	=> {integer} <language>
-	 * 				)
-	 * @param string $value Constant new text value
-	 * @param integer $lang_id New language id for current row
+	 * @param string $existing_key
+	 * @param Language $existing_language
+	 * @param string $new_value
+	 * @param Language $new_language
+	 * @param string $new_value
 	 * @return boolean True if successed.
 	 */
-	protected function updateValuesRow($identifier, $value = null, $lang_id = null){
+	protected function updateValuesRow($existing_key, Language $existing_language, $new_value = null, Language $new_language = null){
 
-		if(!isset($identifier["key"]) or !isset($identifier["lang_id"])){
-			throw new InvalidArrayArgumentException();
+		if(empty($existing_key)){
+			throw new InvalidArgumentException("\$existing_key have to be non empty string.");
 		}
-
-		if(!is_numeric($identifier["lang_id"])){
-			throw new InvalidArrayArgumentException();
-		}
-
-		if($lang_id !== null and !is_numeric($lang_id)){
-			throw new InvalidIntegerArgumentException();
-		}
-
-		// When nothing need to be changed
-		if($value === null and $lang_id === null){
+		
+		if($new_value === null and $new_language === null){
 			return true;
 		}
-
+		
 		$query = "UPDATE `".Tbl::get("TBL_VALUES", "Constant")."` SET";
-		if($value !== null){
-			$query .= " `value`='$value',";
+		if($new_value !== null){
+			$query .= " `value`='$new_value',";
 		}
-		if($lang_id !== null){
-			$query .= " `lang_id`='$lang_id',";
+		if($new_language !== null){
+			$query .= " `lang_id`='{$new_language->id}',";
 		}
 		// Removing last comma
 		$query = substr($query, 0, -1);
-		$query .= " WHERE `id`=(SELECT `id` FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key`='{$identifier["key"]}')
-					AND `lang_id`='{$identifier["lang_id"]}'";
+		$query .= " WHERE `id`=(SELECT `id` FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key`='$existing_key')
+					AND `lang_id`='{$existing_language->id}'";
 
 		$this->query->exec($query);
+		
+		return true;
 	}
 
 	/**
 	 * Changes row fields in the constants table.
 	 *
-	 * @param integer $old_key Key of constant, which needs to be changed.
-	 * @param string $new_key Constant new key name
-	 * @param integer $type New type id
+	 * @param string $existing_key
+	 * @param string $new_key
+	 * @param integer $type
 	 * @return boolean True if successed.
 	 */
-	protected function updateConstantsRow($old_key, $new_key = null, $type = null){
+	protected function updateConstantsRow($existing_key, $new_key = null, $new_type = null){
 
-		if(empty($old_key)){
-			throw new InvalidIntegerArgumentException();
+		if(empty($existing_key)){
+			throw new InvalidArgumentException("\$old_key have to be non empty string.");
 		}
 
-		if($type !== null and !is_numeric($type)){
-			throw new InvalidIntegerArgumentException();
+		if($new_type !== null and !is_numeric($new_type)){
+			throw new InvalidArgumentException("\$type have to be integer.");
 		}
 
 		// When nothing need to be changed
-		if($new_key === null and $type === null){
+		if($new_key === null and $new_type === null){
 			return true;
 		}
 
@@ -537,48 +507,42 @@ class LanguageManager extends DbAccessor {
 		if($new_key !== null){
 			$query .= " `key`='$new_key',";
 		}
-		if($type !== null){
-			$query .= " `type`='$type',";
+		if($new_type !== null){
+			$query .= " `type`='$new_type',";
 		}
 		// Removing last comma
 		$query = substr($query, 0, -1);
-		$query .= " WHERE `key`='$old_key'";
+		$query .= " WHERE `key`='$existing_key'";
 
 		$this->query->exec($query);
+		
+		return true;
 	}
 
 	/**
 	 * Change constant in the database.
 	 *
-	 * @param array $identifier Array which identifies current constant uniquely.
-	 * 				Array must be like this:
-	 * 				array(
-	 * 					"key"		=> {string} <key>,
-	 * 					"language"	=> {integer|string} <language>
-	 * 				)
-	 * @param string $key New key
-	 * @param string $value New value
-	 * @param integer|string $language New language
-	 * @param integer $type New type
+	 * @param string $existing_key
+	 * @param Language $existing_language
+	 * @param string $new_key
+	 * @param string $new_value
+	 * @param Language $new_language
+	 * @param integer $new_type
 	 *
 	 * @access public
 	 * @return boolean
 	 *
 	 * 		 transaction functions moved from MySqlDatabase to MySqlQuery
 	 */
-	public function updateConstant(array $identifier, $key = null, $value = null, $language = null, $type = null){
+	public function updateConstant($existing_key, Language $existing_language, $new_key = null, $new_value = null, Language $new_language = null, $new_type = null){
 
-		if(!isset($identifier["key"]) or !isset($identifier["language"])){
-			throw new InvalidArrayArgumentException();
+		if(empty($existing_key)){
+			throw new InvalidArgumentException("\$existing_key have to be non empty string.");
 		}
 		
-		$lang = $identifier["language"];
-		$identifier["lang_id"] = $lang->id;
-		
-		//$identifier["lang_id"] = $this->parseLanguage($identifier["language"]);
-		//$lang_id = $this->parseLanguage($language);
-		
-		$lang_id = $language;
+		if(empty($existing_language)){
+			throw new InvalidArgumentException("\$existing_language have to be non empty string.");
+		}
 
 		$this->query->exec("SELECT @@AUTOCOMMIT AS ac");
 
@@ -589,8 +553,8 @@ class LanguageManager extends DbAccessor {
 		$this->query->exec("START TRANSACTION");
 
 		try{
-			$this->updateValuesRow($identifier, $value, $lang_id);
-			$this->updateConstantsRow($identifier["key"], $key, $type);
+			$this->updateValuesRow($existing_key, $existing_language, $new_value, $new_language);
+			$this->updateConstantsRow($existing_key, $new_key, $new_type);
 		}
 		catch (MySqlException $e){
 			$this->query->exec("ROLLBACK");
@@ -611,81 +575,42 @@ class LanguageManager extends DbAccessor {
 	 * If language is set then only value with current language
 	 * will be deleted.
 	 *
-	 * @param array $identifier Array which identifies current constant uniquely
-	 * 				It looks like this:
-	 * 					array(
-	 * 						"key" => {string},
-	 * 						"language" => Language[optinal]
-	 * 					)
+	 * @param string $key
+	 * @param Language $language
+	 * 
 	 * @access public
 	 * @return boolean True if rows affected
 	 */
-	public function removeConstant($identifier){
+	public function removeConstant($key, Language $language = null){
 
-		if(empty($identifier["key"])){
-			throw new InvalidArrayArgumentException();
+		if(empty($key)){
+			throw new InvalidArgumentException("\$key have to be non empty string.");
 		}
 
 		$tables = " `".Tbl::get("TBL_CONSTANTS", "Constant")."` lc
 					JOIN `".Tbl::get("TBL_VALUES", "Constant")."` cv
 					USING (`id`)";
-		$where_clause = " WHERE `key`='{$identifier["key"]}'";
+		
+		$where_clause = " WHERE `key`='$key'";
 
 
-		if(isset($identifier["language"])){
-			$lang = $identifier["language"];
-			
-			$this->query->exec("SELECT count(`id`) AS cnt
-								FROM $tables $where_clause");
+		if($language !== null){
+			$this->query->exec("SELECT count(`id`) AS `cnt` FROM $tables $where_clause");
 
 			if($this->query->fetchField("cnt") > 1){
 				$this->query->exec("DELETE FROM cv
 									USING $tables $where_clause
-									AND cv.`lang_id`='{$lang->id}'");
+									AND cv.`lang_id`='{$language->id}'");
 			}
 			else{
-				$this->query->exec("DELETE FROM
-										`".Tbl::get("TBL_CONSTANTS", "Constant")."`
-									$where_clause");
+				$this->query->exec("DELETE FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."`	$where_clause");
 			}
 		}
 		else{
-			$this->query->exec("DELETE FROM
-									`".Tbl::get("TBL_CONSTANTS", "Constant")."`
-								$where_clause");
+			$this->query->exec("DELETE FROM	`".Tbl::get("TBL_CONSTANTS", "Constant")."`	$where_clause");
 		}
 
 		return ($this->query->affected() > 0 ? true : false);
-	}
-
-
-
-
-	/**
-	 * Changes given offset and lengh to absolute values
-	 * relative to full length
-	 *
-	 * @param integer $offset
-	 * @param integer $length
-	 * @param integer $full_length
-	 * @return void
-	 */
-	private function absoluteOffsetLength(&$offset, &$length, $full_length){
-		if($offset < 0){
-			$offset = $full_length + $offset;
-		}
-
-		if($offset < 0){
-			$offset = 0;
-		}
-
-		if($length == 0){
-			$length = $full_length;
-		}
-		elseif($length < 0){
-			$length = abs($length);
-			$offset = $offset - $length;
-		}
 	}
 
 	/**
@@ -698,13 +623,13 @@ class LanguageManager extends DbAccessor {
 	 * $existing_only = false means that get_consts_list
 	 * will return all constants with their availible values
 	 *
-	 * @param array $types Type IDs
-	 * @param integer|string $language Language ID or name
-	 * @param string $additional_where Mysql where clause
+	 * @param array $types
+	 * @param Language $language
+	 * @param string $additional_where
 	 * @return integer
 	 *
 	 */
-	public function getConstsCount(array $types = null, $language = null,$additional_where = null, $cacheMinutes = null){
+	public function getConstsCount(array $types = null, Language $language = null, $additional_where = null, $cacheMinutes = null){
 
 		$query = "SELECT COUNT(*) as `count`
 					FROM `".Tbl::get("TBL_CONSTANTS", "Constant") ."` lc
@@ -744,22 +669,16 @@ class LanguageManager extends DbAccessor {
 	 * and additional where parameter which allows to write mysql where statement for searching.
 	 * In get_constants_list if language is not specified then default language taken.
 	 *
-	 * @param array $types Type IDs array
-	 * @param integer|string $language Language name or ID
-	 * @param integer $offset Offset for fetching constants list
-	 * @param integer $length Length of fetched constants list
+	 * @param array $types
+	 * @param Language $language
+	 * @param MysqlPager $pager
 	 * @param string $additional_where Mysql where clause
 	 *
 	 * @access public
 	 * @return array
 	 *
 	 */
-	public function search(
-		array $types = null, $language = null,
-		$offset = 0, $length = 0,
-		$additional_where = null, $cacheMinutes = null
-	){
-
+	public function search(array $types = null, Language $language = null, MysqlPager $pager = null, $additional_where = null, $cacheMinutes = null){
 		$query = "SELECT lc.`id`, lc.`key`, lc.`type`,
 					 	cv.`value`, cv.`lang_id`
 					FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` lc
@@ -767,8 +686,7 @@ class LanguageManager extends DbAccessor {
 					USING (`id`)";
 
 		if($language !== null){
-			$lang_id = $this->parseLanguage($language);
-			$query .= " WHERE cv.`lang_id` = '$lang_id'";
+			$query .= " WHERE cv.`lang_id` = '{$language->id}'";
 		}
 
 		if($types !== null){
@@ -789,20 +707,16 @@ class LanguageManager extends DbAccessor {
 			}
 		}
 
-		$consts_count = $this->getConstsCount($types, $lang_id, $additional_where, $cacheMinutes);
-		if(!$consts_count){
-			return array();
-		}
-
 		$query .= " ORDER BY `id` DESC";
 
-		$this->absoluteOffsetLength($offset, $length, $consts_count);
-		$query .= " LIMIT $offset, $length";
-
-		if($this->query->exec($query, $cacheMinutes)){
-			return $this->query->fetchRecords();
+		if($pager !== null){
+			$this->query = $pager->executePagedSQL($query, $cacheMinutes);
 		}
-		return array();
+		else{
+			$this->query->exec($query, $cacheMinutes);
+		}
+		
+		return $this->query->fetchRecords();
 	}
 }
 ?>

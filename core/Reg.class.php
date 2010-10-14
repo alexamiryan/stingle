@@ -20,7 +20,7 @@ class Reg
 	 * 
 	 * @param string $key
 	 * @param bool $throwException
-	 * @return MysqlQuery|UserManagement|LanguageManager
+	 * @return MysqlQuery|UserManagement|LanguageManager|Nav
 	 */
 	public static function get($key, $throwException = true){
 		if(!isset(static::$reg[$key]) or empty(static::$reg[$key])){

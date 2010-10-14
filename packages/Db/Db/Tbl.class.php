@@ -110,7 +110,12 @@ class Tbl
 	
 	private static function getCallerClassName(){
 		$backtrace = debug_backtrace();
-		return $backtrace[2]['class'];
+		if(!empty($backtrace[2]['object']) and is_object($backtrace[2]['object'])){
+			return get_class($backtrace[2]['object']);
+		}
+		else{
+			return $backtrace[2]['class'];
+		}
 	}
 	
 	private static function getCallerObject(){

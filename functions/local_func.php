@@ -111,26 +111,6 @@ function handle_reg_security(){
 	}
 }
 
-function handle_lang(){
-	global $lm,$lcm, $usr, $lang, $domains2lng, $um, $host_ext, $userAuth;
-	if(!empty($domains2lng[$host_ext]) and $lcm->languageExists($domains2lng[$host_ext])){
-		$lm->setLang($domains2lng[$host_ext]);
-	}
-	
-	// Update user's language to the current one if they don't match
-	if($usr->my_lang != $lm->getCurrentLangId()) {
-		$usr->my_lang = $lm->getCurrentLangId();
-		
-		$userAuth->serializeUserObject();
-		$um->updateUserExtra($usr->getId(), array('my_lang'=>$usr->my_lang));
-	}
-	
-	$lm->defineAllConsts();
-	$lang=$lm->getCurrentLangName();
-}
-
-
-
 function get_opt_out_footer($email, $language){
 	global  $site_url,  $db, $error, $lm;
 

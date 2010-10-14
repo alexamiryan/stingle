@@ -41,6 +41,10 @@ class HostLanguageManager extends LanguageManager {
 
 	}
 
+	/**
+	 * Get Default language
+	 * @return Language
+	 */
 	public function getDefaultLanguage($cacheMinutes = null){
 		$this->query->exec("SELECT l.* FROM `".Tbl::get('TBL_HOST_LANGUAGE')."` hl
 					LEFT JOIN `".Tbl::get("TBL_LANGUAGES", "Language") ."` l ON hl.lang_id=l.id
@@ -79,6 +83,12 @@ class HostLanguageManager extends LanguageManager {
 		return $languages;
 	}
 	
+	/**
+	 * 
+	 * @param Language $lang
+	 * @param integer $cacheMinutes
+	 * @return array
+	 */
 	public static function getLanguageHosts(Language $lang, $cacheMinutes = null){
 		$hosts = array();
 		$sql = MySqlDbManager::getQueryObject();
@@ -99,19 +109,19 @@ class HostLanguageManager extends LanguageManager {
 	 * @param int $host_languge_id
 	 * @return array $HostLanguagePair
 	 */
-	public static function getHostLanguagePair($host_languge_id, $cacheMinutes = null){
+	public static function getHostLanguagePair($host_language_id, $cacheMinutes = null){
 		if(!is_numeric($host_languge_id)){
 			throw new InvalidArgumentException("host_languge id should be an integer");
 		}
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT host_id, lang_id FROM ".Tbl::get('TBL_HOST_LANGUAGE') ." WHERE id='$host_languge_id'", $cacheMinutes);
+		$sql->exec("SELECT host_id, lang_id FROM ".Tbl::get('TBL_HOST_LANGUAGE') ." WHERE id='$host_language_id'", $cacheMinutes);
 		if($sql->countRecords()){
 			$res = $sql->fetchRecord();
 			$host = new Host($res['host_id']);		
 			$lang = new Language($res['lang_id']);	
 			return array("host"=>$host, "language"=>$lang);	
 		}
-		throw new InvalidArgumentException("Wrong host_languge id given. No record with id: $host_languge_id in table ".Tbl::get('TBL_HOST_LANGUAGE') );				
+		throw new InvalidArgumentException("Wrong host_languge id given. No record with id: $host_language_id in table ".Tbl::get('TBL_HOST_LANGUAGE') );				
 	}
 	
 	private static function _getHostLanguageId($hostId, $languageId, $cacheMinutes = null){

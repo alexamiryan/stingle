@@ -186,7 +186,7 @@ function redirect($url){
  */
 function valid_email($address){
 	$ret_val = false;
-	if(preg_match("/^[0-9a-zA-Z_\.]+\@[0-9a-zA-Z_\.]+$/i", $address)){
+	if(preg_match("/^[0-9a-zA-Z_\.]+\@[0-9a-zA-Z_\.\-]+$/i", $address)){
 		$host = substr($address, strpos($address, '@') + 1);
 
 		//$host=$host . '.';
@@ -232,7 +232,7 @@ function get_all_get_params(array $exclude_array = array()){
 			$delimiter = '/';
 			if(is_array($_GET) && (sizeof($_GET) > 0)){
 				reset($_GET);
-				while(list($key, $value) = each($_GET)){
+				while((list($key, $value) = each($_GET)) != false){
 					if($key == RewriteURL::getSystemModuleName() or $key == RewriteURL::getSystemPageName()){
 						continue;
 					}
@@ -247,7 +247,7 @@ function get_all_get_params(array $exclude_array = array()){
 			$delimiter = '&';
 			if(is_array($_GET) && (sizeof($_GET) > 0)){
 				reset($_GET);
-				while(list($key, $value) = each($_GET)){
+				while((list($key, $value) = each($_GET)) != false){
 					if($key == RewriteURL::getSystemModuleName() or $key == RewriteURL::getSystemPageName()){
 						continue;
 					}

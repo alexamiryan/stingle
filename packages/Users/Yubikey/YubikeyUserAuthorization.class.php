@@ -24,7 +24,7 @@ class YubikeyUserAuthorization extends UserAuthorization{
 	public function __construct(UserManagement $um, &$sessionVar, Config $configYubico, $dbInstanceKey = null){
 		parent::__construct($um, $sessionVar, $dbInstanceKey);
 		
-		$this->authYubikey = new Auth_Yubico($configYubico->yubico_id, $configYubico->yubico_key);
+		$this->authYubikey = new Yubikey($configYubico->yubico_id, $configYubico->yubico_key);
 	}
 	
 	/**
@@ -51,8 +51,7 @@ class YubikeyUserAuthorization extends UserAuthorization{
 					throw new RuntimeException("Invalid Yubikey", static::EXCEPTION_INVALID_YUBIKEY);
 				}
 				else{
-					$authResult = $this->authYubikey->verify($yubikeyOTP);
-					if (PEAR::isError($authResult)) {
+					if(!$this->authYubikey->verify($yubikeyOTP)){
 						throw new RuntimeException("Yubikey Validation Failed", static::EXCEPTION_INVALID_YUBIKEY);
 					}
 				}

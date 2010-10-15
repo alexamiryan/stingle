@@ -1,7 +1,7 @@
 <?
-class LoaderYubico extends Loader{
+class LoaderYubikey extends Loader{
 	protected function includes(){
-		require_once ('Yubico.class.php');
+		require_once ('Yubikey.class.php');
 		require_once ('YubikeyUserAuthorization.class.php');
 	}
 	

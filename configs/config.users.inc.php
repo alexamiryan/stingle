@@ -9,6 +9,6 @@ $CONFIG['users']['username_pattern'] =  "/^([^\,\/\\\"\[\]\{\}\~\@\#\$\%\^\&\*\(
 /**
  * Yubikey Configuration
  */
-$CONFIG['Users']['Yubico']['yubico_id'] =  '4264';
-$CONFIG['Users']['Yubico']['yubico_key'] =  'ETbmajX8ozu1h/cqvRvBD28G6A4=';
+$CONFIG['Users']['Yubikey']['yubico_id'] =  4264;
+$CONFIG['Users']['Yubikey']['yubico_key'] =  'ETbmajX8ozu1h/cqvRvBD28G6A4=';
 ?>

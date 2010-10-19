@@ -12,14 +12,14 @@ class Controller
 		$module = $nav->{$this->config->firstLevelName};
 		$page = $nav->{$this->config->secondLevelName};
 		$action = $nav->{$this->config->actionName};
-
-		if(@file_exists("{$this->config->modulesDir}/$module/common.php")){
-			include ("{$this->config->modulesDir}/$module/common.php");
-		}
 		
 		if(@file_exists("{$this->config->modulesDir}/$module/config.php")){
 			include ("{$this->config->modulesDir}/$module/config.php");
 		}
+
+		if(@file_exists("{$this->config->modulesDir}/$module/common.php")){
+			include ("{$this->config->modulesDir}/$module/common.php");
+		}		
 		
 		if(!empty($action) and @file_exists("{$this->config->modulesDir}/$module/actions/$action.php")){
 			include ("{$this->config->modulesDir}/$module/actions/$action.php");

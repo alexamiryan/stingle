@@ -9,25 +9,27 @@ class RewriteAliasURL extends RewriteURL{
 		parent::__construct($config);
 		
 		$this->_aliasMap = $aliasMap;
+	}
+	
+	public function parseAliases(){
 		if($this->_aliasMap !== false){
-			$this->parseAliases();
+			$uri = rawurldecode($_SERVER['REQUEST_URI']);
+			$uri = $this->ensureSourceLastDelimiter($uri);
+			foreach($this->_aliasMap as $url_alias){
+				$uri = str_replace($url_alias["alias"], $url_alias["map"], $uri);
+			}
+			$_SERVER['REQUEST_URI'] = $uri;
 		}
 	}
 	
-	private function parseAliases(){
+	public function callParseCustomAliases(){
 		$uri = rawurldecode($_SERVER['REQUEST_URI']);
 		$uri = $this->ensureSourceLastDelimiter($uri);
-		foreach($this->_aliasMap as $url_alias){
-			$uri = str_replace($url_alias["alias"], $url_alias["map"], $uri);
-		}
-		
 		if(method_exists($this, 'parseCustomAliases')){
 			$uri = $this->parseCustomAliases($uri);
+			$_SERVER['REQUEST_URI'] = $uri;
 		}
-
-		$_SERVER['REQUEST_URI'] = $uri;
 	}
-	
 	
 	public function addAliasToLink($stringlink){
 		$linkWithAlias = $stringlink;

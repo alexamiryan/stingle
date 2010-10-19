@@ -1,6 +1,6 @@
 <?
 $defaultConfig = array(	
 						'Objects' => array(	'rewriteURL' => 'rewriteURL'  ),
-						'hooks' => array(  'BeforeRequestParser' => 'ParseURL'  )
+						'hooks' => array(  'BeforeRequestParserStep2' => 'ParseURL'  )
 					);
 ?>

@@ -45,7 +45,7 @@ class FileUploader
 		}
 		
 		$imagePath = $uploadDir . $fileName;
-		unlink($imagePath);
+		@unlink($imagePath);
 	}
 }
 ?>

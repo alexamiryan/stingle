@@ -70,7 +70,7 @@ class ImageUploader
 		}
 		
 		$imagePath = $uploadDir . $fileName;
-		unlink($imagePath);
+		@unlink($imagePath);
 	}
 	
 	private static function findNewFileName($uploadDir, $imageFormat){

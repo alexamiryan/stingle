@@ -1,4 +1,5 @@
 <?
+
 HookManager::callHook("BeforePackagesLoad");
 
 foreach(get_object_vars($config->Packages) as $package){
@@ -11,4 +12,5 @@ foreach(get_object_vars($config->Packages) as $package){
 Reg::get('packageMgr')->load();
 
 HookManager::callHook("AfterPackagesLoad");
+
 ?>

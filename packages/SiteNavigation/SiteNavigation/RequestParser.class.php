@@ -53,5 +53,13 @@ class RequestParser
 
 		return $nav;
 	}
+	
+	public function setFirstLevelDefaultValue($value){
+		$this->firstLevelDefaultValue = $value;
+	}
+	
+	public function setSecondLevelDefaultValue($value){
+		$this->secondLevelDefaultValue = $value;
+	}
 }
 ?>

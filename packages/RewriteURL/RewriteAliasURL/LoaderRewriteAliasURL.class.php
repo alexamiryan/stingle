@@ -24,5 +24,9 @@ class LoaderRewriteAliasURL extends Loader{
 		Reg::register($this->config->Objects->rewriteAliasURL, $this->rewriteAliasURL);
 	}
 	
+	public function hookParseAliases(){
+		Reg::get($this->config->Objects->rewriteAliasURL)->parseAliases();
+		Reg::get($this->config->Objects->rewriteAliasURL)->callParseCustomAliases();
+	}
 }
 ?>

@@ -19,11 +19,8 @@ class Chat extends DbAccessor{
 	 * @return Chat instance
 	 * @version 1.0
 	 */
-	public function __construct(){
+	public function __construct(Config $config){
 		parent::__construct();
-	}
-
-	public static function setProperties(Config $config){
 		$this->cache_count = $config->cache_count;
 		$this->messages_count = $config->messages_count;
 	}
@@ -34,7 +31,7 @@ class Chat extends DbAccessor{
 		$this->query->exec("SELECT COUNT(`id`) AS msg_count FROM `" . self::TBL_MAIN . "`");
 		$msg_count = $this->query->fetchField("msg_count");
 		if($msg_count >= $this->cache_count + $this->messages_count){
-			$this->query->exec("SELECT UNIX_TIMESTAMP(`insert_date`) AS `udate` FROM `" . $self::TBL_MAIN. "` ORDER BY `insert_date` ASC LIMIT " . $this->cache_count . ", 1");
+			$this->query->exec("SELECT UNIX_TIMESTAMP(`insert_date`) AS `udate` FROM `" . self::TBL_MAIN . "` ORDER BY `insert_date` ASC LIMIT " . $this->cache_count . ", 1");
 			if(($date = $this->query->fetchField("udate"))){
 				if($this->query->exec("INSERT INTO `" . self::TBL_ARCHIVE . "` SELECT `transaction_id`,`sender`,`message`,`insert_date` FROM `" . self::TBL_MAIN . "` WHERE UNIX_TIMESTAMP(`insert_date`)< '$date'")){
 					$this->query->exec("DELETE from `" . self::TBL_MAIN . "` WHERE UNIX_TIMESTAMP(`insert_date`) < '$date'");
@@ -212,7 +209,7 @@ class Chat extends DbAccessor{
 			return $tran;
 		}
 		else{
-			return false;
+			return false;			
 		}
 	}
 

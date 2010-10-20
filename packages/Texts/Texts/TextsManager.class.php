@@ -189,8 +189,8 @@ class  TextsManager extends DbAccessor{
 		if(!is_numeric($text_id) or !is_numeric($host_lang_id)){
 			throw new InvalidIntegerArgumentException("Method arguments must be integer!!!");
 		}
-		$this->query->exec("SELECT tv.`value` FROM `".Tbl::get('TBL_TEXTS_ALIASES', 'TEXT')."` ta
-					LEFT JOIN `".Tbl::get('TBL_TEXTS_VALUES', 'TEXT')."` tv ON tv.id = ta.value_id 
+		$this->query->exec("SELECT tv.`value` FROM `".Tbl::get('TBL_TEXTS_ALIASES', 'Text')."` ta
+					LEFT JOIN `".Tbl::get('TBL_TEXTS_VALUES', 'Text')."` tv ON tv.id = ta.value_id 
 					 WHERE ta.`host_language` = $host_lang_id 
 					AND text_id = $text_id");
 		return $this->query->fetchField("value");

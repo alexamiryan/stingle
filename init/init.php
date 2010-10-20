@@ -12,6 +12,7 @@ Reg::register('packageMgr', new PackageManager());
 
 error_reporting($config->site->error_reporting);
 session_name($config->site->site_id);
+
 session_start();
 ob_start();
 

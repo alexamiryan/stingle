@@ -1,9 +1,22 @@
 <?php
-class ImageManipulator
+class ImageManipulator extends Model
 {
 	private $info;
 	private $image_res;
+	
+	const DIMENSIONS_EQUAL 									= 1;
+	const DIMENSIONS_SMALLER 								= 2;
+	const DIMENSIONS_LARGER 								= 3;
+	const DIMENSIONS_WIDTH_LARGER_HEIGHT_SMALLER 			= 4;
+	const DIMENSIONS_HEIGHT_LARGER__WIDTH_SMALLER 			= 5;
 
+	
+	const CORNER_TOP_LEFT 		= 1;
+	const CORNER_TOP_RIGHT 		= 2;
+	const CORNER_BOTTOM_LEFT 	= 3;
+	const CORNER_BOTTOM_RIGHT 	= 4;
+	
+	
 	/**
 	 * Image manipulation
 	 * Supports jpg, gif, png
@@ -11,11 +24,15 @@ class ImageManipulator
 	 * @param string $filename
 	 * @param wInfo $error
 	 */
-	public function __construct($filename){
-		if(!($this->image_res=$this->createImageRes($filename))){
-			throw new RuntimeException("Incorrect input file");
+	public function __construct($filePath){
+		if(empty($filePath)){
+			throw new InvalidArgumentException("\$filename is empty!");
 		}
-		$this->info=getimagesize($filename);
+		if(!file_exists($filePath)){
+			throw new InvalidArgumentException("Given file $filePath does not exists.");
+		}
+		$this->image_res=$this->createImageRes($filePath);
+		$this->info=getimagesize($filePath);
 	}
 	/**
 	 * Destructor
@@ -30,11 +47,8 @@ class ImageManipulator
 	 * @param string $filename
 	 */
 	private function createImageRes($filename){
-		if(empty($filename) or
-		!file_exists($filename) or
-		!($info=@getimagesize($filename)) or
-		!in_array($info[2], array(IMAGETYPE_JPEG, IMAGETYPE_GIF, IMAGETYPE_PNG))){
-			return false;
+		if(($info=@getimagesize($filename)) == false or !in_array($info[2], array(IMAGETYPE_JPEG, IMAGETYPE_GIF, IMAGETYPE_PNG))){
+			throw new RuntimeException("Given file is not a image!");
 		}
 		switch ($info[2]){
 			case IMAGETYPE_JPEG:
@@ -46,11 +60,9 @@ class ImageManipulator
 			case IMAGETYPE_PNG:
 				$image_res=@imagecreatefrompng($filename);
 				break;
-			default:
-				return false;
 		}
 		if(!is_resource($image_res)){
-			return false;
+			throw new RuntimeException("Unable to create resource from image!");
 		}
 		return $image_res;
 	}
@@ -70,7 +82,7 @@ class ImageManipulator
 			$mode=0;
 
 			if($width==0 and $height==0){
-				return false;
+				return;
 			}
 
 			if($width==0){
@@ -104,7 +116,7 @@ class ImageManipulator
 			if($mode==1){
 				$resized_image = imagecreatetruecolor($width, $this->info[1]*$width/$this->info[0]);
 				if(!imagecopyresized($resized_image, $this->image_res, 0, 0, 0, 0, $width, $this->info[1]*$width/$this->info[0], $this->info[0], $this->info[1])){
-					return false;
+					throw new RuntimeException("Unable to resize image!");
 				}
 				else{
 					$this->info[1]=$this->info[1]*$width/$this->info[0];
@@ -114,7 +126,7 @@ class ImageManipulator
 			elseif($mode==2){
 				$resized_image = imagecreatetruecolor($this->info[0]*$height/$this->info[1], $height);
 				if(!imagecopyresized($resized_image, $this->image_res, 0, 0, 0, 0, $this->info[0]*$height/$this->info[1], $height, $this->info[0], $this->info[1])){
-					return false;
+					throw new RuntimeException("Unable to resize image!");
 				}
 				else{
 					$this->info[0]=$this->info[0]*$height/$this->info[1];
@@ -128,7 +140,7 @@ class ImageManipulator
 		else{
 			$resized_image = imagecreatetruecolor($width, $height);
 			if(!imagecopyresized($resized_image, $this->image_res, 0, 0, 0, 0, $width, $height, $this->info[0], $this->info[1])){
-				return false;
+				throw new RuntimeException("Unable to resize image!");
 			}
 			else{
 				$this->info[0]=$width;
@@ -136,8 +148,6 @@ class ImageManipulator
 			}
 		}
 		$this->image_res=$resized_image;
-		
-		return true;
 	}
 
 	/**
@@ -156,9 +166,8 @@ class ImageManipulator
 			@imageinterlace($this->image_res, 0);
 		}
 		if(!imagejpeg($this->image_res, $to_filename, $quality)){
-			return false;
+			throw new RuntimeException("Unable to write image file!");
 		}
-		return true;
 	}
 
 	/**
@@ -169,9 +178,8 @@ class ImageManipulator
 	 */
 	public function writeGif($to_filename=''){
 		if(!imagegif($this->image_res, $to_filename)){
-			return false;
+			throw new RuntimeException("Unable to write image file!");
 		}
-		return true;
 	}
 
 	/**
@@ -182,54 +190,51 @@ class ImageManipulator
 	 */
 	public function writePng($to_filename=''){
 		if(!imagepng($this->image_res, $to_filename)){
-			return false;
+			throw new RuntimeException("Unable to write image file!");
 		}
-		return true;
 	}
 
 	/**
 	 * Stamps image with another image
 	 *
 	 * @param string $image_filename
-	 * @param int $corner (1-top-left, 2-top-right, 3-bottom-left, 4-bottom-right)
+	 * @param int $corner
 	 * @param int $alpha (0-100)
 	 * @return bool
 	 */
-	public function makeStamp($image_filename, $corner=4, $alpha=60){
-		if(!($corner>=1 and $corner<=4)){
-			return false;
+	public function makeStamp($backgroundImagePath, $corner=self::CORNER_BOTTOM_RIGHT, $alpha=60){
+		if(!in_array($corner, $this->getConstsArray('CORNER'))){
+			throw new InvalidArgumentException("Invalid corner identifier given!");
 		}
 		if(!($alpha>=0 and $alpha<=100)){
-			return false;
+			throw new InvalidArgumentException("Alpha needs to be between 0 and 100!");
 		}
-		$img_res=$this->createImageRes($image_filename);
-		if(!$img_res){
-			return false;
-		}
-		$img_info=getimagesize($image_filename);
+
+		$img_res=$this->createImageRes($backgroundImagePath);
+		$img_info=getimagesize($backgroundImagePath);
+		
 		switch ($corner){
-			case 1:
+			case self::CORNER_TOP_LEFT:
 				if(!imagecopymerge ($this->image_res, $img_res, 0, 0, 0, 0, $img_info[0], $img_info[1], $alpha)){
-					return false;
+					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
-			case 2:
+			case self::CORNER_TOP_RIGHT:
 				if(!imagecopymerge ($this->image_res, $img_res, $this->info[0]-$img_info[0], 0, 0, 0, $img_info[0], $img_info[1], $alpha)){
-					return false;
+					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
-			case 3:
+			case self::CORNER_BOTTOM_LEFT:
 				if(!imagecopymerge ($this->image_res, $img_res, 0, $this->info[1]-$img_info[1], 0, 0, $img_info[0], $img_info[1], $alpha)){
-					return false;
+					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
-			case 4:
+			case self::CORNER_BOTTOM_RIGHT:
 				if(!imagecopymerge ($this->image_res, $img_res, $this->info[0]-$img_info[0], $this->info[1]-$img_info[1], 0, 0, $img_info[0], $img_info[1], $alpha)){
-					return false;
+					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
 		}
-		return true;
 	}
 
 	/**
@@ -237,33 +242,27 @@ class ImageManipulator
 	 *
 	 * @param string $background_filename
 	 */
-	public function addBackround($background_filename){
-		if(!file_exists($background_filename)){
-			return false;
-		}
-		$img_res=$this->createImageRes($background_filename);
-		if(!is_resource($img_res)){
-			return false;
-		}
-		$img_info=getimagesize($background_filename);
-		if($this->checkDimensions($img_info[0],$img_info[1])!=6 and $this->checkDimensions($img_info[0],$img_info[1])!=7 and $this->checkDimensions($img_info[0],$img_info[1])!=2){
-			return false;
-		}
-		$img=imagecreatetruecolor($img_info[0],$img_info[1]);
-		if(!is_resource($img)){
-			return false;
-		}
-
-		if(!imagecopy ($img, $img_res,0,0,0,0,$img_info[0],$img_info[1])){
-			return false;
+	public function addBackround($backgroundFilePath){
+		$img_res=$this->createImageRes($backgroundFilePath);
+		$img_info=getimagesize($backgroundFilePath);
+		
+		$checkResult = $this->checkDimensions($img_info[0],$img_info[1]);
+		
+		if($checkResult == self::DIMENSIONS_LARGER){
+			throw new RuntimeException("Unable to add background because background is smaller than main image!");
 		}
 		
-		if(!imagecopy ($img, $this->image_res, ($img_info[0]-$this->info[0])/2,($img_info[1]-$this->info[1])/2,0,0,$this->info[0],$this->info[1])){
-			return false;
+		$newImg=imagecreatetruecolor($img_info[0],$img_info[1]);
+
+		if(!imagecopy ($newImg, $img_res,0,0,0,0,$img_info[0],$img_info[1])){
+			throw new RuntimeException("Unable to add background!");
+		}
+		
+		if(!imagecopy ($newImg, $this->image_res, ($img_info[0]-$this->info[0])/2,($img_info[1]-$this->info[1])/2,0,0,$this->info[0],$this->info[1])){
+			throw new RuntimeException("Unable to add background!");
 		}
 		unset($this->image_res);
-		$this->image_res=$img;
-		return true;
+		$this->image_res=$newImg;
 	}
 
 	/**
@@ -277,15 +276,16 @@ class ImageManipulator
 	 */
 	public function crop($x, $y, $width, $height){
 		if(!is_numeric($x) or !is_numeric($y) or !is_numeric($width) or !is_numeric($height)){
-			return false;
+			throw new InvalidArgumentException("Some of the parameters are not numeric!");
 		}
+		
 		$cropped_image = imagecreatetruecolor($width, $height);
 		if(!imagecopy($cropped_image, $this->image_res, 0, 0, $x, $y, $width, $height)){
-			return false;
+			throw new RuntimeException("Unable to crop!");
 		}
+		
 		@imagedestroy($this->image_res);
 		$this->image_res=$cropped_image;
-		return true;
 	}
 
 	/**
@@ -293,40 +293,46 @@ class ImageManipulator
 	 *
 	 * @param integer $width
 	 * @param integer $height
-	 * @return 
-	 * 1 if image dimansions equals to specified width and height<br>
-	 * 2 if image smaller than specified width and height<br>
-	 * 3 if image larger than specified width and height<br>
-	 * 4 if width is larger or equals and height is smaller<br>
-	 * 5 if height is larger or equals and width is smaller<br>
-	 * 6 if width is larger and height is smaller or equals<br>
-	 * 7 if height is larger and width is smaller or equals<br>
-	 * 0 if none of ifs pass
+	 * @return integer 
 	 */
 	public function checkDimensions($width, $height){
-		if($this->info[0]==$width && $this->info[1]==$height){
-			return 1;
+		if($this->info[0] == $width and $this->info[1] == $height){
+			return self::DIMENSIONS_EQUAL;
 		}
-		elseif($this->info[0]<$width && $this->info[1]<$height){
-			return 2;
-		}
-		elseif($this->info[0]>$width && $this->info[1]>$height){
-			return 3;
-		}
-		elseif($this->info[0]>=$width && $this->info[1]<$height){
-			return 4;
-		}
-		elseif($this->info[0]<$width && $this->info[1]>=$height){
-			return 5;
-		}
-		elseif($this->info[0]>$width && $this->info[1]<=$height){
-			return 6;
-		}
-		elseif($this->info[0]<=$width && $this->info[1]>$height){
-			return 7;
+		elseif($this->info[0] >= $width or $this->info[1] >= $height){
+				return self::DIMENSIONS_LARGER;
 		}
 		else{
-			return 0;
+			return self::DIMENSIONS_SMALLER;
+		}
+	}
+	
+	/**
+	 * Check image dimensions
+	 *
+	 * @param integer $width
+	 * @param integer $height
+	 * @return integer 
+	 */
+	public function checkDimensionsAdvanced($width, $height){
+		if($this->info[0] == $width && $this->info[1] == $height){
+			return self::DIMENSIONS_EQUAL;
+		}
+		elseif($this->info[0]>=$width){
+			if($this->info[1]>=$height){
+				return self::DIMENSIONS_LARGER;
+			}
+			else{
+				return self::DIMENSIONS_WIDTH_LARGER_HEIGHT_SMALLER;
+			}
+		}
+		else{
+			if($this->info[1]>=$height){
+				return self::DIMENSIONS_HEIGHT_LARGER__WIDTH_SMALLER;
+			}
+			else{
+				return self::DIMENSIONS_SMALLER;
+			}
 		}
 	}
 
@@ -349,23 +355,23 @@ class ImageManipulator
 	 */
 	public function rotate($angle, $bg_red=255, $bg_green=255, $bg_blue=255){
 		if(!is_numeric($angle)){
-			return false;
+			throw new InvalidArgumentException("\$angle have to have numeric value!");
 		}
 		if(!($bg_red>=0 and $bg_red<=255)){
-			return false;
+			throw new InvalidArgumentException("\$bg_red needs to be between 0 and 255!");
 		}
 		if(!($bg_green>=0 and $bg_green<=255)){
-			return false;
+			throw new InvalidArgumentException("\$bg_green needs to be between 0 and 255!");
 		}
 		if(!($bg_blue>=0 and $bg_blue<=255)){
-			return false;
+			throw new InvalidArgumentException("\$bg_blue needs to be between 0 and 255!");
 		}
 		if(!($rotated_image=imagerotate($this->image_res, $angle, imagecolorexact($this->image_res, $bg_red, $bg_green, $bg_blue)))){
-			return false;
+			throw new RuntimeException("Unable to rotate!");
 		}
+
 		@imagedestroy($this->image_res);
 		$this->image_res=$rotated_image;
-		return true;
 	}
 }
 ?>

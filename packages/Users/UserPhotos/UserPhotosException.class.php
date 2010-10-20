@@ -1,0 +1,6 @@
+<?
+class UserPhotosException extends RuntimeException
+{
+	
+}
+?>

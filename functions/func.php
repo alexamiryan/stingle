@@ -45,6 +45,12 @@ function set_leading_zeros($number){
 	}
 }
 
+function ensurePathLastSlash(&$path){
+	if(substr($path, strlen($path)-1) != '/'){
+		$path .= '/';
+	}
+}
+
 /**
  * Function return size with it's units.<br>
  * e.g. 2 M, 35 Kb, 346 b

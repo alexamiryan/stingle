@@ -15,14 +15,12 @@ class PhotoManager extends DbAccessor{
 	 * 			'imgHeight' => 100,
 	 * 			'minImgWidth' => 40,
 	 * 			'minImgHeight' => 80,
-	 * 			'path' => '/usr/local/photos/'
 	 * 		),
 	 * 		'/var/lib/small_photos/' => array (
 	 * 			'imgWidth' => 25,
 	 * 			'imgHeight' => 50,
 	 * 			'minImgWidth' => 20,
 	 * 			'minImgHeight' => 40,
-	 * 			'path' => '/var/lib/small_photos/'
 	 * 		)
 	 * )
 	 *
@@ -216,23 +214,6 @@ class PhotoManager extends DbAccessor{
 	public function approve($photoId){
 		$this->changeApprovalStatus($photoId, true);
 	}
-
-	/**
-	 * TODO: implement this function
-	 * Updates approval status of an already uploaded photo
-	 *
-	 * @param int $photoId
-	 * @param int $approved TRUE or FALSE
-	 *
-	 * @deprecated
-	 *
-	 * @throws InvalidArgumentException in case of an invalid status or nonexisting photoId
-	 */
-	//private function changeApprovalStatus($photoId, $approved) {
-
-
-	//}
-
 
 	/**
 	 * Set this photo as default photo for it's owner

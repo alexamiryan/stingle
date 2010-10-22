@@ -32,7 +32,7 @@ class Config{
 	public function toArray($recursive = false){
 		$returnArray = array();
 		foreach(get_object_vars($this) as $key=>$value){
-			if($key != 'config'){
+			if($key !== 'config'){
 				if($recursive === true and is_a($value,"Config")){
 					$returnArray[$key] = $value->toArray(true);
 				}

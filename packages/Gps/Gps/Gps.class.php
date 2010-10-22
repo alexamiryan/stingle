@@ -293,16 +293,34 @@ class Gps extends DbAccessor
 		return $typeName;
 	}
 	
-	public function getNodesByZip($zip, $countryNodeId){
+	/**
+	 * Get gps nodes by given zip code and country
+	 * If volme is 0 then return all gps nodes that matches given criteria.
+	 * 
+	 * @param string $zip
+	 * @param int $countryNodeId
+	 * @param int $volume
+	 */
+	public function getNodesByZip($zip, $countryNodeId, $volume = 20, $exactMatch = true){
 		$gpsNodes = array();
+		$limitString = "";
+		if($volume != 0){
+			$limitString = "LIMIT $volume";
+		}
+		if($exactMatch){			
+			$whereClause = "`zip` = '{$zip}'";
+		}
+		else{
+			$whereClause = "`zip` LIKE '{$zip}%'";
+		}
+		
 		$this->query->exec("SELECT gps_id, zip FROM `".Tbl::get('TBL_ZIP_CODES')."`
-							WHERE `country_id`='{$countryNodeId}' AND `zip` LIKE '{$zip}%'
-							LIMIT 20");
+							WHERE `country_id`='{$countryNodeId}' AND $whereClause $limitString");
 		$zipNodes = $this->query->fetchRecords();
 		foreach ($zipNodes as $zipNode) {
 			$node = $this->getNode($zipNode["gps_id"]);
 			$zip = array("zip"=>$zipNode["zip"]);
-			$gpsNodes[] = $node + $zip;
+			$gpsNodes[] = array_merge($node, $zip);
 		}
 		return $gpsNodes;
 	}

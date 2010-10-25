@@ -544,6 +544,16 @@ class MessageManagement extends Filterable
 		}
 		return $messages;
 	}
+	
+	public function isMessageBelongsToUser($messageId, $userId){
+		$this->query->exec("SELECT COUNT(*) as `count` 
+								FROM `".Tbl::get('TBL_EXTRA')."`
+								WHERE `message_id` = '$messageId' and (`sender` = '$userId' or `receiver` = '$userId')");
+		if($this->query->fetchField("count")>0){
+			return true;
+		}
+		return false;
+	}
 }
 
 ?>

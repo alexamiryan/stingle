@@ -30,7 +30,7 @@ function default_exception_handler(Exception $e){
 		@write_log("Exception", format_exception($e));
 	}
 	
-	if($config->debug->send_email_on_exception and function_exists("send_mail")){
+	if($config->Debug->send_email_on_exception and function_exists("send_mail")){
 		@send_mail($config->site->developer_mail, "Exception on $site_name", format_exception($e, true));
 	}
 }

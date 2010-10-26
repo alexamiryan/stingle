@@ -2,7 +2,6 @@
 require_once ('config.classmap.inc.php');
 require_once ('config.debug.inc.php');
 require_once ('config.IncludePaths.inc.php');
-require_once ('config.pages.inc.php');
 require_once ('config.site.inc.php');
 require_once ('config.smarty.inc.php');
 require_once ('config.urlRewrite.inc.php');

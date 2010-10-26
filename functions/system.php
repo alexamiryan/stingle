@@ -37,19 +37,21 @@ function default_exception_handler(Exception $e){
 
 function default_error_handler($errno, $errstr, $errfile, $errline){
 	global $site_name;
+	
 	$config = ConfigManager::getGlobalConfig();
+	
 	if ( $errno === E_RECOVERABLE_ERROR or $errno === E_WARNING ) {
 		if(Debug::getMode()){
 			echo format_error($errno, $errstr, $errfile, $errline, true);
 		}
 		else{
-			echo Reg::get('smarty')->fetch("modules/{$config->smarty->errors_module}/{$config->smarty->error_page}.tpl");
+			echo Reg::get('smarty')->fetch("modules/{$config->Smarty->Smarty->errors_module}/{$config->Smarty->Smarty->error_page}.tpl");
 		}
-		if(is_object($sql) and function_exists("write_log")){
+		if(Reg::get('packageMgr')->isPluginLoaded("Db","Db") and function_exists("write_log")){
 			@write_log("Eerror", format_error($errno, $errstr, $errfile, $errline));
 		}
 		
-		if($config->debug->send_email_on_exception and function_exists("send_mail")){
+		if($config->Debug->send_email_on_exception and function_exists("send_mail")){
 			@send_mail($config->site->developer_mail, "Error on $site_name", format_error($errno, $errstr, $errfile, $errline, true));
 		}
 	}

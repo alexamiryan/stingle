@@ -36,13 +36,14 @@ function default_exception_handler(Exception $e){
 }
 
 function default_error_handler($errno, $errstr, $errfile, $errline){
-	global $config, $error, $sql, $smarty, $site_name;
+	global $site_name;
+	$config = ConfigManager::getGlobalConfig();
 	if ( $errno === E_RECOVERABLE_ERROR or $errno === E_WARNING ) {
 		if(Debug::getMode()){
 			echo format_error($errno, $errstr, $errfile, $errline, true);
 		}
 		else{
-			echo $smarty->fetch("modules/{$config->smarty->errors_module}/{$config->smarty->error_page}.tpl");
+			echo Reg::get('smarty')->fetch("modules/{$config->smarty->errors_module}/{$config->smarty->error_page}.tpl");
 		}
 		if(is_object($sql) and function_exists("write_log")){
 			@write_log("Eerror", format_error($errno, $errstr, $errfile, $errline));

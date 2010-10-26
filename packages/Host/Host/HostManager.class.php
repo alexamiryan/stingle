@@ -78,7 +78,7 @@ class HostManager{
 			$host_name = static::getDebugHostName();
 		}
 		else{
-			$host_name = $_SERVER['HTTP_HOST'];
+			$host_name = static::noWWW($_SERVER['HTTP_HOST']);
 		}		
 		return $host_name;		
 	}

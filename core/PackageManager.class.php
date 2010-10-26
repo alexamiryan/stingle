@@ -75,17 +75,17 @@ class PackageManager {
 			$this->buildAllowanceTables(array($packageName => array($pluginName)));
 		}
 		
-		$loader = $this->getPluginLoader($packageName, $pluginName);
-		
-		$deps = $loader->getDependencies();
-		$this->resolveDependencies($deps);
-		
 		if($customConfig !== null){
 			if(!isset($this->customConfigs->$packageName)){
 				$this->customConfigs->$packageName = new Config();
 			}
 			$this->customConfigs->$packageName->$pluginName = $customConfig;
 		}
+		
+		$loader = $this->getPluginLoader($packageName, $pluginName);
+		
+		$deps = $loader->getDependencies();
+		$this->resolveDependencies($deps);
 
 		$loader->load($overrideObjects);
 		array_push($this->loadedPackages[$packageName], $pluginName);

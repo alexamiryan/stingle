@@ -48,7 +48,7 @@ class MySqlDbManager
     }
     
 	/**
-     * Returns an instance of Db_MySqlDatabase
+     * Returns an instance of MySqlDatabase
      * by given key
      *
      * @param $key instance key
@@ -68,12 +68,12 @@ class MySqlDbManager
     }
     
 	/**
-     * Returns an instance of Db_MySqlDatabase
+     * Returns an instance of MySqlQuery
      * by given key
      *
      * @param $key instance key
      *
-     * @return MySqlDatabase
+     * @return MySqlQuery
      */
     public static function getQueryObject($instanceKey = null){
     	$db = static::getDbObject($instanceKey);

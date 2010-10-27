@@ -7,51 +7,23 @@ class PackageManager {
 	private $hookAllowanceTable = array();
 	private $pluginsToLoad = array();
 	
+	/**
+	 * Constructor
+	 */
 	public function __construct(){
 		$this->customConfigs = new Config();
 	}
 	
-	public function addPackage($packageName, $plugins = array(), Config $customConfig = null, $autoload = true){
-		$this->checkPackageExistance($packageName);
-		
-		if(in_array($packageName, array_keys($this->loadedPackages))){
-			return;
-		}
-		if(!is_array($plugins)){
-			$plugins = explode(";", $plugins);
-		}
-		
-		if(empty($plugins)){
-			array_push($plugins, $packageName);
-		}
-		
-		if($customConfig !== null){
-			$this->customConfigs->$packageName = $customConfig;
-		}
-
-		if(!isset($this->pluginsToLoad[$packageName]) or !is_array($this->pluginsToLoad[$packageName])){
-			$this->pluginsToLoad[$packageName] = array();
-		}
-		foreach ($plugins as $pluginName){
-			array_push($this->pluginsToLoad[$packageName], $pluginName);
-		}
-	}
-	
-	public function load(){
-		$this->buildAllowanceTables($this->pluginsToLoad);
-		
-		foreach ($this->pluginsToLoad as $packageName => $plugins){
-			foreach ($plugins as $pluginName){
-				$this->usePlugin($packageName, $pluginName);
-			}
-			HookManager::callHook("AfterThisPluginTreeInit");
-			HookManager::unRegisterHook("AfterThisPluginTreeInit");
-		}
-
-		$this->customConfigs = new Config();
-	}
-	
-	public function usePlugin($packageName, $pluginName = null, Config $customConfig = null, $overrideObjects = false){
+	/**
+	 * Load plugin with all it's dependencies
+	 * 
+	 * @param string $packageName
+	 * @param string $pluginName
+	 * @param Config $customConfig
+	 * @param boolean $loadAgain
+	 * @param boolean $overrideObjects
+	 */
+	public function usePlugin($packageName, $pluginName = null, Config $customConfig = null, $loadAgain = false, $overrideObjects = false){
 		if($pluginName === null){
 			$pluginName = $packageName;
 		}
@@ -62,7 +34,7 @@ class PackageManager {
 			$this->loadedPackages[$packageName] = array();
 		}
 		
-		if($this->isPluginLoaded($packageName, $pluginName)){
+		if(!$loadAgain and $this->isPluginLoaded($packageName, $pluginName)){
 			return;
 		}
 		
@@ -91,6 +63,62 @@ class PackageManager {
 		array_push($this->loadedPackages[$packageName], $pluginName);
 	}
 	
+	/**
+	 * Load all plugin that have been loaded to the queue
+	 */
+	public function load(){
+		$this->buildAllowanceTables($this->pluginsToLoad);
+		
+		foreach ($this->pluginsToLoad as $packageName => $plugins){
+			foreach ($plugins as $pluginName){
+				$this->usePlugin($packageName, $pluginName);
+			}
+			HookManager::callHook("AfterThisPluginTreeInit");
+			HookManager::unRegisterHook("AfterThisPluginTreeInit");
+		}
+
+		$this->customConfigs = new Config();
+	}
+	
+	/**
+	 * Add package/plugins to the queue for loading with load() method.
+	 * @param string $packageName
+	 * @param string $plugins
+	 * @param Config $customConfig
+	 * @param boolean $autoload
+	 */
+	public function addPackage($packageName, $plugins = array(), Config $customConfig = null, $autoload = true){
+		$this->checkPackageExistance($packageName);
+		
+		if(in_array($packageName, array_keys($this->loadedPackages))){
+			return;
+		}
+		if(!is_array($plugins)){
+			$plugins = explode(";", $plugins);
+		}
+		
+		if(empty($plugins)){
+			array_push($plugins, $packageName);
+		}
+		
+		if($customConfig !== null){
+			$this->customConfigs->$packageName = $customConfig;
+		}
+
+		if(!isset($this->pluginsToLoad[$packageName]) or !is_array($this->pluginsToLoad[$packageName])){
+			$this->pluginsToLoad[$packageName] = array();
+		}
+		foreach ($plugins as $pluginName){
+			array_push($this->pluginsToLoad[$packageName], $pluginName);
+		}
+	}
+	
+	/**
+	 * Checks if plugin in already loaded
+	 * 
+	 * @param string $packageName
+	 * @param string $pluginName
+	 */
 	public function isPluginLoaded($packageName, $pluginName){
 		if(isset($this->loadedPackages[$packageName]) and in_array($pluginName, $this->loadedPackages[$packageName])){
 			return true;
@@ -98,6 +126,11 @@ class PackageManager {
 		return false;
 	}
 	
+	/**
+	 * Build allowance table for smart loading
+	 * 
+	 * @param array $pluginsToLoad
+	 */
 	private function buildAllowanceTables($pluginsToLoad){
 		if(empty($pluginsToLoad)){
 			return;
@@ -188,6 +221,11 @@ class PackageManager {
 		}
 	}
 	
+	/**
+	 * Checks if there is dependency loop in load list
+	 * 
+	 * @param array $dependencyArray
+	 */
 	private function checkForDependencyLoop($dependencyArray){
 		foreach($dependencyArray["slaves"] as $slaveKey=>$slavePlugin){
 			$exists = $this->checkIfPluginExistsInDependencyChain($dependencyArray, $slaveKey);
@@ -198,6 +236,15 @@ class PackageManager {
 		return false;
 	}
 	
+	/**
+	 * Goes in all directions from given plugin and 
+	 * returns true if it can reach $slaveKey. 
+	 * 
+	 * @param array $dependencyArray
+	 * @param integer $slaveKeyToFind
+	 * @param integer $currentSlaveKey
+	 * @param array $passedKeys
+	 */
 	private function checkIfPluginExistsInDependencyChain($dependencyArray, $slaveKeyToFind, $currentSlaveKey = null, $passedKeys = array()){
 		if($currentSlaveKey === null){
 			$currentSlaveKey = $slaveKeyToFind;
@@ -219,6 +266,11 @@ class PackageManager {
 		return false;
 	}
 	
+	/**
+	 * Simplifies dependency tree by removing unnecessary connections
+	 * 
+	 * @param array $dependencyArray
+	 */
 	private function simplifyDependencyTree($dependencyArray){
 		$simplifiedDependencyArray = array("masters"=>array(), "slaves"=>array());
 		for ($i=0;$i<count($dependencyArray["masters"]);$i++){
@@ -233,6 +285,15 @@ class PackageManager {
 		return $simplifiedDependencyArray;
 	}
 	
+	/**
+	 * Check if there is dependency connection 
+	 * between two nodes
+	 * 
+	 * @param array $dependencyArray
+	 * @param string $master
+	 * @param string $slave
+	 * @param array $notThisKey
+	 */
 	private function searchForDependencyTreeConnection($dependencyArray, $master, $slave, $notThisKey = array()){
 		$slaveKeys = array_keys($dependencyArray["slaves"], $slave);
 		
@@ -253,6 +314,14 @@ class PackageManager {
 		return false;
 	}
 	
+	/**
+	 * Get plugins devided by priority.
+	 * 
+	 * @param array $dependencyArray
+	 * @param array $masterPlugins
+	 * @param array $pluginsByPriority
+	 * @param integer $currentPriority
+	 */
 	private function getPluginsByPriorityTable($dependencyArray, $masterPlugins, $pluginsByPriority = array(), $currentPriority = 0){
 		foreach ($masterPlugins as $masterPlugin){
 			if(!in_array($masterPlugin[1], array_keys($pluginsByPriority)) or $pluginsByPriority[$masterPlugin[1]][1] < $currentPriority){
@@ -271,6 +340,13 @@ class PackageManager {
 		return $pluginsByPriority;
 	}
 	
+	/**
+	 * Get all dependencies in one array for given plugins
+	 * 
+	 * @param array $plugins
+	 * @param array $depList
+	 * @param array $depListSeparate
+	 */
 	private function getDependencyArray($plugins, $depList = array(), $depListSeparate = null){
 		// Define arrays of masters and slaves if not defined
 		if(empty($depList)){
@@ -307,6 +383,13 @@ class PackageManager {
 		return $depListSeparate;
 	}
 	
+	/**
+	 * Check if it allowed to load given plugin
+	 * 
+	 * @param string $objectName
+	 * @param string $packageName
+	 * @param string $pluginName
+	 */
 	public function isObjectInitIsAllowed($objectName, $packageName, $pluginName){
 		if(empty($pluginName)){
 			throw new InvalidArgumentException("\$pluginName is empty");
@@ -325,6 +408,13 @@ class PackageManager {
 		return false;
 	}
 	
+	/**
+	 * Check if it is allowed to register given hook
+	 * 
+	 * @param string $hookName
+	 * @param string $packageName
+	 * @param string $pluginName
+	 */
 	public function isHookRegistrationIsAllowed($hookName, $packageName, $pluginName){
 		if(empty($pluginName)){
 			throw new InvalidArgumentException("\$pluginName is empty");
@@ -343,6 +433,11 @@ class PackageManager {
 		return false;
 	}
 	
+	/**
+	 * Recursively resolve dependecies for given plugin
+	 * 
+	 * @param Dependency $deps
+	 */
 	private function resolveDependencies(Dependency $deps){
 		foreach ($deps->getDependentPackages() as $depPackage){
 			foreach ($deps->getDependentPlugins($depPackage) as $depPlugin){
@@ -353,6 +448,11 @@ class PackageManager {
 		}
 	}
 	
+	/**
+	 * Check if package exists
+	 * 
+	 * @param string $packageName
+	 */
 	private function checkPackageExistance($packageName){
 		if(empty($packageName)){
 			throw new InvalidArgumentException("\$packageName is empty");
@@ -363,6 +463,11 @@ class PackageManager {
 		}
 	}
 	
+	/**
+	 * Check if plugin exists in given package
+	 * 
+	 * @param string $packageName
+	 */
 	private function checkPluginExistance($packageName, $pluginName){
 		$this->checkPackageExistance($packageName);
 		if(empty($pluginName)){
@@ -374,6 +479,12 @@ class PackageManager {
 		}
 	}
 	
+	/**
+	 * Get loader object of given plugin
+	 * 
+	 * @param string $packageName
+	 * @param string $pluginName
+	 */
 	private function getPluginLoader($packageName, $pluginName){
 		if(empty($packageName)){
 			throw new InvalidArgumentException("\$packageName is empty");
@@ -404,6 +515,12 @@ class PackageManager {
 		return $loader;
 	}
 	
+	/**
+	 * Get config for given plugin
+	 * 
+	 * @param string $packageName
+	 * @param string $pluginName
+	 */
 	public function getPluginConfig($packageName, $pluginName){
 		$pluginConfig = ConfigManager::getConfig($packageName, $pluginName);
 		if(isset($this->customConfigs->$packageName) and isset($this->customConfigs->$packageName->$pluginName)){

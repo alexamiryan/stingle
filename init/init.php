@@ -47,7 +47,7 @@ Reg::get('packageMgr')->load();
 HookManager::callHook("AfterPackagesLoad");
 
 
-// Request Parser / Controller
+// Request Parser
 HookManager::callHook("BeforeRequestParser");
 
 HookManager::callHook("BeforeRequestParserStep2");

@@ -82,7 +82,7 @@ class UserPhotoManager extends Filterable
 			
 			if(count($userPhotos)){
 				// Set as default first of the user's approved photos
-				$this->setAsDefault($userId, $userPhotos[0]->id);
+				$this->setAsDefault($userPhotos[0]);
 			}
 		}
 	}

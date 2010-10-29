@@ -109,7 +109,7 @@ class RewriteAliasMap extends DbAccessor {
 	 * @param int $id
 	 * @return bool
 	 */
-	public function deleteAlais($id){
+	public function deleteAlias($id){
 		if(empty($id) or !is_numeric($id)){
 			throw new InvalidArgumentException("\$id have to be non zero integer");
 		}

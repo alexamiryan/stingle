@@ -6,6 +6,7 @@ $defaultConfig = array(
 													'HostName' => 'hostName',
 													'SiteUrl' => 'siteUrl',
 													'Host' => 'host'
-											  )
+											  ),
+						'memcache' => array(  'HostManager' => -1  )
 					);
 ?>

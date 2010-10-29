@@ -4,6 +4,6 @@ $defaultConfig = array(	'enabled' => true,
 						'port' => "11211",
 						'enabled' => false,
 						'Objects' => array("query" => "sql"),
-						'hooks' => array(  'AfterPluginInit' => 'AddMemcacheTimeConfig'  )
+						'hooks' => array(  'BeforePluginInit' => 'AddMemcacheTimeConfig'  )
 					);
 ?>

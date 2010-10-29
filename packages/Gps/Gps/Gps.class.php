@@ -19,6 +19,7 @@ class Gps extends DbAccessor
 	const TBL_CUST_FIELDS = 'wgps_cust_fields';
 	const TBL_CUST_SAVE = 'wgps_cust_save';
 	const TBL_ZIP_CODES = 'wgps_zip_codes';
+	const TBL_COUNTRY_ISO = 'wgps_country_iso';
 
 
 	public function __construct($dbInstanceKey = null){
@@ -450,6 +451,25 @@ class Gps extends DbAccessor
 							$where
 							ORDER BY $order");
 							
+		return $this->query->fetchRecords();
+	}
+	/**
+	 * Get country by iso code. 
+	 * @param string iso code, three or two digits
+	 * @return array
+	 */
+	public function countryByCode($isoCode){
+		$query  = "SELECT * FROM `".static::TBL_COUNTRY_ISO."` WHERE ";
+		if(strlen($isoCode) == 2){
+			$query .=  "`iso2` = '".strtoupper($isoCode)."'";
+		}
+		elseif (strlen($isoCode) == 3){
+			$query .=  "`iso3` = '".strtoupper($isoCode)."'";			
+		}
+		else{
+			throw new InvalidIntegerArgumentException("isoCode should be two or three chars length");
+		}
+		$this->query->exec($query);
 		return $this->query->fetchRecords();
 	}
 

@@ -45,7 +45,7 @@ function default_error_handler($errno, $errstr, $errfile, $errline){
 			echo format_error($errno, $errstr, $errfile, $errline, true);
 		}
 		else{
-			echo Reg::get('smarty')->fetch("modules/{$config->Smarty->Smarty->errors_module}/{$config->Smarty->Smarty->error_page}.tpl");
+			HookManager::callHook('ErrorHandler', array('e' => $e));
 		}
 		if(Reg::get('packageMgr')->isPluginLoaded("Db","Db") and function_exists("write_log")){
 			@write_log("Eerror", format_error($errno, $errstr, $errfile, $errline));

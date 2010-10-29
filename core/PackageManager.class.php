@@ -2,6 +2,7 @@
 class PackageManager {
 	
 	private $customConfigs;
+	private $forceCustomConfigs;
 	private $loadedPackages = array();
 	private $objectAllowanceTable = array();
 	private $hookAllowanceTable = array();
@@ -124,6 +125,33 @@ class PackageManager {
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Force given plugin to use only customPlugin from now on
+	 * 
+	 * @param string $packageName
+	 * @param string $pluginName
+	 */
+	public function forceCustomConfigForPlugin($packageName, $pluginName){
+		if(!isset($this->forceCustomConfigs[$packageName])){
+			$this->forceCustomConfigs[$packageName] = array();
+		}
+		$this->checkPluginExistance($packageName, $pluginName);
+		$this->forceCustomConfigs[$packageName][$pluginName] = true;
+	}
+	
+	/**
+	 * Cancel forcing plugin using only customConfig
+	 * 
+	 * @param string $packageName
+	 * @param string $pluginName
+	 */
+	public function noForceCustomConfigForPlugin($packageName, $pluginName){
+		if(isset($this->forceCustomConfigs[$packageName]) and isset($this->forceCustomConfigs[$packageName][$pluginName])){
+			$this->checkPluginExistance($packageName, $pluginName);
+			$this->forceCustomConfigs[$packageName][$pluginName] = false;
+		}
 	}
 	
 	/**
@@ -524,7 +552,12 @@ class PackageManager {
 	public function getPluginConfig($packageName, $pluginName){
 		$pluginConfig = ConfigManager::getConfig($packageName, $pluginName);
 		if(isset($this->customConfigs->$packageName) and isset($this->customConfigs->$packageName->$pluginName)){
-			$pluginConfig = ConfigManager::mergeConfigs($this->customConfigs->$packageName->$pluginName, $pluginConfig);
+			if(isset($this->forceCustomConfigs[$packageName]) and isset($this->forceCustomConfigs[$packageName][$pluginName]) and $this->forceCustomConfigs[$packageName][$pluginName] == true){
+				$pluginConfig = $this->customConfigs->$packageName->$pluginName;
+			}
+			else{
+				$pluginConfig = ConfigManager::mergeConfigs($this->customConfigs->$packageName->$pluginName, $pluginConfig);
+			}
 		}
 		
 		return $pluginConfig;

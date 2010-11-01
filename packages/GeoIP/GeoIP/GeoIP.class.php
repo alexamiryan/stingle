@@ -10,7 +10,6 @@ class GeoIP extends DbAccessor
 	
 	public function getLocation(){
 		$ip = $_SERVER['REMOTE_ADDR'];
-		$ip = '92.226.114.253';	
 			
 		$this->query->exec("SELECT `country`, `region`, `city` FROM ".self::TBL_BLOCKS."
 							LEFT JOIN ".self::TBL_LOCATIONS." USING (`locId`)
@@ -23,7 +22,6 @@ class GeoIP extends DbAccessor
 	
 	public function getCountryCode(){
 		$ip = $_SERVER['REMOTE_ADDR'];
-		$ip = '92.226.114.253';	
 
 		$this->query->exec("SELECT `country` FROM ".self::TBL_BLOCKS."
 							LEFT JOIN ".self::TBL_LOCATIONS." USING (`locId`)

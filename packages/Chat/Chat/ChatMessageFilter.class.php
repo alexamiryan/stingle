@@ -76,5 +76,17 @@ class ChatMessageFilter extends Filter {
 		$this->setCondition(Chat::FILTER_DATETIME_FIELD, Filter::MATCH_LESS_EQUAL, $date);
 		return $this;
 	}
+	
+	public function setConversation($userId1, $userId2){
+		if(empty($userId1) or !is_numeric($userId1)){
+			throw new InvalidArgumentException("\$userId1 have to be non zero integer");
+		}
+		if(empty($userId2) or !is_numeric($userId2)){
+			throw new InvalidArgumentException("\$userId2 have to be non zero integer");
+		}
+		
+		$this->setCustomWhere("((" . Chat::FILTER_RECEIVER_USER_ID_FIELD . " = '$userId1' and " . Chat::FILTER_SENDER_USER_ID_FIELD . " = '$userId2') or (" . Chat::FILTER_RECEIVER_USER_ID_FIELD . " = '$userId2' and " . Chat::FILTER_SENDER_USER_ID_FIELD . " = '$userId1'))");
+		return $this;
+	}
 }
 ?>

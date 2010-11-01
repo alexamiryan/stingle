@@ -67,7 +67,7 @@ class Chat extends Filterable
 			throw new InvalidArgumentException("Invalid senderUserId specified!");
 		}
 		
-		$unreadMessages = $this->query->exec("	SELECT *, UNIX_TIMESTAMP(`datetime`) as `timestamp` 
+		$this->query->exec("	SELECT *, UNIX_TIMESTAMP(`datetime`) as `timestamp` 
 												FROM `".Tbl::get('TBL_CHAT')."` 
 												WHERE 	`receiver_user_id`='$receiverUserId' and 
 														`sender_user_id`='$senderUserId' and
@@ -117,12 +117,44 @@ class Chat extends Filterable
 		$this->query->exec("	INSERT INTO `".Tbl::get('TBL_CHAT')."`
 										(`sender_user_id`, `receiver_user_id`, `message`) 
 								VALUES	('{$chatMessage->senderUserId}', '{$chatMessage->receiverUserId}', '{$chatMessage->message}')");
+		
+		return $this->query->getLastInsertId();
+	}
+	
+	public function getChatMessages(ChatMessageFilter $filter = null, $pager = null, $cacheMinutes = 0){
+		$chatMessages = array();
+		
+		if($filter == null){
+			$filter = new ChatMessageFilter();
+		}
+		
+		$sqlQuery = "SELECT `chat`.`id`
+						FROM `".Tbl::get('TBL_CHAT')."` `chat`
+						{$this->generateJoins($filter)}
+						WHERE 1
+						{$this->generateWhere($filter)}
+						{$this->generateOrder($filter)}
+						{$this->generateLimits($filter)}";
+		
+		if($pager !== null){
+			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);
+		}
+		else{
+			$this->query->exec($sqlQuery, $cacheMinutes);
+		}
+		if($this->query->countRecords()){
+			foreach($this->query->fetchFields('id') as $messageId){
+				array_push($chatMessages, $this->getChatMessage($messageId, $cacheMinutes));
+			}
+		}
+
+		return $chatMessages;
 	}
 	
 	public function getChatMessage($chatMessageId){
 		$messageRow = $this->query->exec("	SELECT *, UNIX_TIMESTAMP(`datetime`) as `timestamp` 
 												FROM `".Tbl::get('TBL_CHAT')."` 
-												WHERE 	`id`='$chatMessageId'");
+												WHERE 	`id`='$chatMessageId'")->fetchRecord();
 		$chatMessageObj = new ChatMessage();
 		$chatMessageObj->id = $messageRow['id'];
 		$chatMessageObj->senderUserId = $messageRow['sender_user_id'];

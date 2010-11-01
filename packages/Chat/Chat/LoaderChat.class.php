@@ -3,6 +3,7 @@ class LoaderChat extends Loader{
 	
 	protected function includes(){
 		require_once ('ChatMessage.class.php');
+		require_once ('ChatMessageFilter.class.php');
 		require_once ('Chat.class.php');
 	}
 	

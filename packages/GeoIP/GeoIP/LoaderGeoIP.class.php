@@ -6,7 +6,7 @@ class LoaderGeoIP extends Loader{
 	}
 	
 	protected function loadGeoIP(){
-		Reg::register($this->config->Objects->GeoIP, geoip_open(STINGLE_PATH . "packages/GeoIP/GeoIP/GeoIP.dat",GEOIP_STANDARD));
+		Reg::register($this->config->Objects->GeoIP, new GeoIP());
 	}
 }
 ?>

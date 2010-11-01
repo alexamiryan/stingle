@@ -1,5 +1,5 @@
 <?
 $defaultConfig = array(	
-						'Objects' => array(	'GeoIP' => 'gi' )
+						'Objects' => array(	'GeoIP' => 'geoIp' )
 					);
 ?>

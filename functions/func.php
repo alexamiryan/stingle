@@ -420,4 +420,14 @@ function draw_hiddens_from_get_params($exclude_array = '') {
 
 	return $hiddens;
 }
+/**
+ * Get value of array by key
+ *
+ * @param array $array
+ * @param string $key
+ * @return string|array
+ */
+function getValue($array, $key){
+    return $array[$key];
+}
 ?>

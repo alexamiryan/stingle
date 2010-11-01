@@ -470,7 +470,7 @@ class Gps extends DbAccessor
 			throw new InvalidIntegerArgumentException("isoCode should be two or three chars length");
 		}
 		$this->query->exec($query);
-		return $this->query->fetchRecords();
+		return $this->query->fetchRecord();
 	}
 
 	///////////END OF PUBLIC PART///////////

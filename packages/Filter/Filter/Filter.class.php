@@ -11,6 +11,7 @@ abstract class Filter {
 	const MATCH_LESS_EQUAL		= "less_equal";
 	const MATCH_GREATER_EQUAL	= "greater_equal";
 	const MATCH_IN	= "in";
+	const MATCH_NOT_IN	= "not_in";
 	
 	protected $conditions = array();
 	protected $comparisons = array();
@@ -141,6 +142,25 @@ abstract class Filter {
 			'' ,'rand()', ''
 		));
 		return $this;
+	}
+	
+	public function removeCondition($fieldName){
+		$condtions = & $this->conditions;
+		foreach ($this->conditions as $key=>$condition) {
+			if($condition['field'] == $fieldName){
+				unset($condtions[$key]);
+				break;
+			}
+		}
+	}
+	public function removeExtraJoin($tableName){
+		$extraJoins = & $this->extraJoins;
+		foreach ($this->extraJoins as $tbl=>$extraJoin) {
+			if($tbl == $tableName){
+				unset($extraJoins[$tbl]);
+				break;
+			}
+		}
 	}
 	
 	public function getLimits(){

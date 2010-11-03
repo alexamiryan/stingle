@@ -1191,7 +1191,7 @@ class UserManagement extends Filterable{
 						{$this->generateWhere($usersFilter)}
 						{$this->generateOrder($usersFilter)}
 						{$this->generateLimits($usersFilter)}";
-		
+	
 		if($pager !== null){
 			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);
 		}

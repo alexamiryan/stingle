@@ -10,14 +10,26 @@ class UsersFilter extends Filter {
 	}
 	
 	public function setUserId($user_id, $match = Filter::MATCH_EQUAL){
-		if(empty($user_id) or !is_numeric($user_id)){
-			throw new InvalidIntegerArgumentException("\$user_id have to be non zero integer");
+		if(empty($user_id)){
+			throw new InvalidIntegerArgumentException("\$user_id have to be not empty");
 		}
 		if(empty($match)){
 			throw new InvalidArgumentException("\$match have to be non empty string");
 		}
 		
-		$this->setCondition(UserManagement::FILTER_USER_ID_FIELD, $match, $user_id);
+		if(!is_array($user_id)){
+			if(!is_numeric($user_id)){
+				throw new InvalidIntegerArgumentException("\$user_id have to be non zero integer");
+			}
+			$user_id = array($user_id);
+		}
+		
+		if(count($user_id) == 1){
+			$this->setCondition(UserManagement::FILTER_USER_ID_FIELD, $match, $user_id[0]);
+		}
+		else{
+			$this->setCondition(UserManagement::FILTER_USER_ID_FIELD, $match, $user_id);
+		}
 		return $this;
 	}
 	

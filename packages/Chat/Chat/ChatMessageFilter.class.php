@@ -48,6 +48,23 @@ class ChatMessageFilter extends Filter {
 		return $this;
 	}
 	
+	public function setIsSystem($isSystem = Chat::IS_SYSTEM_YES){
+		if(!in_array($isSystem, Chat::getConstsArray('IS_SYSTEM'))){
+			throw new InvalidArgumentException("Invalid \$isSystem specified");
+		}
+		$this->setCondition(Chat::FILTER_IS_SYSTEM_FIELD, Filter::MATCH_EQUAL, $isSystem);
+		return $this;
+	}
+
+	public function setSenderAndSystem($senderUserId){
+		if(empty($senderUserId) or !is_numeric($senderUserId)){
+			throw new InvalidArgumentException("\$senderUserId have to be non zero integer");
+		}
+		$this->setCustomWhere("(`".Chat::FILTER_SENDER_USER_ID_FIELD."`='$senderUserId' or 
+									(`".Chat::FILTER_SENDER_USER_ID_FIELD."`= NULL and `".Chat::FILTER_IS_SYSTEM_FIELD."` = '".Chat::IS_SYSTEM_YES."'))");
+		return $this;
+	}
+	
 	public function setReadStatus($readStatus){
 		if(!is_numeric($readStatus)){
 			throw new InvalidArgumentException("\$readStatus have to be integer");

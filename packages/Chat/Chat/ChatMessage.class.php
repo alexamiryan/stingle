@@ -10,6 +10,7 @@ class ChatMessage
 	public $timestamp;
 	public $message;
 	public $read;
+	public $is_system;
 	
 	
 }

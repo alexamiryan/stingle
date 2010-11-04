@@ -19,7 +19,6 @@ function default_exception_handler(Exception $e){
 	global $site_name;
 	
 	$config = ConfigManager::getGlobalConfig();
-	
 	if(Debug::getMode()){
 		echo format_exception($e, true);
 	}
@@ -33,6 +32,7 @@ function default_exception_handler(Exception $e){
 	if($config->Debug->send_email_on_exception and function_exists("send_mail")){
 		@send_mail($config->site->developer_mail, "Exception on $site_name", format_exception($e, true));
 	}
+	exit;
 }
 
 function default_error_handler($errno, $errstr, $errfile, $errline){
@@ -54,6 +54,7 @@ function default_error_handler($errno, $errstr, $errfile, $errline){
 		if($config->Debug->send_email_on_exception and function_exists("send_mail")){
 			@send_mail($config->site->developer_mail, "Error on $site_name", format_error($errno, $errstr, $errfile, $errline, true));
 		}
+		exit;
 	}
 	return false;
 }

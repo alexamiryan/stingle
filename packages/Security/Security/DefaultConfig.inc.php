@@ -1,5 +1,5 @@
 <?
 $defaultConfig = array(
-						'hooks' => array(  'AfterThisPluginTreeInit' => 'SecureInputData'  )
+						'hooks' => array(  'RequestParser' => 'SecureInputData'  )
 					  );
 ?>

@@ -21,10 +21,10 @@ class YubikeyUserAuthorization extends UserAuthorization{
 	 * @param var $usr
 	 * @param var $sessionVar
 	 */
-	public function __construct(UserManagement $um, &$sessionVar, Config $configYubico, $dbInstanceKey = null){
-		parent::__construct($um, $sessionVar, $dbInstanceKey);
+	public function __construct(UserManagement $um, Config $config, $dbInstanceKey = null){
+		parent::__construct($um, $config, $dbInstanceKey);
 		
-		$this->authYubikey = new Yubikey($configYubico->yubico_id, $configYubico->yubico_key);
+		$this->authYubikey = new Yubikey($config->yubico_id, $config->yubico_key);
 	}
 	
 	/**
@@ -46,20 +46,16 @@ class YubikeyUserAuthorization extends UserAuthorization{
 		
 		if($this->isYubikeyRequired($this->usr->getId())){
 			$available_yubikeys = $this->getAvailableYubikeysList($this->usr->getId());
-			try{
-				if(!in_array($this->getYubikeyKeyByOTP($yubikeyOTP), $available_yubikeys)){
-					throw new RuntimeException("Invalid Yubikey", static::EXCEPTION_INVALID_YUBIKEY);
-				}
-				else{
-					if(!$this->authYubikey->verify($yubikeyOTP)){
-						throw new RuntimeException("Yubikey Validation Failed", static::EXCEPTION_INVALID_YUBIKEY);
-					}
-				}
-			}
-			catch (RuntimeException $e){
+			
+			if(!in_array($this->getYubikeyKeyByOTP($yubikeyOTP), $available_yubikeys)){
 				$this->doLogout();
-				throw $e;
+				throw new RuntimeException("Invalid Yubikey", static::EXCEPTION_INVALID_YUBIKEY);
 			}
+			elseif(!$this->authYubikey->verify($yubikeyOTP)){
+				$this->doLogout();
+				throw new RuntimeException("Yubikey Validation Failed", static::EXCEPTION_INVALID_YUBIKEY);
+			}
+
 		}
 	}
 	

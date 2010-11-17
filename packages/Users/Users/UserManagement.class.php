@@ -1246,9 +1246,9 @@ class UserManagement extends Filterable{
 	 * Validate email activation
 	 *
 	 * @param string $code
-	 * @param bool $enable_user
-	 * @param bool $delete_code
-	 * @return bool
+	 * @param boolean $enable_user
+	 * @param boolean $delete_code
+	 * @return integer
 	 */
 	public function validateRegistration($code, $enable_user = true, $delete_code = true){
 		$this->query->exec("select `id`, `user_id` from `".Tbl::get('TBL_REG_CODES')."` where `code`='$code'");
@@ -1260,7 +1260,7 @@ class UserManagement extends Filterable{
 				}
 			}
 			if($delete_code){
-				if(!$this->query->exec("delete from `".Tbl::get('TBL_REG_CODES')."` where `id`='" . $code_row['id'] . "'")){
+				if(!$this->removeRegCode($code_row['user_id'])){
 					return false;
 				}
 			}

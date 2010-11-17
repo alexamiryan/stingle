@@ -1,5 +1,4 @@
-<?php
-
+<?
 abstract class DbAccessor extends Model{
 	
 	/**
@@ -24,7 +23,7 @@ abstract class DbAccessor extends Model{
 	protected $dbInstanceKey;
 	
 	
-	protected function __construct($dbInstanceKey = null){
+	public function __construct($dbInstanceKey = null){
 		if($dbInstanceKey === null){
 			$this->dbInstanceKey = MySqlDbManager::getDefaultInstanceKey();
 		}
@@ -64,5 +63,4 @@ abstract class DbAccessor extends Model{
 		return $this->query->getLogging();
 	}
 }
-
 ?>

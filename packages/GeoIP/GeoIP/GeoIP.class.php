@@ -4,36 +4,39 @@ class GeoIP extends DbAccessor
 	const TBL_BLOCKS = 'GeoIPBlocks';
 	const TBL_LOCATIONS = 'GeoIPLocation';
 	
-	public function __construct($dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
-	}
-	
+	/**
+	 * Get location by IP address
+	 * @param string $ip
+	 * @return GeoLocation
+	 */
 	public function getLocation($ip = null){
 		if($ip === null){
 			$ip = $_SERVER['REMOTE_ADDR'];
 		}
-		 if(!preg_match("/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/",$ip)){
-		 	throw new InvalidArgumentException('IP is in wrong format');
-		 }
-		$this->query->exec("SELECT `country`, `region`, `city` FROM ".self::TBL_BLOCKS."
-							LEFT JOIN ".self::TBL_LOCATIONS." USING (`locId`)
+		if(!preg_match("/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/",$ip)){
+			throw new InvalidArgumentException('IP is in wrong format');
+		}
+		$this->query->exec("SELECT `country`, `region`, `city` FROM ".Tbl::get('TBL_BLOCKS')."
+							LEFT JOIN ".Tbl::get('TBL_LOCATIONS')." USING (`locId`)
 							WHERE index_geo = INET_ATON('".$ip."')-(INET_ATON('".$ip."')%65536) AND INET_ATON('".$ip."') BETWEEN `startIpNum` AND `endIpNum`");
 		if($this->query->countRecords()){
-			return $this->query->fetchRecord();
+			$row = $this->query->fetchRecord();
+			$location = new GeoLocation();
+			$location->country = $row['country'];
+			$location->region = $row['region'];
+			$location->city = $row['city'];
+			
+			return $location;
 		}
-		return array();		
+		return null;
 	}
 	
-	public function getCountryCode(){
-		$ip = $_SERVER['REMOTE_ADDR'];
-
-		$this->query->exec("SELECT `country` FROM ".self::TBL_BLOCKS."
-							LEFT JOIN ".self::TBL_LOCATIONS." USING (`locId`)
-							WHERE index_geo = INET_ATON('".$ip."')-(INET_ATON('".$ip."')%65536) AND INET_ATON('".$ip."') BETWEEN `startIpNum` AND `endIpNum`");
-		if($this->query->countRecords()){
-			return $this->query->fetchField('country');
-		}		
-		return null;
+	/**
+	 * Get country code by IP
+	 */
+	public function getCountryCode($ip = null){
+		$location = static::getLocation($ip);
+		return $location->country;
 	}
 }
 ?>

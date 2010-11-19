@@ -447,6 +447,7 @@ class SmartyWrapper extends Smarty {
 		
 		// Check if page exists and if not show 404 error page
 		if(!file_exists("{$this->template_dir}{$this->modulesDir}{$this->module}/{$this->page}.tpl")){
+			header("HTTP/1.0 404 Not Found");
 			$this->module = $this->errorsModule;
 			$this->page = $this->error404Page;
 		}

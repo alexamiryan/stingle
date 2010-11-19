@@ -10,7 +10,7 @@
 
 class User
 {
-	private $id=0;
+	private $id = null;
 	private $login = "";
 	private $creation_date = "";
 	private $status = 0;
@@ -207,7 +207,7 @@ class User
 	}
 
 	public function isAuthorized(){
-		if(empty($this->login)){
+		if($this->id === null){
 			return false;
 		}
 		else{

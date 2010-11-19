@@ -12,9 +12,10 @@ class LoaderYubikey extends Loader{
 	protected function loadYubikeyUserAuthorization(){
 		$usersConfig = ConfigManager::getConfig("Users","Users");
 		
-		$yubikeyUserAuthorization = new YubikeyUserAuthorization(	Reg::get($usersConfig->Objects->UserManagement), 
-																	$_SESSION[$usersConfig->sessionVarName], 
-																	$this->config);
+		$resultingConfig = ConfigManager::mergeConfigs($usersConfig->UserAuthConfig, $this->config->YubikeyAuthConfig);
+		
+		$yubikeyUserAuthorization = new YubikeyUserAuthorization(	Reg::get($usersConfig->Objects->UserManagement),
+																	$resultingConfig);
 		
 		Reg::register($this->config->Objects->YubikeyUserAuthorization, $yubikeyUserAuthorization);
 	}

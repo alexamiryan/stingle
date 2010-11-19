@@ -70,7 +70,11 @@ abstract class Loader {
 		}
 		
 		if($this->packageName != $this->pluginName){
-			$deps->addPlugin($this->packageName, $this->packageName);
+			try {
+				$this->packageManager->checkPluginExistance($this->packageName, $this->packageName);
+				$deps->addPlugin($this->packageName, $this->packageName);
+			}
+			catch (Exception $e){ }
 		}
 		
 		return $deps;

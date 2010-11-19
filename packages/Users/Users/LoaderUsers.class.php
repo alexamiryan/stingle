@@ -18,12 +18,12 @@ class LoaderUsers extends Loader{
 	
 	protected function loadUserAuthorization(){
 		$this->userAuthorization = new UserAuthorization(	$this->userManagement, 
-															$_SESSION[$this->config->sessionVarName]);
+															$this->config->UserAuthConfig);
 		Reg::register($this->config->Objects->UserAuthorization, $this->userAuthorization);
 	}
 	
 	public function hookUserAuthorization(){
-		Reg::register($this->config->ObjectsIgnored->User, Reg::get($this->config->Objects->UserAuthorization)->authorize());
+		Reg::register($this->config->ObjectsIgnored->User, Reg::get($this->config->Objects->UserAuthorization)->getUserFromRequest());
 	}
 }
 ?>

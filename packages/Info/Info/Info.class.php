@@ -1,7 +1,7 @@
 <?php
 class Info
 {
-	private $elements;
+	private $elements = array();
 	private $sess_ref;
 
 	/**
@@ -10,17 +10,12 @@ class Info
 	 * @param string $session_variable (e.g. $_SESSION['error'])
 	 */
 	public function __construct(&$session_variable){
-		$this->elements=array();
 		$this->sess_ref=&$session_variable;
-		if(!empty($session_variable)){
-			$sess_obj=unserialize($this->sess_ref);
-			if(is_object($sess_obj)){
-				if(($el_arr=$sess_obj->getAll(false)) != false){
-					$this->elements=$el_arr;
-				}
-			}
+		if(!empty($session_variable) and is_array($session_variable)){
+			$this->elements=$session_variable;
 		}
 	}
+	
 	public function __destruct(){
 		$this->updateSessionObj();
 	}
@@ -89,7 +84,7 @@ class Info
 	public function shiftLang(){
 		if($this->getCount()>0){
 			$sh=$this->shift();
-				$value = @constant($sh[0]);
+			$value = @constant($sh[0]);
 			if(count($sh[1])){
 				for ($i=0;$i<count($sh[1]);$i++){
 					$sh[1][$i]="'" . str_replace("'", "\\'", $sh[1][$i]) . "'";
@@ -139,7 +134,7 @@ class Info
 	}
 
 	private function updateSessionObj(){
-		$this->sess_ref=serialize($this);
+		$this->sess_ref=$this->elements;
 	}
 }
 ?>

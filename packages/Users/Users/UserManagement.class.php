@@ -896,21 +896,21 @@ class UserManagement extends Filterable{
 	}
 
 	/**
-	 * Authorise user and get wusr object
+	 * Check user login password
 	 *
 	 * @param string $login
 	 * @param string $password
-	 * @param bool $is_pass_md5
-	 * @return User
+	 * @param boolean $isPassMd5
+	 * @return boolean
 	 */
-	public function authorization($login, $password, $is_pass_md5 = false, $authorize_if_disabled = false){
-		if(empty($login) or empty($password)){
-			return false;
-		}
-		if($this->query->exec("select `id`, `enable`, `login`, `password` from `".Tbl::get('TBL_USERS')."` where `login`='$login'")){
-			$res = $this->query->fetchRecord();
-			if($res["password"] == ($is_pass_md5 ? $password : md5($password)) and ($res["enable"] or $authorize_if_disabled)){
-				return true;
+	public function checkCredentials($login, $password, $isPassMd5 = false){
+		if(!empty($login) and !empty($password)){
+			$this->query->exec("SELECT `password` FROM `".Tbl::get('TBL_USERS')."` WHERE `login`='$login'");
+			if($this->query->countRecords() == 1){
+				$validPassword = $this->query->fetchField('password');
+				if($validPassword == ($isPassMd5 ? $password : md5($password))){
+					return true;
+				}
 			}
 		}
 		return false;
@@ -1246,9 +1246,9 @@ class UserManagement extends Filterable{
 	 * Validate email activation
 	 *
 	 * @param string $code
-	 * @param bool $enable_user
-	 * @param bool $delete_code
-	 * @return bool
+	 * @param boolean $enable_user
+	 * @param boolean $delete_code
+	 * @return integer
 	 */
 	public function validateRegistration($code, $enable_user = true, $delete_code = true){
 		$this->query->exec("select `id`, `user_id` from `".Tbl::get('TBL_REG_CODES')."` where `code`='$code'");
@@ -1260,7 +1260,7 @@ class UserManagement extends Filterable{
 				}
 			}
 			if($delete_code){
-				if(!$this->query->exec("delete from `".Tbl::get('TBL_REG_CODES')."` where `id`='" . $code_row['id'] . "'")){
+				if(!$this->removeRegCode($code_row['user_id'])){
 					return false;
 				}
 			}

@@ -81,7 +81,7 @@ class UsersFilter extends Filter {
 		if(empty($login)){
 			throw new InvalidArgumentException("\$login have to be non empty string");
 		}
-		$this->setCondition(UserManagement::FILTER_LOGIN_FIELD, Filter::MATCH_ENDS, $login);
+		$this->setCondition(UserManagement::FILTER_LOGIN_FIELD, Filter::MATCH_STARTS, $login);
 		return $this;
 	}
 	

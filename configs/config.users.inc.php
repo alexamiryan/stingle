@@ -3,7 +3,8 @@ $CONFIG['Users']['login_cokie'] =  $CONFIG['site']['site_id'] . "-login";
 
 $reg_max_count_in_minute = 5;
 
-$CONFIG['users']['online_ping_interval'] =  7000;
+$CONFIG['users']['onlinePingInterval'] =  7000;
+$CONFIG['users']['missedPingsCount'] =  20;
 $CONFIG['users']['username_pattern'] =  "/^([^\,\/\\\"\[\]\{\}\~\@\#\$\%\^\&\*\(\)\:\;\?<>\s\+\=]{3,20})$/isu";
 
 /**

@@ -496,7 +496,7 @@ class PackageManager {
 	 * 
 	 * @param string $packageName
 	 */
-	private function checkPluginExistance($packageName, $pluginName){
+	public function checkPluginExistance($packageName, $pluginName){
 		$this->checkPackageExistance($packageName);
 		if(empty($pluginName)){
 			throw new InvalidArgumentException("\$pluginName is empty.");

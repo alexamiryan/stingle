@@ -6,7 +6,7 @@ $defaultConfig = array(
 						'firstLevelDefaultValue' => 'home',
 						'secondLevelDefaultValue' => 'home',
 						'actionName' => 'action',
-						'validationRegExp' => '/^[a-zA-Z0-9_]+$/',
+						'validationRegExp' => '/^[a-zA-Z0-9_\-]+$/',
 
 						'modulesDir' => 'modules',
 						

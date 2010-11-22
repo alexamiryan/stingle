@@ -1,13 +1,4 @@
-<?php
-/**
- * ###################################################
- * #                   IMPORTANT!!!                  #
- * ###################################################
- * # Requires sequrity_quotes function to be called  #
- * # before new object definition from this class    #
- * ###################################################
- */
-
+<?
 class Gps extends DbAccessor
 {
 	const ROOT_NODE=1;
@@ -458,8 +449,8 @@ class Gps extends DbAccessor
 	 * @param string iso code, three or two digits
 	 * @return array
 	 */
-	public function countryByCode($isoCode){
-		$query  = "SELECT * FROM `".static::TBL_COUNTRY_ISO."` WHERE ";
+	public function getCountryByCode($isoCode){
+		$query  = "SELECT * FROM `".Tbl::get('TBL_COUNTRY_ISO')."` WHERE ";
 		if(strlen($isoCode) == 2){
 			$query .=  "`iso2` = '".strtoupper($isoCode)."'";
 		}

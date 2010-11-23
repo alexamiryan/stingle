@@ -450,6 +450,7 @@ class SmartyWrapper extends Smarty {
 			header("HTTP/1.0 404 Not Found");
 			$this->module = $this->errorsModule;
 			$this->page = $this->error404Page;
+			$this->removeWrapper();
 		}
 		
 		// CSS & JS files

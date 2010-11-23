@@ -88,7 +88,7 @@ abstract class Loader {
 		if(isset($this->config->Objects)){
 			foreach (array_keys(get_object_vars($this->config->Objects)) as $objectName){
 				if($this->packageManager->isObjectInitIsAllowed($this->config->Objects->$objectName, $this->packageName, $this->pluginName)){
-					if($overrideObjects === false and Reg::get($this->config->Objects->$objectName, false) !== null){
+					if($overrideObjects === false and Reg::isRegistered($this->config->Objects->$objectName)){
 						throw new RuntimeException("Object {$this->config->Objects->$objectName} is already defined. If you want to redefine it anyway pass true as 3rd argument to usePlugin function of PackageManager.");
 					}
 					$loadFuncName = "load$objectName";

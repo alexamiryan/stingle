@@ -22,16 +22,22 @@ class Reg
 	 * @param bool $throwException
 	 * @return PackageManager|MysqlQuery|UserManagement|LanguageManager|Nav
 	 */
-	public static function get($key, $throwException = true){
-		if(!isset(static::$reg[$key]) or empty(static::$reg[$key])){
-			if($throwException){
-				throw new RuntimeException("There is no object in registry with key $key.");
-			}
-			else{
-				return null;
-			}
+	public static function get($key){
+		if(!static::isRegistered($key)){
+			throw new RuntimeException("There is no object in registry with key $key.");
 		}
 		return static::$reg[$key];
+	}
+	
+	/**
+	 * Check if key is already registered 
+	 * @param string $key
+	 */
+	public static function isRegistered($key){
+		if(isset(static::$reg[$key])){
+			return true;
+		}
+		return false;
 	}
 }
 ?>

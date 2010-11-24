@@ -9,7 +9,7 @@ class GeoIPGps
 		$this->gps = $gps;
 	}
 	
-	public function getGpsByIP($ip = null, $type = 'CITY'){
+	public function getGpsByIP($ip = null, $type = 'CITY', $cacheMinutes = null){
 		if($type == 'COUNTRY'){
 			throw new InvalidArgumentException("Ilegal use of \$type variable. If you want to get country gps use getCountryGpsByIP method.");
 		}
@@ -18,7 +18,7 @@ class GeoIPGps
 		
 		$location = $this->geoIP->getLocation($ip);
 		
-		$myGpses = $this->gps->getNodesByName(mysql_real_escape_string($location->city), $this->gps->getTypeId($type));		
+		$myGpses = $this->gps->getNodesByName(mysql_real_escape_string($location->city), $this->gps->getTypeId($type), false, $cacheMinutes);		
 		if(count($myGpses) > 1){
 			// More than one node with same name
 			// Check country
@@ -38,11 +38,11 @@ class GeoIPGps
 		return $gpsToReturn;
 	}
 	
-	public function getCountryGpsByIP($ip = null){	
-		$location = $this->geoIP->getLocation($ip);
+	public function getCountryGpsByIP($ip = null, $cacheMinutes = null){	
+		$location = $this->geoIP->getLocation($ip, $cacheMinutes);
 		
 		if($location){
-			$country = $this->gps->getCountryByCode($location->country);
+			$country = $this->gps->getCountryByCode($location->country, $cacheMinutes);
 			if(!empty($country)){
 				return $country['gps_id'];
 			}

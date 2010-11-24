@@ -8,13 +8,13 @@ class Host{
 
 	const TBL_HOSTS = "hosts";
 
-	function __construct($host_id = null, $dbInstanceKey = null){
+	function __construct($host_id = null, $cacheMinutes = null, $dbInstanceKey = null){
 		if($host_id !== null){
 			if(!is_numeric($host_id)){
 				throw new InvalidIntegerArgumentException("host_id argument should be an integer.");
 			}
 			$sql = MySqlDbManager::getQueryObject($dbInstanceKey);
-			$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS') ."` WHERE `id` = '{$host_id}'");
+			$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS') ."` WHERE `id` = '{$host_id}'", $cacheMinutes);
 			if($sql->countRecords()){
 				$res = $sql->fetchRecord();
 				static::setData($res, $this);

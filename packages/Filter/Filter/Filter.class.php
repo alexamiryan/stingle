@@ -3,15 +3,17 @@
 abstract class Filter {
 	const MATCH_EQUAL		= "exact_match";
 	const MATCH_NOT_EQUAL		= "not_equal";
-	const MATCH_CONTAINS	= "contains";
+	const MATCH_CONTAINS		= "contains";
 	const MATCH_STARTS		= "starts";
 	const MATCH_ENDS		= "ends";
 	const MATCH_LESS		= "less";
 	const MATCH_GREATER		= "greater";
 	const MATCH_LESS_EQUAL		= "less_equal";
 	const MATCH_GREATER_EQUAL	= "greater_equal";
-	const MATCH_IN	= "in";
-	const MATCH_NOT_IN	= "not_in";
+	const MATCH_IN			= "in";
+	const MATCH_NOT_IN		= "not_in";
+	const MATCH_NULL		= "null";
+	const MATCH_NOT_NULL		= "not_null";
 	
 	protected $conditions = array();
 	protected $comparisons = array();

@@ -27,6 +27,10 @@ abstract class Filterable extends DbAccessor{
 				return " AND $field IN ('".implode("', '", $value)."')";
 			case Filter::MATCH_NOT_IN :
 				return " AND $field NOT IN ('".implode("', '", $value)."')";
+			case Filter::MATCH_NULL :
+				return " AND $field IS NULL";
+			case Filter::MATCH_NOT_NULL :
+				return " AND $field IS NOT NULL";
 			default :
 				throw new RuntimeException("Given match:'$match' not found.");
 		}

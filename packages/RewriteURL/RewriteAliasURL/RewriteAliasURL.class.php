@@ -18,6 +18,8 @@ class RewriteAliasURL extends RewriteURL{
 			foreach($this->_aliasMap as $url_alias){
 				$uri = str_replace($url_alias["alias"], $url_alias["map"], $uri);
 			}
+			
+			$_SERVER['REQUEST_ORIGINAL_URI'] = $_SERVER['REQUEST_URI']; 
 			$_SERVER['REQUEST_URI'] = $uri;
 		}
 	}

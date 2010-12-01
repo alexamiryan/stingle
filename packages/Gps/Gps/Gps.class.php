@@ -221,7 +221,12 @@ class Gps extends DbAccessor
 								WHERE `tree`.`id`='$my_id'", $cacheMinutes);
 			if($this->query->countRecords()){
 				$result=$this->query->fetchRecord();
-				array_push($node_tree, array('node_id'=>$result['id'],'name'=>$result['name'], 'type_id'=>$result['type_id'], 'type'=>$result['type']));
+				array_push($node_tree, array(	'node_id'=>$result['id'],
+												'name'=>$result['name'], 
+												'type_id'=>$result['type_id'], 
+												'type'=>$result['type']
+											)
+										);
 				$par_id=$result['parent_id'];
 				$my_id=$par_id;
 			}
@@ -276,9 +281,9 @@ class Gps extends DbAccessor
 	 * @param int $countryId
 	 * @return string Constant name
 	 */
-	public function getTypeLabel($typeName,$countryId){
+	public function getTypeLabel($typeName,$countryId, $cacheMinutes = null){
 		$this->query->exec("SELECT `constant` FROM `".Tbl::get('TBL_LABELS')."`
-							WHERE `country_id`='{$countryId}' AND `type`='{$typeName}'");
+							WHERE `country_id`='{$countryId}' AND `type`='{$typeName}'", $cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchField('constant');
 		}
@@ -293,7 +298,7 @@ class Gps extends DbAccessor
 	 * @param int $countryNodeId
 	 * @param int $volume
 	 */
-	public function getNodesByZip($zip, $countryNodeId, $volume = 20, $exactMatch = true){
+	public function getNodesByZip($zip, $countryNodeId, $volume = 20, $exactMatch = true, $cacheMinutes = null){
 		$gpsNodes = array();
 		$limitString = "";
 		if($volume != 0){
@@ -307,7 +312,7 @@ class Gps extends DbAccessor
 		}
 		
 		$this->query->exec("SELECT gps_id, zip FROM `".Tbl::get('TBL_ZIP_CODES')."`
-							WHERE `country_id`='{$countryNodeId}' AND $whereClause $limitString");
+							WHERE `country_id`='{$countryNodeId}' AND $whereClause $limitString", $cacheMinutes);
 		$zipNodes = $this->query->fetchRecords();
 		foreach ($zipNodes as $zipNode) {
 			$node = $this->getNode($zipNode["gps_id"]);
@@ -433,14 +438,14 @@ class Gps extends DbAccessor
 	 * @param string $order
 	 *
 	 */
-	public function getTypes($where = null, $order = "`id` ASC"){
+	public function getTypes($where = null, $order = "`id` ASC", $cacheMinutes = null){
 		if(!empty($where)){
 			$where = " WHERE $where";
 		}
 		
 		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_TYPES')."`
 							$where
-							ORDER BY $order");
+							ORDER BY $order", $cacheMinutes);
 							
 		return $this->query->fetchRecords();
 	}
@@ -449,7 +454,7 @@ class Gps extends DbAccessor
 	 * @param string iso code, three or two digits
 	 * @return array
 	 */
-	public function getCountryByCode($isoCode){
+	public function getCountryByCode($isoCode, $cacheMinutes = null){
 		$query  = "SELECT * FROM `".Tbl::get('TBL_COUNTRY_ISO')."` WHERE ";
 		if(strlen($isoCode) == 2){
 			$query .=  "`iso2` = '".strtoupper($isoCode)."'";
@@ -460,7 +465,7 @@ class Gps extends DbAccessor
 		else{
 			throw new InvalidIntegerArgumentException("isoCode should be two or three chars length");
 		}
-		$this->query->exec($query);
+		$this->query->exec($query, $cacheMinutes);
 		return $this->query->fetchRecord();
 	}
 

@@ -4,7 +4,6 @@ class ChatResponse extends JSON{
 	private $chats  = array();
 	private $chatInvitations  = array();
 	private $money  = null;
-	private $lastId = null;
 	/**
 	 *	private $responseArray = array('chats'=>array(),'invitations'=>array(),'money'=>null,'lastId'=>null);
 	 */ 
@@ -25,10 +24,6 @@ class ChatResponse extends JSON{
 			$responseArray['money'] = $this->money;
 		}
 		
-		if($this->lastId !==null){
-			$responseArray['lastId'] = $this->lastId;
-		}
-				
 		return parent::jsonOutput($responseArray);
 	}
 	
@@ -42,10 +37,6 @@ class ChatResponse extends JSON{
 	
 	public function setMoney($money){
 		$this->money = $money;
-	}
-	
-	public function setLastId($id){
-		$this->lastId = $id;
 	}
 }
 ?>

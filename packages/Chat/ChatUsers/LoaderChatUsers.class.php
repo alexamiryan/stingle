@@ -7,7 +7,7 @@ class LoaderChatUsers extends Loader{
 	}
 	
 	protected function customInitBeforeObjects(){
-		Tbl::registerTableNames('ChatManager');
+		Tbl::registerTableNames('UsersChatManager');
 	}
 	
 	protected function loadChatManager(){

@@ -7,31 +7,16 @@ class LoaderChat extends Loader{
 		require_once ('Chat.class.php');		
 		require_once ('ChatInvitation.class.php');
 		require_once ('ChatResponse.class.php');
-		
-		if($this->config->ManagerAlgorithm == 'byLastId'){
-			require_once ('ChatManagerByLastId.class.php');
-		}
-		elseif ($this->config->ManagerAlgorithm == 'byMakeRead'){
-			require_once ('ChatManagerByMakeRead.class.php');
-		}
+		require_once ('ChatUser.class.php');
+		require_once ('ChatManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
-		if($this->config->ManagerAlgorithm == 'byLastId'){
-			Tbl::registerTableNames('ChatManagerByLastId');
-		}
-		elseif ($this->config->ManagerAlgorithm == 'byMakeRead'){
-			Tbl::registerTableNames('ChatManagerByMakeRead');
-		}
+		Tbl::registerTableNames('ChatManager');
 	}
 	
 	protected function loadChatManager(){
-		if($this->config->ManagerAlgorithm == 'byLastId'){
-			Reg::register($this->config->Objects->ChatManager, new ChatManagerByLastId());
-		}
-		elseif ($this->config->ManagerAlgorithm == 'byMakeRead'){
-			Reg::register($this->config->Objects->ChatManager, new ChatManagerByMakeRead());
-		}
+		Reg::register($this->config->Objects->ChatManager, new ChatManager());
 	}
 }
 ?>

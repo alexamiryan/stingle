@@ -1,5 +1,5 @@
 <?php
-class ChatManagerByLastId extends Filterable
+class ChatManager extends Filterable
 {
 	const TBL_CHAT = 'chat';
 	
@@ -42,17 +42,17 @@ class ChatManagerByLastId extends Filterable
 		return $this->query->fetchField('id');
 	}
 	
-	public function getNewMessages($lastId, $userId){
+	protected function getNewMessages($lastId, $userId){
 		if(empty($userId) or !is_numeric($lastId)){
 			throw new InvalidArgumentException("Invalid arguments specified!");
 		}
 		$newMessages = array();
-		$messages = $this->query->exec("SELECT id
+		$messagesId = $this->query->exec("SELECT id
 										FROM `".Tbl::get('TBL_CHAT')."` 
 										WHERE id> '$lastId'
 										AND  (`receiver_user_id`='$userId' OR `sender_user_id`='$userId')"
 										)->fetchFields('id');
-		foreach ($messages as $msgId){
+		foreach ($messagesId as $msgId){
 			$newMessages[] = $this->getChatMessage($msgId);
 		}
 		return $newMessages;													
@@ -75,28 +75,36 @@ class ChatManagerByLastId extends Filterable
 		return $lastMessages;
 	}
 	
-	public function getChatState($userId){
-		$chatState = array('chats'=>array(),'invitaions'=>array());
-		$chatMessages = $this->getLastMessages($userId);
+	public function getChatState($userId, $lastId = null){
+		$chatState = array('chats'=>array(),'invitations'=>array(),'lastId'=>$this->getLastId());
+		if($lastId === null){
+			$chatMessages = $this->getLastMessages($userId);
+		}
+		else{
+			$chatMessages = $this->getNewMessages($lastId, $userId);
+		}
 		//Get Ids of open(accepted) chats
-		$chats = explode(':', $_COOKIE['openChats']);
+		$openChats = explode(',', $_COOKIE['OpenChats']);
 		foreach ($chatMessages as $chatMessage){
 			if($chatMessage->senderUserId == $userId){
 				//User's message
-				if(empty($chatState['chats'][$chatMessage->receiverUserId])){
-					$chat = new Chat();
-					$chat->interlocutorId = $chatMessage->receiverUserId;
-					$chat->interlocutorUserName = $chatMessage->receiverUserName;
-					$chat->messages[] = $chatMessage;					
-					$chatState['chats'][$chatMessage->receiverUserId] = $chat;
-				}
-				else{
-					$chatState['chats'][$chatMessage->receiverUserId]->messages[] = $chatMessage;
+				if(in_array($chatMessage->receiverUserId, $openChats)){
+					//Open chat
+					if(empty($chatState['chats'][$chatMessage->receiverUserId])){
+						$chat = new Chat();
+						$chat->interlocutorId = $chatMessage->receiverUserId;
+						$chat->interlocutorUserName = $chatMessage->receiverUserName;
+						$chat->messages[] = $chatMessage;					
+						$chatState['chats'][$chatMessage->receiverUserId] = $chat;
+					}
+					else{
+						$chatState['chats'][$chatMessage->receiverUserId]->messages[] = $chatMessage;
+					}
 				}
 			}
 			else{
 				//Not user's message
-				if(in_array($chatMessage->senderUserId, $chats)){
+				if(in_array($chatMessage->senderUserId, $openChats)){
 					//Open chat
 					if(empty($chatState['chats'][$chatMessage->senderUserId])){
 						$chat = new Chat();
@@ -111,11 +119,13 @@ class ChatManagerByLastId extends Filterable
 				}
 				else{
 					//Invitation
-					if(empty($chatState['invitaions'][$chatMessage->senderUserId])){
-						$invitation = new ChatInvitation();
-						$invitation->inviterId = $chatMessage->senderUserId;
-						$invitation->inviterUserName = $chatMessage->senderUserName;
-						$chatState['invitaions'][$chatMessage->senderUserId] = $invitation;
+					if($chatMessage->read == 0){
+						if(empty($chatState['invitations'][$chatMessage->senderUserId])){
+							$invitation = new ChatInvitation();
+							$invitation->inviterId = $chatMessage->senderUserId;
+							$invitation->inviterUserName = $chatMessage->senderUserName;
+							$chatState['invitations'][$chatMessage->senderUserId] = $invitation;
+						}
 					}
 				}
 			}
@@ -153,37 +163,6 @@ class ChatManagerByLastId extends Filterable
 		return $this->query->getLastInsertId();
 	}
 	
-
-	
-	public function getChatMessages(ChatMessageFilter $filter = null, $pager = null, $cacheMinutes = 0){
-		$chatMessages = array();
-		
-		if($filter == null){
-			$filter = new ChatMessageFilter();
-		}
-		
-		$sqlQuery = "SELECT `chat`.`id`
-						FROM `".Tbl::get('TBL_CHAT')."` `chat`
-						{$this->generateJoins($filter)}
-						WHERE 1
-						{$this->generateWhere($filter)}
-						{$this->generateOrder($filter)}
-						{$this->generateLimits($filter)}";
-		
-		if($pager !== null){
-			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);
-		}
-		else{
-			$this->query->exec($sqlQuery, $cacheMinutes);
-		}
-		if($this->query->countRecords()){
-			foreach($this->query->fetchFields('id') as $messageId){
-				array_push($chatMessages, $this->getChatMessage($messageId, $cacheMinutes));
-			}
-		}
-
-		return $chatMessages;
-	}
 	
 	public function getChatMessage($chatMessageId){
 		$messageRow = $this->query->exec("	SELECT *, UNIX_TIMESTAMP(`datetime`) as `timestamp` 
@@ -191,24 +170,23 @@ class ChatManagerByLastId extends Filterable
 												WHERE 	`id`='$chatMessageId'")->fetchRecord();
 		$chatMessage = new ChatMessage();
 		$chatMessage->id = $messageRow['id'];
-		$chatMessage->senderUserId = $messageRow['sender_user_id'];
-		$chatMessage->receiverUserId = $messageRow['receiver_user_id'];
+		$chatMessage->senderUser = $this->getChatUser($messageRow['sender_user_id']);
+		$chatMessage->receiverUser = $this->getChatUser($messageRow['receiver_user_id']);
 		$chatMessage->datetime = $messageRow['datetime'];
 		$chatMessage->timestamp = $messageRow['timestamp'];
-		$chatMessage->message = htmlentities($messageRow['message'],ENT_COMPAT,'UTF-8');
+		$chatMessage->message = nl2br(htmlentities($messageRow['message'],ENT_COMPAT,'UTF-8'));
 		$chatMessage->read = $messageRow['read'];
 		$chatMessage->is_system = $messageRow['is_system'];
 		
-		if(!empty($messageRow['sender_user_id'])){
-			$chatMessage->senderUserName = Reg::get('um')->getLoginById($messageRow['sender_user_id']);
-		}
-		else{
-			$chatMessage->senderUserName = '_system';
-		}
-		
-		$chatMessage->receiverUserName = Reg::get('um')->getLoginById($messageRow['receiver_user_id']);
-		
 		return $chatMessage;
+	}
+	
+	protected function getChatUser($userId){
+		$chatUser = new ChatUser();
+		
+		$chatUser->userId = $userId;
+		
+		return $chatUser;
 	}
 }
 ?>

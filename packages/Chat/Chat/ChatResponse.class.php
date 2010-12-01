@@ -1,33 +1,51 @@
 <?
 class ChatResponse extends JSON{
 	
-	private $chatMessages  = array();
+	private $chats  = array();
+	private $chatInvitations  = array();
+	private $money  = null;
 	private $lastId = null;
-	private $responseArray = array('messages'=>array(),'lastId'=>array());
+	/**
+	 *	private $responseArray = array('chats'=>array(),'invitations'=>array(),'money'=>null,'lastId'=>null);
+	 */ 
 	
 	public function response(){
-		if(!empty($this->chatMessages)){
-			$responseArray['messages'] = $this->chatMessages;
+		
+		$responseArray = null;
+		
+		if(!empty($this->chats)){
+			$responseArray['chats'] = $this->chats;
 		}
-		else {
-			unset($responseArray['messages']);
+		
+		if(!empty($this->chatInvitations)){
+			$responseArray['invitations'] = $this->chatInvitations;
 		}
+		
+		if($this->money !==null){
+			$responseArray['money'] = $this->money;
+		}
+		
 		if($this->lastId !==null){
 			$responseArray['lastId'] = $this->lastId;
 		}
-		else{
-			unset($responseArray['lastId']);
-		}
+				
 		return parent::jsonOutput($responseArray);
 	}
 	
-	public function setMessages($array){
-		$this->chatMessages = $array;
+	public function setChats($array){
+		$this->chats = $array;
+	}
+	
+	public function setInvitations($array){
+		$this->chatInvitations = $array;
+	}
+	
+	public function setMoney($money){
+		$this->money = $money;
 	}
 	
 	public function setLastId($id){
 		$this->lastId = $id;
 	}
-	
 }
 ?>

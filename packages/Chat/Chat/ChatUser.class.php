@@ -1,0 +1,6 @@
+<?
+class ChatUser
+{
+	public $userId;
+}
+?>

@@ -2,10 +2,8 @@
 class ChatMessage
 {
 	public $id;
-	public $senderUserId;
-	public $receiverUserId;
-	public $senderUserName;
-	public $receiverUserName;
+	public $senderUser;
+	public $receiverUser;
 	public $datetime;
 	public $timestamp;
 	public $message;

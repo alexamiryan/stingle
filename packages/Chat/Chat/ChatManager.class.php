@@ -19,8 +19,8 @@ class ChatManager extends Filterable
 	const FILTER_IS_SYSTEM_FIELD = "read";
 	
 
-	public function getNewChats($userId){
-		return $this->getChatObjects($userId, $this->getNewMessages($userId));
+	public function getNewChats($userId, $lastId){
+		return $this->getChatObjects($userId, $this->getNewMessages($userId, $lastId));
 	}
 	
 	public function getHistoryChats($userId){
@@ -49,11 +49,11 @@ class ChatManager extends Filterable
 	 * @return int inserted message Id
 	 */
 	public function insertMessage(ChatMessage $chatMessage){
-		if(empty($chatMessage->senderUserId) or !is_numeric($chatMessage->senderUserId)){
-			throw new InvalidArgumentException("Invalid senderUserId specified!");
+		if(empty($chatMessage->senderUser->userId) or !is_numeric($chatMessage->senderUser->userId)){
+			throw new InvalidArgumentException("Invalid senderUser specified!");
 		}
-		if(empty($chatMessage->receiverUserId) or !is_numeric($chatMessage->receiverUserId)){
-			throw new InvalidArgumentException("Invalid receiverUserId specified!");
+		if(empty($chatMessage->receiverUser->userId) or !is_numeric($chatMessage->receiverUser->userId)){
+			throw new InvalidArgumentException("Invalid receiverUser specified!");
 		}
 		
 		$this->query->exec("	INSERT INTO `".Tbl::get('TBL_CHAT')."`
@@ -63,8 +63,8 @@ class ChatManager extends Filterable
 											`message`, 
 											`is_system`) 
 								VALUES	(
-											'{$chatMessage->senderUserId}', 
-											'{$chatMessage->receiverUserId}', 
+											'{$chatMessage->senderUser->userId}', 
+											'{$chatMessage->receiverUser->userId}', 
 											'{$chatMessage->message}', 
 											'{$chatMessage->is_system}'
 										)");
@@ -73,17 +73,20 @@ class ChatManager extends Filterable
 	}
 	
 	public function setAsRead($userId, $lastReceivedMessageId){
-		if(empty($receiverUserId) or !is_numeric($receiverUserId)){
-			throw new InvalidArgumentException("Invalid receiverUserId specified!");
-		}
 		if(empty($userId) or !is_numeric($userId)){
-			throw new InvalidArgumentException("Invalid userId specified!");
+			throw new InvalidArgumentException("Invalid \$userId specified!");
 		}
 
 		$this->query->exec("	UPDATE `".Tbl::get('TBL_CHAT')."`
 								SET `read` = '".static::STATUS_READ_READ."'
-								WHERE `receiver_user_id`='{$userId}' and `read` = '".static::STATUS_READ_UNREAD."'");
+								WHERE 	`receiver_user_id`='{$userId}' AND 
+										`read` = '".static::STATUS_READ_UNREAD."' AND 
+										`id` <= $lastReceivedMessageId");
 
+	}
+	
+	public function getLastId(){
+		return $this->query->exec("SELECT MAX(id) as `lastId` FROM `".Tbl::get('TBL_CHAT')."`")->fetchField('lastId');
 	}
 	
 	protected function getFilterableFieldAlias($field){
@@ -101,9 +104,12 @@ class ChatManager extends Filterable
 		throw new RuntimeException("Specified field does not exist or not filterable");
 	}
 	
-	protected function getNewMessages($userId){
+	protected function getNewMessages($userId, $lastId){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidArgumentException("\$userId have to be non zero integer!");
+		}
+		if(empty($lastId) or !is_numeric($lastId)){
+			throw new InvalidArgumentException("\$lastId have to be non zero integer!");
 		}
 		$newMessages = array();
 		$openChats = $this->getOpenChatsFromCookie();
@@ -115,7 +121,7 @@ class ChatManager extends Filterable
 														(`receiver_user_id`='$userId' AND `sender_user_id` IN (".implode(",", $openChats).")) OR
 														(`sender_user_id`='$userId' AND `receiver_user_id` IN (".implode(",", $openChats)."))
 													) 
-											AND `read`='".static::STATUS_READ_UNREAD."'"
+											AND `id` > '$lastId'"
 											)->fetchFields('id');
 			foreach ($messagesId as $msgId){
 				$newMessages[] = $this->getChatMessage($msgId);
@@ -184,17 +190,17 @@ class ChatManager extends Filterable
 	protected function getChatObjects($userId, $chatMessages){
 		$chatObjects = array();
 		foreach ($chatMessages as $chatMessage){
-			if($chatMessage->senderUserId == $userId){
+			if($chatMessage->senderUser->userId == $userId){
 				//User's message
 				if(empty($chatObjects[$chatMessage->receiverUser->userId])){
 					$chat = new Chat();
 					$chat->interlocutorId = $chatMessage->receiverUser->userId;
 					$chat->interlocutorUserName = $chatMessage->receiverUser->userName;
 					$chat->messages[] = $chatMessage;					
-					$chatObjects[$chatMessage->receiverUserId] = $chat;
+					$chatObjects[$chatMessage->receiverUser->userId] = $chat;
 				}
 				else{
-					$chatObjects[$chatMessage->receiverUserId]->messages[] = $chatMessage;
+					$chatObjects[$chatMessage->receiverUser->userId]->messages[] = $chatMessage;
 				}
 			}
 			else{
@@ -212,6 +218,36 @@ class ChatManager extends Filterable
 			}
 		}
 		return $chatObjects;
+	}
+	
+	public function getChatMessages(ChatMessageFilter $filter = null, $pager = null, $cacheMinutes = 0){
+		$chatMessages = array();
+		
+		if($filter == null){
+			$filter = new ChatMessageFilter();
+		}
+		
+		$sqlQuery = "SELECT `chat`.`id`
+						FROM `".Tbl::get('TBL_CHAT')."` `chat`
+						{$this->generateJoins($filter)}
+						WHERE 1
+						{$this->generateWhere($filter)}
+						{$this->generateOrder($filter)}
+						{$this->generateLimits($filter)}";
+		
+		if($pager !== null){
+			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);
+		}
+		else{
+			$this->query->exec($sqlQuery, $cacheMinutes);
+		}
+		if($this->query->countRecords()){
+			foreach($this->query->fetchFields('id') as $messageId){
+				array_push($chatMessages, $this->getChatMessage($messageId, $cacheMinutes));
+			}
+		}
+
+		return $chatMessages;
 	}
 	
 	protected function getChatMessage($chatMessageId){

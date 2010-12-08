@@ -1,12 +1,16 @@
 <?
 class ChatResponse{
 	
+	const STATUS_OPEN = 0;
+	const STATUS_CLOSED = 1;
+	
 	private $chats  = array();
 	private $invitationsToMe  = array();
 	private $myInvitations  = array();
 	private $lastId = null;
 	private $lastInvitationId = null;
 	private $money  = null;
+	private $sessionUpdates = array();
 	/**
 	 *	private $responseArray = array('chats'=>array(),'invitations'=>array(),'money'=>null,'lastId'=>null);
 	 */ 
@@ -25,6 +29,10 @@ class ChatResponse{
 		
 		if(!empty($this->myInvitations)){
 			$responseArray['myInvitations'] = $this->myInvitations;
+		}
+		
+		if(!empty($this->sessionUpdates)){
+			$responseArray['sessionUpdates'] = $this->sessionUpdates;
 		}
 		
 		if($this->lastId !== null){
@@ -64,6 +72,10 @@ class ChatResponse{
 	
 	public function setMoney($money){
 		$this->money = $money;
+	}
+	
+	public function addUpdatedSession(ChatSession $session){
+		array_push($this->sessionUpdates, $session);
 	}
 }
 ?>

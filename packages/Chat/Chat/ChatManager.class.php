@@ -166,7 +166,8 @@ class ChatManager extends Filterable
 		
 		$sessionRow = $this->query->exec("SELECT *
 										FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` 
-										WHERE `inviter_user_id`='$inviterUserId' AND `invited_user_id` = '$invitedUserId'" 
+										WHERE (`inviter_user_id`='$inviterUserId' AND `invited_user_id` = '$invitedUserId') OR 
+												(`invited_user_id`='$inviterUserId' AND `inviter_user_id` = '$invitedUserId')" 
 										)->fetchRecord();
 										
 		$session = new ChatSession();
@@ -175,7 +176,8 @@ class ChatManager extends Filterable
 		$session->inviterUser = $this->getChatUser($sessionRow['inviter_user_id']);
 		$session->invitedUser = $this->getChatUser($sessionRow['invited_user_id']);
 		$session->startDate = $sessionRow['date'];
-		$session->status = $sessionRow['status'];
+		$session->closed = $sessionRow['closed'];
+		$session->closedBy = $sessionRow['closed_by'];
 
 		return $session;
 	}
@@ -199,26 +201,30 @@ class ChatManager extends Filterable
 			$session->inviterUser = $this->getChatUser($sessionRow['inviter_user_id']);
 			$session->invitedUser = $this->getChatUser($sessionRow['invited_user_id']);
 			$session->startDate = $sessionRow['date'];
-			$session->status = $sessionRow['status'];
+			$session->closed = $sessionRow['closed'];
+			$session->closedBy = $sessionRow['closed_by'];
 			array_push($sessionObjects, $session);
 		}
 		return $sessionObjects;
 	}
 	
-	public function deleteSession(ChatSession $session){
-		if(empty($session->id) or !is_numeric($session->id)){
+	public function deleteSession($sessionId){
+		if(empty($sessionId) or !is_numeric($sessionId)){
 			throw new InvalidArgumentException("Invalid session ID specified!");
 		}
 		
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` WHERE `id`='{$session->id}'");
+		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` WHERE `id`='{$sessionId}'");
 	}
 	
-	public function updateSessionStatus(ChatSession $session, $newStatus){
+	public function closeSession(ChatSession $session, $closerUserId){
 		if(empty($session->id) or !is_numeric($session->id)){
 			throw new InvalidArgumentException("Invalid session ID specified!");
 		}
+		if(empty($closerUserId) or !is_numeric($closerUserId)){
+			throw new InvalidArgumentException("Invalid closerUserId specified!");
+		}
 		
-		$this->query->exec("UPDATE `".Tbl::get('TBL_CHAT_SESSIONS')."` SET `status`='$newStatus' WHERE `id`='{$session->id}'");
+		$this->query->exec("UPDATE `".Tbl::get('TBL_CHAT_SESSIONS')."` SET `closed`='".ChatResponse::STATUS_CLOSED."', `closed_by`='$closerUserId' WHERE `id`='{$session->id}'");
 	}
 	
 	protected function getInterlocutorsIds($userId){

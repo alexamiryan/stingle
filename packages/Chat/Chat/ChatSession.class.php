@@ -5,6 +5,7 @@ class ChatSession
 	public $inviterUser;
 	public $invitedUser;
 	public $startDate;
-	public $status;
+	public $closed;
+	public $closedBy;
 }
 ?>

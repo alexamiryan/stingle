@@ -9,6 +9,7 @@ class LoaderChat extends Loader{
 		require_once ('ChatResponse.class.php');
 		require_once ('ChatUser.class.php');
 		require_once ('ChatManager.class.php');
+		require_once ('ChatSession.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

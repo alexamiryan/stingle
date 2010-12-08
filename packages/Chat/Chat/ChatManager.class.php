@@ -1,7 +1,9 @@
 <?php
 class ChatManager extends Filterable
 {
-	const TBL_CHAT = 'chat';
+	const TBL_CHAT_SESSIONS = 'chat_sessions';
+	const TBL_CHAT_MESSAGES = 'chat_messages';
+	const TBL_CHAT_INVITATIONS = 'chat_invitations';
 	
 	const STATUS_READ_UNREAD = 0;
 	const STATUS_READ_READ = 1;
@@ -27,19 +29,216 @@ class ChatManager extends Filterable
 		return $this->getChatObjects($userId, $this->getMessagesHistory($userId));
 	}
 	
-	public function getInvitations($userId){
-		$invitations = array();
+	public function getInvitations($userId, $lastId = 0){
+		if(empty($userId) or !is_numeric($userId)){
+			throw new InvalidArgumentException("Invalid userId specified!");
+		}
+
+		$invitationsObjects = array();
 		
-		$chatMessages = $this->getInvitationMessages($userId);
-		foreach ($chatMessages as $chatMessage){
-			if(empty($invitations[$chatMessage->senderUser->userId])){
-				$invitation = new ChatInvitation();
-				$invitation->inviterId = $chatMessage->senderUser->userId;
-				$invitation->inviterUserName = $chatMessage->senderUser->userName;
-				$invitations[$chatMessage->senderUser->userId] = $invitation;
+		$invitations = $this->query->exec("SELECT *
+										FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."` 
+										WHERE (`receiver_user_id`='$userId' OR `sender_user_id`='$userId') AND `id`>'$lastId'" 
+										)->fetchRecords();
+										
+		foreach ($invitations as $invitationRow){
+			$invitation = new ChatInvitation();
+			
+			$invitation->id = $invitationRow['id'];
+			$invitation->inviterUser = $this->getChatUser($invitationRow['sender_user_id']);
+			$invitation->invitedUser = $this->getChatUser($invitationRow['receiver_user_id']);
+			$invitation->invitationMessage = $invitationRow['invitation_message'];
+			$invitation->status = $invitationRow['status'];
+			array_push($invitationsObjects, $invitation);
+		}
+		return $invitationsObjects;
+	}
+	
+	public function getInvitation($inviterUserId, $invitedUserId){
+		if(empty($inviterUserId) or !is_numeric($inviterUserId)){
+			throw new InvalidArgumentException("Invalid \$inviterUserId specified!");
+		}
+		if(empty($invitedUserId) or !is_numeric($inviterUserId)){
+			throw new InvalidArgumentException("Invalid \$invitedUserId specified!");
+		}
+		
+		$invitationRow = $this->query->exec("SELECT *
+										FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."` 
+										WHERE `sender_user_id`='$inviterUserId' AND `receiver_user_id` = '$invitedUserId'" 
+										)->fetchRecord();
+										
+		$invitation = new ChatInvitation();
+		
+		$invitation->id = $invitationRow['id'];
+		$invitation->inviterUser = $this->getChatUser($invitationRow['sender_user_id']);
+		$invitation->invitedUser = $this->getChatUser($invitationRow['receiver_user_id']);
+		$invitation->invitationMessage = $invitationRow['invitation_message'];
+		$invitation->status = $invitationRow['status'];
+
+		return $invitation;
+	}
+	
+	public function isInvitationExists(ChatInvitation $invitation){
+		if(empty($invitation->inviterUser->userId) or !is_numeric($invitation->inviterUser->userId)){
+			throw new InvalidArgumentException("Invalid inviterUser specified!");
+		}
+		if(empty($invitation->invitedUser->userId) or !is_numeric($invitation->invitedUser->userId)){
+			throw new InvalidArgumentException("Invalid invitedUser specified!");
+		}
+
+		$invitationsCount = $this->query->exec("SELECT count(*) as `cnt`
+										FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."` 
+										WHERE	`receiver_user_id`='{$invitation->invitedUser->userId}' AND 
+												`sender_user_id` = '{$invitation->inviterUser->userId}'" 
+										)->fetchField('cnt');
+										
+		return ($invitationsCount > 0 ? true : false);
+	}
+	
+	public function insertInvitation(ChatInvitation $invitation){
+		if(empty($invitation->inviterUser->userId) or !is_numeric($invitation->inviterUser->userId)){
+			throw new InvalidArgumentException("Invalid inviterUser specified!");
+		}
+		if(empty($invitation->invitedUser->userId) or !is_numeric($invitation->invitedUser->userId)){
+			throw new InvalidArgumentException("Invalid invitedUser specified!");
+		}
+		
+		$this->query->exec("	INSERT INTO `".Tbl::get('TBL_CHAT_INVITATIONS')."`
+										(
+											`sender_user_id`, 
+											`receiver_user_id`, 
+											`invitation_message`,
+											`status`)
+								VALUES	(
+											'{$invitation->inviterUser->userId}', 
+											'{$invitation->invitedUser->userId}', 
+											'{$invitation->invitationMessage}',
+											'{$invitation->status}'
+										)");
+		
+		return $this->query->getLastInsertId();
+	}
+	
+	public function deleteInvitation(ChatInvitation $invitation){
+		if(empty($invitation->id) or !is_numeric($invitation->id)){
+			throw new InvalidArgumentException("Invalid invitation ID specified!");
+		}
+		
+		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."` WHERE `id`='{$invitation->id}'");
+	}
+	
+	public function updateInvitationStatus($inviterUserId, $invitedUserId, $newStatus){
+		$invitation = $this->getInvitation($inviterUserId, $invitedUserId);
+		
+		$this->deleteInvitation($invitation);
+		
+		$invitation->status = $newStatus;
+		$this->insertInvitation($invitation);
+	}
+	
+	public function insertSession(ChatSession $session){
+		if(empty($session->inviterUser->userId) or !is_numeric($session->inviterUser->userId)){
+			throw new InvalidArgumentException("Invalid inviterUser specified!");
+		}
+		if(empty($session->invitedUser->userId) or !is_numeric($session->invitedUser->userId)){
+			throw new InvalidArgumentException("Invalid invitedUser specified!");
+		}
+		
+		$this->query->exec("	INSERT INTO `".Tbl::get('TBL_CHAT_SESSIONS')."`
+										(
+											`inviter_user_id`, 
+											`invited_user_id`)
+								VALUES	(
+											'{$session->inviterUser->userId}', 
+											'{$session->invitedUser->userId}'
+										)");
+		
+		return $this->query->getLastInsertId();
+	}
+	
+	public function getSession($inviterUserId, $invitedUserId){
+		if(empty($inviterUserId) or !is_numeric($inviterUserId)){
+			throw new InvalidArgumentException("Invalid \$inviterUserId specified!");
+		}
+		if(empty($invitedUserId) or !is_numeric($inviterUserId)){
+			throw new InvalidArgumentException("Invalid \$invitedUserId specified!");
+		}
+		
+		$sessionRow = $this->query->exec("SELECT *
+										FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` 
+										WHERE `inviter_user_id`='$inviterUserId' AND `invited_user_id` = '$invitedUserId'" 
+										)->fetchRecord();
+										
+		$session = new ChatSession();
+		
+		$session->id = $sessionRow['id'];
+		$session->inviterUser = $this->getChatUser($sessionRow['inviter_user_id']);
+		$session->invitedUser = $this->getChatUser($sessionRow['invited_user_id']);
+		$session->startDate = $sessionRow['date'];
+		$session->status = $sessionRow['status'];
+
+		return $session;
+	}
+	
+	public function getSessions($userId){
+		if(empty($userId) or !is_numeric($userId)){
+			throw new InvalidArgumentException("Invalid userId specified!");
+		}
+
+		$sessionObjects = array();
+		
+		$sessions = $this->query->exec("SELECT *
+										FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` 
+										WHERE (`inviter_user_id`='$userId' OR `invited_user_id`='$userId')" 
+										)->fetchRecords();
+										
+		foreach ($sessions as $sessionRow){
+			$session = new ChatSession();
+			
+			$session->id = $sessionRow['id'];
+			$session->inviterUser = $this->getChatUser($sessionRow['inviter_user_id']);
+			$session->invitedUser = $this->getChatUser($sessionRow['invited_user_id']);
+			$session->startDate = $sessionRow['date'];
+			$session->status = $sessionRow['status'];
+			array_push($sessionObjects, $session);
+		}
+		return $sessionObjects;
+	}
+	
+	public function deleteSession(ChatSession $session){
+		if(empty($session->id) or !is_numeric($session->id)){
+			throw new InvalidArgumentException("Invalid session ID specified!");
+		}
+		
+		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` WHERE `id`='{$session->id}'");
+	}
+	
+	public function updateSessionStatus(ChatSession $session, $newStatus){
+		if(empty($session->id) or !is_numeric($session->id)){
+			throw new InvalidArgumentException("Invalid session ID specified!");
+		}
+		
+		$this->query->exec("UPDATE `".Tbl::get('TBL_CHAT_SESSIONS')."` SET `status`='$newStatus' WHERE `id`='{$session->id}'");
+	}
+	
+	protected function getInterlocutorsIds($userId){
+		if(empty($userId) or !is_numeric($userId)){
+			throw new InvalidArgumentException("Invalid userId specified!");
+		}
+		
+		$interlocutorIds = array();
+		
+		$sessions = $this->getSessions($userId);
+		foreach($sessions as $session){
+			if($session->inviterUser->userId == $userId){
+				array_push($interlocutorIds, $session->invitedUser->userId);
+			}
+			else{
+				array_push($interlocutorIds, $session->inviterUser->userId);
 			}
 		}
-		return $invitations;
+		
+		return $interlocutorIds;
 	}
 	
 	/**
@@ -56,7 +255,7 @@ class ChatManager extends Filterable
 			throw new InvalidArgumentException("Invalid receiverUser specified!");
 		}
 		
-		$this->query->exec("	INSERT INTO `".Tbl::get('TBL_CHAT')."`
+		$this->query->exec("	INSERT INTO `".Tbl::get('TBL_CHAT_MESSAGES')."`
 										(
 											`sender_user_id`, 
 											`receiver_user_id`, 
@@ -77,7 +276,7 @@ class ChatManager extends Filterable
 			throw new InvalidArgumentException("Invalid \$userId specified!");
 		}
 
-		$this->query->exec("	UPDATE `".Tbl::get('TBL_CHAT')."`
+		$this->query->exec("	UPDATE `".Tbl::get('TBL_CHAT_MESSAGES')."`
 								SET `read` = '".static::STATUS_READ_READ."'
 								WHERE 	`receiver_user_id`='{$userId}' AND 
 										`read` = '".static::STATUS_READ_UNREAD."' AND 
@@ -86,7 +285,13 @@ class ChatManager extends Filterable
 	}
 	
 	public function getLastId(){
-		return $this->query->exec("SELECT MAX(id) as `lastId` FROM `".Tbl::get('TBL_CHAT')."`")->fetchField('lastId');
+		$lastId = $this->query->exec("SELECT MAX(id) as `lastId` FROM `".Tbl::get('TBL_CHAT_MESSAGES')."`")->fetchField('lastId');
+		return (empty($lastId) ? 0 : $lastId);
+	}
+	
+	public function getLastInvitationId(){
+		$lastId = $this->query->exec("SELECT MAX(id) as `lastId` FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."`")->fetchField('lastId');
+		return (empty($lastId) ? 0 : $lastId);
 	}
 	
 	protected function getFilterableFieldAlias($field){
@@ -108,18 +313,18 @@ class ChatManager extends Filterable
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidArgumentException("\$userId have to be non zero integer!");
 		}
-		if(empty($lastId) or !is_numeric($lastId)){
+		if(!is_numeric($lastId)){
 			throw new InvalidArgumentException("\$lastId have to be non zero integer!");
 		}
 		$newMessages = array();
-		$openChats = $this->getOpenChatsFromCookie();
-		if(!empty($openChats)){
+		$interlocutors = $this->getInterlocutorsIds($userId);
+		if(!empty($interlocutors)){
 			$messagesId = $this->query->exec("SELECT id
-											FROM `".Tbl::get('TBL_CHAT')."` 
+											FROM `".Tbl::get('TBL_CHAT_MESSAGES')."` 
 											WHERE
 												(
-														(`receiver_user_id`='$userId' AND `sender_user_id` IN (".implode(",", $openChats).")) OR
-														(`sender_user_id`='$userId' AND `receiver_user_id` IN (".implode(",", $openChats)."))
+														(`receiver_user_id`='$userId' AND `sender_user_id` IN (".implode(",", $interlocutors).")) OR
+														(`sender_user_id`='$userId' AND `receiver_user_id` IN (".implode(",", $interlocutors)."))
 													) 
 											AND `id` > '$lastId'"
 											)->fetchFields('id');
@@ -136,55 +341,22 @@ class ChatManager extends Filterable
 			throw new InvalidArgumentException("Invalid userId specified!");
 		}
 		$lastMessages = array();
-		$openChats = $this->getOpenChatsFromCookie();
-		if(!empty($openChats)){
+		$interlocutors = $this->getInterlocutorsIds($userId);
+		if(!empty($interlocutors)){
 			$messages = $this->query->exec("SELECT id
-											FROM `".Tbl::get('TBL_CHAT')."` 
+											FROM `".Tbl::get('TBL_CHAT_MESSAGES')."` 
 											WHERE 
 												(
-													(`receiver_user_id`='$userId' AND `sender_user_id` IN (".implode(",", $openChats).")) OR
-													(`sender_user_id`='$userId' AND `receiver_user_id` IN (".implode(",", $openChats)."))
+													(`receiver_user_id`='$userId' AND `sender_user_id` IN (".implode(",", $interlocutors).")) OR
+													(`sender_user_id`='$userId' AND `receiver_user_id` IN (".implode(",", $interlocutors)."))
 												)
-											AND TIMESTAMPDIFF(MINUTE,datetime ,NOW()) < ".self::LOG_MINUTES." AND `read`='".static::STATUS_READ_READ."'"
+											AND TIMESTAMPDIFF(MINUTE,datetime ,NOW()) < ".self::LOG_MINUTES
 											)->fetchFields('id');
 			foreach ($messages as $msgId){
 				$lastMessages[] = $this->getChatMessage($msgId);
 			}
 		}
 		return $lastMessages;
-	}
-	
-	protected function getInvitationMessages($userId){
-		if(empty($userId) or !is_numeric($userId)){
-			throw new InvalidArgumentException("Invalid userId specified!");
-		}
-		$invitations = array();
-		$openChats = $this->getOpenChatsFromCookie();
-		
-		$additionalWhere = "";
-		if(!empty($openChats)){
-			$additionalWhere = "AND `sender_user_id` NOT IN (".implode(",", $openChats) . ")";
-		}
-		
-		$messages = $this->query->exec("SELECT id
-										FROM `".Tbl::get('TBL_CHAT')."` 
-										WHERE (`receiver_user_id`='$userId' $additionalWhere) 
-										AND `read`='".static::STATUS_READ_UNREAD."'"
-										)->fetchFields('id');
-		foreach ($messages as $msgId){
-			$invitations[] = $this->getChatMessage($msgId);
-		}
-		
-		return $invitations;
-	}
-	
-	protected function getOpenChatsFromCookie(){
-		if(!empty($_COOKIE['OpenChats'])){
-			return explode(',', $_COOKIE['OpenChats']);
-		}
-		else{
-			return array();
-		}
 	}
 	
 	protected function getChatObjects($userId, $chatMessages){
@@ -228,7 +400,7 @@ class ChatManager extends Filterable
 		}
 		
 		$sqlQuery = "SELECT `chat`.`id`
-						FROM `".Tbl::get('TBL_CHAT')."` `chat`
+						FROM `".Tbl::get('TBL_CHAT_MESSAGES')."` `chat`
 						{$this->generateJoins($filter)}
 						WHERE 1
 						{$this->generateWhere($filter)}
@@ -252,7 +424,7 @@ class ChatManager extends Filterable
 	
 	protected function getChatMessage($chatMessageId){
 		$messageRow = $this->query->exec("	SELECT *, UNIX_TIMESTAMP(`datetime`) as `timestamp` 
-												FROM `".Tbl::get('TBL_CHAT')."` 
+												FROM `".Tbl::get('TBL_CHAT_MESSAGES')."` 
 												WHERE 	`id`='$chatMessageId'")->fetchRecord();
 		$chatMessage = new ChatMessage();
 		$chatMessage->id = $messageRow['id'];

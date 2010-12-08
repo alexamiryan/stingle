@@ -227,7 +227,7 @@ class ChatManager extends Filterable
 		$this->query->exec("UPDATE `".Tbl::get('TBL_CHAT_SESSIONS')."` SET `closed`='".ChatResponse::STATUS_CLOSED."', `closed_by`='$closerUserId' WHERE `id`='{$session->id}'");
 	}
 	
-	protected function getInterlocutorsIds($userId){
+	public function getInterlocutorsIds($userId){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidArgumentException("Invalid userId specified!");
 		}

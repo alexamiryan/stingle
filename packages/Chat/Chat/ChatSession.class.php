@@ -1,9 +1,9 @@
-<?
-class ChatSession
-{
+<?php
+class ChatSession{
 	public $id;
-	public $inviterUser;
-	public $invitedUser;
+	public $chatterUser;
+	public $interlocutorUser;
+	public $messages = array();
 	public $startDate;
 	public $closed;
 	public $closedBy;

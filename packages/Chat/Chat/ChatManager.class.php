@@ -50,7 +50,8 @@ class ChatManager extends Filterable
 												(`receiver_user_id`='$userId' AND `sender_user_id` IN (".implode(",", $interlocutorIds).")) OR
 												(`sender_user_id`='$userId' AND `receiver_user_id` IN (".implode(",", $interlocutorIds)."))
 											)
-										AND $additionalWhere");
+										AND $additionalWhere
+										ORDER BY `datetime` ASC");
 			
 			foreach ($this->query->fetchRecords() as $messageRow){
 				array_push($chatMessages, $this->getChatMessage($messageRow));
@@ -103,6 +104,7 @@ class ChatManager extends Filterable
 			$chat->startDate = $sessionRow['date'];
 			$chat->closed = $sessionRow['closed'];
 			$chat->closedBy = $sessionRow['closed_by'];
+			$chat->closedReason = $sessionRow['closed_reason'];
 			array_push($chatSessions, $chat);
 		}
 		
@@ -272,7 +274,7 @@ class ChatManager extends Filterable
 		return $sessionId;
 	}
 	
-	public function closeSession($sessionId, $closerUserId){
+	public function closeSession($sessionId, $closerUserId, $reason = null){
 		if(empty($sessionId) or !is_numeric($sessionId)){
 			throw new InvalidArgumentException("Invalid session ID specified!");
 		}
@@ -280,7 +282,12 @@ class ChatManager extends Filterable
 			throw new InvalidArgumentException("Invalid closerUserId specified!");
 		}
 		
-		$this->query->exec("UPDATE `".Tbl::get('TBL_CHAT_SESSIONS')."` SET `closed`='".ChatResponse::STATUS_CLOSED."', `closed_by`='$closerUserId' WHERE `id`='$sessionId'");
+		$updateReason = "";
+		if($reason !== null){
+			$updateReason = ", `closed_reason`='$reason'";
+		}
+		
+		$this->query->exec("UPDATE `".Tbl::get('TBL_CHAT_SESSIONS')."` SET `closed`='".ChatResponse::STATUS_CLOSED."', `closed_by`='$closerUserId'$updateReason WHERE `id`='$sessionId'");
 	}
 	
 	

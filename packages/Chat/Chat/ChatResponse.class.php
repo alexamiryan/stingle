@@ -12,6 +12,7 @@ class ChatResponse{
 	private $money  = null;
 	private $redirect  = null;
 	private $closeAllSessions  = false;
+	private $messages  = array();
 	/**
 	 *	private $responseArray = array('chats'=>array(),'invitations'=>array(),'money'=>null,'lastId'=>null);
 	 */ 
@@ -53,7 +54,11 @@ class ChatResponse{
 		}
 		
 		if($this->closeAllSessions !== false){
-			$responseArray['closeAllSessions'] = 1;
+			$responseArray['closeAllSessions'] = $this->closeAllSessions;
+		}
+		
+		if(!empty($this->messages)){
+			$responseArray['messages'] = $this->messages;
 		}
 		
 		return $responseArray;
@@ -89,8 +94,14 @@ class ChatResponse{
 		$this->redirect = $url;
 	}
 	
-	public function closeAllSessions(){
-		$this->closeAllSessions = true;
+	public function closeAllSessions($reason = 0){
+		$this->closeAllSessions = $reason;
+	}
+	
+	public function addMessage($message){
+		if(!in_array($message, $this->messages)){
+			array_push($this->messages, $message);
+		}
 	}
 }
 ?>

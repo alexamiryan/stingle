@@ -163,16 +163,20 @@ class ChatManager extends Filterable
 										FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."` 
 										WHERE `sender_user_id`='$inviterUserId' AND `receiver_user_id` = '$invitedUserId'" 
 										)->fetchRecord();
-										
-		$invitation = new ChatInvitation();
-		
-		$invitation->id = $invitationRow['id'];
-		$invitation->inviterUser = $this->getChatUser($invitationRow['sender_user_id']);
-		$invitation->invitedUser = $this->getChatUser($invitationRow['receiver_user_id']);
-		$invitation->invitationMessage = $invitationRow['invitation_message'];
-		$invitation->status = $invitationRow['status'];
-
-		return $invitation;
+		if(!empty($invitationRow)){
+			$invitation = new ChatInvitation();
+			
+			$invitation->id = $invitationRow['id'];
+			$invitation->inviterUser = $this->getChatUser($invitationRow['sender_user_id']);
+			$invitation->invitedUser = $this->getChatUser($invitationRow['receiver_user_id']);
+			$invitation->invitationMessage = $invitationRow['invitation_message'];
+			$invitation->status = $invitationRow['status'];
+			
+			return $invitation;
+		}
+		else{
+			return false;
+		}
 	}
 	
 	public function isInvitationExists(ChatInvitation $invitation){

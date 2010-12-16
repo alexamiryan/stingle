@@ -397,7 +397,7 @@ class LanguageManager extends DbAccessor {
 			throw new InvalidArgumentException("Passed key doesn't exist");
 		}
 		$this->query->exec("SELECT `type`
-							FROM `{".Tbl::get("TBL_CONSTANTS", "Constant")."}`
+							FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."`
 							WHERE `key`='$key'", $cacheMinutes);
 		return $this->query->fetchField("type");
 	}

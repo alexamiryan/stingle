@@ -1,9 +1,13 @@
 <?
 $defaultConfig = array(	
-						'cache_count' => 150,
-						'messages_count' => 150,
-						'connect_timeout' => 30,
-						'reconnect_timeout' => 100,
-						'Objects' => array(	'ChatManager' => 'chatMgr' )
+						'logMinutes' => 30,  // in minutes
+						'invitationClearTimeout' => 5,  // in minutes
+						'sessionClearTimeout' => 10,  // in minutes
+						'chatUserClassName' => 'ChatUser',
+						'Objects' => array	(	
+												'ChatInvitationManager' => 'chatInvMgr', 
+												'ChatMessageManager' => 'chatMsgMgr', 
+												'ChatSessionManager' => 'chatSessMgr' 
+											)
 					);
 ?>

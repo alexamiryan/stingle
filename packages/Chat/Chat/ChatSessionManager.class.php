@@ -8,7 +8,8 @@ class ChatSessionManager extends Filterable
 	
 	const CLOSED_REASON_CLOSE = 1; 
 	const CLOSED_REASON_OFFLINE = 2; 
-	const CLOSED_REASON_MONEY = 3; 
+	const CLOSED_REASON_MONEY = 3;
+	const CLOSED_REASON_SYNC_UI = 4;
 	
 	const FILTER_ID_FIELD = 'id';
 	const FILTER_INVITER_USER_ID_FIELD = 'inviter_user_id';
@@ -195,7 +196,7 @@ class ChatSessionManager extends Filterable
 		}
 		
 		$this->query->exec("UPDATE `".Tbl::get('TBL_CHAT_SESSIONS')."` 
-								SET 	`closed` = '".ChatResponse::STATUS_CLOSED."', 
+								SET 	`closed` = '".static::CLOSED_STATUS_YES."', 
 									 	`closed_date` = now(), 
 										`closed_by` = '$closerUserId'$updateReason 
 								WHERE `id`='$sessionId'");
@@ -206,13 +207,6 @@ class ChatSessionManager extends Filterable
 								WHERE 	`closed` = 1 AND
 										(now() - `closed_date`) >= ".$this->sessionClearTimeout * 60);
 		return $this->query->affected();
-	}
-	
-	protected function getChatUser($userId){
-		$chatUser = new ChatUser();
-		$chatUser->userId = $userId;
-		
-		return $chatUser;
 	}
 }
 ?>

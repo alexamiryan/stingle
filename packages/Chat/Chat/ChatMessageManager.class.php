@@ -119,12 +119,5 @@ class ChatMessageManager extends Filterable
 		
 		return $chatMessage;
 	}
-	
-	protected function getChatUser($userId){
-		$chatUser = new ChatUser();
-		$chatUser->userId = $userId;
-		
-		return $chatUser;
-	}
 }
 ?>

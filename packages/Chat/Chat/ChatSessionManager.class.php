@@ -197,7 +197,7 @@ class ChatSessionManager extends Filterable
 		
 		$this->query->exec("UPDATE `".Tbl::get('TBL_CHAT_SESSIONS')."` 
 								SET 	`closed` = '".static::CLOSED_STATUS_YES."', 
-									 	`closed_date` = now(), 
+									 	`closed_date` = NOW(), 
 										`closed_by` = '$closerUserId'$updateReason 
 								WHERE `id`='$sessionId'");
 	}
@@ -205,7 +205,7 @@ class ChatSessionManager extends Filterable
 	public function clearTimedOutSessions(){
 		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` 
 								WHERE 	`closed` = 1 AND
-										(now() - `closed_date`) >= ".$this->sessionClearTimeout * 60);
+										(now() - `closed_date`) >= ".($this->sessionClearTimeout * 60));
 		return $this->query->affected();
 	}
 }

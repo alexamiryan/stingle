@@ -78,7 +78,7 @@ class ChatMessageManager extends Filterable
 	}
 	
 	
-	public function getChatMessages(ChatMessageFilter $filter = null, $pager = null, $cacheMinutes = 0){
+	public function getChatMessages(ChatMessageFilter $filter = null, MysqlPager $pager = null, $cacheMinutes = 0){
 		$chatMessages = array();
 		
 		if($filter == null){

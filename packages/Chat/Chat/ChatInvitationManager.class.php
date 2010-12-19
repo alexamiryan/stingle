@@ -126,7 +126,7 @@ class ChatInvitationManager extends Filterable
 	public function clearTimedOutInvitations(){
 		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."` 
 								WHERE 	`status` <> 0 AND
-										(now() - `date`) >= ".$this->invitationClearTimeout * 60);
+										(now() - `date`) >= ".($this->invitationClearTimeout * 60));
 		return $this->query->affected();
 	}
 	

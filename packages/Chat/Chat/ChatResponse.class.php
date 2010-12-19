@@ -11,7 +11,8 @@ class ChatResponse{
 	private $closeAllSessions  = false;
 	private $messages  = array();
 	private $openSessions  = null;
-	private $openInvitations  = null;
+	private $openMyInvitations  = null;
+	private $openInvitationsToMe  = null;
 	/**
 	 *	private $responseArray = array('chats'=>array(),'invitations'=>array(),'money'=>null,'lastId'=>null);
 	 */ 
@@ -64,8 +65,12 @@ class ChatResponse{
 			$responseArray['openSessions'] = $this->openSessions;
 		}
 		
-		if($this->openInvitations  !== null){
-			$responseArray['openInvitations'] = $this->openInvitations;
+		if($this->openMyInvitations  !== null){
+			$responseArray['openMyInvitations'] = $this->openMyInvitations;
+		}
+		
+		if($this->openInvitationsToMe  !== null){
+			$responseArray['openInvitationsToMe'] = $this->openInvitationsToMe;
 		}
 		
 		return $responseArray;
@@ -115,8 +120,12 @@ class ChatResponse{
 		$this->openSessions = $array;
 	}
 	
-	public function setOpenInvitations($array){
-		$this->openInvitations = $array;
+	public function setOpenMyInvitations($array){
+		$this->openMyInvitations = $array;
+	}
+	
+	public function setOpenInvitationsToMe($array){
+		$this->openInvitationsToMe = $array;
 	}
 }
 ?>

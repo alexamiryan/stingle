@@ -8,7 +8,6 @@ class LoaderChat extends Loader{
 		require_once ('ChatMessage.class.php');
 		require_once ('ChatMessageFilter.class.php');
 		require_once ('ChatMessageManager.class.php');
-		require_once ('ChatResponse.class.php');
 		require_once ('ChatSession.class.php');
 		require_once ('ChatSessionFilter.class.php');
 		require_once ('ChatSessionManager.class.php');

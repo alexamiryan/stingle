@@ -1,0 +1,6 @@
+<?
+class ChatSessionException extends RuntimeException
+{
+	
+}
+?>

@@ -99,7 +99,7 @@ class ChatSessionManager extends Filterable
 	public function getChatSession(ChatSessionFilter $filter, $myUserId = null){
 		$sessions = $this->getChatSessions($filter, $myUserId);
 		if(count($sessions) !== 1){
-			throw new RuntimeException("There is no such chat session or it is not unique.");
+			throw new ChatSessionException("There is no such chat session or it is not unique.");
 		}
 		return $sessions[0];
 	}

@@ -58,7 +58,7 @@ class ChatInvitationManager extends Filterable
 	public function getInvitation(ChatInvitationsFilter $filter){
 		$invitations = $this->getInvitations($filter);
 		if(count($invitations) !== 1){
-			throw new RuntimeException("There is no such invitation or invitation is not unique.");
+			throw new ChatInvitationException("There is no such invitation or invitation is not unique.");
 		}
 		return $invitations[0];
 	}

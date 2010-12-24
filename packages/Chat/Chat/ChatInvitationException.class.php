@@ -1,0 +1,6 @@
+<?
+class ChatInvitationException extends RuntimeException
+{
+	
+}
+?>

@@ -3,7 +3,9 @@ function format_exception(Exception $e, $insert_pre = false){
 	$message =  "Message:\n" . $e->getMessage() . "\n\n" .
 	"File: " . $e->getFile() . " on line " . $e->getLine() . "\n\n" .
 	"Trace:\n" . $e->getTraceAsString() . "\n\n" .
-	"Request:\n". print_r($_REQUEST,true) . "\n\n" .
+	"Get:\n". print_r($_GET,true) . "\n\n" .
+	"Post:\n". print_r($_POST,true) . "\n\n" .
+	"Cookie:\n". print_r($_COOKIE,true) . "\n\n" .
 	"Server:\n". print_r($_SERVER,true) . "\n\n" .
 	"Code: " . $e->getCode();
 	if($insert_pre){
@@ -26,7 +28,9 @@ function format_error($errno, $errstr, $errfile, $errline, $insert_pre = false){
 	$message =  "Message:\n" . $errstr . "\n\n" .
 	"File: " . $errfile . " on line " . $errline . "\n\n" .
 	"Trace: \n" . $trace_str . "\n\n" .
-	"Request:\n". print_r($_REQUEST,true) . "\n\n" .
+	"Get:\n". print_r($_GET,true) . "\n\n" .
+	"Post:\n". print_r($_POST,true) . "\n\n" .
+	"Cookie:\n". print_r($_COOKIE,true) . "\n\n" .
 	"Server:\n". print_r($_SERVER,true) . "\n\n" .
 	"Code: " . $errno;
 	if($insert_pre){

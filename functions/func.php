@@ -358,26 +358,6 @@ function getMonthDays($month, $year){
 	}
 }
 
-/**
- * Send email
- * @param $to
- * @param $subject
- * @param $body
- * @return bool
- */
-function send_mail($to, $subject, $body){
-	global $from_mail, $site_name, $reply_mail;
-
-	$headers = array("Return-Path: $from_mail", "From: \"$site_name\" <$from_mail>", "Content-Type: text/html; charset=\"utf-8\"", "Reply-To: $reply_mail\n");
-
-	if(mail($to, $subject, $body, implode("\n", $headers), "-f$from_mail")){
-		return true;
-	}
-	else{
-		return false;
-	}
-}
-
 function urlFriendlyText($string){
 	return preg_replace('/\s+/i', "-", $string);
 }

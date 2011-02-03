@@ -162,7 +162,7 @@ class ChatSessionManager extends Filterable
 			throw new InvalidArgumentException("Invalid invitedUser specified!");
 		}
 		
-		$this->query->exec("	INSERT INTO `".Tbl::get('TBL_CHAT_SESSIONS')."`
+		$this->query->exec("	INSERT IGNORE INTO `".Tbl::get('TBL_CHAT_SESSIONS')."`
 										(
 											`inviter_user_id`, 
 											`invited_user_id`)

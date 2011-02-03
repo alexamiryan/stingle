@@ -3,7 +3,9 @@ function format_exception(Exception $e, $insert_pre = false){
 	$message =  "Message:\n" . $e->getMessage() . "\n\n" .
 	"File: " . $e->getFile() . " on line " . $e->getLine() . "\n\n" .
 	"Trace:\n" . $e->getTraceAsString() . "\n\n" .
-	"Request:\n". print_r($_REQUEST,true) . "\n\n" .
+	"Get:\n". print_r($_GET,true) . "\n\n" .
+	"Post:\n". print_r($_POST,true) . "\n\n" .
+	"Cookie:\n". print_r($_COOKIE,true) . "\n\n" .
 	"Server:\n". print_r($_SERVER,true) . "\n\n" .
 	"Code: " . $e->getCode();
 	if($insert_pre){
@@ -26,7 +28,9 @@ function format_error($errno, $errstr, $errfile, $errline, $insert_pre = false){
 	$message =  "Message:\n" . $errstr . "\n\n" .
 	"File: " . $errfile . " on line " . $errline . "\n\n" .
 	"Trace: \n" . $trace_str . "\n\n" .
-	"Request:\n". print_r($_REQUEST,true) . "\n\n" .
+	"Get:\n". print_r($_GET,true) . "\n\n" .
+	"Post:\n". print_r($_POST,true) . "\n\n" .
+	"Cookie:\n". print_r($_COOKIE,true) . "\n\n" .
 	"Server:\n". print_r($_SERVER,true) . "\n\n" .
 	"Code: " . $errno;
 	if($insert_pre){
@@ -351,26 +355,6 @@ function getMonthDays($month, $year){
 	}
 	else{ //Get it directly
 		return date("d", mktime(0, 0, 0, $month + 1, 0, $year));
-	}
-}
-
-/**
- * Send email
- * @param $to
- * @param $subject
- * @param $body
- * @return bool
- */
-function send_mail($to, $subject, $body){
-	global $from_mail, $site_name, $reply_mail;
-
-	$headers = array("Return-Path: $from_mail", "From: \"$site_name\" <$from_mail>", "Content-Type: text/html; charset=\"utf-8\"", "Reply-To: $reply_mail\n");
-
-	if(mail($to, $subject, $body, implode("\n", $headers), "-f$from_mail")){
-		return true;
-	}
-	else{
-		return false;
 	}
 }
 

@@ -1,5 +1,5 @@
 <?
-class DependencyFacebook extends Dependency
+class DependencyFacebookAuth extends Dependency
 {
 	public function __construct(){
 		$this->addPackage("Db");

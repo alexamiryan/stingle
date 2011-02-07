@@ -12,7 +12,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	private $config;
 	
 	/**
-	 * @var NAME of  
+	 * @var NAME of current social site 
 	 */
 	const NAME = 'facebook';
 	
@@ -70,6 +70,35 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	}
 	
 	/**
+	 * Help Function
+	 * Function Set BirthDate with  Default date format and return it
+	 * @param  $fbBirthDate birdthdate field from Facebook user object
+	 * @return string
+	 */
+	private function setBirthDate($fbBirthDate){
+		
+		$utime = strtotime($fbBirthDate); 
+		$birthdate = date(DEFAULT_DATE_FORMAT, $utime);
+		return $birthdate;
+	}
+	
+	/**
+	 * Help Function
+	 * Fill Others fields from facebook user object to External user object field(otherFields)
+	 * @param Facebook User object $fbUser
+	 * @return ArrayObject
+	 */
+	private function fillOtherFieldsFromFBUser($fbUser){
+		$othersArray = array(); 
+		foreach ($fbUser as $key => $field) {
+			if($field != null) {
+				$othersArray[$key] = $field;
+			}
+		}
+		return 	$othersArray;
+	}
+	
+	/**
 	 * Help function
 	 * Function Creates new ExternalUser object, 
 	 * from facebook's user object fills all members and returns ExtraUser object
@@ -78,42 +107,36 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	 */
 	private function createExtraUser($fbUser){
 		$extUser = new ExternalUser();
-		if($fbUser->first_name) {
+		if(!empty($fbUser->first_name)) {
 			$extUser->firstName = $fbUser->first_name;
+			$fbUser->first_name = null;
 		}
-		if($fbUser->last_name){
+		if(!empty($fbUser->last_name)){
 			$extUser->lastName = $fbUser->last_name;
+			$fbUser->last_name = null;
 		}
-		if($fbUser->email){
+		if(!empty($fbUser->email)){
 			$extUser->email = $fbUser->email;
+			$fbUser->email = null;
 		}
-		if($fbUser->birthday){
-			$extUser->birthdate = $fbUser->birthday;
+		if(!empty($fbUser->birthday)){
+			$extUser->birthdate = $this->setBirthDate($fbUser->birthday);
+			$fbUser->birthday = null;
 		}
-		if($fbUser->id){
+		if(!empty($fbUser->id)){
 			$extUser->id = $fbUser->id;
+			$fbUser->id = null;
 		}
-		if($fbUser->gender){
-			$extUser->sex = $fbUser->gender;
+		if(!empty($fbUser->gender)){
+			switch ($fbUser->gender) {
+				case 'male' : $extUser->sex = ExternalUser::SEX_MALE; break;
+				case 'female': $extUser->sex = ExternalUser::SEX_FEMALE; break;	 
+			}
+			$fbUser->gender = null;
 		}
-		if($fbUser->timezone){
-			$extUser->timezone = $fbUser->timezone;
-		}
-		if($fbUser->timezone){
-			$extUser->timezone = $fbUser->timezone;
-		}
-		if($fbUser->hometown){
-			$extUser->hometown = $fbUser->hometown->name;
-		}
-		if($fbUser->location){
-			$extUser->location = $fbUser->location->name;
-		}
-		if($fbUser->updated_time){
-			$extUser->updatedTime = $fbUser->updated_time;
-		}
+		$extUser->otherFields = $this->fillOtherFieldsFromFBUser($fbUser);
 		return $extUser;
 	}
-	
 	
 	/**
 	 * @see ExternalAuth::getName()
@@ -140,11 +163,13 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	 * @see ExternalAuth::setExtMap()
 	 */
 	public function addToExtMap($userId,ExternalUser $extUser){
-		if(!is_numeric($userId) || !is_numeric($extUser->extraUserId)) {
-			throw new InvalidArgumentException("User Id or ExtUserId Is not numeric");
+		if(!is_numeric($userId)) {
+			throw new InvalidArgumentException("User Id Is not numeric");
+		}
+		if(!is_numeric($extUser->id)) {
+			throw new InvalidArgumentException("External Id Is not numeric");
 		}
 		$extUserId = $extUser->id;
-		
 		$this->query->exec("INSERT INTO `".Tbl::get('TBL_EXT_AUTH')."` 
 									(`user_id`,`ext_user_id`) VALUES
 									('$userId','$extUserId')");

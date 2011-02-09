@@ -105,7 +105,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	 * @param "stdClass object" $fbUser It's Facebook's User object
 	 * @return ExternalUser
 	 */
-	private function createExtraUser($fbUser){
+	private function createExternalUser($fbUser){
 		$extUser = new ExternalUser();
 		if(!empty($fbUser->first_name)) {
 			$extUser->firstName = $fbUser->first_name;
@@ -133,7 +133,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 				case 'female': $extUser->sex = ExternalUser::SEX_FEMALE; break;	 
 			}
 			$fbUser->gender = null;
-		}
+		}		
 		$extUser->otherFields = $this->fillOtherFieldsFromFBUser($fbUser);
 		return $extUser;
 	}
@@ -155,7 +155,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
     	}    	
     	$accessToken = $this->getAccessToken($code);
     	$fbUser = $this->getFBUserFromGraph($accessToken);
-    	$extUser = $this->createExtraUser($fbUser);
+    	$extUser = $this->createExternalUser($fbUser);
 		return $extUser;    	
 	}
 	

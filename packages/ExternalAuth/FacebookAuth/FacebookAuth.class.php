@@ -191,6 +191,18 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 		
 		return $this->query->fetchField('user_id');
 	}
+	
+	/**
+	 * @see ExternalAuth::deleteLocalUserFromMap()
+	 */
+	public function deleteUserIDFromMap($userId){
+		if(!is_numeric($userId)) {
+			throw new Exception("id is not numeric");
+		}
+		$this->query->exec("DELETE FROM `".Tbl::get('TBL_EXT_AUTH')."` 
+							WHERE `user_id`='$userId'
+							LIMIT 1");
+	}
 }
 
 ?>

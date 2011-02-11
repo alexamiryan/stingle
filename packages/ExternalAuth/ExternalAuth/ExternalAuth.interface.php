@@ -44,6 +44,13 @@ interface ExternalAuth
 	public function getLocalUserIDFromMap(ExternalUser $extUser);
 	
 	/**
+	 * Function Delete Local User Id from mapping table
+	 *
+	 * @param $userId is a local user Id
+	 */
+	public function deleteUserIDFromMap($userId);
+	
+	/**
 	 * Function Gets current external plugins name
 	 * 
 	 * @return string

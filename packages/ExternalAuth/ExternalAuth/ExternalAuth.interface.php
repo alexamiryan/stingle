@@ -34,7 +34,7 @@ interface ExternalAuth
 	public function addToExtMap($userId, ExternalUser $extUser);
 	
 	/**
-	 * Funciton Gets User Id from Maping table
+	 * Funciton Gets User Id from Mapping table
 	 *
 	 * if there is no extUser object in table then function returns false
 	 * 
@@ -42,6 +42,15 @@ interface ExternalAuth
 	 * @return integer|boolean
 	 */
 	public function getLocalUserIDFromMap(ExternalUser $extUser);
+	
+	/**
+	 * Function gets External user ID from Mapping table. 
+	 * 
+	 * If there is no external user Id in table, function returns false
+	 * @param interger $userId
+	 * @return integer|boolean
+	 */
+	public function getExternalUserId($userId);
 	
 	/**
 	 * Function Delete Local User Id from mapping table

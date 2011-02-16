@@ -11,6 +11,8 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 {
 	private $config;
 	
+	private $redirect_url = null;
+	
 	/**
 	 * @var NAME of current social site 
 	 */
@@ -31,13 +33,26 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	}
 	
 	/**
+	 * Function rewrite default redirect url and set new redirect url
+	 * @param string $redirectUrl
+	 */
+	public function setRedirectUrl($redirectUrl) {
+		$this->redirect_url = $redirectUrl;
+	}
+	
+	/**
 	 * Help function
 	 * If after redirect from Facebook there is no "code" parameter, 
 	 * function again does redirect to facebook's oAuth system 
 	 */
 	private function redirectToDialog(){
+		if($this->redirect_url !== null) {
+			$rediectUrl = $this->redirect_url;
+		} else {
+			$rediectUrl = $this->config->redirectUrl;
+		}
 		$dialogUrl = "http://www.facebook.com/dialog/oauth?client_id=" 
-            . $this->config->appId . "&redirect_uri=" . urlencode($this->config->redirectUrl);	
+            . $this->config->appId . "&redirect_uri=" . urlencode($rediectUrl);	
         echo("<script> top.location.href='" . $dialogUrl . "'</script>");
 	}
 	
@@ -48,9 +63,14 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	 * @return string
 	 */
 	private function getAccessToken($code) {
+		if($this->redirect_url !== null) {
+			$rediectUrl = $this->redirect_url;
+		} else {
+			$rediectUrl = $this->config->redirectUrl;
+		}
 		$tokenUrl = "https://graph.facebook.com/oauth/access_token?client_id="
         		.  $this->config->appId 
-        		. "&redirect_uri="  . urlencode($this->config->redirectUrl) 
+        		. "&redirect_uri="  . urlencode($rediectUrl) 
         		. "&client_secret=" . $this->config->appSecret 
         		. "&code=" . $code;
     	return file_get_contents($tokenUrl);
@@ -190,6 +210,21 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 							LIMIT 1");
 		
 		return $this->query->fetchField('user_id');
+	}
+	
+	/**
+	 * @see ExternalAuth::getExternalUserId()
+	 */
+	public function getExternalUserId($userId){
+		if(!is_numeric($userId)) {
+			throw new Exception("User Id is not numeric");
+		}
+		$this->query->exec("SELECT `ext_user_id` 
+							FROM `".Tbl::get('TBL_EXT_AUTH')."` 
+							WHERE `user_id`='$userId'
+							LIMIT 1");
+		
+		return $this->query->fetchField('ext_user_id');
 	}
 	
 	/**

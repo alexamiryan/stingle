@@ -182,24 +182,21 @@ class ChatSessionManager extends Filterable
 		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` WHERE `id`='{$sessionId}'");
 	}
 	
-	public function closeSession($sessionId, $closerUserId, $reason = null){
-		if(empty($sessionId) or !is_numeric($sessionId)){
-			throw new InvalidArgumentException("Invalid session ID specified!");
-		}
-		if(empty($closerUserId) or !is_numeric($closerUserId)){
-			throw new InvalidArgumentException("Invalid closerUserId specified!");
-		}
-		
+	public function closeSession(ChatSession $session, ChatUser $closerUser, $reason = null){
 		$updateReason = "";
 		if($reason !== null){
 			$updateReason = ", `closed_reason`='$reason'";
+			$session->closedReason = $reason;
 		}
 		
 		$this->query->exec("UPDATE `".Tbl::get('TBL_CHAT_SESSIONS')."` 
 								SET 	`closed` = '".static::CLOSED_STATUS_YES."', 
 									 	`closed_date` = NOW(), 
-										`closed_by` = '$closerUserId'$updateReason 
-								WHERE `id`='$sessionId'");
+										`closed_by` = '{$closerUser->userId}'$updateReason 
+								WHERE `id`='{$session->id}'");
+		
+		$session->closed = static::CLOSED_STATUS_YES;
+		$session->closedBy = $closerUser->userId;
 	}
 	
 	public function clearTimedOutSessions(){

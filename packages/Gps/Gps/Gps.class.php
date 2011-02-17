@@ -468,6 +468,60 @@ class Gps extends DbAccessor
 		$this->query->exec($query, $cacheMinutes);
 		return $this->query->fetchRecord();
 	}
+	
+	/**
+	 * Get closest node by latitude and longitude
+	 * This function use fast, but not exact algorithm
+	 * 
+	 * @param float $latitude
+	 * @param float $longitude
+	 * @param int $type_id
+	 * @param int $cacheMinutes
+	 */
+	public function getClosestNode($latitude, $longitude, $type_id = null, $cacheMinutes = null){
+		
+		$sql_query = "SELECT * FROM `".Tbl::get('TBL_TREE')."` WHERE 1";
+		
+		if($type_id !== null){
+			$sql_query .= " AND `type_id`='$type_id'";
+		}
+		
+		$exact_lat_lon .= " AND `lat` = '".$latitude."' AND `lng` = '".$longitude."'";
+		
+		$this->query->exec($sql_query.$exact_lat_lon, $cacheMinutes);		
+		if($this->query->countRecords()){
+			return $this->query->fetchRecord();
+		}
+						
+		// If above query doesn't return record, find in some range of posible latitude and longitude
+		// As $latitude, $longitude are decimal(8,4)  find with 3 digits to the right of the decimal point
+		$digits_after = 3;
+				 
+		while($digits_after > -2){	//2 digits to the left of the decimal point
+	
+			$pow = pow(10,$digits_after);
+			
+			$lat_min = $latitude - (1/2)/$pow;
+			$lat_max = $latitude + (1/2)/$pow;
+			
+			$lng_min = $longitude - (1/2)/$pow;
+			$lng_max = $longitude + (1/2)/$pow;			
+			
+			$this->query->exec("SELECT * FROM `wgps_tree` 
+								WHERE  	lat BETWEEN ".$lat_min." AND ".$lat_max."
+										AND 
+										`lng` BETWEEN ".$lng_min." AND ".$lng_max ."");
+			if($this->query->countRecords()){
+				return $this->query->fetchRecord();
+			}
+			$digits_after --; //decrease accuracy
+		}
+		//////////////////////////////////////////////////////
+		// Appear here only if there is no such record		//
+		// in wgps_tree table with zero precision/accuracy.	//
+		//////////////////////////////////////////////////////
+		return null;		
+	}
 
 	///////////END OF PUBLIC PART///////////
 

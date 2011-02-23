@@ -248,7 +248,7 @@ class SmartyWrapper extends Smarty {
 			unset($this->cssFiles[$key]);
 		}
 		else{
-			throw new InvalidArgumentException("CSS file does not present in the list");
+			throw new InvalidArgumentException("Can't remove CSS file, because it was not added");
 		}
 	}
 	
@@ -285,7 +285,7 @@ class SmartyWrapper extends Smarty {
 			unset($this->jsFiles[$key]);
 		}
 		else{
-			throw new InvalidArgumentException("JS file does not present in the list");
+			throw new InvalidArgumentException("Can't remove JS file, because it was not added");
 		}
 	}
 	public function removeJsLib($fileName) {
@@ -297,7 +297,7 @@ class SmartyWrapper extends Smarty {
 			unset($this->jsLibFiles[$key]);
 		}
 		else{
-			throw new InvalidArgumentException("JS file does not exist present in the list");
+			throw new InvalidArgumentException("Can't remove JS Lib file, because it was not added");
 		}
 	}
 

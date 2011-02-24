@@ -1175,7 +1175,7 @@ class UserManagement extends Filterable{
 	 *
 	 * @param UsersFilter $filter
 	 * @param MysqlPager $pager
-	 * @return array
+	 * @return array[User]
 	 */
 	public function getUsersList(Filter $usersFilter = null, MysqlPager $pager = null, $cacheMinutes = 0){
 		$users = array();

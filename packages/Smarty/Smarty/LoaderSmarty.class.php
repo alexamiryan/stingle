@@ -1,7 +1,7 @@
 <?
 class LoaderSmarty extends Loader{
 	protected function includes(){
-		require_once ('Smarty/Smarty.class.php');
+		require_once ('Core/Smarty.class.php');
 		require_once ('SmartyWrapper.class.php');
 	}
 	
@@ -11,17 +11,28 @@ class LoaderSmarty extends Loader{
 	}
 	
 	public function hookSmartyInit(){
-		if(isset($this->config->pluginDirs)){
-			foreach(get_object_vars($this->config->pluginDirs) as $pluginDir){
-				$this->smarty->addPluginsDir($pluginDir);
-			}
-		}
 		$siteNavigationConfig = ConfigManager::getConfig("SiteNavigation");
 		$this->smarty->initialize(Reg::get($siteNavigationConfig->Nav)->{$siteNavigationConfig->firstLevelName}, Reg::get($siteNavigationConfig->Nav)->{$siteNavigationConfig->secondLevelName}, $this->config);
 	}
 	
 	public function hookSmartyDisplay(){
 		$this->smarty->display();
+	}
+	
+	public function hookRegisterSmartyPlugins(Array $params){
+		extract($params);
+		
+		if(	is_dir(STINGLE_PATH . "packages/{$packageName}/") and is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}")){
+			if(is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/SmartyPlugins")){
+				$this->smarty->addPluginsDir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/SmartyPlugins");
+			}
+		}
+		
+		if(is_dir(SITE_PACKAGES_PATH . "{$packageName}/") and is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}")){
+			if(is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/SmartyPlugins")){
+				$this->smarty->addPluginsDir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/SmartyPlugins");
+			}
+		}
 	}
 }
 ?>

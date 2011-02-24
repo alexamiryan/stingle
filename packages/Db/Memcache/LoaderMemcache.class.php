@@ -11,8 +11,8 @@ class LoaderMemcache extends Loader{
 		Reg::register($this->config->Objects->query, $query);
 	}
 	
-	public function hookAddMemcacheTimeConfig($args){
-		extract($args);
+	public function hookAddMemcacheTimeConfig(Array $params){
+		extract($params);
 		if(isset($pluginConfig->memcache)){
 			foreach($pluginConfig->memcache->toArray() as $className => $cacheTime){
 				ConfigManager::addConfig(array('Db','Memcache','time'), $className, $cacheTime);

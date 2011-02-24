@@ -29,13 +29,19 @@ abstract class Loader {
 	}
 	
 	final public function load($overrideObjects = false){
-		HookManager::callHook("BeforePluginInit", array('pluginConfig' => $this->config));
+		HookManager::callHook("BeforePluginInit", array(	'packageName' => $this->packageName, 
+															'pluginName' => $this->pluginName, 
+															'pluginConfig' => $this->config
+														));
 		$this->includes();
 		$this->customInitBeforeObjects();
 		$this->loadObjects($overrideObjects);
 		$this->customInitAfterObjects();
 		$this->registerHooks();
-		HookManager::callHook("AfterPluginInit", array('pluginConfig' => $this->config));
+		HookManager::callHook("AfterPluginInit", array(		'packageName' => $this->packageName, 
+															'pluginName' => $this->pluginName, 
+															'pluginConfig' => $this->config
+														));
 	}
 	
 	protected function includes(){

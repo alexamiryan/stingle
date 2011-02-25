@@ -6,7 +6,7 @@
  */
 
 
-function smarty_function_chunk($params, SmartyWrapper &$smarty){
+function smarty_function_chunk($params, &$smarty){
 	return $smarty->fetch($smarty->getCurrentTemplatePath() .'tpl/incs/chunks/'. $params['file']);
 }
 ?>

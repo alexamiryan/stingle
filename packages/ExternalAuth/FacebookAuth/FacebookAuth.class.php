@@ -24,6 +24,12 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	const TBL_EXT_AUTH = 'extauth_map_facebook';
 	
 	/**
+	 * 
+	 * @var TBL_FB_USER_INFO name of information table of facebook user 
+	 */
+	const TBL_FB_USER_INFO = 'facebook_users_info';
+	
+	/**
 	 * Constructor for FacebookAuth class,
 	 * @param Config $config
 	 */
@@ -238,6 +244,113 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 							WHERE `user_id`='$userId'
 							LIMIT 1");
 	}
+	
+	/**
+	 * Function connects to Facebook and gets photo albums 
+	 * @param string $accessToken is access token, by default It`s null
+	 * @return ArrayObject
+	 */
+	public function getAlbums($accessToken = null) {
+		$code = $_GET["code"];
+		if(empty($code)) {
+     		$this->redirectToDialog();   
+    	}    	
+    	$albumsArray = array();
+    	if($accessToken === null) {
+    		$accessToken = $this->getAccessToken($code);
+    	}
+    	$extAlbumUrl = "https://graph.facebook.com/me/albums?$accessToken";
+ 		$extAlbum = json_decode(file_get_contents($extAlbumUrl));
+ 		
+ 		foreach($extAlbum->data as $fbAlbum) {
+ 			$albumObj = new FacebookPhotoAlbum();
+ 			$albumObj->id = $fbAlbum->id;
+ 			$albumObj->name = $fbAlbum->name;
+ 			$albumObj->photo = "https://graph.facebook.com/".$fbAlbum->id."/picture?$accessToken";
+ 			$albumObj->type = $fbAlbum->type;
+ 			$albumsArray[] = $albumObj;	
+ 		}	
+ 		return $albumsArray;
+	}
+	
+	/**
+	 * Function Connects to Facebook and get Profile pictures
+	 * @return ArrayObject
+	 */
+	public function getProfilePhotos(){		
+		$code = $_GET["code"];
+		if(empty($code)) {
+     		$this->redirectToDialog();   
+    	}    	
+    	$accessToken = $this->getAccessToken($code);
+ 		$extAlbum = $this->getAlbums($accessToken);    	
+    	$filesArray = array ();
+ 		foreach ($extAlbum as $albumObj) {
+ 			if($albumObj->type == 'profile') {
+ 				$extPhotosUrl = "https://graph.facebook.com/".$albumObj->id."/photos?$accessToken";
+ 				$extPhotosObject = json_decode(file_get_contents($extPhotosUrl));
+ 				foreach ($extPhotosObject->data as $excObj) {
+ 					if($excObj->source !== null) {
+ 						$photoObj = new FacebookPhoto();
+ 						$photoObj->id = $excObj->id;
+ 						$photoObj->picture = $excObj->picture;
+ 						$photoObj->source = $excObj->source;
+ 						$photoObj->width = $excObj->width;
+ 						$photoObj->height = $excObj->height;
+ 						$filesArray[] = $photoObj;
+ 					}
+ 				}
+ 			}
+ 		}
+ 		return $filesArray;
+	}
+	
+	/**
+	 * Get External User information from info table. 
+	 * @param integer $userId user ID
+	 * @throws InvalidArgumentException
+	 * @return ArrayObject
+	 */
+	public function getExtUserInfo($userId){
+		if(!is_numeric($userId)) {
+			throw new InvalidArgumentException("User Id Is not numeric");
+		}
+		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_FB_USER_INFO')."` 
+							WHERE `user_id`='$userId'
+							LIMIT 1");
+		return $this->query->fetchRecord();
+	}
+	
+	/**
+	 * Add to facebook info table External user information.
+	 * @param integer $userId
+	 * @param ExternalUser $extUser
+	 * @throws InvalidArgumentException
+	 */
+	public function addExtUserInfo($userId, ExternalUser $extUser){
+		if(!is_numeric($userId)) {
+			throw new InvalidArgumentException("User Id Is not numeric");
+		}
+		if(!is_numeric($extUser->id)) {
+			throw new InvalidArgumentException("External Id Is not numeric");
+		}
+		$this->query->exec("INSERT INTO `".Tbl::get('TBL_FB_USER_INFO')."` 
+									(`user_id`,`ext_user_id`, `name`) VALUES
+									('$userId', '$extUser->id', '".$extUser->otherFields["name"]."')");
+	}
+	
+	/**
+	 * delete all information from info table for current user
+	 * @param integer $userId
+	 * @throws InvalidArgumentException
+	 */
+	public function deleteExtUserInfo($userId) {
+		if(!is_numeric($userId)) {
+			throw new InvalidArgumentException("User Id Is not numeric");
+		}
+		$this->query->exec("DELETE FROM `".Tbl::get('TBL_FB_USER_INFO')."` 
+							WHERE `user_id`='$userId'
+							LIMIT 1");
+	}
 }
-
 ?>

@@ -11,7 +11,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 {
 	private $config;
 	
-	private $redirect_url = null;
+	private $redirectUrl = null;
 	
 	/**
 	 * @var NAME of current social site 
@@ -43,7 +43,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	 * @param string $redirectUrl
 	 */
 	public function setRedirectUrl($redirectUrl) {
-		$this->redirect_url = $redirectUrl;
+		$this->redirectUrl = $redirectUrl;
 	}
 	
 	/**
@@ -52,12 +52,12 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	 * function again does redirect to facebook's oAuth system 
 	 */
 	private function redirectToDialog(){
-		if($this->redirect_url !== null) {
-			$rediectUrl = $this->redirect_url;
+		if($this->redirectUrl !== null) {
+			$rediectUrl = $this->redirectUrl;
 		} else {
 			$rediectUrl = $this->config->redirectUrl;
 		}
-		$dialogUrl = "http://www.facebook.com/dialog/oauth?client_id=" 
+		$dialogUrl = "https://www.facebook.com/dialog/oauth?client_id=" 
             . $this->config->appId . "&redirect_uri=" . urlencode($rediectUrl);	
         echo("<script> top.location.href='" . $dialogUrl . "'</script>");
 	}
@@ -69,8 +69,8 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	 * @return string
 	 */
 	private function getAccessToken($code) {
-		if($this->redirect_url !== null) {
-			$rediectUrl = $this->redirect_url;
+		if($this->redirectUrl !== null) {
+			$rediectUrl = $this->redirectUrl;
 		} else {
 			$rediectUrl = $this->config->redirectUrl;
 		}

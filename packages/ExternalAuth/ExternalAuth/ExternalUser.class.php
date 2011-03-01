@@ -1,7 +1,7 @@
 <?
 /**
  * 
- * Class ErternalUser is common ExternalUser Class for all social sites.
+ * Class ExternalUser is common ExternalUser Class for all social sites.
  * Every social site gives own user's object and after 
  * that those objects have to be translated into this class object.  
  * 

@@ -23,13 +23,13 @@ class LoaderChat extends Loader{
 	}
 	
 	protected function loadChatInvitationManager(){
-		Reg::register($this->config->Objects->ChatInvitationManager, new ChatInvitationManager($this->config));
+		Reg::register($this->config->Objects->ChatInvitationManager, new ChatInvitationManager($this->config->AuxConfig));
 	}
 	protected function loadChatMessageManager(){
-		Reg::register($this->config->Objects->ChatMessageManager, new ChatMessageManager($this->config));
+		Reg::register($this->config->Objects->ChatMessageManager, new ChatMessageManager($this->config->AuxConfig));
 	}
 	protected function loadChatSessionManager(){
-		Reg::register($this->config->Objects->ChatSessionManager, new ChatSessionManager($this->config));
+		Reg::register($this->config->Objects->ChatSessionManager, new ChatSessionManager($this->config->AuxConfig));
 	}
 }
 ?>

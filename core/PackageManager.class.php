@@ -231,11 +231,11 @@ class PackageManager {
 			$thisPriorityHooks = array();
 			foreach($plugins as $plugin){
 				$pluginConfig = $this->getPluginConfig($plugin[0], $plugin[1]);
-				if(!isset($pluginConfig->hooks)){
+				if(!isset($pluginConfig->Hooks)){
 					continue;
 				}
 				
-				$pluginHooks = get_object_vars($pluginConfig->hooks);
+				$pluginHooks = get_object_vars($pluginConfig->Hooks);
 				foreach($pluginHooks as $hook){
 					if(in_array($hook, array_keys($thisPriorityHooks))){
 						$conflictingPlugin = $thisPriorityHooks[$hook];

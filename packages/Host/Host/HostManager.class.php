@@ -45,7 +45,7 @@ class HostManager{
 	 * @return unknown
 	 */
 	public static function pageURL(){
-		$hostConfig = ConfigManager::getConfig("Host");
+		$hostConfig = ConfigManager::getConfig("Host")->AuxConfig;
 		if(empty($_SERVER["SERVER_NAME"])){
 			$_SERVER["SERVER_NAME"] = $hostConfig->cgiHost;
 		}
@@ -69,7 +69,7 @@ class HostManager{
 	 */
 
 	public static function getHostName(){
-		$hostConfig = ConfigManager::getConfig("Host");
+		$hostConfig = ConfigManager::getConfig("Host")->AuxConfig;
 		if(empty($_SERVER['HTTP_HOST'])){
 			$_SERVER['HTTP_HOST'] = $hostConfig->cgiHost;
 		}

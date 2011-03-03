@@ -35,8 +35,8 @@ ob_start();
 Debug::setMode($config->Debug->enabled);
 
 // Register User Hooks
-if(isset($config->hooks)){
-	foreach(get_object_vars($config->hooks) as $hookName => $funcName){
+if(isset($config->Hooks)){
+	foreach(get_object_vars($config->Hooks) as $hookName => $funcName){
 		if(is_object($funcName)){
 			foreach (get_object_vars($funcName) as $regFuncName){
 				HookManager::registerHook($hookName, $regFuncName);

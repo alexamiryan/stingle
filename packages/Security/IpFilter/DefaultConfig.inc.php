@@ -1,6 +1,5 @@
 <?
 $defaultConfig = array(
-						'Objects' => array(	'ipFilter' => 'IpFilter'
-											)
+						'Objects' => array(	'ipFilter' => 'IpFilter' )
 					  );
 ?>

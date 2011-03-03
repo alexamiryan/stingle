@@ -132,7 +132,7 @@ class RewriteURL{
 		$module_flag = false;
 		$page_flag = 1;
 
-		$config = ConfigManager::getConfig("RewriteURL");
+		$config = ConfigManager::getConfig("RewriteURL")->AuxConfig;
 		$return_string = $config->site_path . $config->handler_script . "?";
 
 		$parts = explode("/", $strUrl);
@@ -165,7 +165,7 @@ class RewriteURL{
 	}
 
 	public static function ensureSourceLastDelimiter($strUrl){
-		$config = ConfigManager::getConfig('RewriteURL', 'RewriteURL');
+		$config = ConfigManager::getConfig('RewriteURL', 'RewriteURL')->AuxConfig;
 		if($config->source_link_style == 'nice'){
 			$delimiter = '/';
 		}
@@ -179,7 +179,7 @@ class RewriteURL{
 	}
 
 	public static function ensureOutputLastDelimiter($strUrl){
-		$config = ConfigManager::getConfig('RewriteURL', 'RewriteURL');
+		$config = ConfigManager::getConfig('RewriteURL', 'RewriteURL')->AuxConfig;
 		if($config->output_link_style == 'nice'){
 			$delimiter = '/';
 		}
@@ -195,7 +195,7 @@ class RewriteURL{
 	}
 
 	public static function generateCleanBaseLink($module, $page, $default_module){
-		$config = ConfigManager::getConfig('RewriteURL', 'RewriteURL');
+		$config = ConfigManager::getConfig('RewriteURL', 'RewriteURL')->AuxConfig;
 		if($module == $page){
 			if($module != $default_module){
 				if($config->source_link_style == 'nice'){

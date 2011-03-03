@@ -17,7 +17,7 @@ class GeoIP extends DbAccessor
 			if(!preg_match("/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/",$ip)){
 				throw new InvalidArgumentException('IP is in wrong format');
 			}
-			$this->query->exec("SELECT `country`, `region`, `city` FROM ".Tbl::get('TBL_BLOCKS')."
+			$this->query->exec("SELECT `country`, `region`, `city`, `latitude`,	`longitude` FROM ".Tbl::get('TBL_BLOCKS')."
 								LEFT JOIN ".Tbl::get('TBL_LOCATIONS')." USING (`locId`)
 								WHERE index_geo = INET_ATON('".$ip."')-(INET_ATON('".$ip."')%65536) AND INET_ATON('".$ip."') BETWEEN `startIpNum` AND `endIpNum`", $cacheMinutes);
 			if($this->query->countRecords()){
@@ -26,6 +26,8 @@ class GeoIP extends DbAccessor
 				$location->country = $row['country'];
 				$location->region = $row['region'];
 				$location->city = $row['city'];
+				$location->latitude = $row['latitude'];
+				$location->longitude = $row['longitude'];
 				
 				return $location;
 			}

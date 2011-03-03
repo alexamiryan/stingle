@@ -18,7 +18,8 @@ class GeoIPGps
 		
 		$location = $this->geoIP->getLocation($ip);
 		
-		$myGpses = $this->gps->getNodesByName(mysql_real_escape_string($location->city), $this->gps->getTypeId($type), false, $cacheMinutes);		
+		$type_id = $this->gps->getTypeId($type);
+		$myGpses = $this->gps->getNodesByName(mysql_real_escape_string($location->city), $type_id, false, $cacheMinutes);		
 		if(count($myGpses) > 1){
 			// More than one node with same name
 			// Check country
@@ -30,9 +31,14 @@ class GeoIPGps
 				}
 			}
 		}
-		else{
+		elseif(count($myGpses) == 1){
 			// Only one city in gps databse
 			$gpsToReturn = $myGpses[0];
+		}
+		else{
+			// No node with this name.
+			// Take closest by latitude and longitude node.
+			$gpsToReturn = $this->gps->getClosestNode($location->latitude, $location->longitude, $type_id);
 		}
 		
 		return $gpsToReturn;

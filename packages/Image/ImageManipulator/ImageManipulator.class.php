@@ -158,7 +158,7 @@ class ImageManipulator extends Model
 	 * @param int $quality (0-100)
 	 * @return bool
 	 */
-	public function writeJpeg($to_filename='', $progrssive_jpeg=0, $quality=100){
+	public function writeJpeg($to_filename=null, $progrssive_jpeg=0, $quality=100){
 		if($progrssive_jpeg){
 			@imageinterlace($this->image_res, 1);
 		}
@@ -176,7 +176,7 @@ class ImageManipulator extends Model
 	 * @param string $to_filename (If is null, gif will be outputed directly)
 	 * @return bool
 	 */
-	public function writeGif($to_filename=''){
+	public function writeGif($to_filename=null){
 		if(!imagegif($this->image_res, $to_filename)){
 			throw new RuntimeException("Unable to write image file!");
 		}
@@ -188,7 +188,7 @@ class ImageManipulator extends Model
 	 * @param string $to_filename (If is null, png will be outputed directly)
 	 * @return bool
 	 */
-	public function writePng($to_filename=''){
+	public function writePng($to_filename=null){
 		if(!imagepng($this->image_res, $to_filename)){
 			throw new RuntimeException("Unable to write image file!");
 		}
@@ -286,6 +286,8 @@ class ImageManipulator extends Model
 		
 		@imagedestroy($this->image_res);
 		$this->image_res=$cropped_image;
+		$this->info[0] = $width;
+		$this->info[1] = $height;
 	}
 
 	/**
@@ -308,32 +310,26 @@ class ImageManipulator extends Model
 	}
 	
 	/**
-	 * Check image dimensions
+	 * Check if image meets requirements for minimal size.
 	 *
-	 * @param integer $width
-	 * @param integer $height
-	 * @return integer 
+	 * @param integer $largeSideMinSize
+	 * @param integer $smallSideMinSize
+	 * @return boolean 
 	 */
-	public function checkDimensionsAdvanced($width, $height){
-		if($this->info[0] == $width && $this->info[1] == $height){
-			return self::DIMENSIONS_EQUAL;
-		}
-		elseif($this->info[0]>=$width){
-			if($this->info[1]>=$height){
-				return self::DIMENSIONS_LARGER;
-			}
-			else{
-				return self::DIMENSIONS_WIDTH_LARGER_HEIGHT_SMALLER;
+	public function isSizeMeetRequirements($largeSideMinSize, $smallSideMinSize){
+		$width = $this->info[0];
+		$height = $this->info[1];
+		if($width >= $height){
+			if($width >= $largeSideMinSize and $height >= $smallSideMinSize){
+				return true;
 			}
 		}
 		else{
-			if($this->info[1]>=$height){
-				return self::DIMENSIONS_HEIGHT_LARGER__WIDTH_SMALLER;
-			}
-			else{
-				return self::DIMENSIONS_SMALLER;
+			if($height >= $largeSideMinSize and $width >= $smallSideMinSize){
+				return true;
 			}
 		}
+		return false;
 	}
 
 	/**
@@ -372,6 +368,10 @@ class ImageManipulator extends Model
 
 		@imagedestroy($this->image_res);
 		$this->image_res=$rotated_image;
+		
+		$tmp = $this->info[0];
+		$this->info[0] = $this->info[1];
+		$this->info[1] = $tmp;
 	}
 }
 ?>

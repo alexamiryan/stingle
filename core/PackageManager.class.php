@@ -115,7 +115,7 @@ class PackageManager {
 	}
 	
 	/**
-	 * Checks if plugin in already loaded
+	 * Checks if plugin is already loaded
 	 * 
 	 * @param string $packageName
 	 * @param string $pluginName

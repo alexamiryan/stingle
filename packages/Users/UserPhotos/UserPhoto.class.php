@@ -1,9 +1,7 @@
 <?
-class UserPhoto
+class UserPhoto extends Photo
 {
-	public $id;
 	public $userId;
-	public $fileName;
 	public $default;
 	public $approved;
 }

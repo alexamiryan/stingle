@@ -115,7 +115,7 @@ class ImageManipulator extends Model
 			}
 			if($mode==1){
 				$resized_image = imagecreatetruecolor($width, $this->info[1]*$width/$this->info[0]);
-				if(!imagecopyresized($resized_image, $this->image_res, 0, 0, 0, 0, $width, $this->info[1]*$width/$this->info[0], $this->info[0], $this->info[1])){
+				if(!imagecopyresampled($resized_image, $this->image_res, 0, 0, 0, 0, $width, $this->info[1]*$width/$this->info[0], $this->info[0], $this->info[1])){
 					throw new RuntimeException("Unable to resize image!");
 				}
 				else{
@@ -125,7 +125,7 @@ class ImageManipulator extends Model
 			}
 			elseif($mode==2){
 				$resized_image = imagecreatetruecolor($this->info[0]*$height/$this->info[1], $height);
-				if(!imagecopyresized($resized_image, $this->image_res, 0, 0, 0, 0, $this->info[0]*$height/$this->info[1], $height, $this->info[0], $this->info[1])){
+				if(!imagecopyresampled($resized_image, $this->image_res, 0, 0, 0, 0, $this->info[0]*$height/$this->info[1], $height, $this->info[0], $this->info[1])){
 					throw new RuntimeException("Unable to resize image!");
 				}
 				else{
@@ -139,7 +139,7 @@ class ImageManipulator extends Model
 		}
 		else{
 			$resized_image = imagecreatetruecolor($width, $height);
-			if(!imagecopyresized($resized_image, $this->image_res, 0, 0, 0, 0, $width, $height, $this->info[0], $this->info[1])){
+			if(!imagecopyresampled($resized_image, $this->image_res, 0, 0, 0, 0, $width, $height, $this->info[0], $this->info[1])){
 				throw new RuntimeException("Unable to resize image!");
 			}
 			else{

@@ -221,7 +221,9 @@ class SmartyWrapper extends Smarty {
 			if(!file_exists($fileName)){
 				throw new RuntimeException("CSS file '$fileName' not found.");
 			}
-			$filename = SITE_PATH . $filename;
+			$fileName = SITE_PATH . $fileName;
+                        
+
 		}
 		$this->cssFiles[] = $fileName;
 	}
@@ -260,7 +262,7 @@ class SmartyWrapper extends Smarty {
 			if(!file_exists($fileName)){
 				throw new RuntimeException("JS file '$fileName' not found.");
 			}
-			$filename = SITE_PATH . $filename;
+                        $fileName = SITE_PATH . $fileName;
 		}
 		
 		$this->jsFiles[] = $fileName;

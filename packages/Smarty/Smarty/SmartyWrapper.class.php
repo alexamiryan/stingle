@@ -206,6 +206,17 @@ class SmartyWrapper extends Smarty {
 		}
 	}
 
+	private function getCssFilePath($fileName){
+		if(strpos($fileName, "http://") === false){
+			$fileName = $this->template_dir . $this->getCurrentTemplatePath() . 'css/' . $fileName;
+			if(!file_exists($fileName)){
+				throw new RuntimeException("CSS file '$fileName' not found.");
+			}
+			$fileName = SITE_PATH . $fileName;
+		}
+		return $fileName;
+	}
+	
 	/**
 	 * Adds a CSS file to the header section of the page displayed. Filename should be path relative to /res/css
 	 * @param $fileName name of the file relative to /res/css
@@ -216,16 +227,7 @@ class SmartyWrapper extends Smarty {
 			throw new InvalidArgumentException("CSS filename is not specified");
 		}
 
-		if(strpos($fileName, "http://") === false){
-			$fileName = $this->template_dir . $this->getCurrentTemplatePath() . 'css/' . $fileName;
-			if(!file_exists($fileName)){
-				throw new RuntimeException("CSS file '$fileName' not found.");
-			}
-			$fileName = SITE_PATH . $fileName;
-                        
-
-		}
-		$this->cssFiles[] = $fileName;
+		$this->cssFiles[] = $this->getCssFilePath($fileName);
 	}
 
 	/**
@@ -238,13 +240,24 @@ class SmartyWrapper extends Smarty {
 			throw new InvalidArgumentException("CSS filename is not specified");
 		}
 		
-		$key = array_search($fileName, $this->cssFiles);
+		$key = array_search($this->getCssFilePath($fileName), $this->cssFiles);
 		if($key !== false){
 			unset($this->cssFiles[$key]);
 		}
 		else{
 			throw new InvalidArgumentException("Can't remove CSS file, because it was not added");
 		}
+	}
+	
+	private function getJsFilePath($fileName){
+		if(strpos($fileName, "http://") === false){
+			$fileName = $this->template_dir . $this->getCurrentTemplatePath() . 'js/' . $fileName;
+			if(!file_exists($fileName)){
+				throw new RuntimeException("JS file '$fileName' not found.");
+			}
+			$fileName = SITE_PATH . $fileName;
+		}
+		return $fileName;
 	}
 	
 	/**
@@ -257,15 +270,7 @@ class SmartyWrapper extends Smarty {
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
 
-		if(strpos($fileName, "http://") === false){
-			$fileName = $this->template_dir . $this->getCurrentTemplatePath() . 'js/' . $fileName;
-			if(!file_exists($fileName)){
-				throw new RuntimeException("JS file '$fileName' not found.");
-			}
-                        $fileName = SITE_PATH . $fileName;
-		}
-		
-		$this->jsFiles[] = $fileName;
+		$this->jsFiles[] = $this->getJsFilePath($fileName);
 	}
 	
 	/**
@@ -277,7 +282,7 @@ class SmartyWrapper extends Smarty {
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
 		
-		$key = array_search($fileName, $this->jsFiles);
+		$key = array_search($this->getJsFilePath($fileName), $this->jsFiles);
 		if($key !== false){
 			unset($this->jsFiles[$key]);
 		}
@@ -431,6 +436,11 @@ class SmartyWrapper extends Smarty {
 		$this->assign( '__pageKeywords', $this->keywords );
 
 		$this->assign ( '__CustomHeadTags', $this->CustomHeadTags );
+		
+		// Template Paths
+		$this->assign ( '__ViewDirPath', $this->template_dir );
+		$this->assign ( '__TemplatePath', $this->getCurrentTemplatePath() );
+		$this->assign ( '__ModulesPath', $this->getModulesDirPath() );
 		
 		// Check if wrapper is set and if yes include it
 		if(!empty($this->wrapper)){

@@ -215,7 +215,7 @@ function valid_email($address){
 }
 
 function getCurrentUrl($exclude = array()){
-	$siteNavConfig = ConfigManager::getConfig("SiteNavigation");
+	$siteNavConfig = ConfigManager::getConfig("SiteNavigation")->AuxConfig;
 	$currentUrl = RewriteURL::generateCleanBaseLink(Reg::get("nav")->module, Reg::get("nav")->page, $siteNavConfig->firstLevelDefaultValue);
 	$currentUrl = RewriteURL::ensureOutputLastDelimiter($currentUrl);
 	$currentUrl .= get_all_get_params($exclude);
@@ -230,7 +230,7 @@ function getCurrentUrl($exclude = array()){
  * @return string
  */
 function get_all_get_params(array $exclude_array = array()){
-	$config = ConfigManager::getConfig("RewriteURL");
+	$config = ConfigManager::getConfig("RewriteURL")->AuxConfig;
 	$return_string = '';
 
 	foreach($exclude_array as &$exclude){

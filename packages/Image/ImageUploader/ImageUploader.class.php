@@ -8,7 +8,7 @@ class ImageUploader
 	const EXCEPTION_IMAGE_IS_SMALL = 1;
 	
 	public static function upload($file, $fileName = null, $uploadDir = null){
-		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader");
+		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader")->AuxConfig;
 		if($uploadDir === null and isset($imageUploaderConfig->uploadDir)){
 			$uploadDir = $imageUploaderConfig->uploadDir;
 		}
@@ -57,7 +57,7 @@ class ImageUploader
 	}
 	
 	public static function deleteImage($fileName, $uploadDir = null){
-		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader");
+		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader")->AuxConfig;
 		if($uploadDir === null and isset($imageUploaderConfig->uploadDir)){
 			$uploadDir = $imageUploaderConfig->uploadDir;
 		}

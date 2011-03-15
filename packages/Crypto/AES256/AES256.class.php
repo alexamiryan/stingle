@@ -5,7 +5,7 @@ class AES256
 		$td = mcrypt_module_open('rijndael-256', '', MCRYPT_MODE_CBC, '');
 
 		// Create the IV and determine the keysize length
-		$iv = ConfigManager::getConfig('Crypto','AES256')->iv;
+		$iv = ConfigManager::getConfig('Crypto','AES256')->AuxConfig->iv;
 
 		$ks = mcrypt_enc_get_key_size($td);
 		
@@ -29,7 +29,7 @@ class AES256
 		$td = mcrypt_module_open('rijndael-256', '', MCRYPT_MODE_CBC, '');
 		
 		// Create the IV and determine the keysize length
-		$iv = ConfigManager::getConfig('Crypto','AES256')->iv;
+		$iv = ConfigManager::getConfig('Crypto','AES256')->AuxConfig->iv;
 
 		$ks = mcrypt_enc_get_key_size($td);
 		

@@ -1,20 +1,4 @@
 <?
-function __autoload($className){
-	global $stingle_autoloadList;
-	
-	if(!class_exists($className, false)){
-		if(array_key_exists($className, $stingle_autoloadList["classes"])){
-			require_once $stingle_autoloadList["classes"][$className]['path'];
-		}
-		elseif(array_key_exists($className, $stingle_autoloadList["interfaces"])){
-			require_once $stingle_autoloadList['interfaces'][$className]['path'];
-		}
-		else{
-			throw new RuntimeException("Class $className not found in mapping");
-		}
-	}
-}
-
 function default_exception_handler(Exception $e){
 	global $site_name;
 	

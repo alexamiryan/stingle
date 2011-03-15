@@ -18,7 +18,7 @@ class LoaderUsers extends Loader{
 	
 	protected function loadUserAuthorization(){
 		$this->userAuthorization = new UserAuthorization(	$this->userManagement, 
-															$this->config->UserAuthConfig);
+															$this->config->AuxConfig);
 		Reg::register($this->config->Objects->UserAuthorization, $this->userAuthorization);
 	}
 	

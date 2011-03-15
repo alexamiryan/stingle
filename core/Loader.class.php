@@ -29,13 +29,19 @@ abstract class Loader {
 	}
 	
 	final public function load($overrideObjects = false){
-		HookManager::callHook("BeforePluginInit", array('pluginConfig' => $this->config));
+		HookManager::callHook("BeforePluginInit", array(	'packageName' => $this->packageName, 
+															'pluginName' => $this->pluginName, 
+															'pluginConfig' => $this->config
+														));
 		$this->includes();
 		$this->customInitBeforeObjects();
 		$this->loadObjects($overrideObjects);
 		$this->customInitAfterObjects();
 		$this->registerHooks();
-		HookManager::callHook("AfterPluginInit", array('pluginConfig' => $this->config));
+		HookManager::callHook("AfterPluginInit", array(		'packageName' => $this->packageName, 
+															'pluginName' => $this->pluginName, 
+															'pluginConfig' => $this->config
+														));
 	}
 	
 	protected function includes(){
@@ -104,8 +110,8 @@ abstract class Loader {
 	}
 	
 	private function registerHooks(){
-		if(isset($this->config->hooks)){
-			foreach (get_object_vars($this->config->hooks) as $hookName=>$hookMethod){
+		if(isset($this->config->Hooks)){
+			foreach (get_object_vars($this->config->Hooks) as $hookName=>$hookMethod){
 				if($this->packageManager->isHookRegistrationIsAllowed($hookMethod, $this->packageName, $this->pluginName)){
 					$hookMethodName = "hook$hookMethod";
 					if(HookManager::isHookRegistered($hookName, $hookMethodName, $this)){

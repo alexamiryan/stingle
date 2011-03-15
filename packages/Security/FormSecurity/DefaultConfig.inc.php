@@ -1,6 +1,5 @@
 <?
 $defaultConfig = array(
-						'Objects' => array(	'formSecurity' => 'FormSecurity'
-											)
+						'Objects' => array(	'formSecurity' => 'FormSecurity' )
 					  );
 ?>

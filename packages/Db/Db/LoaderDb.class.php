@@ -9,16 +9,19 @@ class LoaderDb extends Loader{
 		require_once ('MySqlQuery.class.php');
 	}
 	
-	protected function loaddb(){
-		MySqlDbManager::createInstance($this->config->host, $this->config->user, $this->config->password, $this->config->name);
+	protected function loadDb(){
+		MySqlDbManager::createInstance(	$this->config->AuxConfig->host, 
+										$this->config->AuxConfig->user, 
+										$this->config->AuxConfig->password, 
+										$this->config->AuxConfig->name);
 		$this->db = MySqlDbManager::getDbObject();
-		$this->db->setConnectionEncoding($this->config->encoding);
-		Reg::register($this->config->Objects->db, $this->db);
+		$this->db->setConnectionEncoding($this->config->AuxConfig->encoding);
+		Reg::register($this->config->Objects->Db, $this->db);
 	}
 	
-	protected function loadquery(){
+	protected function loadQuery(){
 		$query = MySqlDbManager::getQueryObject();
-		Reg::register($this->config->Objects->query, $query);
+		Reg::register($this->config->Objects->Query, $query);
 	}
 }
 ?>

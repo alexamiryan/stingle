@@ -1,271 +1,476 @@
 <?php
-/*********************************************
+/**
+ * Class for verifying Yubico One-Time-Passcodes
+ *
+ * @category    Auth
+ * @package     Auth_Yubico
+ * @author      Simon Josefsson <simon@yubico.com>, Olov Danielson <olov@yubico.com>, Alex Amiryan <alex@amiryan.org>
+ * @copyright   2007, 2008, 2009, 2010 Yubico AB, 2011
+ * @license     http://opensource.org/licenses/bsd-license.php New BSD License
+ * @version     2.0
+ * @link        http://www.yubico.com/
+ */
 
-Requires PHP 5
-
-Class: Yubikey Authentication
-Author: Tom Corwine (yubico@corwine.org)
-License: GPL-2
-Version: 0.96
-
-Class should be instantiated with your Yubico API id and, optionally, the signature key.
-
-Example:
-$var = new Yubikey(int id, [string signature key]);
-
-If you don't specifiy a signature key, the signature verification steps are skipped.
-
-
-Methods:
-
-->verify(string) - Accepts otp from Yubikey. Returns TRUE for authentication success, otherwise FALSE.
-->getLastResponse() - Returns response message from verification attempt.
-->getTimestampTolerance() - Gets the tolerance (+/-, in seconds) for timestamp verification.
-->setTimestampTolerance(int) - Sets the tolerance (in seconds, 0-86400) - default 600 (10 minutes).
-	Returns TRUE on success and FALSE on failure.
-->getCurlTimeout() - Gets the timeout (in seconds) CURL uses before giving up on contacting Yubico's server.
-->setCurlTimeout(int) - Sets the CURL timeout (in seconds, 0-600, 0 means indefinitely) - default 10.
-	Returns TRUE on success and FALSE on failure.
-
-*********************************************/
-class Yubikey
-{
-	// Input
-	private $_id;
-	private $_signatureKey;
-
-	// Output
-	private $_response;
-
-	// Internal
-	private $_curlResult;
-	private $_curlError;
-	private $_timestampTolerance;
-	private $_curlTimeout;
-
-	/****************************************************************************
-	Public Methods
-	****************************************************************************/
-
-	public function __construct($id, $signatureKey = null)
-	{
-		if (is_numeric($id) && $id > 0){
-			$this->_id = $id;
+class Yubikey{
+	/**#@+
+	 * @access private
+	 */
+	
+	/**
+	 * Yubico client ID
+	 * @var string
+	 */
+	protected $_id;
+	
+	/**
+	 * Yubico client key
+	 * @var string
+	 */
+	protected $_key;
+	
+	/**
+	 * URL part of validation server
+	 * @var string
+	 */
+	protected $_url;
+	
+	/**
+	 * List with URL part of validation servers
+	 * @var array
+	 */
+	protected $_url_list;
+	
+	/**
+	 * index to _url_list
+	 * @var int
+	 */
+	protected $_url_index;
+	
+	/**
+	 * Last query to server
+	 * @var string
+	 */
+	protected $_lastquery;
+	
+	/**
+	 * Response from server
+	 * @var string
+	 */
+	protected $_response;
+	
+	/**
+	 * Flag whether to use https or not.
+	 * @var boolean
+	 */
+	protected $_https;
+	
+	/**
+	 * Flag whether to verify HTTPS server certificates or not.
+	 * @var boolean
+	 */
+	protected $_httpsverify;
+	
+	/**
+	 * Constructor
+	 *
+	 * Sets up the object
+	 * @param    string  $id     The client identity
+	 * @param    string  $key    The client MAC key (optional)
+	 * @param    boolean $https  Flag whether to use https (optional)
+	 * @param    boolean $httpsverify  Flag whether to use verify HTTPS
+	 * server certificates (optional,
+	 * default true)
+	 * @access public
+	 */
+	public function __construct($id, $key = '', $https = true, $httpsverify = true){
+		if(empty($id)){
+			throw new InvalidArgumentException("Invalid API ID specified!");
 		}
-
-		if (strlen ($signatureKey) == 28)
-		{
-			$this->_signatureKey = base64_decode ($signatureKey);
-		}
-
-		// Set defaults
-		$this->_timestampTolerance = 600; //Seconds
-		$this->_curlTimeout = 30; //Seconds
+		$this->_id = $id;
+		$this->_key = base64_decode($key);
+		$this->_https = $https;
+		$this->_httpsverify = $httpsverify;
 	}
-
-	public function getTimestampTolerance()
-	{
-		return $this->_timestampTolerance;
-	}
-
-	public function setTimestampTolerance($int)
-	{
-		if ($int > 0 && $int < 86400)
-		{
-			$this->_timestampTolerance = $int;
-			return true;
+	
+	/**
+	 * Specify to use a different URL part for verification.
+	 * The default is "api.yubico.com/wsapi/verify".
+	 *
+	 * @param  string $url  New server URL part to use
+	 * @access public
+	 */
+	public function setURLpart($url){
+		if(empty($url)){
+			throw new InvalidArgumentException("Empty \$url specified!");
 		}
-		else
-		{
+		
+		$this->_url = $url;
+	}
+	
+	/**
+	 * Get URL part to use for validation.
+	 *
+	 * @return string  Server URL part
+	 * @access public
+	 */
+	public function getURLpart(){
+		if($this->_url){
+			return $this->_url;
+		}
+		else{
+			return "api.yubico.com/wsapi/verify";
+		}
+	}
+	
+	/**
+	 * Get next URL part from list to use for validation.
+	 *
+	 * @return mixed string with URL part of false if no more URLs in list
+	 * @access public
+	 */
+	public function getNextURLpart(){
+		if($this->_url_list){
+			$url_list = $this->_url_list;
+		}
+		else{
+			$url_list = array(
+					'api.yubico.com/wsapi/2.0/verify', 
+					'api2.yubico.com/wsapi/2.0/verify', 
+					'api3.yubico.com/wsapi/2.0/verify', 
+					'api4.yubico.com/wsapi/2.0/verify', 
+					'api5.yubico.com/wsapi/2.0/verify');
+		}
+		
+		if($this->_url_index >= count($url_list)){
 			return false;
 		}
-	}
-
-	public function getCurlTimeout()
-	{
-		return $this->_curlTimeout;
-	}
-
-	public function setCurlTimeout($int)
-	{
-		if ($int > 0 && $int < 600)
-		{
-			$this->_curlTimeout = $int;
-			return true;
-		}
-		else
-		{
-			return false;
+		else{
+			return $url_list[$this->_url_index++];
 		}
 	}
-
-	public function getLastResponse()
-	{
+	
+	/**
+	 * Resets index to URL list
+	 *
+	 * @access public
+	 */
+	public function URLreset(){
+		$this->_url_index = 0;
+	}
+	
+	/**
+	 * Add another URLpart.
+	 *
+	 * @access public
+	 */
+	public function addURLpart($URLpart){
+		if(empty($URLpart)){
+			throw new InvalidArgumentException("Empty \$URLpart specified!");
+		}
+		
+		$this->_url_list[] = $URLpart;
+	}
+	
+	/**
+	 * Return the last query sent to the server, if any.
+	 *
+	 * @return string  Request to server
+	 * @access public
+	 */
+	public function getLastQuery(){
+		return $this->_lastquery;
+	}
+	
+	/**
+	 * Return the last data received from the server, if any.
+	 *
+	 * @return string  Output from server
+	 * @access public
+	 */
+	public function getLastResponse(){
 		return $this->_response;
 	}
-
-	public function verify($otp)
-	{
-		unset ($this->_response);
-		unset ($this->_curlResult);
-		unset ($this->_curlError);
-
-		$otp = strtolower ($otp);
-
-		if (!$this->_id)
-		{
-			$this->_response = "ID NOT SET";
+	
+	/**
+	 * Parse input string into password, yubikey prefix,
+	 * ciphertext, and OTP.
+	 *
+	 * @param  string    Input string to parse
+	 * @param  string    Optional delimiter re-class, default is '[:]'
+	 * @return array     Keyed array with fields
+	 * @access public
+	 */
+	public function parsePasswordOTP($str, $delim = '[:]'){
+		if(!preg_match("/^((.*)" . $delim . ")?" . "(([cbdefghijklnrtuvCBDEFGHIJKLNRTUV]{0,16})" . "([cbdefghijklnrtuvCBDEFGHIJKLNRTUV]{32}))$/", $str, $matches)){
 			return false;
 		}
-
-		if (!$this->otpIsProperLength($otp))
-		{
-			$this->_response = "BAD OTP LENGTH";
-			return false;
-		}
-
-		if (!$this->otpIsModhex($otp))
-		{
-			$this->_response = "OTP NOT MODHEX";
-			return false;
-		}
-
-		$urlParams = "id=".$this->_id."&otp=".$otp;
-
-		$url = $this->createSignedRequest($urlParams);
-
-		if ($this->curlRequest($url)) //Returns 0 on success
-		{
-			$this->_response = "ERROR CONNECTING TO YUBICO - ".$this->_curlError;
-			return false;
-		}
-
-		foreach ($this->_curlResult as $param)
-		{
-			if (substr ($param, 0, 2) == "h=") $signature = substr (trim ($param), 2);
-			if (substr ($param, 0, 2) == "t=") $timestamp = substr (trim ($param), 2);
-			if (substr ($param, 0, 7) == "status=") $status = substr (trim ($param), 7);
-		}
-
-		// Concatenate string for signature verification
-		$signedMessage = "status=".$status."&t=".$timestamp;
-
-		if (!$this->resultSignatureIsGood($signedMessage, $signature))
-		{
-			$this->_response = "BAD RESPONSE SIGNATURE";
-			return false;
-		}
-
-		if (!$this->resultTimestampIsGood($timestamp))
-		{
-			$this->_response = "BAD TIMESTAMP";
-			return false;
-		}
-
-		if ($status != "OK")
-		{
-			$this->_response = $status;
-			return false;
-		}
-
-		// Everything went well - We pass
-		$this->_response = "OK";
-		return true;
+		$ret['password'] = $matches[2];
+		$ret['otp'] = $matches[3];
+		$ret['prefix'] = $matches[4];
+		$ret['ciphertext'] = $matches[5];
+		return $ret;
 	}
-
-	/****************************************************************************
-	Protected methods
-	****************************************************************************/
-
-	protected function createSignedRequest($urlParams)
-	{
-		if ($this->_signatureKey)
-		{
-			$hash = urlencode (base64_encode (hash_hmac ("sha1", $urlParams, $this->_signatureKey, true)));
-			return "https://api.yubico.com/wsapi/verify?".$urlParams."&h=".$hash;
+	
+	/**
+	 * Parse parameters from last response
+	 *
+	 * example: getParameters("timestamp", "sessioncounter", "sessionuse");
+	 *
+	 * @param  array @parameters  Array with strings representing
+	 * parameters to parse
+	 * @return array  parameter array from last response
+	 * @access public
+	 */
+	public function getParameters($parameters){
+		if($parameters == null){
+			$parameters = array(
+					'timestamp', 
+					'sessioncounter', 
+					'sessionuse');
 		}
-		else
-		{
-			return "https://api.yubico.com/wsapi/verify?".$urlParams;
+		$param_array = array();
+		foreach($parameters as $param){
+			if(!preg_match("/" . $param . "=([0-9]+)/", $this->_response, $out)){
+				throw new YubikeyException('Could not parse parameter ' . $param . ' from response');
+			}
+			$param_array[$param] = $out[1];
 		}
+		return $param_array;
 	}
-
-	protected function curlRequest($url)
-	{
-		$ch = curl_init ($url);
-
-		curl_setopt ($ch, CURLOPT_TIMEOUT, $this->_curlTimeout);
-		curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, $this->_curlTimeout);
-		curl_setopt ($ch, CURLOPT_FOLLOWLOCATION, false);
-		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, true);
-
-		$this->_curlResult = explode ("\n", curl_exec($ch));
-
-		$this->_curlError = curl_error ($ch);
-		$error = curl_errno ($ch);
-
-		curl_close ($ch);
-
-		return $error;
-	}
-
-	protected function otpIsProperLength($otp)
-	{
-		if (strlen ($otp) == 44)
-		{
+	
+	/**
+	 * Verify Yubico OTP against multiple URLs
+	 * Protocol specification 2.0 is used to construct validation requests
+	 *
+	 * @param string $token        Yubico OTP
+	 * @param int $use_timestamp   1=>send request with &timestamp=1 to
+	 * get timestamp and session information
+	 * in the response
+	 * @param boolean $wait_for_all  If true, wait until all
+	 * servers responds (for debugging)
+	 * @param string $sl           Sync level in percentage between 0
+	 * and 100 or "fast" or "secure".
+	 * @param int $timeout         Max number of seconds to wait
+	 * for responses
+	 * @return mixed               PEAR error on error, true otherwise
+	 * @access public
+	 */
+	public function verify($token, $use_timestamp = null, $wait_for_all = False, $sl = null, $timeout = null){
+		/* Construct parameters string */
+		$ret = $this->parsePasswordOTP($token);
+		if(!$ret){
+			throw new YubikeyException('Could not parse Yubikey OTP');
+		}
+		$params = array(
+				'id' => $this->_id, 
+				'otp' => $ret['otp'], 
+				'nonce' => md5(uniqid(rand())));
+		/* Take care of protocol version 2 parameters */
+		if($use_timestamp){
+			$params['timestamp'] = 1;
+		}
+		if($sl){
+			$params['sl'] = $sl;
+		}
+		if($timeout){
+			$params['timeout'] = $timeout;
+		}
+		ksort($params);
+		$parameters = '';
+		foreach($params as $p => $v){
+			$parameters .= "&" . $p . "=" . $v;
+		}
+		$parameters = ltrim($parameters, "&");
+		
+		/* Generate signature. */
+		if($this->_key != ""){
+			$signature = base64_encode(hash_hmac('sha1', $parameters, $this->_key, true));
+			$signature = preg_replace('/\+/', '%2B', $signature);
+			$parameters .= '&h=' . $signature;
+		}
+		
+		/* Generate and prepare request. */
+		$this->_lastquery = null;
+		$this->URLreset();
+		$mh = curl_multi_init();
+		$ch = array();
+		while(($URLpart = $this->getNextURLpart()) != false){
+			/* Support https. */
+			if($this->_https){
+				$query = "https://";
+			}
+			else{
+				$query = "http://";
+			}
+			$query .= $URLpart . "?" . $parameters;
+			
+			if($this->_lastquery){
+				$this->_lastquery .= " ";
+			}
+			$this->_lastquery .= $query;
+			
+			$handle = curl_init($query);
+			curl_setopt($handle, CURLOPT_USERAGENT, "PEAR Auth_Yubico");
+			curl_setopt($handle, CURLOPT_RETURNTRANSFER, 1);
+			if(!$this->_httpsverify){
+				curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, 0);
+			}
+			curl_setopt($handle, CURLOPT_FAILONERROR, true);
+			
+			/* If timeout is set, we better apply it here as well
+	         	in case the validation server fails to follow it. 
+			*/
+			if($timeout) curl_setopt($handle, CURLOPT_TIMEOUT, $timeout);
+			curl_multi_add_handle($mh, $handle);
+			
+			$ch[$handle] = $handle;
+		}
+		
+		/* Execute and read request. */
+		$this->_response = null;
+		$replay = False;
+		$valid = False;
+		do{
+			/* Let curl do its work. */
+			while(($mrc = curl_multi_exec($mh, $active)) == CURLM_CALL_MULTI_PERFORM)
+				;
+			
+			while(($info = curl_multi_info_read($mh)) != false){
+				if($info['result'] == CURLE_OK){
+					
+					/* We have a complete response from one server. */
+					
+					$str = curl_multi_getcontent($info['handle']);
+					$cinfo = curl_getinfo($info['handle']);
+					
+					if($wait_for_all){ # Better debug info
+						$this->_response .= 'URL=' . $cinfo['url'] . "\n" . $str . "\n";
+					}
+					
+					if(preg_match("/status=([a-zA-Z0-9_]+)/", $str, $out)){
+						$status = $out[1];
+						
+						/* 
+						* There are 3 cases.
+						*
+						* 1. OTP or Nonce values doesn't match - ignore
+						* response.
+						*
+						* 2. We have a HMAC key.  If signature is invalid -
+						* ignore response.  Return if status=OK or
+						* status=REPLAYED_OTP.
+						*
+						* 3. Return if status=OK or status=REPLAYED_OTP.
+						*/
+						if(!preg_match("/otp=" . $params['otp'] . "/", $str) || !preg_match("/nonce=" . $params['nonce'] . "/", $str)){
+							/* Case 1. Ignore response. */
+						}
+						elseif($this->_key != ""){
+							/* Case 2. Verify signature first */
+							$rows = explode("\r\n", $str);
+							$response = array();
+							while((list($key, $val) = each($rows)) != false){
+								/* = is also used in BASE64 encoding so we only replace the first = by # which is not used in BASE64 */
+								$val = preg_replace('/=/', '#', $val, 1);
+								$row = explode("#", $val);
+								$response[$row[0]] = $row[1];
+							}
+							
+							$parameters = array(
+									'nonce', 
+									'otp', 
+									'sessioncounter', 
+									'sessionuse', 
+									'sl', 
+									'status', 
+									't', 
+									'timeout', 
+									'timestamp');
+							sort($parameters);
+							$check = Null;
+							foreach($parameters as $param){
+								if($response[$param] != null){
+									if($check) $check = $check . '&';
+									$check = $check . $param . '=' . $response[$param];
+								}
+							}
+							
+							$checksignature = base64_encode(hash_hmac('sha1', utf8_encode($check), $this->_key, true));
+							
+							if($response[h] == $checksignature){
+								if($status == 'REPLAYED_OTP'){
+									if(!$wait_for_all){
+										$this->_response = $str;
+									}
+									$replay = True;
+								}
+								if($status == 'OK'){
+									if(!$wait_for_all){
+										$this->_response = $str;
+									}
+									$valid = True;
+								}
+							}
+						}
+						else{
+							/* Case 3. We check the status directly */
+							if($status == 'REPLAYED_OTP'){
+								if(!$wait_for_all){
+									$this->_response = $str;
+								}
+								$replay = True;
+							}
+							if($status == 'OK'){
+								if(!$wait_for_all){
+									$this->_response = $str;
+								}
+								$valid = True;
+							}
+						}
+					}
+					if(!$wait_for_all && ($valid || $replay)){
+						/* We have status=OK or status=REPLAYED_OTP, return. */
+						foreach($ch as $h){
+							curl_multi_remove_handle($mh, $h);
+							curl_close($h);
+						}
+						curl_multi_close($mh);
+						if($replay){
+							throw new YubikeyException('REPLAYED_OTP');
+						}
+						if($valid){
+							return true;
+						}
+						throw new YubikeyException($status);
+					}
+					
+					curl_multi_remove_handle($mh, $info['handle']);
+					curl_close($info['handle']);
+					unset($ch[$info['handle']]);
+				}
+				curl_multi_select($mh);
+			}
+		}
+		while($active);
+		
+		/* Typically this is only reached for wait_for_all=true or
+	   * when the timeout is reached and there is no
+	   * OK/REPLAYED_REQUEST answer (think firewall).
+	   */
+		
+		foreach($ch as $h){
+			curl_multi_remove_handle($mh, $h);
+			curl_close($h);
+		}
+		curl_multi_close($mh);
+		
+		if($replay){
+			throw new YubikeyException('REPLAYED_OTP');
+		}
+		if($valid){
 			return true;
 		}
-		else
-		{
-			return false;
-		}
-	}
-
-	protected function otpIsModhex($otp)
-	{
-		$modhexChars = array ("c","b","d","e","f","g","h","i","j","k","l","n","r","t","u","v");
-
-		foreach (str_split ($otp) as $char)
-		{
-			if (!in_array ($char, $modhexChars)) return false;
-		}
-
-		return true;
-	}
-
-	protected function resultTimestampIsGood($timestamp)
-	{
-		// Turn times into 'seconds since Unix Epoch' for easy comparison
-		$now = date ("U");
-		$timestampSeconds = (date_format (date_create (substr ($timestamp, 0, -4)), "U"));
-
-		// If date() functions above fail for any reason, so do we
-		if (!$timestamp || !$now) return false;
-
-		if (($timestampSeconds + $this->_timestampTolerance) > $now &&
-		    ($timestampSeconds - $this->_timestampTolerance) < $now)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	protected function resultSignatureIsGood($signedMessage, $signature)
-	{
-		if (!$this->_signatureKey) return true;
-
-		if (base64_encode (hash_hmac ("sha1", $signedMessage, $this->_signatureKey, true)) == $signature)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		throw new YubikeyException('NO_VALID_ANSWER');
 	}
 }
+?>

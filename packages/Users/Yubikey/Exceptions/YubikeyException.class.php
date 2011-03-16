@@ -1,0 +1,3 @@
+<?
+class YubikeyException extends RuntimeException{}
+?>

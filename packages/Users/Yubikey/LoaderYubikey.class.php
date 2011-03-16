@@ -3,6 +3,7 @@ class LoaderYubikey extends Loader{
 	protected function includes(){
 		require_once ('Yubikey.class.php');
 		require_once ('YubikeyUserAuthorization.class.php');
+		require_once ('Exceptions/YubikeyException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

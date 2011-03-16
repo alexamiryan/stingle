@@ -218,9 +218,8 @@ class SmartyWrapper extends Smarty {
 	}
 	
 	/**
-	 * Adds a CSS file to the header section of the page displayed. Filename should be path relative to /res/css
-	 * @param $fileName name of the file relative to /res/css
-	 * @param $ieOnly this file will be loaded only if the client's browser is IE
+	 * Adds a CSS file to the header section of the page displayed.
+	 * @param $fileName
 	 */
 	public function addCss($fileName) {
 		if(empty($fileName)){
@@ -231,9 +230,8 @@ class SmartyWrapper extends Smarty {
 	}
 
 	/**
-	 * Removes a CSS file from the header section of the page displayed. Filename should be path relative to /res/css
-	 * @param $fileName name of the file relative to /res/css
-	 * @param $ieOnly this file will be loaded only if the client's browser is IE
+	 * Removes a CSS file from the header section of the page displayed.
+	 * @param $fileName
 	 */
 	public function removeCss($fileName) {
 		if(empty($fileName)){
@@ -261,21 +259,30 @@ class SmartyWrapper extends Smarty {
 	}
 	
 	/**
-	 * Adds a JS file to the header section of the page displayed. filenamed should be path relative to /res/js
-	 * @param $fileName name of the file relative to /res/js
-	 * @param $ieOnly this file will be loaded only if the client's browser is IE
+	 * Adds a JS file to the header section of the page displayed.
+	 * @param $fileName
 	 */
 	public function addJs($fileName) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
-
-		$this->jsFiles[] = $this->getJsFilePath($fileName);
+		array_push($this->jsFiles, $this->getJsFilePath($fileName));
 	}
 	
 	/**
-	 * Removes a JS file from the header section of the page displayed. Filename should be path relative to /res/js
-	 * @param $fileName name of the file relative to /res/css
+	 * Adds a JS file to the header section to the top of all JS files.
+	 * @param $fileName
+	 */
+	public function addJsToTop($fileName) {
+		if(empty($fileName)){
+			throw new InvalidArgumentException("JS filename is not specified");
+		}
+		array_splice($this->jsFiles,0, 0, $this->getJsFilePath($fileName));
+	}
+	
+	/**
+	 * Removes a JS file from the header section of the page displayed.
+	 * @param $fileName
 	 */
 	public function removeJs($fileName) {
 		if(empty($fileName)){

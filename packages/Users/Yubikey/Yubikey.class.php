@@ -60,7 +60,7 @@ class Yubikey
 
 		// Set defaults
 		$this->_timestampTolerance = 600; //Seconds
-		$this->_curlTimeout = 10; //Seconds
+		$this->_curlTimeout = 30; //Seconds
 	}
 
 	public function getTimestampTolerance()

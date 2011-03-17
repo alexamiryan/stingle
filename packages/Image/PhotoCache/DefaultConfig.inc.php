@@ -5,17 +5,19 @@ $defaultConfig = array(
 												'sizes' => array(
 																	'small' => array(
 																			'width' => 75,
-																			'height' => 75
+																			'height' => 75,
+																			'needToCrop' => true
 																		),
 																	'medium' =>  array(
 																			'width' => 150,
-																			'height' => 150
+																			'height' => 150,
+																			'needToCrop' => true
 																		),
 																	'big' => array(
 																			'width' => 400,
 																			'height' => 400
 																		)
 																)),
-						'Objects' => array(	'ImageManager' => 'imageMgr'  )
+						'Objects' => array(	'PhotoCache' => 'photoCache'  )
 					);
 ?>

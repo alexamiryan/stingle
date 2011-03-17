@@ -35,8 +35,9 @@ class ImageUploader
 	    $savePath = $uploadDir . $fileName;
 	    
 	    if(isset($imageUploaderConfig->minimumSize)){
-	    	$checkResult = $image->checkDimensions($imageUploaderConfig->minimumSize->width, $imageUploaderConfig->minimumSize->height);
-	    	if($checkResult == ImageManipulator::DIMENSIONS_SMALLER){
+	    	$checkResult = $image->isSizeMeetRequirements(	$imageUploaderConfig->minimumSize->largeSideMinSize, 
+	    													$imageUploaderConfig->minimumSize->smallSideMinSize);
+	    	if(!$checkResult){
 	    		throw new ImageUploaderException("Given image is smaller than specified minimum size.", static::EXCEPTION_IMAGE_IS_SMALL);
 	    	}
 	    }

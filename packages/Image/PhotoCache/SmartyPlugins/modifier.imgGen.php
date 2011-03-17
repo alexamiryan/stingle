@@ -7,12 +7,12 @@
  * @param string $sizeName
  * @return string
  */
-function smarty_modifier_imgGen($fileName, $sizeName){
-	if(empty($fileName) or empty($sizeName)){
+function smarty_modifier_imgGen(Photo $photo, $sizeName){
+	if(empty($sizeName)){
 		return;
 	}
 	
-	$resultingFilePath = Reg::get('imageMgr')->generateImageCache($sizeName, $fileName);
+	$resultingFilePath = Reg::get('photoCache')->generateImageCache($sizeName, $photo);
 
 	return SITE_PATH . $resultingFilePath;
 }

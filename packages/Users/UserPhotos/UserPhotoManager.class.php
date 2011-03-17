@@ -76,7 +76,7 @@ class UserPhotoManager extends Filterable
 		}
 		
 		$photo = $this->getPhoto($photoId);
-		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader");
+		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader")->AuxConfig;
 		
 		$image = new ImageManipulator($imageUploaderConfig->uploadDir . $photo->fileName);
 		list($width, $height) = $image->getDimensions();

@@ -11,7 +11,7 @@ class ChatUser
 	}
 	
 	public static function getObject($userId){
-		$chatUserClassName = ConfigManager::getConfig("Chat", "Chat")->AuxConfig->chatUserClassName;
+		$chatUserClassName = ConfigManager::getConfig("Chat", "Chat")->chatUserClassName;
 		return new $chatUserClassName($userId);
 	}
 }

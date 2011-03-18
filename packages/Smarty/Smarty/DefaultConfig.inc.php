@@ -3,6 +3,8 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 												'cacheDir' => "cache/templates_cache/",
 												'templateDir' => "view/",
 												'defaultTemplateName' => "default",
+												'defaultRelativeTemplatesPath' => "templates/",
+												'defaultRelativeTplPath' => "tpl/",
 												'defaultLayout' => "clean",
 												'defaultPluginsDir' => __DIR__ . '/Plugins/',
 												

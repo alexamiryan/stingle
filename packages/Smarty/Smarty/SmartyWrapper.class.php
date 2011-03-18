@@ -125,6 +125,19 @@ class SmartyWrapper extends Smarty {
 	 * @var string
 	 */
 	private $error404Page;
+	
+	/**
+	 * RelativePath for Template folders
+	 * @var string
+	 */
+	private $defaultRelativeTemplatesPath;
+	
+	
+	/**
+	 * RelativePath for Tpl files
+	 * @var string
+	 */
+	private $defaultRelativeTplPath;
 
 
 	public function initialize($module, $page, $config){
@@ -153,6 +166,9 @@ class SmartyWrapper extends Smarty {
 		$this->compile_dir = $config->compileDir;
 		$this->template_dir = $config->templateDir;
 
+		$this->defaultRelativeTemplatesPath = $config->defaultRelativeTemplatesPath;
+		$this->defaultRelativeTplPath = $config->defaultRelativeTplPath;
+		
 		// Set default template
 		$this->setTemplate($config->defaultTemplateName);
 		
@@ -195,8 +211,8 @@ class SmartyWrapper extends Smarty {
 		if(empty($layout)){
 			throw new InvalidArgumentException("Layout is not specified");
 		}
-		if(file_exists($this->template_dir . $this->getCurrentTemplatePath() . 'layouts/' . $layout . '.tpl')){
-			$this->layout = $this->getCurrentTemplatePath() . 'layouts/' . $layout . '.tpl';				
+		if(file_exists($this->template_dir . $this->getTemplatePath() . 'layouts/' . $layout . '.tpl')){
+			$this->layout = $this->getTemplatePath() . 'layouts/' . $layout . '.tpl';				
 		}
 		elseif(file_exists($this->template_dir . "system/layouts/" . $layout . '.tpl')){
 			$this->layout = "system/layouts/" . $layout . '.tpl';
@@ -208,7 +224,7 @@ class SmartyWrapper extends Smarty {
 
 	private function getCssFilePath($fileName){
 		if(strpos($fileName, "http://") === false){
-			$fileName = $this->template_dir . $this->getCurrentTemplatePath() . 'css/' . $fileName;
+			$fileName = $this->template_dir . $this->getTemplatePath() . 'css/' . $fileName;
 			if(!file_exists($fileName)){
 				throw new RuntimeException("CSS file '$fileName' not found.");
 			}
@@ -249,7 +265,7 @@ class SmartyWrapper extends Smarty {
 	
 	private function getJsFilePath($fileName){
 		if(strpos($fileName, "http://") === false){
-			$fileName = $this->template_dir . $this->getCurrentTemplatePath() . 'js/' . $fileName;
+			$fileName = $this->template_dir . $this->getTemplatePath() . 'js/' . $fileName;
 			if(!file_exists($fileName)){
 				throw new RuntimeException("JS file '$fileName' not found.");
 			}
@@ -362,18 +378,22 @@ class SmartyWrapper extends Smarty {
 		if(empty($pageTplName)){
 			throw new InvalidArgumentException("Page filename is not specified");
 		}
-		if(!file_exists($this->template_dir . $this->getModulesDirPath() . $this->module . "/" . $pageTplName . ".tpl")){
+		if(!file_exists($this->template_dir . $this->getModulesPath() . $this->module . "/" . $pageTplName . ".tpl")){
 			throw new RuntimeException("Specified page is not found in current module");
 		}
 		$this->page = $pageTplName;
 	}
 
-	public function getCurrentTemplatePath(){
-		return 'templates/' . $this->template . '/';
+	public function getTemplatePath(){
+		return $this->defaultRelativeTemplatesPath . $this->template . '/';
 	}
 	
-	public function getModulesDirPath(){
-		return $this->getCurrentTemplatePath() . 'tpl/modules/';
+	public function getTplPath(){
+		return $this->getTemplatePath() . $this->defaultRelativeTplPath;
+	}
+	
+	public function getModulesPath(){
+		return $this->getTplPath() . 'modules/';
 	}
 	
 	/**
@@ -386,7 +406,7 @@ class SmartyWrapper extends Smarty {
 			throw new InvalidArgumentException("Wrapper name is not specified");
 		}
 
-		$wrapperPath = $this->template_dir . $this->getModulesDirPath() . $this->module . '/' . $this->wrappersDir . $wrapperName . ".tpl";
+		$wrapperPath = $this->template_dir . $this->getModulesPath() . $this->module . '/' . $this->wrappersDir . $wrapperName . ".tpl";
 
 		if(!file_exists($wrapperPath)){
 			throw new RuntimeException("Wrapper($wrapperPath) is not found. All wrappers should be located in module's \"{$this->wrappersDir}\" directory");
@@ -426,7 +446,7 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		// Check if page exists and if not show 404 error page
-		if(!file_exists("{$this->template_dir}{$this->getModulesDirPath()}{$this->module}/{$this->page}.tpl")){
+		if(!file_exists("{$this->template_dir}{$this->getModulesPath()}{$this->module}/{$this->page}.tpl")){
 			header("HTTP/1.0 404 Not Found");
 			$this->module = $this->errorsModule;
 			$this->page = $this->error404Page;
@@ -446,16 +466,16 @@ class SmartyWrapper extends Smarty {
 		
 		// Template Paths
 		$this->assign ( '__ViewDirPath', $this->template_dir );
-		$this->assign ( '__TemplatePath', $this->getCurrentTemplatePath() );
-		$this->assign ( '__ModulesPath', $this->getModulesDirPath() );
+		$this->assign ( '__TemplatePath', $this->getTemplatePath() );
+		$this->assign ( '__ModulesPath', $this->getModulesPath() );
 		
 		// Check if wrapper is set and if yes include it
 		if(!empty($this->wrapper)){
-			$this->assign ( 'modulePageTpl', $this->getModulesDirPath() . $this->module . "/" . $this->page . ".tpl" );
-			$this->assign ( '__modulePageTpl', $this->getModulesDirPath() . $this->module . "/" . $this->wrappersDir . $this->wrapper . ".tpl" );
+			$this->assign ( 'modulePageTpl', $this->getModulesPath() . $this->module . "/" . $this->page . ".tpl" );
+			$this->assign ( '__modulePageTpl', $this->getModulesPath() . $this->module . "/" . $this->wrappersDir . $this->wrapper . ".tpl" );
 		}
 		else{
-			$this->assign ( '__modulePageTpl', $this->getModulesDirPath() . $this->module . "/" . $this->page . ".tpl" );
+			$this->assign ( '__modulePageTpl', $this->getModulesPath() . $this->module . "/" . $this->page . ".tpl" );
 		}
 		
 		// Finally display

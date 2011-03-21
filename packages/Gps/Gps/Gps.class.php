@@ -479,6 +479,9 @@ class Gps extends DbAccessor
 	 * @param int $cacheMinutes
 	 */
 	public function getClosestNode($latitude, $longitude, $type_id = null, $cacheMinutes = null){
+		if(empty($latitude) or empty($longitude)){
+			return false;
+		}
 		
 		$sql_query = "SELECT * FROM `".Tbl::get('TBL_TREE')."` WHERE 1";
 		

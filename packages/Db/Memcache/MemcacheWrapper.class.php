@@ -12,7 +12,7 @@ class MemcacheWrapper
 	 */
 	public function __construct($memcache_host='127.0.0.1', $memcache_port=11211) {
 		if(is_null($this->memcache) || (!is_object($this->memcache))) {
-			$this->memcache = new Memcache;
+			$this->memcache = new Memcache();
 			if(!$this->memcache->pconnect($memcache_host, $memcache_port)){
 				throw new Exception("Error in object initialization", 2);
 			}

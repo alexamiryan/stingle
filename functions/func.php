@@ -118,7 +118,7 @@ function draw_combo_box($name, $values, $default = '', $parameters = ''){
  * @param string $type (mixed, chars, digits)
  * @return string
  */
-function create_random_value($length, $type){
+function create_random_value($length, $type = null){
 	if($length === null){
 		$length = 12;
 	}

@@ -33,7 +33,9 @@ class PhotoCache
 			$image = new ImageManipulator($this->config->dataDir . $photo->fileName);
 			
 			if(isset($this->config->sizes->$sizeName->needToCrop) and $this->config->sizes->$sizeName->needToCrop == true){
-				$image->crop($photo->cropX, $photo->cropY, $photo->cropWidth, $photo->cropHeight);
+				if($photo->cropWidth > 0 and $photo->cropHeight > 0){
+					$image->crop($photo->cropX, $photo->cropY, $photo->cropWidth, $photo->cropHeight);
+				}
 			}
 			
 			if($image->checkDimensions($this->config->sizes->$sizeName->width, $this->config->sizes->$sizeName->height) == ImageManipulator::DIMENSIONS_LARGER){

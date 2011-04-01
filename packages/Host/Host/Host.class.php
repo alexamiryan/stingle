@@ -5,6 +5,7 @@ class Host{
 	public $domain;
 	public $extension;
 	public $host;
+	public $wildcardOf = null;
 
 	const TBL_HOSTS = "hosts";
 
@@ -30,11 +31,14 @@ class Host{
 	 * @param array Db query result $data
 	 * @return void
 	 */
-	public static function setData($data, Host $object){
-		$object->id = $data["id"];
-		$object->domain = $data["domain"];
-		$object->extension = $data["extension"];
-		$object->host = $data["host"];
+	public static function setData($data, Host $host){
+		$host->id = $data["id"];
+		$host->domain = $data["domain"];
+		$host->extension = $data["extension"];
+		$host->host = $data["host"];
+		if(isset($data['wildcardOf'])){
+			$host->wildcardOf = $data['wildcardOf'];
+		}
 	}
 }
 ?>

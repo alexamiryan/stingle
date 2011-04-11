@@ -352,5 +352,28 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 							WHERE `user_id`='$userId'
 							LIMIT 1");
 	}
+	
+	/**
+	 * Function Updates local User Id from map table and user info table
+	 * @param integer $userId current user Id
+	 * @param ExternalUser $extUser External user object
+	 * @throws InvalidArgumentException
+	 */
+	public function updateLocalUserId($userId, ExternalUser $extUser){
+		if(!is_numeric($userId)) {
+			throw new InvalidArgumentException("User Id Is not numeric");
+		}
+		if(!is_numeric($extUser->id)) {
+			throw new InvalidArgumentException("External Id Is not numeric");
+		}
+		$this->query->exec(
+							"UPDATE `".Tbl::get('TBL_EXT_AUTH')."` 
+							 SET `user_id` = '{$userId}'
+							 WHERE `ext_user_id` = {$extUser->id}");
+		$this->query->exec(
+							"UPDATE `".Tbl::get('TBL_FB_USER_INFO')."` 
+							 SET `user_id` = '{$userId}'
+							 WHERE `ext_user_id` = {$extUser->id}");
+	}
 }
 ?>

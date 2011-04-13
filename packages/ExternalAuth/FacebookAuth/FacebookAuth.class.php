@@ -306,6 +306,30 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	}
 	
 	/**
+	 * Check if photo meets requirements for minimal size.
+	 *
+	 * @param FacebookPhoto $photoObj
+	 * @param integer $largeSideMinSize
+	 * @param integer $smallSideMinSize
+	 * @return boolean 
+	 */
+	public function isSizeMeetRequirements(FacebookPhoto $photoObj, $largeSideMinSize, $smallSideMinSize){
+		$width = $photoObj->width;
+		$height = $photoObj->height;
+		if($width >= $height){
+			if($width >= $largeSideMinSize and $height >= $smallSideMinSize){
+				return true;
+			}
+		}
+		else{
+			if($height >= $largeSideMinSize and $width >= $smallSideMinSize){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * Get External User information from info table. 
 	 * @param integer $userId user ID
 	 * @throws InvalidArgumentException

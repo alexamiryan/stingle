@@ -5,7 +5,7 @@ class LoaderFormKey extends Loader{
 	}
 	
 	protected function loadFormKey(){
-		Reg::register($this->config->Objects->formKey, new FormKey());
+		Reg::register($this->config->Objects->FormKey, new FormKey($_SESSION[$this->config->AuxConfig->sessionVarName]));
 	}
 }
 ?>

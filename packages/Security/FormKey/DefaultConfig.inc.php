@@ -1,5 +1,6 @@
 <?
 $defaultConfig = array(
-						'Objects' => array(	'formKey' => 'FormKey' )
+						'AuxConfig' => array('sessionVarName' => 'issuedFormKeys'),
+						'Objects' => array(	'FormKey' => 'formKey' )
 					  );
 ?>

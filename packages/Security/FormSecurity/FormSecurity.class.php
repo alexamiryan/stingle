@@ -6,7 +6,8 @@ class FormSecurity extends DbAccessor {
 	const TBL_SECURITY_HOSTS	= "security_hosts";
 
 	private $unblockTime = 900;
-	private $userid = 0;
+	private $userId = null;
+	private $sessionId = null;
 	private $blockedtime = 0;
 	
 	private $allowedUserTime		= 180;
@@ -21,33 +22,27 @@ class FormSecurity extends DbAccessor {
 	private $message = "You have overquoted your request limit.";
 	private $clientHostIp;
 	private $clientForwardedIp;
-	private $session_id;
 	
 	
 	public function __construct ($dbInstanceKey = null) {
 		parent::__construct($dbInstanceKey);
 		
 		if( Reg::get('usr')->isAuthorized() ) {
-			$this->userid = Reg::get('usr')->getId();
+			$this->userId = Reg::get('usr')->getId();
 		}
 		
-		if( false === ( $this->clientHostIp = $this->getHost() ) )	{
-			
+		$this->clientHostIp = $this->getHost();
+		if($this->clientHostIp == false){
 			throw new Exception("Could not determine client ip address.");
-			return;
 		}
 		
-		$this->session_id = session_id();
+		if(session_id() != ""){
+			$this->sessionId = session_id();
+		}
 		
-		if( empty( $this->session_id ) ) {
-			
-			throw new Exception("No session.");
-			return;
-		}  
+		$this->getForwardedIp();
 		
-		$this->clientForwardedIp = $this->getForwardedIp();
-		
-		if ( $this->isBlockedClient() ) {
+		if($this->isBlockedClient()){
 			$e = new SecurityException("User is overquoting the requests limit.");
 			$e->setUserMessage($this->message);
 			$e->setBlockMessage("Please, wait ".$this->blockedtime." minute(s) and try again.");
@@ -56,48 +51,49 @@ class FormSecurity extends DbAccessor {
 		}
 	}	
 	
-	private function isBlockedClient() {
+	private function isBlockedClient(){
+		$this->unblockIfBlockTimePassed();
 		
-		$this->checkCurrentStatus();
-		
-		if($this->userid > 0) {
-			$this->query->exec("SELECT (UNIX_TIMESTAMP(unblocktime) - UNIX_TIMESTAMP(CURRENT_TIMESTAMP())) as blocktime FROM `".Tbl::get('TBL_SECURITY_USERS')."` 
-								WHERE user_id = '".$this->userid."' 
-								AND label='".$this->label."' AND blockstatus > 0");
-			if ( $this->query->countRecords() > 0 ) {
-				
+		if($this->userId !== null){
+			$this->query->exec("SELECT (UNIX_TIMESTAMP(`unblocktime`) - UNIX_TIMESTAMP(CURRENT_TIMESTAMP())) as `blocktime` 
+								FROM `".Tbl::get('TBL_SECURITY_USERS')."` 
+								WHERE `user_id` = '{$this->userId}' 
+								AND label='{$this->label}' AND blockstatus > 0");
+			
+			if($this->query->countRecords() > 0){
 				$this->blockedtime = ceil(((int)$this->query->fetchField("blocktime"))/60);
 				return true;
 			}
-			else {
+			else{
 				return false;
 			}
 		}		
 		
-		$this->query->exec("SELECT (UNIX_TIMESTAMP(unblocktime) - UNIX_TIMESTAMP(CURRENT_TIMESTAMP())) as blocktime  FROM `".Tbl::get('TBL_SECURITY_HOSTS')."` 
-							WHERE remote_ip = '".$this->clientHostIp."' 
-							AND forwarded_ip='".$this->clientForwardedIp."'
-							AND label='".$this->label."' AND blockstatus > 0");
-		if ( $this->query->countRecords() > 0 ) {
-			
+		if($this->sessionId !== null){
+			$this->query->exec("SELECT (UNIX_TIMESTAMP(`unblocktime`) - UNIX_TIMESTAMP(CURRENT_TIMESTAMP())) as `blocktime`  
+								FROM `".Tbl::get('TBL_SECURITY_SESSIONS')."` 
+								WHERE `session_id` = '{$this->sessionId}' 
+								AND `label`='{$this->label}' AND blockstatus > 0");
+			if($this->query->countRecords() > 0){
+				$this->blockedtime = ceil(((int)$this->query->fetchField("blocktime"))/60);
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+		
+		$this->query->exec("SELECT (UNIX_TIMESTAMP(`unblocktime`) - UNIX_TIMESTAMP(CURRENT_TIMESTAMP())) as `blocktime`  
+							FROM `".Tbl::get('TBL_SECURITY_HOSTS')."` 
+							WHERE `remote_ip` = '{$this->clientHostIp}' 
+							AND `forwarded_ip`='{$this->clientForwardedIp}'
+							AND `label`='{$this->label}' AND blockstatus > 0");
+		if($this->query->countRecords() > 0){
 			$this->blockedtime = ceil(((int)$this->query->fetchField("blocktime"))/60);
 			return true;
 		}
 		
-		$this->query->exec("SELECT (UNIX_TIMESTAMP(unblocktime) - UNIX_TIMESTAMP(CURRENT_TIMESTAMP())) as blocktime  FROM `".Tbl::get('TBL_SECURITY_SESSIONS')."` 
-							WHERE session_id = '".$this->session_id."' 
-							AND label='".$this->label."' AND blockstatus > 0");
-		if ( $this->query->countRecords() > 0 ) {
-			
-			$this->blockedtime = ceil(((int)$this->query->fetchField("blocktime"))/60);
-			return true;
-		}
 		return false;		
-	}
-	
-	private function checkCurrentStatus() {
-		
-		$this->unblockElapsedUser();
 	}
 	
 	public function checkRequestLimit ($label = "", $message = "") {
@@ -125,54 +121,52 @@ class FormSecurity extends DbAccessor {
 		}
 	}
 	
-	private function getHost() {
-		
+	private function getHost(){
 		$clientHostIp = $_SERVER["REMOTE_ADDR"];
 		
-		if ( empty( $clientHostIp ) ) {
+		if(empty($clientHostIp)){
 			return false;
 		}
 		return $clientHostIp;
 	}
 	
 	private function getForwardedIp() {
-		
-		return $_SERVER['HTTP_X_FORWARDED_FOR'];
+		if(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])){
+			$this->clientForwardedIp = $_SERVER['HTTP_X_FORWARDED_FOR'];
+		}
 	}
 	
 	private function checkUserStatus() {
-		global $usr;
-		
-		$userid = $this->userid;
+		if($this->userId !== null){
+			$this->query->exec("SELECT (UNIX_TIMESTAMP(`request_time`)-UNIX_TIMESTAMP(`counter_last_reset_time`)) as `timediff`,`counter`,`blockstatus` 
+								FROM `".Tbl::get('TBL_SECURITY_USERS')."` 
+								WHERE `user_id`='{$this->userId}' AND `label`='{$this->label}'");
 			
-		if ( $userid > 0 ) {
-			
-			$this->query->exec("SELECT (UNIX_TIMESTAMP(request_time)-UNIX_TIMESTAMP(counter_last_reset_time)) as timediff,counter,blockstatus FROM `".Tbl::get('TBL_SECURITY_USERS')."` 
-								WHERE user_id = '".$userid."' AND label='".$this->label."'");
-			
-			if ( $this->query->countRecords() == 0 ) {
-				$this->query->exec("INSERT INTO `".Tbl::get('TBL_SECURITY_USERS')."` (user_id,counter_last_reset_time,label)
-															  	  		VALUES ('".$userid."', CURRENT_TIMESTAMP(),'".$this->label."')");
-			}
-			else {
+			if($this->query->countRecords()){
 				$record = $this->query->fetchRecord();
 				$db_timediff = $record["timediff"];
 				$db_counter = $record["counter"];
 				$db_blockstatus = $record["blockstatus"];
 				
-				if(((int)$db_blockstatus) == 0) {					
-					if( $db_timediff >= $this->allowedUserTime) {
-						if( ( $blockTimeSec = $this->getBlockTimeFromConf ( $this->allowedUserAttempts, $db_counter ) ) > 0 ) {
+				if($db_blockstatus == 0){					
+					if($db_timediff >= $this->allowedUserTime){
+						$blockTimeSec = $this->getBlockTimeFromConf($this->allowedUserAttempts, $db_counter);
+						
+						if($blockTimeSec > 0){
 							$this->blockClientByUser($blockTimeSec); // block user here
 						}
-						else {
-							$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_USERS')."` SET counter=0,counter_last_reset_time=CURRENT_TIMESTAMP()
-												WHERE user_id=".$userid." AND label='".$this->label."' AND blockstatus = 0");
-						}				 
+						else{
+							$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_USERS')."` SET `counter`=0, `counter_last_reset_time`=CURRENT_TIMESTAMP()
+												WHERE `user_id`='{$this->userId}' AND `label`='{$this->label}' AND `blockstatus` = 0");
+						}
 					}
-					$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_USERS')."` SET counter=counter + 1 
-										WHERE user_id=".$userid." AND label='".$this->label."' AND blockstatus = 0");
-				}										
+					$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_USERS')."` SET `counter`=`counter` + 1 
+										WHERE `user_id`='{$this->userId}' AND `label`='{$this->label}' AND `blockstatus` = 0");
+				}
+			}
+			else{
+				$this->query->exec("INSERT INTO `".Tbl::get('TBL_SECURITY_USERS')."` (`user_id`,`counter_last_reset_time`,`label`)
+													  	  		VALUES ('{$this->userId}', CURRENT_TIMESTAMP(),'{$this->label}')");
 			}
 			return true;	
 		}
@@ -181,50 +175,51 @@ class FormSecurity extends DbAccessor {
 	
 	private function checkHostStatus() {
 
-		$this->query->exec("SELECT (UNIX_TIMESTAMP(request_time)-UNIX_TIMESTAMP(counter_last_reset_time)) as timediff,counter,blockstatus  
-							FROM `".Tbl::get('TBL_SECURITY_HOSTS')."` WHERE remote_ip = '".$this->clientHostIp."' 
-							AND forwarded_ip='".$this->clientForwardedIp."'
-							AND label='".$this->label."'");
+		$this->query->exec("SELECT (UNIX_TIMESTAMP(`request_time`)-UNIX_TIMESTAMP(`counter_last_reset_time`)) as `timediff`, `counter`, `blockstatus`  
+							FROM `".Tbl::get('TBL_SECURITY_HOSTS')."` WHERE `remote_ip` = '{$this->clientHostIp}' 
+							AND `forwarded_ip`='{$this->clientForwardedIp}'
+							AND `label`='{$this->label}'");
 		
-		if ( $this->query->countRecords() == 0 ) {
-			$this->query->exec("INSERT INTO `".Tbl::get('TBL_SECURITY_HOSTS')."` (remote_ip,forwarded_ip,counter_last_reset_time,label)
-														  	  		VALUES ('".$this->clientHostIp."', '".$this->clientForwardedIp."', CURRENT_TIMESTAMP(),'".$this->label."')");
-		}
-		else {
+		if($this->query->countRecords()){
 			$record = $this->query->fetchRecord();
 			$db_timediff = $record["timediff"];
 			$db_counter = $record["counter"];
 			$db_blockstatus = $record["blockstatus"];
 			
-			if(((int)$db_blockstatus) == 0) {	
-				if( $db_timediff >= $this->allowedHostTime) {
-					if( ( $blockTimeSec = $this->getBlockTimeFromConf ( $this->allowedHostAttempts, $db_counter ) ) > 0 ) {
+			if($db_blockstatus == 0){	
+				if($db_timediff >= $this->allowedHostTime){
+					if(($blockTimeSec = $this->getBlockTimeFromConf ( $this->allowedHostAttempts, $db_counter))> 0){
 						$this->blockClientByHost($blockTimeSec); // block host here
 					}
 					else {
 						$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_HOSTS')."` 
-											SET counter=0,counter_last_reset_time=CURRENT_TIMESTAMP() 
-											WHERE remote_ip = '".$this->clientHostIp."' 
-											AND forwarded_ip = '".$this->clientForwardedIp."'
-											AND label='".$this->label."' AND blockstatus = 0");
+											SET `counter` = 0, `counter_last_reset_time` = CURRENT_TIMESTAMP() 
+											WHERE `remote_ip` = '{$this->clientHostIp}' 
+											AND `forwarded_ip` = '{$this->clientForwardedIp}'
+											AND `label`='{$this->label}' AND `blockstatus` = 0");
 					}				 
 				}
-				$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_HOSTS')."` SET counter=counter + 1 
-									WHERE remote_ip = '".$this->clientHostIp."' 
-									AND forwarded_ip = '".$this->clientForwardedIp."'
-									AND label='".$this->label."' AND blockstatus = 0");			
-			}					
+				$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_HOSTS')."` 
+									SET `counter` = `counter` + 1 
+									WHERE `remote_ip` = '{$this->clientHostIp}' 
+									AND `forwarded_ip` = '{$this->clientForwardedIp}'
+									AND label='{$this->label}' AND `blockstatus` = 0");			
+			}
+		}
+		else{
+			$this->query->exec("INSERT INTO `".Tbl::get('TBL_SECURITY_HOSTS')."` (`remote_ip`, `forwarded_ip`, `counter_last_reset_time`, `label`)
+								VALUES ('{$this->clientHostIp}', '{$this->clientForwardedIp}', CURRENT_TIMESTAMP(), '{$this->label}')");
 		}
 	}
 	
 	private function checkSessionStatus() {
 		
-		$this->query->exec("SELECT (UNIX_TIMESTAMP(request_time)-UNIX_TIMESTAMP(counter_last_reset_time)) as timediff,counter,blockstatus 
-							FROM `".Tbl::get('TBL_SECURITY_SESSIONS')."` WHERE session_id = '".$this->session_id."' AND label='".$this->label."'");
+		$this->query->exec("SELECT (UNIX_TIMESTAMP(`request_time`)-UNIX_TIMESTAMP(`counter_last_reset_time`)) as `timediff`, `counter`, `blockstatus` 
+							FROM `".Tbl::get('TBL_SECURITY_SESSIONS')."` WHERE `session_id` = '{$this->sessionId}' AND `label`='{$this->label}'");
 	
 		if ( $this->query->countRecords() == 0 ) {
 			$this->query->exec("INSERT INTO `".Tbl::get('TBL_SECURITY_SESSIONS')."` (session_id,remote_ip,counter_last_reset_time,label)
-														  	  		   VALUES ('".$this->session_id."', '".$this->clientHostIp."', CURRENT_TIMESTAMP(),'".$this->label."')");
+														  	  		   VALUES ('".$this->sessionId."', '".$this->clientHostIp."', CURRENT_TIMESTAMP(),'".$this->label."')");
 		}
 		else {
 			$record = $this->query->fetchRecord();
@@ -240,37 +235,38 @@ class FormSecurity extends DbAccessor {
 					else {
 						$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_SESSIONS')."` 
 											SET counter=0,counter_last_reset_time=CURRENT_TIMESTAMP() 
-											WHERE session_id = '".$this->session_id."'
+											WHERE session_id = '".$this->sessionId."'
 											AND label='".$this->label."' AND blockstatus = 0");
 					}				 
 				}
 				$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_SESSIONS')."` SET counter=counter + 1 
-									WHERE session_id = '".$this->session_id."'
+									WHERE session_id = '".$this->sessionId."'
 									AND label='".$this->label."' AND blockstatus = 0");
 			}							
 		}
 	}
 		
-	private function unblockElapsedUser() {
+	private function unblockIfBlockTimePassed() {
 		
-		if ($this->userid > 0) {
+		if ($this->userId !== null) {
 			
+			// Unblock current user if block time already passed 
 			$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_USERS')."` 
 							SET counter=1,blockstatus=0
 							WHERE unblocktime<CURRENT_TIMESTAMP() AND blockstatus > 0
-							AND user_id=".$this->userid);
+							AND user_id='{$this->userId}'");
 		}
 		else {			
 			$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_HOSTS')."` 
 								SET counter=1,blockstatus=0
 								WHERE unblocktime<CURRENT_TIMESTAMP() AND blockstatus > 0
-								AND remote_ip = '".$this->clientHostIp."' 
-								AND forwarded_ip = '".$this->clientForwardedIp."'");
+								AND remote_ip = '{$this->clientHostIp}' 
+								AND forwarded_ip = '{$this->clientForwardedIp}'");
 			
 			$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_SESSIONS')."` 
 								SET counter=1,blockstatus=0
 								WHERE unblocktime<CURRENT_TIMESTAMP() AND blockstatus > 0
-								AND session_id='".$this->session_id."'");
+								AND session_id='{$this->sessionId}'");
 								
 		}
 	}
@@ -299,7 +295,7 @@ class FormSecurity extends DbAccessor {
 		
 		$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_USERS')."` 
 							SET counter=0,blockstatus=1,unblocktime=FROM_UNIXTIME(UNIX_TIMESTAMP(CURRENT_TIMESTAMP()) + ".(int)$blockTimeSec.")
-							WHERE user_id=".$this->userid);	
+							WHERE user_id=".$this->userId);	
 	}
 	
 	private function blockClientByHost($blockTimeSec) {
@@ -322,7 +318,7 @@ class FormSecurity extends DbAccessor {
 		
 		$this->query->exec("UPDATE `".Tbl::get('TBL_SECURITY_SESSIONS')."` 
 							SET counter=0,blockstatus=1,unblocktime=FROM_UNIXTIME(UNIX_TIMESTAMP(CURRENT_TIMESTAMP()) + ".(int)$blockTimeSec.")
-							WHERE session_id='".$this->session_id."'
+							WHERE session_id='".$this->sessionId."'
 							AND remote_ip = '".$this->clientHostIp."'");	
 	}
 	
@@ -374,5 +370,4 @@ class FormSecurity extends DbAccessor {
 		$this->allowedSessionAttempts = $attemptcounts;
 	}	
 }
-
 ?>

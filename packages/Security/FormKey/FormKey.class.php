@@ -1,9 +1,14 @@
 <?
 class FormKey {  
-    private $issuedKeys = array();  
+    private $issuedKeys = array(); 
+    private $keyTimeout = 600; 
    
-    function __construct(&$sessionVar){  
-		$this->issuedKeys = &$sessionVar;
+    function __construct(Config $auxConfig){  
+		$this->issuedKeys = &$_SESSION[$auxConfig->sessionVarName];
+		
+		if(!empty($auxConfig->keyTimeout)){
+			$this->keyTimeout = $auxConfig->keyTimeout;
+		}
 		if(!is_array($this->issuedKeys)){
 			$this->issuedKeys = array();
 		}
@@ -18,7 +23,7 @@ class FormKey {
 
     private function cleanupOldKeys(){
     	foreach($this->issuedKeys as $position => $keyArray){
-    		if(time()-$keyArray[1] <= 600){
+    		if(time()-$keyArray[1] > 600){
 	        	array_splice($this->issuedKeys, $position, 1);
     		}
     	}

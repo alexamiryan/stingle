@@ -1,8 +1,7 @@
 <?php
-class DependencyFormSecurity extends Dependency
+class DependencyFormKey extends Dependency
 {
 	public function __construct(){
-		$this->addPackage("Db");
 		$this->addPackage("Security");
 	}
 }

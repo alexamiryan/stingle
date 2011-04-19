@@ -1,6 +1,6 @@
 <?
 $defaultConfig = array(	
-						'auxConfig' => array(
+						'AuxConfig' => array(
 												'appId' => null,
 												'appSecret' => null,
 												'redirectUrl' => null

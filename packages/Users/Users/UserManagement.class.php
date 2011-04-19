@@ -1275,7 +1275,7 @@ class UserManagement extends Filterable{
 	 * @param int $user_id
 	 * @return string
 	 */
-	public function getLoginById($user_id, $cacheMinutes = null){
+	public function getLoginById($user_id, $cacheMinutes = 0){
 		$user_id = intval($user_id);
 		$this->query->exec("select `login` from `".Tbl::get('TBL_USERS')."` where `id`='$user_id'", $cacheMinutes);
 		if($this->query->countRecords()){

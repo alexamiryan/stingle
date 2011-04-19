@@ -1,7 +1,7 @@
 <?
 class FormKey {  
     private $issuedKeys = array(); 
-    private $keyTimeout = 600; 
+    private $keyTimeout = 1800; 
    
     function __construct(Config $auxConfig){  
 		$this->issuedKeys = &$_SESSION[$auxConfig->sessionVarName];
@@ -23,7 +23,7 @@ class FormKey {
 
     private function cleanupOldKeys(){
     	foreach($this->issuedKeys as $position => $keyArray){
-    		if(time()-$keyArray[1] > 600){
+    		if(time()-$keyArray[1] > $this->keyTimeout){
 	        	array_splice($this->issuedKeys, $position, 1);
     		}
     	}
@@ -45,9 +45,7 @@ class FormKey {
     		}
     	}
     	
-		$e = new SecurityException("Unauthorized page access.");
-		$e->setUserMessage("You are performing an unauthorized access to this page.");
-		throw $e;
+		throw new FormKeySecurityException("Unauthorized page access.");
     }
 }
 ?>

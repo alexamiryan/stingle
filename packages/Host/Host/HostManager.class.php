@@ -10,7 +10,24 @@ class HostManager{
 			Host::setData($data, $host);
 			return $host;
 		}
-		throw new RuntimeException("There is no such host (".$hostName.")");
+		else{			
+			$originalHostName = $hostName;
+			$parentHostName = array_pop(explode(".", $hostName, 2));
+			$wildcardHostName = "*.". $parentHostName;
+			
+			$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS', 'Host')  ."` WHERE `host` = '{$wildcardHostName}'", $cacheMinutes);
+			if($sql->countRecords()){
+				$data = $sql->fetchRecord();
+				$data['host'] = $originalHostName;
+				$data['wildcardOf'] = $parentHostName;
+				$host = new Host();
+				Host::setData($data, $host);
+				$host->domain = str_replace(".".$host->extension,"",$host->host);
+				return $host;
+			}
+			throw new RuntimeException("There is no such host (".$originalHostName.")");
+		}
+		
 	}
 	
 	/**
@@ -58,6 +75,21 @@ class HostManager{
 			$page_url .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
 		}
 		return $page_url;
+	}
+	
+	/**
+	 * Check is host name wildcard (has * in the end)
+	 *
+	 * @param string $hostName
+	 * @return bool 
+	 */
+	public static function isWildcard($hostName){
+		if(array_shift(explode(".",$hostName)) =="*"){
+			return true;
+		}
+		else{
+			return false;	
+		} 
 	}
 
 

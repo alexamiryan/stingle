@@ -52,7 +52,14 @@ class UserPhotoManager extends Filterable
 			}
 		}
 		
-		$fileName = ImageUploader::upload($file, null, $uploadDir);
+		if($uploadDir !== null){
+			$imageUploaderConfig = new Config();
+			$imageUploaderConfig->uploadDir = $uploadDir;
+			$fileName = ImageUploader::upload($file, null, $imageUploaderConfig);
+		}
+		else{
+			$fileName = ImageUploader::upload($file);
+		}
 		
 		$this->query->exec("INSERT INTO `".Tbl::get('TBL_USERS_PHOTOS')."` 
 													(`user_id`, `filename`) 

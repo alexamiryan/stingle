@@ -1,4 +1,4 @@
-<?php
+<?
 class ChatInvitationManager extends Filterable
 {
 	const TBL_CHAT_INVITATIONS = 'chat_invitations';

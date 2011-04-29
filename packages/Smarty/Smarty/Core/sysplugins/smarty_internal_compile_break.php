@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty Internal Plugin Compile Break
@@ -58,7 +58,7 @@ class Smarty_Internal_Compile_Break extends Smarty_Internal_CompileBase {
         } 
         // this tag does not return compiled code
         $this->compiler->has_code = true;
-        return "<?php break {$_levels}?>";
+        return "<? break {$_levels}?>";
     } 
 } 
 

@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty Internal Plugin Compile Assign
@@ -53,9 +53,9 @@ class Smarty_Internal_Compile_Assign extends Smarty_Internal_CompileBase {
         } 
         // compiled output
         if (isset($parameter['smarty_internal_index'])) {
-            return "<?php if (!isset(\$_smarty_tpl->tpl_vars[$_attr[var]]) || !is_array(\$_smarty_tpl->tpl_vars[$_attr[var]]->value)) \$_smarty_tpl->createLocalArrayVariable($_attr[var], $_nocache, $_scope);\n\$_smarty_tpl->tpl_vars[$_attr[var]]->value$parameter[smarty_internal_index] = $_attr[value];?>";
+            return "<? if (!isset(\$_smarty_tpl->tpl_vars[$_attr[var]]) || !is_array(\$_smarty_tpl->tpl_vars[$_attr[var]]->value)) \$_smarty_tpl->createLocalArrayVariable($_attr[var], $_nocache, $_scope);\n\$_smarty_tpl->tpl_vars[$_attr[var]]->value$parameter[smarty_internal_index] = $_attr[value];?>";
         } else {
-            return "<?php \$_smarty_tpl->tpl_vars[$_attr[var]] = new Smarty_variable($_attr[value], $_nocache, $_scope);?>";
+            return "<? \$_smarty_tpl->tpl_vars[$_attr[var]] = new Smarty_variable($_attr[value], $_nocache, $_scope);?>";
         } 
     } 
 } 

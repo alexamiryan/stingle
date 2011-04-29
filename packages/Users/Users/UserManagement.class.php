@@ -1,4 +1,4 @@
-<?php
+<?
 class UserManagement extends Filterable{
 	
 	const TBL_USERS 				= "wum_users";
@@ -506,7 +506,7 @@ class UserManagement extends Filterable{
 	 * @param wusr $user
 	 * @return int
 	 */
-	public function createUser($login, $password, $user = null){
+	public function createUser($login, $password, User $user = null){
 		if(empty($login) or empty($password) or !(strpos($login, "\\") === false) or !(strpos($login, "/") === false)){
 			return false;
 		}
@@ -596,7 +596,7 @@ class UserManagement extends Filterable{
 	 * @param wusr $user
 	 * @return bool
 	 */
-	public function updateUser($user_id, $user){
+	public function updateUser($user_id, User $user){
 		$user_id = intval($user_id);
 
 		$fields = get_object_vars($user);

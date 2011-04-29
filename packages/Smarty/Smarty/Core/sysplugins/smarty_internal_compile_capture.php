@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty Internal Plugin Compile Capture
  * 
@@ -37,7 +37,7 @@ class Smarty_Internal_Compile_Capture extends Smarty_Internal_CompileBase {
         $this->compiler->_capture_stack[] = array($buffer, $assign, $append, $this->compiler->nocache);
         // maybe nocache because of nocache variables
         $this->compiler->nocache = $this->compiler->nocache | $this->compiler->tag_nocache; 
-        $_output = "<?php ob_start(); ?>";
+        $_output = "<? ob_start(); ?>";
 
         return $_output;
     } 
@@ -66,7 +66,7 @@ class Smarty_Internal_Compile_CaptureClose extends Smarty_Internal_CompileBase {
 
         list($buffer, $assign, $append, $this->compiler->nocache) = array_pop($this->compiler->_capture_stack);
 
-        $_output = "<?php ";
+        $_output = "<? ";
         if (isset($assign)) {
             $_output .= " \$_smarty_tpl->assign($assign, ob_get_contents());";
         } 

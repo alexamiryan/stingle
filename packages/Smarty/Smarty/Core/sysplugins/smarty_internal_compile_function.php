@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty Internal Plugin Compile Function
  * 
@@ -49,7 +49,7 @@ class Smarty_Internal_Compile_Function extends Smarty_Internal_CompileBase {
         if ($compiler->template->caching) {
             $output = '';
         } else {
-            $output = "<?php if (!function_exists('smarty_template_function_{$_name}')) {
+            $output = "<? if (!function_exists('smarty_template_function_{$_name}')) {
     function smarty_template_function_{$_name}(\$_smarty_tpl,\$params) {
     \$saved_tpl_vars = \$_smarty_tpl->tpl_vars;
     foreach (\$_smarty_tpl->template_functions['{$_name}']['parameter'] as \$key => \$value) {\$_smarty_tpl->tpl_vars[\$key] = new Smarty_variable(trim(\$value,'\''));};
@@ -87,7 +87,7 @@ class Smarty_Internal_Compile_Functionclose extends Smarty_Internal_CompileBase 
         // build plugin include code
         $plugins_string = '';
         if (!empty($compiler->template->required_plugins['compiled'])) {
-            $plugins_string = '<?php ';
+            $plugins_string = '<? ';
             foreach($compiler->template->required_plugins['compiled'] as $tmp) {
                 foreach($tmp as $data) {
                     $plugins_string .= "if (!is_callable('{$data['function']}')) include '{$data['file']}';\n";
@@ -96,7 +96,7 @@ class Smarty_Internal_Compile_Functionclose extends Smarty_Internal_CompileBase 
             $plugins_string .= '?>';
         } 
         if (!empty($compiler->template->required_plugins['nocache'])) {
-            $plugins_string .= "<?php echo '/*%%SmartyNocache:{$compiler->template->properties['nocache_hash']}%%*/<?php ";
+            $plugins_string .= "<? echo '/*%%SmartyNocache:{$compiler->template->properties['nocache_hash']}%%*/<? ";
             foreach($compiler->template->required_plugins['nocache'] as $tmp) {
                 foreach($tmp as $data) {
                     $plugins_string .= "if (!is_callable(\'{$data['function']}\')) include \'{$data['file']}\';\n";
@@ -119,7 +119,7 @@ class Smarty_Internal_Compile_Functionclose extends Smarty_Internal_CompileBase 
             $compiler->has_code = false;
             $output = true;
         } else {
-            $output = $plugins_string . $compiler->parser->current_buffer->to_smarty_php() . "<?php \$_smarty_tpl->tpl_vars = \$saved_tpl_vars;}}?>\n";
+            $output = $plugins_string . $compiler->parser->current_buffer->to_smarty_php() . "<? \$_smarty_tpl->tpl_vars = \$saved_tpl_vars;}}?>\n";
         } 
         // restore old compiler status
         $compiler->parser->current_buffer = $saved_data[1];

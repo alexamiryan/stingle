@@ -1,4 +1,4 @@
-<?php
+<?
 
 abstract class Filterable extends DbAccessor{
 	abstract protected function getFilterableFieldAlias($field);

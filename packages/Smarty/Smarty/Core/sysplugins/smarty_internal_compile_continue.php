@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty Internal Plugin Compile Continue
@@ -57,7 +57,7 @@ class Smarty_Internal_Compile_Continue extends Smarty_Internal_CompileBase {
         } 
         // this tag does not return compiled code
         $this->compiler->has_code = true;
-        return "<?php continue {$_levels}?>";
+        return "<? continue {$_levels}?>";
     } 
 } 
 

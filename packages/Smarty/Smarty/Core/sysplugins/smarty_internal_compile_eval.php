@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty Internal Plugin Compile Eval
@@ -44,7 +44,7 @@ class Smarty_Internal_Compile_Eval extends Smarty_Internal_CompileBase {
         } else {
             $_output .= "echo \$_template->getRenderedTemplate();";
         } 
-        return "<?php $_output ?>";
+        return "<? $_output ?>";
     } 
 } 
 

@@ -1,4 +1,4 @@
-<?php
+<?
 require_once(STINGLE_PATH . "core/Cgi.class.php");
 require_once(STINGLE_PATH . "core/Config.class.php");
 require_once(STINGLE_PATH . "core/ConfigManager.class.php");

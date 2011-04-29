@@ -1,4 +1,4 @@
-<?php
+<?
 /**
 * Smarty Internal Plugin Configfilelexer
 *

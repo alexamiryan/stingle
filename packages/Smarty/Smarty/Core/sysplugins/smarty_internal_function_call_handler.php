@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty Internal Plugin Function Call Handler
  * 
@@ -30,7 +30,7 @@ class Smarty_Internal_Function_Call_Handler extends Smarty_Internal_Template {
             } else {
                 $_code .= preg_replace("/{$_template->smarty->template_functions[$_name]['nocache_hash']}/", $_template->properties['nocache_hash'], $_template->smarty->template_functions[$_name]['compiled']);
             } 
-            $_code .= "<?php \$_smarty_tpl->tpl_vars = \$saved_tpl_vars;}";
+            $_code .= "<? \$_smarty_tpl->tpl_vars = \$saved_tpl_vars;}";
             eval($_code);
         } 
         $_function($_template, $_params);

@@ -1,4 +1,4 @@
-<?php
+<?
 class FormSecurity extends DbAccessor {
 	
 	const TBL_SECURITY_USERS 	= "security_users";

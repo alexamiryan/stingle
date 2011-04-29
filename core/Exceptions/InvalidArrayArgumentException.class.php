@@ -1,4 +1,4 @@
-<?php
+<?
 
 class InvalidArrayArgumentException extends InvalidArgumentException {
 	

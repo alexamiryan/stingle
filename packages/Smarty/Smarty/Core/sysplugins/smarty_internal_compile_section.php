@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty Internal Plugin Compile Section
  * 
@@ -35,7 +35,7 @@ class Smarty_Internal_Compile_Section extends Smarty_Internal_CompileBase {
         // maybe nocache because of nocache variables
         $this->compiler->nocache = $this->compiler->nocache | $this->compiler->tag_nocache;
 
-        $output = "<?php ";
+        $output = "<? ";
 
         $section_name = $_attr['name'];
         
@@ -135,7 +135,7 @@ class Smarty_Internal_Compile_Sectionelse extends Smarty_Internal_CompileBase {
         list($_open_tag, $nocache) = $this->_close_tag(array('section'));
         $this->_open_tag('sectionelse',array('sectionelse', $nocache));
 
-        return "<?php endfor; else: ?>";
+        return "<? endfor; else: ?>";
     } 
 } 
 
@@ -164,9 +164,9 @@ class Smarty_Internal_Compile_Sectionclose extends Smarty_Internal_CompileBase {
         list($_open_tag, $this->compiler->nocache) = $this->_close_tag(array('section', 'sectionelse'));
 
         if ($_open_tag == 'sectionelse')
-            return "<?php endif; ?>";
+            return "<? endif; ?>";
         else
-            return "<?php endfor; endif; ?>";
+            return "<? endfor; endif; ?>";
     } 
 } 
 

@@ -1,4 +1,4 @@
-<?php
+<?
 /**
 * Smarty Internal Plugin Templatelexer
 *
@@ -342,7 +342,7 @@ class Smarty_Internal_Templatelexer
     function yy_r1_19($yy_subpatterns)
     {
 
-  if (in_array($this->value, Array('<?', '<?=', '<?php'))) {
+  if (in_array($this->value, Array('<?', '<?=', '<?'))) {
     $this->token = Smarty_Internal_Templateparser::TP_PHPSTARTTAG;
   } elseif ($this->value == '<?xml') {
       $this->token = Smarty_Internal_Templateparser::TP_XMLTAG;
@@ -968,7 +968,7 @@ class Smarty_Internal_Templatelexer
     function yy_r3_4($yy_subpatterns)
     {
 
-  if (in_array($this->value, Array('<?', '<?=', '<?php'))) {
+  if (in_array($this->value, Array('<?', '<?=', '<?'))) {
     $this->token = Smarty_Internal_Templateparser::TP_PHPSTARTTAG;
    } else {
     $this->token = Smarty_Internal_Templateparser::TP_FAKEPHPSTARTTAG;

@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty Internal Plugin Compile Function Plugin
  * 
@@ -50,7 +50,7 @@ class Smarty_Internal_Compile_Private_Function_Plugin extends Smarty_Internal_Co
         } 
         $_params = 'array(' . implode(",", $_paramsArray) . ')'; 
         // compile code
-        $output = "<?php echo {$function}({$_params},\$_smarty_tpl);?>\n";
+        $output = "<? echo {$function}({$_params},\$_smarty_tpl);?>\n";
         return $output;
     } 
 } 

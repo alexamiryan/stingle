@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty Internal Plugin Template
@@ -493,7 +493,7 @@ class Smarty_Internal_Template extends Smarty_Internal_Data {
             // loop over items, stitch back together
             foreach($cache_split as $curr_idx => $curr_split) {
                 // escape PHP tags in template content
-                $output .= preg_replace('/(<%|%>|<\?php|<\?|\?>)/', '<?php echo \'$1\'; ?>', $curr_split);
+                $output .= preg_replace('/(<%|%>|<\?php|<\?|\?>)/', '<? echo \'$1\'; ?>', $curr_split);
                 if (isset($cache_parts[0][$curr_idx])) {
                     $this->properties['has_nocache_code'] = true; 
                     // remove nocache tags from cache output
@@ -509,7 +509,7 @@ class Smarty_Internal_Template extends Smarty_Internal_Data {
             eval("?>" . $output);
             $this->rendered_content = ob_get_clean(); 
             // write cache file content
-            $this->writeCachedContent('<?php if (!$no_render) {?>'. $output. '<?php } ?>');
+            $this->writeCachedContent('<? if (!$no_render) {?>'. $output. '<? } ?>');
             if ($this->smarty->debugging) {
                 Smarty_Internal_Debug::end_cache($this);
             } 
@@ -751,7 +751,7 @@ class Smarty_Internal_Template extends Smarty_Internal_Data {
         // include code for plugins
         if (!$cache) {
             if (!empty($this->required_plugins['compiled'])) {
-                $plugins_string = '<?php ';
+                $plugins_string = '<? ';
                 foreach($this->required_plugins['compiled'] as $tmp) {
                     foreach($tmp as $data) {
                         $plugins_string .= "if (!is_callable('{$data['function']}')) include '{$data['file']}';\n";
@@ -761,7 +761,7 @@ class Smarty_Internal_Template extends Smarty_Internal_Data {
             } 
             if (!empty($this->required_plugins['nocache'])) {
                 $this->has_nocache_code = true;
-                $plugins_string .= "<?php echo '/*%%SmartyNocache:{$this->properties['nocache_hash']}%%*/<?php ";
+                $plugins_string .= "<? echo '/*%%SmartyNocache:{$this->properties['nocache_hash']}%%*/<? ";
                 foreach($this->required_plugins['nocache'] as $tmp) {
                     foreach($tmp as $data) {
                         $plugins_string .= "if (!is_callable(\'{$data['function']}\')) include \'{$data['file']}\';\n";
@@ -772,7 +772,7 @@ class Smarty_Internal_Template extends Smarty_Internal_Data {
         } 
         // build property code
         $this->properties['has_nocache_code'] = $this->has_nocache_code;
-        $properties_string = "<?php /*%%SmartyHeaderCode:{$this->properties['nocache_hash']}%%*/" ;
+        $properties_string = "<? /*%%SmartyHeaderCode:{$this->properties['nocache_hash']}%%*/" ;
         if ($this->smarty->direct_access_security) {
             $properties_string .= "if(!defined('SMARTY_DIR')) exit('no direct access allowed');\n";
         } 
@@ -957,7 +957,7 @@ class Smarty_Internal_Template extends Smarty_Internal_Data {
         $first3 = strtolower(substr($name, 0, 3));
         if (in_array($first3, array('set', 'get')) && substr($name, 3, 1) !== '_') {
             // try to keep case correct for future PHP 6.0 case-sensitive class methods
-            // lcfirst() not available < PHP 5.3.0, so improvise
+            // lcfirst() not available <? 5.3.0, so improvise
             $property_name = strtolower(substr($name, 3, 1)) . substr($name, 4); 
             // convert camel case to underscored name
             $property_name = preg_replace_callback('/([A-Z])/', $camel_func, $property_name);

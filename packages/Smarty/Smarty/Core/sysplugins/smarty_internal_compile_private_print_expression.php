@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty Internal Plugin Compile Print Expression
  * 
@@ -44,7 +44,7 @@ class Smarty_Internal_Compile_Private_Print_Expression extends Smarty_Internal_C
         // compiled output
         if (isset($_attr['assign'])) {
             // assign output to variable
-            $output = "<?php \$_smarty_tpl->assign({$_attr['assign']},{$parameter['value']});?>";
+            $output = "<? \$_smarty_tpl->assign({$_attr['assign']},{$parameter['value']});?>";
         } else {
             // display value
             if (!$_attr['nofilter'] && isset($this->compiler->smarty->registered_filters['variable'])) {
@@ -68,7 +68,7 @@ class Smarty_Internal_Compile_Private_Print_Expression extends Smarty_Internal_C
                 $output = $this->compiler->compileTag('private_modifier', array(), array('modifierlist' => $parameter['modifierlist'], 'value' => $output));
             } 
             $this->compiler->has_output = true;
-            $output = "<?php echo {$output};?>";
+            $output = "<? echo {$output};?>";
         } 
         return $output;
     } 

@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty Internal Plugin Compile For
  * 
@@ -47,7 +47,7 @@ class Smarty_Internal_Compile_For extends Smarty_Internal_CompileBase {
 
         $local_vars = array();
 
-        $output = "<?php ";
+        $output = "<? ";
         if ($parameter == 1) {
             foreach ($_attr['start'] as $_statement) {
                 $output .= " \$_smarty_tpl->tpl_vars[$_statement[var]] = new Smarty_Variable;";
@@ -106,7 +106,7 @@ class Smarty_Internal_Compile_Forelse extends Smarty_Internal_CompileBase {
 
         list($_open_tag, $nocache, $local_vars) = $this->_close_tag(array('for'));
         $this->_open_tag('forelse', array('forelse', $nocache, $local_vars));
-        return "<?php }} else { ?>";
+        return "<? }} else { ?>";
     } 
 } 
 
@@ -138,9 +138,9 @@ class Smarty_Internal_Compile_Forclose extends Smarty_Internal_CompileBase {
             unset($compiler->local_var[$var]);
         } 
         if ($_open_tag == 'forelse')
-            return "<?php }  ?>";
+            return "<? }  ?>";
         else
-            return "<?php }} ?>";
+            return "<? }} ?>";
     } 
 } 
 

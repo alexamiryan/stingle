@@ -1,13 +1,4 @@
-<?php
-/**
- * ###################################################
- * #                   IMPORTANT!!!                  #
- * ###################################################
- * # Requires sequrity_quotes function to be called  #
- * # before new object definition from this class    #
- * ###################################################
- */
-
+<?
 class User
 {
 	private $id = null;
@@ -17,7 +8,7 @@ class User
 	private $primary_group = "";
 	private $groups = array();
 	private $permissions = array();
-
+	
 	public function getLogin(){
 		return $this->login;
 	}

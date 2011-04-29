@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty Internal Plugin Compile Include PHP
@@ -35,7 +35,7 @@ class Smarty_Internal_Compile_Include_Php extends Smarty_Internal_CompileBase {
         // check and get attributes
         $_attr = $this->_get_attributes($args);
 
-        $_output = '<?php '; 
+        $_output = '<? '; 
 
         $_smarty_tpl = $compiler->template; 
         $_filepath = false;
@@ -80,9 +80,9 @@ class Smarty_Internal_Compile_Include_Php extends Smarty_Internal_CompileBase {
         } 
 
         if (isset($_assign)) {
-            return "<?php ob_start(); include{$_once} ('{$_filepath}'); \$_smarty_tpl->assign({$_assign},ob_get_contents()); ob_end_clean();?>";
+            return "<? ob_start(); include{$_once} ('{$_filepath}'); \$_smarty_tpl->assign({$_assign},ob_get_contents()); ob_end_clean();?>";
         } else {
-            return "<?php include{$_once} ('{$_filepath}');?>\n";
+            return "<? include{$_once} ('{$_filepath}');?>\n";
         } 
     } 
 } 

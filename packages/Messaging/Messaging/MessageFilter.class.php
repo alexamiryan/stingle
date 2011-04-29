@@ -1,4 +1,4 @@
-<?php
+<?
 class MessageFilter extends Filter {
 	
 	public function setId($match, $id){

@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty Internal Plugin Templateparser Parsetrees
  * 
@@ -37,7 +37,7 @@ class _smarty_tag extends _smarty_parsetree
     public function assign_to_var()
     {
         $var = sprintf('$_tmp%d', ++$this->parser->prefix_number);
-        $this->parser->compiler->prefix_code[] = sprintf('<?php ob_start();?>%s<?php %s=ob_get_clean();?>',
+        $this->parser->compiler->prefix_code[] = sprintf('<? ob_start();?>%s<? %s=ob_get_clean();?>',
             $this->data, $var);
         return $var;
     } 
@@ -81,9 +81,9 @@ class _smarty_doublequoted extends _smarty_parsetree {
         $last_subtree = count($this->subtrees)-1;
         if ($last_subtree >= 0 && $this->subtrees[$last_subtree] instanceof _smarty_tag && $this->subtrees[$last_subtree]->saved_block_nesting < $this->parser->block_nesting_level) {
             if ($subtree instanceof _smarty_code) {
-                $this->subtrees[$last_subtree]->data .= '<?php echo ' . $subtree->data . ';?>';
+                $this->subtrees[$last_subtree]->data .= '<? echo ' . $subtree->data . ';?>';
             } elseif ($subtree instanceof _smarty_dq_content) {
-                $this->subtrees[$last_subtree]->data .= '<?php echo "' . $subtree->data . '";?>';
+                $this->subtrees[$last_subtree]->data .= '<? echo "' . $subtree->data . '";?>';
             } else {
                 $this->subtrees[$last_subtree]->data .= $subtree->data;
             } 
@@ -167,9 +167,9 @@ class _smarty_template_buffer extends _smarty_parsetree {
             if (substr($code, -1) == '<') {
                 $subtree = $this->subtrees[$key]->to_smarty_php();
                 if (substr($subtree, 0, 1) == '?') {
-                    $code = substr($code, 0, strlen($code)-1) . '<<?php ?>?' . substr($subtree, 1);
+                    $code = substr($code, 0, strlen($code)-1) . '<<? ?>?' . substr($subtree, 1);
                 } elseif ($this->parser->asp_tags && substr($subtree, 0, 1) == '%') {
-                    $code = substr($code, 0, strlen($code)-1) . '<<?php ?>%' . substr($subtree, 1);
+                    $code = substr($code, 0, strlen($code)-1) . '<<? ?>%' . substr($subtree, 1);
            } else {
                     $code .= $subtree;
                 } 
@@ -178,7 +178,7 @@ class _smarty_template_buffer extends _smarty_parsetree {
             if ($this->parser->asp_tags && substr($code, -1) == '%') {
                 $subtree = $this->subtrees[$key]->to_smarty_php();
                 if (substr($subtree, 0, 1) == '>') {
-                    $code = substr($code, 0, strlen($code)-1) . '%<?php ?>>' . substr($subtree, 1);
+                    $code = substr($code, 0, strlen($code)-1) . '%<? ?>>' . substr($subtree, 1);
            } else {
                     $code .= $subtree;
                 } 
@@ -187,7 +187,7 @@ class _smarty_template_buffer extends _smarty_parsetree {
             if (substr($code, -1) == '?') {
                 $subtree = $this->subtrees[$key]->to_smarty_php();
                 if (substr($subtree, 0, 1) == '>') {
-                    $code = substr($code, 0, strlen($code)-1) . '?<?php ?>>' . substr($subtree, 1);
+                    $code = substr($code, 0, strlen($code)-1) . '?<? ?>>' . substr($subtree, 1);
            } else {
                     $code .= $subtree;
                 } 

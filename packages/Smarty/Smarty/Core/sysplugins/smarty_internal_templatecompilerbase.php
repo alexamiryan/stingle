@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty Internal Plugin Smarty Template Compiler Base
  * 
@@ -56,7 +56,7 @@ class Smarty_Internal_TemplateCompilerBase {
         // template header code
         $template_header = '';
         if (!$template->suppressHeader) {
-            $template_header .= "<?php /* Smarty version " . Smarty::SMARTY_VERSION . ", created on " . strftime("%Y-%m-%d %H:%M:%S") . "\n";
+            $template_header .= "<? /* Smarty version " . Smarty::SMARTY_VERSION . ", created on " . strftime("%Y-%m-%d %H:%M:%S") . "\n";
             $template_header .= "         compiled from \"" . $this->template->getTemplateFilepath() . "\" */ ?>\n";
         } 
 
@@ -364,7 +364,7 @@ class Smarty_Internal_TemplateCompilerBase {
                     ($this->nocache || $this->tag_nocache || $this->template->forceNocache == 2)) {
                 $this->template->has_nocache_code = true;
                 $_output = str_replace("'", "\'", $content);
-                $_output = "<?php echo '/*%%SmartyNocache:{$this->nocache_hash}%%*/" . $_output . "/*/%%SmartyNocache:{$this->nocache_hash}%%*/';?>"; 
+                $_output = "<? echo '/*%%SmartyNocache:{$this->nocache_hash}%%*/" . $_output . "/*/%%SmartyNocache:{$this->nocache_hash}%%*/';?>"; 
                 // make sure we include modifer plugins for nocache code
                 if (isset($this->template->saved_modifier)) {
                     foreach ($this->template->saved_modifier as $plugin_name => $dummy) {

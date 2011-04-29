@@ -1,4 +1,4 @@
-<?php
+<?
 class DependencyFormSecurity extends Dependency
 {
 	public function __construct(){

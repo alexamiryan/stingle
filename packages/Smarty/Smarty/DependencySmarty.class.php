@@ -1,4 +1,4 @@
-<?php
+<?
 class DependencySmarty extends Dependency
 {
 	public function __construct(){

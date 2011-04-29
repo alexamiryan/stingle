@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty Internal Plugin Compile Foreach
  * 
@@ -81,7 +81,7 @@ class Smarty_Internal_Compile_Foreach extends Smarty_Internal_CompileBase {
         $usesPropShow = strpos($tpl->template_source, $ItemVarName . 'show') !== false;
         $usesPropTotal = $usesSmartyTotal || $usesSmartyShow || $usesPropShow || $usesPropLast || strpos($tpl->template_source, $ItemVarName . 'total') !== false; 
         // generate output code
-        $output = "<?php ";
+        $output = "<? ";
         $output .= " \$_smarty_tpl->tpl_vars[$item] = new Smarty_Variable;\n";
         $compiler->local_var[$item] = true;
         if ($key != null) {
@@ -177,7 +177,7 @@ class Smarty_Internal_Compile_Foreachelse extends Smarty_Internal_CompileBase {
         list($_open_tag, $nocache, $item, $key) = $this->_close_tag(array('foreach'));
         $this->_open_tag('foreachelse', array('foreachelse', $nocache, $item, $key));
 
-        return "<?php }} else { ?>";
+        return "<? }} else { ?>";
     } 
 } 
 
@@ -210,9 +210,9 @@ class Smarty_Internal_Compile_Foreachclose extends Smarty_Internal_CompileBase {
         } 
 
         if ($_open_tag == 'foreachelse')
-            return "<?php } ?>";
+            return "<? } ?>";
         else
-            return "<?php }} ?>";
+            return "<? }} ?>";
     } 
 } 
 

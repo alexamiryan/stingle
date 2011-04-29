@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Class for verifying Yubico One-Time-Passcodes
  *

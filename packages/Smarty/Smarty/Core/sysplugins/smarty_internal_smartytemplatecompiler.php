@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty Internal Plugin Smarty Template Compiler Base
@@ -64,7 +64,7 @@ class Smarty_Internal_SmartyTemplateCompiler extends Smarty_Internal_TemplateCom
             $this->trigger_template_error("unclosed {" . $_open_tag . "} tag");
         } 
         // return compiled code
-        // return str_replace(array("? >\n<?php","? ><?php"), array('',''), $this->parser->retvalue);
+        // return str_replace(array("? >\n<?","? ><?"), array('',''), $this->parser->retvalue);
         return $this->parser->retvalue;
     } 
 } 

@@ -1,4 +1,4 @@
-<?php
+<?
 
 class EmptyArgumentException extends InvalidArgumentException {
 	

@@ -5,10 +5,12 @@ class LoaderUsers extends Loader{
 		require_once ('UserAuthorization.class.php');
 		require_once ('User.class.php');
 		require_once ('UsersFilter.class.php');
+		require_once ('RequestLimiterTooManyAuthTriesException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
 		Tbl::registerTableNames('UserManagement');
+		Tbl::registerTableNames('UserAuthorization');
 	}
 	
 	protected function loadUserManagement(){

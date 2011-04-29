@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty Internal Plugin Config File Compiler
@@ -57,7 +57,7 @@ class Smarty_Internal_Config_File_Compiler {
         } 
         // finish parsing process
         $parser->doParse(0, 0);
-        $config->compiled_config = '<?php $_config_vars = ' . var_export($this->config_data, true) . '; ?>';
+        $config->compiled_config = '<? $_config_vars = ' . var_export($this->config_data, true) . '; ?>';
     } 
     /**
      * display compiler error messages without dying

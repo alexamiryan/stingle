@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty write file plugin

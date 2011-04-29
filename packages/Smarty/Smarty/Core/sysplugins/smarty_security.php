@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Smarty plugin
  * 
@@ -12,7 +12,7 @@
  */
 class Smarty_Security {
     /**
-     * This determines how Smarty handles "<?php ... ?>" tags in templates.
+     * This determines how Smarty handles "<? ... ?>" tags in templates.
      * possible values:
      * <ul>
      *   <li>Smarty::PHP_PASSTHRU -> echo PHP tags as they are</li>

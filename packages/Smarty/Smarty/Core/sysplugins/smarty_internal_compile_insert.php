@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty Internal Plugin Compile Insert
@@ -38,7 +38,7 @@ class Smarty_Internal_Compile_Insert extends Smarty_Internal_CompileBase {
         $_name = null;
         $_script = null;
 
-        $_output = '<?php '; 
+        $_output = '<? '; 
         // save posible attributes
         eval('$_name = ' . $_attr['name'] . ';');
         if (isset($_attr['assign'])) {

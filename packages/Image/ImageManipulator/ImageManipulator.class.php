@@ -1,4 +1,4 @@
-<?php
+<?
 class ImageManipulator extends Model
 {
 	private $info;

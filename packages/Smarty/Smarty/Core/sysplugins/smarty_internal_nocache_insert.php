@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * Smarty Internal Plugin Nocache Insert
@@ -26,7 +26,7 @@ class Smarty_Internal_Nocache_Insert {
      */
     static function compile($_function, $_attr, $_template, $_script, $_assign = null)
     {
-        $_output = '<?php ';
+        $_output = '<? ';
         if ($_script != 'null') {
             // script which must be included
             // code for script file loading

@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Class query
  * Constructor params

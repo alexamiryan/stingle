@@ -1,4 +1,4 @@
-<?php
+<?
 class IpFilter extends DbAccessor {
 	
 	const TBL_SECURITY_BLOCKEDIPS 	= "security_blockedips";

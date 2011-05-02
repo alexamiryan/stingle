@@ -60,6 +60,10 @@ class RequestLimiter extends DbAccessor {
 	 * Record current request in requests log
 	 */
 	public function recordRequest($ip = null){
+		if(Cgi::getMode()){
+			return;
+		}
+		
 		if($ip === null){
 			$ip = $_SERVER['REMOTE_ADDR'];
 		}

@@ -1,6 +1,5 @@
 <?
-
-class IPBlockedException extends Exception {
+class IPBlockedException extends SecurityException {
 	
 
 }

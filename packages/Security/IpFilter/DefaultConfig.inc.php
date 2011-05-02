@@ -1,5 +1,5 @@
 <?
 $defaultConfig = array(
-						'Objects' => array(	'ipFilter' => 'IpFilter' )
+						'Hooks' => array(	'AfterPackagesLoad' => 'CheckForBlockedHost' )
 					  );
 ?>

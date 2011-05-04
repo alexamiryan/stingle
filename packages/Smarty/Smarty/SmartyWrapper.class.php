@@ -396,6 +396,14 @@ class SmartyWrapper extends Smarty {
 		return $this->getTplPath() . 'modules/';
 	}
 	
+	public function getChunksPath(){
+		return $this->getTplPath() . 'incs/chunks/';
+	}
+	
+	public function getSnippetsPath(){
+		return $this->getTplPath() . 'incs/snippets/';
+	}
+	
 	/**
 	 * Set wrapper for non standard pages. Wrapper tpl file
 	 * should be located in module's "wrappers" directory
@@ -468,6 +476,8 @@ class SmartyWrapper extends Smarty {
 		$this->assign ( '__ViewDirPath', $this->template_dir );
 		$this->assign ( '__TemplatePath', $this->getTemplatePath() );
 		$this->assign ( '__ModulesPath', $this->getModulesPath() );
+		$this->assign ( '__ChunksPath', $this->getChunksPath() );
+		$this->assign ( '__SnippetsPath', $this->getSnippetsPath() );
 		
 		// Check if wrapper is set and if yes include it
 		if(!empty($this->wrapper)){

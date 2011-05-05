@@ -2,6 +2,8 @@
 function default_exception_handler(Exception $e){
 	global $site_name;
 	
+	HookManager::callHook('NoDebugExceptionHandler', array('e' => $e));
+	
 	$config = ConfigManager::getGlobalConfig();
 	if(Debug::getMode()){
 		echo format_exception($e, true);

@@ -11,12 +11,16 @@ class IpFilter extends DbAccessor {
 		parent::__construct($dbInstanceKey); 
 		
 		$this->remoteIp = $_SERVER["REMOTE_ADDR"];
-		if(empty($this->remoteIp)){
+		if(empty($this->remoteIp) and !Cgi::getMode()){
 			throw new RuntimeException("Could not determine client ip address.");
 		}
 	}
 	
 	public function isBlocked(){
+		if(Cgi::getMode()){
+			return true;
+		}
+		
 		$isBlocked = $this->isBlockedByIP() || $this->isBlockedByCountry();
 		$isWhiteListed = $this->isWhitelistedIP();
 		

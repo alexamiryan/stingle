@@ -32,6 +32,7 @@ session_name($config->site->site_id);
 session_start();
 ob_start();
 
+Cgi::setMode(defined("IS_CGI"));
 Debug::setMode($config->Debug->enabled);
 
 // Register User Hooks

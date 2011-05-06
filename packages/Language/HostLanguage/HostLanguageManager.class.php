@@ -4,6 +4,8 @@ class HostLanguageManager extends LanguageManager {
 	protected $host;//Host Object
 	
 	protected $hostLangs = array(); //Set of Languages of fiven Host
+	
+	private $_hostLangId;
 
 	const TBL_HOST_LANGUAGE = "host_language";
 
@@ -11,6 +13,15 @@ class HostLanguageManager extends LanguageManager {
 		$this->host = $host;
 		parent::__construct(null, $dbInstanceKey);
 		$this->hostLangs = $this->getHostLanguages();
+		$this->setCurrentHostLangId();
+	}
+	
+	private function setCurrentHostLangId(){
+		$this->_hostLangId = $this->getHostLanguageId($this->host, $this->language);
+	}
+
+	public function getCurrentHostLangId(){
+		return $this->_hostLangId;
 	}
 	
 	/**

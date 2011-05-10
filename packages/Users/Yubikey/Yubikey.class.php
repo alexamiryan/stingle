@@ -102,9 +102,11 @@ class Yubikey{
 	public function setURLpart($url){
 		if(empty($url)){
 			throw new InvalidArgumentException("Empty \$url specified!");
-		}
-		
+		}		
 		$this->_url = $url;
+		// Set defaults
+		$this->_timestampTolerance = 600; //Seconds
+		$this->_curlTimeout = 30; //Seconds
 	}
 	
 	/**

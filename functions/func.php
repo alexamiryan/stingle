@@ -280,23 +280,6 @@ function get_all_get_params(array $exclude_array = array()){
 }
 
 /**
- * Return src code for img tag for png images
- * &lt;img &lt;?=png_img('img/preved.png')?&gt; alt=""&gt;
- * &lt;img src="img/no.gif" style="filter: progid:DXImageTransform.Microsoft.AlphaImageLoader (src='img/preved.png');" alt=""&gt;
- *
- * @param string $src
- * @return string
- */
-function png($src){
-	if(preg_match("/msie/i", $_SERVER{'HTTP_USER_AGENT'})){
-		return 'src="img/no.gif" style="filter: progid:DXImageTransform.Microsoft.AlphaImageLoader (src=\'' . $src . '\');"';
-	}
-	else{
-		return 'src="' . $src . '"';
-	}
-}
-
-/**
  * Adds leading zero to number
  *
  * @param double $digit

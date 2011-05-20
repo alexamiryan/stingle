@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Db_MySqlDatabase
  *
@@ -299,7 +299,7 @@ class MySqlDatabase
 	 * @param string $type
 	 *
 	 * @example $table = "table", $type = "r" (READ)
-	 * @example $table = "table", $type = "r" (WRITE)
+	 * @example $table = "table", $type = "w" (WRITE)
 	 *
 	 * @access public
 	 * @return boolean

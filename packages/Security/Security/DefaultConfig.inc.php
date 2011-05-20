@@ -1,5 +1,5 @@
 <?
 $defaultConfig = array(
-						'hooks' => array(  'RequestParser' => 'SecureInputData'  )
+						'Hooks' => array(  'RequestParser' => 'SecureInputData'  )
 					  );
 ?>

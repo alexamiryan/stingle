@@ -1,40 +1,51 @@
-<?php
+<?
 class FormKey {  
-	
-    private $formKey;  
-    private $oldFormKey;  
+    private $issuedKeys = array(); 
+    private $keyTimeout = 1800; 
    
-    function __construct() {  
-        if( isset($_SESSION['genformkey']) ) {  
-            $this->oldFormKey = $_SESSION['genformkey'];  
-        }  
+    function __construct(Config $auxConfig){  
+		$this->issuedKeys = &$_SESSION[$auxConfig->sessionVarName];
+		
+		if(!empty($auxConfig->keyTimeout)){
+			$this->keyTimeout = $auxConfig->keyTimeout;
+		}
+		if(!is_array($this->issuedKeys)){
+			$this->issuedKeys = array();
+		}
     }  
 
-    private function genKey() {  
-        $ip = $_SERVER['REMOTE_ADDR'];  
+    private function genKey(){
+        $ip = $_SERVER['REMOTE_ADDR'];
         $uniqueid = uniqid(mt_rand(), true);  
 
-        return md5($ip . $uniqueid);  
-    }  
+        return md5($ip . $uniqueid);
+    }
 
-    public function getKey() {  
-    	
-        $this->formKey = $this->genKey();  
-        $_SESSION['genformkey'] = $this->formKey;
+    private function cleanupOldKeys(){
+    	foreach($this->issuedKeys as $position => $keyArray){
+    		if(time()-$keyArray[1] > $this->keyTimeout){
+	        	array_splice($this->issuedKeys, $position, 1);
+    		}
+    	}
+    }
+
+    public function getKey(){
+       	$newKey = $this->genKey();
+       	array_push($this->issuedKeys, array($newKey, time()));  
         
-        return "<input type='hidden' name='genformkey' id='genformkey' value='".$this->formKey."' />";  
-    }  
+        return $newKey;  
+    }
 
-    public function validate($formKeyPost) {
+    public function validate($key){
+		$this->cleanupOldKeys();
+    	foreach($this->issuedKeys as $position => $keyArray){
+    		if($keyArray[0] == $key){
+	        	array_splice($this->issuedKeys, $position, 1);
+            	return true;
+    		}
+    	}
     	
-        if( $formKeyPost == $this->oldFormKey ) {  
-            return true;  
-        }  
-        else {  
-        	$e = new SecurityException("Unauthorized page access.");
-        	$e->setUserMessage("You are performing an unauthorized access to this page.");
-			throw $e;
-	    }  
-    }  
+		throw new FormKeySecurityException("Unauthorized page access.");
+    }
 }
 ?>

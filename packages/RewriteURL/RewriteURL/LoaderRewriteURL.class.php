@@ -5,7 +5,7 @@ class LoaderRewriteURL extends Loader{
 	}
 	
 	protected function loadrewriteURL(){
-		$this->rewriteURL =  new RewriteURL($this->config);
+		$this->rewriteURL =  new RewriteURL($this->config->AuxConfig);
 		Reg::register($this->config->Objects->rewriteURL, $this->rewriteURL);
 	}
 	

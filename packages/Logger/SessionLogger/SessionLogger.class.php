@@ -1,4 +1,4 @@
-<?php
+<?
 
 class SessionLogger extends Logger
 {

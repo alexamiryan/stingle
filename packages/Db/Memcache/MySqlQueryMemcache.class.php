@@ -1,4 +1,4 @@
-<?php
+<?
 /**
  * Class query with memcahce support
  */
@@ -28,7 +28,7 @@ class MySqlQueryMemcache extends MySqlQuery
 	public function __construct(MySqlDatabase $db, Logger $logger = null){
 		parent::__construct($db, $logger);
 		
-		$this->memcacheConfig = ConfigManager::getConfig("Db", "Memcache");
+		$this->memcacheConfig = ConfigManager::getConfig("Db", "Memcache")->AuxConfig;
 		
 		if($this->memcacheConfig->enabled){
 			$this->memcache = new MemcacheWrapper($this->memcacheConfig->host, $this->memcacheConfig->port);
@@ -41,8 +41,8 @@ class MySqlQueryMemcache extends MySqlQuery
 		
 		$current_class = $calling_class;
 		while($current_class !== false){
-			if(isset($this->memcacheConfig->time->$current_class)){
-				return $this->memcacheConfig->time->$current_class;
+			if(isset($this->memcacheConfig->Time->$current_class)){
+				return $this->memcacheConfig->Time->$current_class;
 			}
 			$current_class = get_parent_class($current_class);
 		}

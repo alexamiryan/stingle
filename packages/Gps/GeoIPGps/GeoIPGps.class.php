@@ -1,4 +1,4 @@
-<?php
+<?
 class GeoIPGps
 {
 	protected $geoIP;

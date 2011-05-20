@@ -7,11 +7,9 @@ class ImageUploader
 	
 	const EXCEPTION_IMAGE_IS_SMALL = 1;
 	
-	public static function upload($file, $fileName = null, $uploadDir = null){
-		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader");
-		if($uploadDir === null and isset($imageUploaderConfig->uploadDir)){
-			$uploadDir = $imageUploaderConfig->uploadDir;
-		}
+	public static function upload($file, $fileName = null, Config $imageUploaderConfig = null){
+		$imageUploaderConfig = ConfigManager::mergeConfigs($imageUploaderConfig, ConfigManager::getConfig("Image", "ImageUploader")->AuxConfig);
+		$uploadDir = $imageUploaderConfig->uploadDir;
 		
 		if(empty($uploadDir)){
 			throw new RuntimeException("Unable to get any appropriate uploadDir!");
@@ -35,8 +33,9 @@ class ImageUploader
 	    $savePath = $uploadDir . $fileName;
 	    
 	    if(isset($imageUploaderConfig->minimumSize)){
-	    	$checkResult = $image->checkDimensions($imageUploaderConfig->minimumSize->width, $imageUploaderConfig->minimumSize->height);
-	    	if($checkResult == ImageManipulator::DIMENSIONS_SMALLER){
+	    	$checkResult = $image->isSizeMeetRequirements(	$imageUploaderConfig->minimumSize->largeSideMinSize, 
+	    													$imageUploaderConfig->minimumSize->smallSideMinSize);
+	    	if(!$checkResult){
 	    		throw new ImageUploaderException("Given image is smaller than specified minimum size.", static::EXCEPTION_IMAGE_IS_SMALL);
 	    	}
 	    }
@@ -57,7 +56,7 @@ class ImageUploader
 	}
 	
 	public static function deleteImage($fileName, $uploadDir = null){
-		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader");
+		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader")->AuxConfig;
 		if($uploadDir === null and isset($imageUploaderConfig->uploadDir)){
 			$uploadDir = $imageUploaderConfig->uploadDir;
 		}

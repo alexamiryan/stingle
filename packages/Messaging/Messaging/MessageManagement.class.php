@@ -1,4 +1,4 @@
-<?php
+<?
 class MessageManagement extends Filterable
 {
 	

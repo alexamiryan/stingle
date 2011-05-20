@@ -118,7 +118,14 @@ function draw_combo_box($name, $values, $default = '', $parameters = ''){
  * @param string $type (mixed, chars, digits)
  * @return string
  */
-function create_random_value($length, $type = 'mixed'){
+function create_random_value($length, $type = null){
+	if($length === null){
+		$length = 12;
+	}
+	if($type === null){
+		$type = 'mixed';
+	}
+	
 	if(($type != 'mixed') && ($type != 'chars') && ($type != 'digits')) return false;
 
 	$rand_value = '';
@@ -215,7 +222,7 @@ function valid_email($address){
 }
 
 function getCurrentUrl($exclude = array()){
-	$siteNavConfig = ConfigManager::getConfig("SiteNavigation");
+	$siteNavConfig = ConfigManager::getConfig("SiteNavigation")->AuxConfig;
 	$currentUrl = RewriteURL::generateCleanBaseLink(Reg::get("nav")->module, Reg::get("nav")->page, $siteNavConfig->firstLevelDefaultValue);
 	$currentUrl = RewriteURL::ensureOutputLastDelimiter($currentUrl);
 	$currentUrl .= get_all_get_params($exclude);
@@ -230,7 +237,7 @@ function getCurrentUrl($exclude = array()){
  * @return string
  */
 function get_all_get_params(array $exclude_array = array()){
-	$config = ConfigManager::getConfig("RewriteURL");
+	$config = ConfigManager::getConfig("RewriteURL")->AuxConfig;
 	$return_string = '';
 
 	foreach($exclude_array as &$exclude){
@@ -270,23 +277,6 @@ function get_all_get_params(array $exclude_array = array()){
 	}
 
 	return $return_string;
-}
-
-/**
- * Return src code for img tag for png images
- * &lt;img &lt;?=png_img('img/preved.png')?&gt; alt=""&gt;
- * &lt;img src="img/no.gif" style="filter: progid:DXImageTransform.Microsoft.AlphaImageLoader (src='img/preved.png');" alt=""&gt;
- *
- * @param string $src
- * @return string
- */
-function png($src){
-	if(preg_match("/msie/i", $_SERVER{'HTTP_USER_AGENT'})){
-		return 'src="img/no.gif" style="filter: progid:DXImageTransform.Microsoft.AlphaImageLoader (src=\'' . $src . '\');"';
-	}
-	else{
-		return 'src="' . $src . '"';
-	}
 }
 
 /**

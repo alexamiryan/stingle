@@ -3,9 +3,6 @@ $CONFIG['site']['error_reporting'] = E_ALL ^E_NOTICE ^E_DEPRECATED;
 
 $CONFIG['site']['domain_name'] = "mysite";
 
-$CONFIG['SiteNavigation']['SiteNavigation']['firstLevelDefaultValue'] = "home";
-$CONFIG['SiteNavigation']['SiteNavigation']['secondLevelDefaultValue'] = "home";
-
 $CONFIG['site']['site_id'] = 'mysite';
 $CONFIG['site']['from_mail_domain_name'] = "mysite.com";
 $CONFIG['site']['from_mail_username'] = "no-reply";

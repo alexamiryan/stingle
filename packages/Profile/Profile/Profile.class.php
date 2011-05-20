@@ -1,4 +1,4 @@
-<?php
+<?
 
 class Profile extends DbAccessor{
 

@@ -1,4 +1,4 @@
-<?php
+<?
 
 abstract class Filter {
 	const MATCH_EQUAL		= "exact_match";

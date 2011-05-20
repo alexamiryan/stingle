@@ -1,4 +1,4 @@
-<?php
+<?
 class ChatSession{
 	
 	public $id;

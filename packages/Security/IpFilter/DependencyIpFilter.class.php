@@ -1,4 +1,4 @@
-<?php
+<?
 class DependencyIpFilter extends Dependency
 {
 	public function __construct(){

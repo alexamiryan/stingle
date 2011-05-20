@@ -1,6 +1,6 @@
 <?
 $defaultConfig = array(	
 						'Objects' => array(	'GeoIP' => 'geoIp' ),
-						'memcache' => array(  'GeoIP' => -1  )
+						'Memcache' => array(  'GeoIP' => -1  )
 					);
 ?>

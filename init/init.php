@@ -1,4 +1,20 @@
-<?php
+<?
+require_once(STINGLE_PATH . "core/Cgi.class.php");
+require_once(STINGLE_PATH . "core/Config.class.php");
+require_once(STINGLE_PATH . "core/ConfigManager.class.php");
+require_once(STINGLE_PATH . "core/Debug.class.php");
+require_once(STINGLE_PATH . "core/Dependency.class.php");
+require_once(STINGLE_PATH . "core/HookManager.class.php");
+require_once(STINGLE_PATH . "core/Loader.class.php");
+require_once(STINGLE_PATH . "core/Model.class.php");
+require_once(STINGLE_PATH . "core/PackageManager.class.php");
+require_once(STINGLE_PATH . "core/Reg.class.php");
+
+require_once(STINGLE_PATH . "core/Exceptions/EmptyArgumentException.class.php");
+require_once(STINGLE_PATH . "core/Exceptions/InvalidArrayArgumentException.class.php");
+require_once(STINGLE_PATH . "core/Exceptions/InvalidIntegerArgumentException.class.php");
+require_once(STINGLE_PATH . "core/Exceptions/InvalidTimestampArgumentException.class.php");
+
 require_once(STINGLE_PATH . "functions/system.php");
 require_once(STINGLE_PATH . "functions/func.php");
 
@@ -16,11 +32,12 @@ session_name($config->site->site_id);
 session_start();
 ob_start();
 
+Cgi::setMode(defined("IS_CGI"));
 Debug::setMode($config->Debug->enabled);
 
 // Register User Hooks
-if(isset($config->hooks)){
-	foreach(get_object_vars($config->hooks) as $hookName => $funcName){
+if(isset($config->Hooks)){
+	foreach(get_object_vars($config->Hooks) as $hookName => $funcName){
 		if(is_object($funcName)){
 			foreach (get_object_vars($funcName) as $regFuncName){
 				HookManager::registerHook($hookName, $regFuncName);

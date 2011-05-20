@@ -3,7 +3,7 @@ class FileUploader
 {
 	public static function upload($file, $fileName = null, $uploadDir = null){
 		if($uploadDir === null){
-			$fileUploaderConfig = ConfigManager::getConfig("FileUploader", "FileUploader");
+			$fileUploaderConfig = ConfigManager::getConfig("FileUploader", "FileUploader")->AuxConfig;
 			if(isset($fileUploaderConfig->uploadDir)){
 				$uploadDir = $fileUploaderConfig->uploadDir;
 			}
@@ -31,7 +31,7 @@ class FileUploader
 	
 	public static function deleteFile($fileName, $uploadDir = null){
 		if($uploadDir === null){
-			$fileUploaderConfig = ConfigManager::getConfig("FileUploader", "FileUploader");
+			$fileUploaderConfig = ConfigManager::getConfig("FileUploader", "FileUploader")->AuxConfig;
 			if(isset($fileUploaderConfig->uploadDir)){
 				$uploadDir = $fileUploaderConfig->uploadDir;
 			}

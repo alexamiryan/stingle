@@ -1,4 +1,4 @@
-<?php
+<?
 
 /**
  * PHP Web Messaging System Object

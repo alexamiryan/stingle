@@ -1,6 +1,6 @@
 <?
 $defaultConfig = array(	
 						'Objects' => array(	'GeoIPGps' => 'geoGps' ),
-						'memcache' => array(  'GeoIPGps' => -1  )
+						'Memcache' => array(  'GeoIPGps' => -1  )
 					);
 ?>

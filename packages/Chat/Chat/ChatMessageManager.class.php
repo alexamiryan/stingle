@@ -1,4 +1,4 @@
-<?php
+<?
 class ChatMessageManager extends Filterable
 {
 	const TBL_CHAT_MESSAGES = 'chat_messages';

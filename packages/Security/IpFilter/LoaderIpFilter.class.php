@@ -9,8 +9,13 @@ class LoaderIpFilter extends Loader{
 		Tbl::registerTableNames('IpFilter');
 	}
 	
-	protected function loadIpFilter(){
-		Reg::register($this->config->Objects->ipFilter, new IpFilter());
+	public function hookCheckForBlockedHost(){
+		if(!Cgi::getMode()){
+			$ipFilter = new IpFilter();
+			if($ipFilter->isBlocked()){
+				throw new IPBlockedException("This host is blocked!");
+			}
+		}
 	}
 }
 ?>

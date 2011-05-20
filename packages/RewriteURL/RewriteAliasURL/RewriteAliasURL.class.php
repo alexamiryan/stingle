@@ -1,4 +1,4 @@
-<?php
+<?
 class RewriteAliasURL extends RewriteURL{
 	
 	private $_aliasMap;

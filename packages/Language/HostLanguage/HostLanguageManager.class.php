@@ -110,7 +110,7 @@ class HostLanguageManager extends LanguageManager {
 	 * @return array $HostLanguagePair
 	 */
 	public static function getHostLanguagePair($host_language_id, $cacheMinutes = null){
-		if(!is_numeric($host_languge_id)){
+		if(!is_numeric($host_language_id)){
 			throw new InvalidArgumentException("host_languge id should be an integer");
 		}
 		$sql = MySqlDbManager::getQueryObject();

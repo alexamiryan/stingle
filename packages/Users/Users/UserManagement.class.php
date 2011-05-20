@@ -1,4 +1,4 @@
-<?php
+<?
 class UserManagement extends Filterable{
 	
 	const TBL_USERS 				= "wum_users";
@@ -506,7 +506,7 @@ class UserManagement extends Filterable{
 	 * @param wusr $user
 	 * @return int
 	 */
-	public function createUser($login, $password, $user = null){
+	public function createUser($login, $password, User $user = null){
 		if(empty($login) or empty($password) or !(strpos($login, "\\") === false) or !(strpos($login, "/") === false)){
 			return false;
 		}
@@ -596,7 +596,7 @@ class UserManagement extends Filterable{
 	 * @param wusr $user
 	 * @return bool
 	 */
-	public function updateUser($user_id, $user){
+	public function updateUser($user_id, User $user){
 		$user_id = intval($user_id);
 
 		$fields = get_object_vars($user);
@@ -1175,7 +1175,7 @@ class UserManagement extends Filterable{
 	 *
 	 * @param UsersFilter $filter
 	 * @param MysqlPager $pager
-	 * @return array
+	 * @return array[User]
 	 */
 	public function getUsersList(Filter $usersFilter = null, MysqlPager $pager = null, $cacheMinutes = 0){
 		$users = array();
@@ -1275,7 +1275,7 @@ class UserManagement extends Filterable{
 	 * @param int $user_id
 	 * @return string
 	 */
-	public function getLoginById($user_id, $cacheMinutes = null){
+	public function getLoginById($user_id, $cacheMinutes = 0){
 		$user_id = intval($user_id);
 		$this->query->exec("select `login` from `".Tbl::get('TBL_USERS')."` where `id`='$user_id'", $cacheMinutes);
 		if($this->query->countRecords()){

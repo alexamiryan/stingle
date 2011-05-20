@@ -51,9 +51,14 @@ class YubikeyUserAuthorization extends UserAuthorization{
 				$this->doLogout();
 				throw new RuntimeException("Invalid Yubikey", static::EXCEPTION_INVALID_YUBIKEY);
 			}
-			elseif(!$this->authYubikey->verify($yubikeyOTP)){
-				$this->doLogout();
-				throw new RuntimeException("Yubikey Validation Failed", static::EXCEPTION_INVALID_YUBIKEY);
+			else{
+				try{
+					$this->authYubikey->verify($yubikeyOTP);
+				}
+				catch(YubikeyException $e){
+					$this->doLogout();
+					throw new RuntimeException("Yubikey Validation Failed", static::EXCEPTION_INVALID_YUBIKEY);
+				}
 			}
 
 		}

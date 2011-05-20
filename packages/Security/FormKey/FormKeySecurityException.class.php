@@ -1,0 +1,5 @@
+<?
+class FormKeySecurityException extends SecurityException{
+	
+}
+?>

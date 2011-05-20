@@ -1,18 +1,22 @@
 <?
-$defaultConfig = array(	'compile_dir' => "cache/templates_compile/",
-						'cache_dir' => "cache/templates_cache/",
-						'template_dir' => "templates/",
-						'default_layout' => "clean",
-						'default_plugins_dir' => STINGLE_PATH . 'smarty_plugins/',
-						'pluginDirs' => array('incs/smarty_local_plugins/'),
-						
-						'errors_module' => "error",
-						'error_page' => "error",
-						'error_404_page' => "404",
-						'exception_page' => "exception",
+$defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_compile/",
+												'cacheDir' => "cache/templates_cache/",
+												'templateDir' => "view/",
+												'defaultTemplateName' => "default",
+												'defaultRelativeTemplatesPath' => "templates/",
+												'defaultRelativeTplPath' => "tpl/",
+												'defaultLayout' => "clean",
+												'defaultPluginsDir' => __DIR__ . '/Plugins/',
+												
+												'errorsModule' => "error",
+												'errorPage' => "error",
+												'error404Page' => "404",
+												'exceptionPage' => "exception"),
 
 						'Objects' => array(	'Smarty' => 'smarty'  ),
-						'hooks' => array(  'AfterRequestParser' => 'SmartyInit', 'InitEnd' => 'SmartyDisplay'  )
+						'Hooks' => array(  	'AfterRequestParser' => 'SmartyInit', 
+											'InitEnd' => 'SmartyDisplay',
+											'AfterPluginInit' => 'RegisterSmartyPlugins'  )
 				
 					);
 ?>

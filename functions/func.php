@@ -203,7 +203,7 @@ function redirect($url){
  */
 function valid_email($address){
 	$ret_val = false;
-	if(preg_match("/^[0-9a-zA-Z_\.]+\@[0-9a-zA-Z_\.\-]+$/i", $address)){
+	if(filter_var($address, FILTER_VALIDATE_EMAIL)){
 		$host = substr($address, strpos($address, '@') + 1);
 
 		//$host=$host . '.';

@@ -138,6 +138,9 @@ class MySqlQueryMemcache extends MySqlQuery
 	 */
 	public function fetchRecord($type=1){
 		if($this->is_result_cached){
+			if(!isset($this->result[$this->last_record_position])){
+				return array();
+			}
 			$record = $this->result[$this->last_record_position];
 			$this->last_record_position++;
 			return $this->convertRowType($record, $type);

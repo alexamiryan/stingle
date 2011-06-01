@@ -402,7 +402,7 @@ class Yubikey{
 							
 							$checksignature = base64_encode(hash_hmac('sha1', utf8_encode($check), $this->_key, true));
 							
-							if($response[h] == $checksignature){
+							if($response['h'] == $checksignature){
 								if($status == 'REPLAYED_OTP'){
 									if(!$wait_for_all){
 										$this->_response = $str;

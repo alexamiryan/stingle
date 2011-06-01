@@ -373,7 +373,12 @@ class Yubikey{
 								/* = is also used in BASE64 encoding so we only replace the first = by # which is not used in BASE64 */
 								$val = preg_replace('/=/', '#', $val, 1);
 								$row = explode("#", $val);
-								$response[$row[0]] = $row[1];
+								if(isset($row[1])){
+									$response[$row[0]] = $row[1];
+								}
+								else{
+									$response[$row[0]] = null;
+								}
 							}
 							
 							$parameters = array(

@@ -394,7 +394,7 @@ class Yubikey{
 							sort($parameters);
 							$check = Null;
 							foreach($parameters as $param){
-								if($response[$param] != null){
+								if(isset($response[$param]) and $response[$param] != null){
 									if($check) $check = $check . '&';
 									$check = $check . $param . '=' . $response[$param];
 								}

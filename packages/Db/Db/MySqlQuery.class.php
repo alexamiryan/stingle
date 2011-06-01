@@ -105,7 +105,7 @@ class MySqlQuery
 			$this->logger->log($sql_statement);
 		}
 		
-		if( ($this->result = mysql_query($query_str, $this->db_link)) ){
+		if( ($this->result = mysql_query($query_str, $this->db_link)) != false ){
 			$this->last_fetch_type='';
 			$this->last_field_position=0;
 			$this->last_record_position=0;

@@ -155,7 +155,11 @@ class MySqlQueryMemcache extends MySqlQuery
 	 * @return string
 	 */
 	public function fetchField($field_identifier, $is_numeric=0){
-		if($this->is_result_cached and isset($this->result[$this->last_record_position])){
+		if($this->is_result_cached){
+			if(!isset($this->result[$this->last_record_position])){
+				return null;
+			}
+			
 			if($is_numeric){
 				$keys = array_keys($this->result[$this->last_record_position]);
 				$field = $this->result[$this->last_record_position][$keys[$field_identifier]];

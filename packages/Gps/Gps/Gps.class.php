@@ -489,9 +489,9 @@ class Gps extends DbAccessor
 			$sql_query .= " AND `type_id`='$type_id'";
 		}
 		
-		$exact_lat_lon .= " AND `lat` = '".$latitude."' AND `lng` = '".$longitude."'";
+		$exact_lat_lon = " AND `lat` = '".$latitude."' AND `lng` = '".$longitude."'";
 		
-		$this->query->exec($sql_query.$exact_lat_lon, $cacheMinutes);		
+		$this->query->exec($sql_query . $exact_lat_lon, $cacheMinutes);		
 		if($this->query->countRecords()){
 			return $this->query->fetchRecord();
 		}

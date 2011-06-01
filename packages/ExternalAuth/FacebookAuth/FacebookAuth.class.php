@@ -79,7 +79,12 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
         		. "&redirect_uri="  . urlencode($rediectUrl) 
         		. "&client_secret=" . $this->config->appSecret 
         		. "&code=" . $code;
-    	return file_get_contents($tokenUrl);
+        try{
+    		return file_get_contents($tokenUrl);
+        }
+        catch(ErrorException $e){
+        	return false;
+        }
 	}
 	
 	/**
@@ -91,7 +96,12 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	private function getFBUserFromGraph($accessToken){
 		
 		$graphUrl = "https://graph.facebook.com/me?" . $accessToken;
-    	$fbUser = json_decode(file_get_contents($graphUrl));
+		try{
+    		$fbUser = json_decode(file_get_contents($graphUrl));
+	 	}
+        catch(ErrorException $e){
+        	return false;
+        }
     	return $fbUser;
 	}
 	
@@ -263,8 +273,14 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
     		$accessToken = $this->getAccessToken($code);
     	}
     	$extAlbumUrl = "https://graph.facebook.com/me/albums?$accessToken";
- 		$extAlbum = json_decode(file_get_contents($extAlbumUrl));
- 		
+    	
+    	try{
+ 			$extAlbum = json_decode(file_get_contents($extAlbumUrl));
+	 	}
+        catch(ErrorException $e){
+        	return false;
+        }
+        
  		foreach($extAlbum->data as $fbAlbum) {
  			$albumObj = new FacebookPhotoAlbum();
  			$albumObj->id = $fbAlbum->id;
@@ -291,7 +307,12 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
  		foreach ($extAlbum as $albumObj) {
  			if($albumObj->type == 'profile') {
  				$extPhotosUrl = "https://graph.facebook.com/".$albumObj->id."/photos?$accessToken";
- 				$extPhotosObject = json_decode(file_get_contents($extPhotosUrl));
+ 				try{
+ 					$extPhotosObject = json_decode(file_get_contents($extPhotosUrl));
+		 		}
+		        catch(ErrorException $e){
+		        	return false;
+		        }
  				foreach ($extPhotosObject->data as $excObj) {
  					if($excObj->source !== null) {
  						$photoObj = new FacebookPhoto();

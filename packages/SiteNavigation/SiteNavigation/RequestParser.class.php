@@ -26,9 +26,9 @@ class RequestParser
 	
 	public function parse(){
 		$nav = new Nav();
-		$nav->{$this->firstLevelName} = $_GET[$this->firstLevelName];
-		$nav->{$this->secondLevelName} = $_GET[$this->secondLevelName];
-		$nav->{$this->actionName} = $_GET[$this->actionName];
+		if(array_key_exists($this->firstLevelName, $_GET))	$nav->{$this->firstLevelName} = $_GET[$this->firstLevelName];
+		if(array_key_exists($this->secondLevelName, $_GET))	$nav->{$this->secondLevelName} = $_GET[$this->secondLevelName];
+		if(array_key_exists($this->actionName, $_GET))	$nav->{$this->actionName} = $_GET[$this->actionName];
 
 		if(empty($nav->{$this->firstLevelName})){
 			$nav->{$this->firstLevelName} = $this->firstLevelDefaultValue;

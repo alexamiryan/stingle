@@ -53,7 +53,7 @@ abstract class Pager{
 			$this->id = $id;
 		}
 		
-		if(is_numeric($_GET[$this->getUrlParam()]) and $_GET[$this->getUrlParam()] > 0){
+		if(array_key_exists($this->getUrlParam(), $_GET) and is_numeric($_GET[$this->getUrlParam()]) and $_GET[$this->getUrlParam()] > 0){
 			$this->pageNumber = intval($_GET[$this->getUrlParam()]);
 		}
 		

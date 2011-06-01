@@ -40,7 +40,10 @@ class PackageManager {
 		}
 		
 		$backtrace = debug_backtrace();
-		$callingClassName = $backtrace[1]['class'];
+		$callingClassName = null;
+		if(isset($backtrace[1]['class'])){
+			$callingClassName = $backtrace[1]['class'];
+		}
 		$callingFunctionName = $backtrace[1]['function'];
 		$myClassName = get_class($this);
 		
@@ -198,7 +201,7 @@ class PackageManager {
 		
 		$pluginsByPriority = array();
 		foreach($pluginsByPriorityTmp as $plugin => $info){
-			if(!is_array($pluginsByPriority[$info[1]])){
+			if(!array_key_exists($info[1], $pluginsByPriority)){
 				$pluginsByPriority[$info[1]] = array();
 			}
 			array_push($pluginsByPriority[$info[1]], array($info[0], $plugin));

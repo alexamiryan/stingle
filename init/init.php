@@ -20,7 +20,12 @@ require_once(STINGLE_PATH . "functions/func.php");
 
 register_shutdown_function("shutdown");
 set_exception_handler("default_exception_handler");
-set_error_handler('default_error_handler');
+set_error_handler(
+    create_function(
+        '$severity, $message, $file, $line',
+        'throw new ErrorException($message, $severity, $severity, $file, $line);'
+    )
+);
 
 $config = new Config($CONFIG);
 ConfigManager::setGlobalConfig($config);

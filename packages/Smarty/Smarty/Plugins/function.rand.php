@@ -7,6 +7,11 @@
 
 
 function smarty_function_rand($params, &$smarty){
-	return create_random_value($params['length'], $params['type']);
+	$length = null;
+	$type = null;
+	
+	extract($params);
+	
+	return create_random_value($length, $type);
 }
 ?>

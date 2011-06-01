@@ -138,6 +138,7 @@ class LanguageManager extends DbAccessor {
 			$language = $this->language;
 		}
 		
+		$types_query = "";
 		if(is_array($types)){
 			$types_query = " AND lc.`type` IN (" . implode(",", $types) . ")";
 		}

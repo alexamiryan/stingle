@@ -63,10 +63,19 @@ class RewriteURL{
 		}
 
 		foreach($params as $param){ // Parse all other parameters as key:value
-			list($k, $v) = explode(":", $param);
-			if(!empty($k)){ // To work correct on url with "/" in the end and without it.
-				$_GET[$k] = $v;
-				$_REQUEST[$k] = $v;
+			if(empty($param)){
+				continue;
+			}
+			if(!empty($param)){
+				$arr = explode(":", $param);;
+				if(count($arr) == 2){
+					list($k, $v) = $arr; 
+				
+					if(!empty($k)){ // To work correct on url with "/" in the end and without it.
+						$_GET[$k] = $v;
+						$_REQUEST[$k] = $v;
+					}
+				}
 			}
 		}
 	}

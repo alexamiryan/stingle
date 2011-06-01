@@ -18,7 +18,7 @@ class LoaderSmarty extends Loader{
 	}
 	
 	public function hookSmartyDisplay(){
-		$this->smarty->display();
+		$this->smarty->output();
 	}
 	
 	public function hookRegisterSmartyPlugins(Array $params){

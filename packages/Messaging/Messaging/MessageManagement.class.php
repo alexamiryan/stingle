@@ -445,7 +445,8 @@ class MessageManagement extends Filterable
 		else{
 			$with_sender = " and `receiver`<>`sender`";
 		}
-
+		
+		$receivers = array();
 		$this->query->exec("select `receiver` from `" . Tbl::get('TBL_EXTRA') . "` where `message_id`=" . $message_id . $with_sender, $cacheMinutes);
 		while(($receiver = $this->query->fetchField("receiver")) != false){
 			$receivers[] = $receiver;
@@ -474,7 +475,7 @@ class MessageManagement extends Filterable
 		return $this->query->fetchField("Rows");
 	}
 
-/**
+	/**
 	 * Get count of messages
 	 *
 	 * @param MessageFilter $filter

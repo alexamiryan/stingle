@@ -102,7 +102,7 @@ class UserAuthorization extends DbAccessor{
 	public function getUserFromRequest(){
 		$this->usr = new User();
 		
-		if(is_numeric($_SESSION[$this->config->sessionVarName])){
+		if(array_key_exists($this->config->sessionVarName, $_SESSION) and is_numeric($_SESSION[$this->config->sessionVarName])){
 			$this->usr = $this->um->getObjectById($_SESSION[$this->config->sessionVarName]);
 			$this->authorize($this->usr);
 		}

@@ -48,7 +48,7 @@ class HostManager{
 
 	public static function protocol(){
 		$protocol = 'http';
-		if($_SERVER["HTTPS"] == "on"){
+		if(array_key_exists("HTTPS", $_SERVER) and $_SERVER["HTTPS"] == "on"){
 			$protocol .= "s";
 		}
 		$protocol .= "://";

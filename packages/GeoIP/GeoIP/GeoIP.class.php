@@ -40,7 +40,10 @@ class GeoIP extends DbAccessor
 	 */
 	public function getCountryCode($ip = null, $cacheMinutes = null){
 		$location = static::getLocation($ip, $cacheMinutes);
-		return $location->country;
+		if(!empty($location)){
+			return $location->country;
+		}
+		return false;
 	}
 }
 ?>

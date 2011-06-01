@@ -59,7 +59,12 @@ class IpFilter extends DbAccessor {
 	}
 	
 	private function isBlockedByCountry(){
-		$countryCode = Reg::get(ConfigManager::getConfig('GeoIP', 'GeoIP')->Objects->GeoIP)->getLocation()->country;
+		$myLocation = Reg::get(ConfigManager::getConfig('GeoIP', 'GeoIP')->Objects->GeoIP)->getLocation();
+		if(empty($myLocation)){
+			return false;
+		}
+		
+		$countryCode = $myLocation->country;
 		
 		if(empty($countryCode)){
 			return false;

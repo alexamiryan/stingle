@@ -1,5 +1,4 @@
 <?
-
 class SessionLogger extends Logger
 {
 	private $id;
@@ -10,8 +9,10 @@ class SessionLogger extends Logger
 			$id = 0;
 			foreach($_SESSION as $key => $value){
 				preg_match("/".static::$prefix."(\d+)/", $key, $matches);
-				if($matches[0] == $key and $matches[1] >= $id){
-					$id = $matches[1] + 1;
+				if(!empty($matches)){
+					if($matches[0] == $key and $matches[1] >= $id){
+						$id = $matches[1] + 1;
+					}
 				}
 			}
 		}
@@ -23,7 +24,7 @@ class SessionLogger extends Logger
 	}
 	
 	public function log($message){
-		if(!is_array($_SESSION[static::$prefix . $this->id])){
+		if(!isset($_SESSION[static::$prefix . $this->id]) or !is_array($_SESSION[static::$prefix . $this->id])){
 			$_SESSION[static::$prefix . $this->id] = array();
 		}
 		array_push($_SESSION[static::$prefix . $this->id], $message);
@@ -42,5 +43,4 @@ class SessionLogger extends Logger
 		$_SESSION[static::$prefix . $this->id] = array();
 	}
 }
-
 ?>

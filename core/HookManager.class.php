@@ -44,7 +44,10 @@ class HookManager{
 	public static function isHookRegistered($hookName, $method, $object = null){
 		if(isset(static::$hooks[$hookName]) and 
 			!empty(static::$hooks[$hookName]) and
-			static::$hooks[$hookName]["method"] == $method and  
+			array_key_exists($hookName, static::$hooks) and
+			array_key_exists("method", static::$hooks[$hookName]) and
+			static::$hooks[$hookName]["method"] == $method and
+			array_key_exists("object", static::$hooks[$hookName]) and  
 			static::$hooks[$hookName]["object"] == $object){
 				return true;
 		}

@@ -18,6 +18,10 @@ class GeoIPGps
 		
 		$location = $this->geoIP->getLocation($ip);
 		
+		if(empty($location)){
+			return false;
+		}
+		
 		$type_id = $this->gps->getTypeId($type);
 		$myGpses = $this->gps->getNodesByName(mysql_real_escape_string($location->city), $type_id, false, $cacheMinutes);		
 		if(count($myGpses) > 1){

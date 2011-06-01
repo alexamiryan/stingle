@@ -96,8 +96,8 @@ abstract class Filter {
 	}
 	
 	protected function setExtraJoin($tableName, $alias, $joinField, $masterField, $joinType){
-		if(empty($this->extraJoins[$tableName])){
-			if(!is_array($this->extraJoins[$tableName])){
+		if(!isset($this->extraJoins[$tableName]) and empty($this->extraJoins[$tableName])){
+			if(!isset($this->extraJoins[$tableName]) or !is_array($this->extraJoins[$tableName])){
 				$this->extraJoins[$tableName] = array();
 			}
 			array_push($this->extraJoins[$tableName], array(

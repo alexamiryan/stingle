@@ -447,7 +447,7 @@ class SmartyWrapper extends Smarty {
 	 * @param string $tpl
 	 * @return SmartyWrapper
 	 */
-	public function display() {
+	public function output(){
 		// Do not display anything if output is disabled
 		if($this->isOutputDisabled){
 			return;

@@ -175,7 +175,10 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	 * @see ExternalAuth::getExtUser()
 	 */
 	public function getExtUser(){
-		$code = $_GET["code"];
+		$code = null;
+		if(isset($_GET["code"])){
+			$code = $_GET["code"];
+		}
 		if(empty($code)) {
      		$this->redirectToDialog();   
     	}    	

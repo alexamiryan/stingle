@@ -1,7 +1,7 @@
 <?
 class MemcacheWrapper
 {
-	private static $memcache = null;
+	private $memcache = null;
 
 	/**
 	 * Class constructor

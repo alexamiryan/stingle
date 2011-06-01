@@ -323,7 +323,7 @@ class Yubikey{
 			if($timeout) curl_setopt($handle, CURLOPT_TIMEOUT, $timeout);
 			curl_multi_add_handle($mh, $handle);
 			
-			$ch[$handle] = $handle;
+			$ch[intval($handle)] = $handle;
 		}
 		
 		/* Execute and read request. */

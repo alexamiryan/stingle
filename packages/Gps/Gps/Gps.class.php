@@ -313,11 +313,16 @@ class Gps extends DbAccessor
 		
 		$this->query->exec("SELECT gps_id, zip FROM `".Tbl::get('TBL_ZIP_CODES')."`
 							WHERE `country_id`='{$countryNodeId}' AND $whereClause $limitString", $cacheMinutes);
-		$zipNodes = $this->query->fetchRecords();
-		foreach ($zipNodes as $zipNode) {
-			$node = $this->getNode($zipNode["gps_id"]);
-			$zip = array("zip"=>$zipNode["zip"]);
-			$gpsNodes[] = array_merge($node, $zip);
+		if($this->query->countRecords()){
+			$zipNodes = $this->query->fetchRecords();
+			foreach ($zipNodes as $zipNode) {
+				$node = $this->getNode($zipNode["gps_id"]);
+				$zip = array("zip"=>$zipNode["zip"]);
+				$gpsNodes[] = array_merge($node, $zip);
+			}
+		}
+		elseif(strpos($zip,"-") !== false){
+			return $this->getNodesByZip(str_replace("-"," ",$zip), $countryNodeId);
 		}
 		return $gpsNodes;
 	}

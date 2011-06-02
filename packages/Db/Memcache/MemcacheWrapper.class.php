@@ -20,7 +20,7 @@ class MemcacheWrapper
 	}
 
 	/**
-	 * put an object in memcache. if there's already an entry
+	 * Put an object in memcache. if there's already an entry
 	 * with the specified key it will be overwritten
 	 *
 	 * @param string $key
@@ -40,10 +40,10 @@ class MemcacheWrapper
 	}
 
 	/**
-	 * Enter description here...
+	 * get cache item with given key
 	 *
-	 * @param unknown_type $key
-	 * @return unknown
+	 * @param string $key
+	 * @return string|array
 	 */
 	public function get($key) {
 		if(empty($key)){
@@ -64,6 +64,49 @@ class MemcacheWrapper
 	 */
 	public function clearAllItems(){
 		$this->memcache->flush();
+	}
+	
+	/**
+	 * Delete cache item with given key
+	 * @param string $key
+	 */
+	public function delete($key){
+		if(empty($key)){
+			throw new InvalidArgumentException("\$key is empty");
+		}
+		return $this->memcache->delete($key);
+	}
+	
+	/**
+	 * Get array of cache item's keys
+	 * @return array
+	 */
+	public function getKeysList(){
+		$list = array();
+	    $allSlabs = $this->memcache->getExtendedStats('slabs');
+	    $items = $this->memcache->getExtendedStats('items');
+	    foreach($allSlabs as $server => $slabs) {
+    	    foreach($slabs AS $slabId => $slabMeta) {
+    	        $cdump = $this->memcache->getExtendedStats('cachedump',(int)$slabId);
+    	        foreach($cdump AS $server => $entries) {
+    	            if($entries) {
+        	            foreach($entries AS $eName => $eData) {
+        	            	array_push($list, $eName);
+        	                /*$list[$eName] = array(
+        	                     'key' => $eName,
+        	                     'server' => $server,
+        	                     'slabId' => $slabId,
+        	                     'detail' => $eData,
+        	                     'age' => $items[$server]['items'][$slabId]['age'],
+        	                     );*/
+        	            }
+    	            }
+    	        }
+    	    }
+	    }
+	    ksort($list);
+	    
+	    return $list;
 	}
 }
 ?>

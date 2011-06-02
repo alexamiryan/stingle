@@ -3,14 +3,6 @@
  * Class query with memcahce support
  */
 
-/**
- * Obligatory constants
- *
- * define("MEMCACHE_ON", true);
- * define("MEMCACHE_HOST", "127.0.0.1");
- * define("MEMCACHE_PORT", "11211");
- */
-
 class MySqlQueryMemcache extends MySqlQuery
 {
 	private $memcache = null;
@@ -29,6 +21,10 @@ class MySqlQueryMemcache extends MySqlQuery
 		parent::__construct($db, $logger);
 		
 		$this->memcacheConfig = ConfigManager::getConfig("Db", "Memcache")->AuxConfig;
+		
+		if(strpos($this->memcacheConfig->keyPrefix, ":")){
+			throw new RuntimeException("Memcache key prefix can't contain colon \":\"!");
+		}
 		
 		if($this->memcacheConfig->enabled){
 			$this->memcache = new MemcacheWrapper($this->memcacheConfig->host, $this->memcacheConfig->port);
@@ -50,6 +46,19 @@ class MySqlQueryMemcache extends MySqlQuery
 		return 0;
 	}
 	
+	private function getPrefix(){
+		$backtrace = debug_backtrace();
+		
+		$callingClass = "";
+		if(isset($backtrace[2]['class'])){
+			$callingClass = $backtrace[2]['class'];
+		}
+		
+		$globalKeyPrefix = $this->memcacheConfig->keyPrefix; 
+		
+		return $globalKeyPrefix . ":" . $callingClass;
+	}
+	
 	/**
 	 * Execute SQL query
 	 *
@@ -64,8 +73,7 @@ class MySqlQueryMemcache extends MySqlQuery
 
 		$this->is_result_cached = false;
 		if($this->memcache !== null and ($cacheMinutes > 0 or $cacheMinutes == -1) ){
-			
-			$cache = $this->memcache->get(md5($sqlStatement));
+			$cache = $this->memcache->get($this->getPrefix() . ":" . md5($sqlStatement));
 			if(!empty($cache) and $cache["resultset"] !== null and ($cache["expires"] > time() or $cache["expires"] == -1) ){
 				$this->result = $cache["resultset"];
 				$this->is_result_cached = true;
@@ -73,7 +81,6 @@ class MySqlQueryMemcache extends MySqlQuery
 				$this->last_fetch_type='';
 				$this->last_field_position=0;
 				$this->last_record_position=0;
-				
 				return $this;
 			}
 			else{
@@ -90,7 +97,7 @@ class MySqlQueryMemcache extends MySqlQuery
 				}
 				
 				$this->memcache->set(
-					md5($sqlStatement),
+					$this->getPrefix() . ":" . md5($sqlStatement),
 					array( "expires" => $expire_time,	"resultset" => $resultset ),
 					$memcache_expire_time
 				);

@@ -125,10 +125,12 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	 * @return ArrayObject
 	 */
 	private function fillOtherFieldsFromFBUser($fbUser){
-		$othersArray = array(); 
-		foreach ($fbUser as $key => $field) {
-			if($field != null) {
-				$othersArray[$key] = $field;
+		$othersArray = array();
+		if(is_array($fbUser)){
+			foreach ($fbUser as $key => $field) {
+				if($field != null) {
+					$othersArray[$key] = $field;
+				}
 			}
 		}
 		return 	$othersArray;

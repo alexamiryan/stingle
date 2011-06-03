@@ -17,7 +17,6 @@ $defaultConfig = array(
 																			'width' => 400,
 																			'height' => 400
 																		)
-																)),
-						'Objects' => array(	'PhotoCache' => 'photoCache'  )
+																))
 					);
 ?>

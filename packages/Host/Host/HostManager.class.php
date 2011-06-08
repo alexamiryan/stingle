@@ -64,6 +64,11 @@ class HostManager{
 	 */
 	public static function pageURL(){
 		$hostConfig = ConfigManager::getConfig("Host")->AuxConfig;
+
+		if(Cgi::getMode()){
+			return $hostConfig->cgiHost;
+		}
+		
 		if(empty($_SERVER["SERVER_NAME"])){
 			$_SERVER["SERVER_NAME"] = $hostConfig->cgiHost;
 		}

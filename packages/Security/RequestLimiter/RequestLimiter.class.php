@@ -19,21 +19,26 @@ class RequestLimiter extends DbAccessor {
 	 * @throws InvalidArgumentException
 	 */
 	public function isBlacklistedIp($ip = null){
-		if($ip === null){
-			$ip = $_SERVER['REMOTE_ADDR'];
-		}
-		
-		$this->query->exec("SELECT COUNT(*) as `count` 
-								FROM `".Tbl::get("TBL_SECURITY_FLOODER_IPS")."`
-								WHERE `ip`='$ip'");
-		
-		$count = $this->query->fetchField("count");
-		
-		if($count == 0){
-			return false;
+		if(isset($_SERVER['REMOTE_ADDR'])){
+			if($ip === null){
+				$ip = $_SERVER['REMOTE_ADDR'];
+			}
+			
+			$this->query->exec("SELECT COUNT(*) as `count` 
+									FROM `".Tbl::get("TBL_SECURITY_FLOODER_IPS")."`
+									WHERE `ip`='$ip'");
+			
+			$count = $this->query->fetchField("count");
+			
+			if($count == 0){
+				return false;
+			}
+			else{
+				return true;
+			}
 		}
 		else{
-			return true;
+			return false;
 		}
 	}
 	

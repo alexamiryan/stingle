@@ -31,7 +31,7 @@ class SessionLogger extends Logger
 	}
 	
 	public function getLog(){
-		if(is_array($_SESSION[static::$prefix . $this->id])){
+		if(isset($_SESSION[static::$prefix . $this->id]) and is_array($_SESSION[static::$prefix . $this->id])){
 			return $_SESSION[static::$prefix . $this->id];
 		}
 		else{

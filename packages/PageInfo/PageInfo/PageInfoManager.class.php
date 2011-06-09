@@ -7,7 +7,7 @@ class PageInfoManager extends PageInfo
 		$host_id = ($lang === null ? null : $host->id);
 		
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec($this->queryString($lang_id, $host_id, $module, $page));
+		$sql->exec(static::queryString($lang_id, $host_id, $module, $page));
 		$pageInfo = $sql->fetchRecord();
 		return $pageInfo;		
 	}

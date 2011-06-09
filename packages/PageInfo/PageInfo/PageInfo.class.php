@@ -37,35 +37,35 @@ class PageInfo extends DbAccessor
 	}
 	
 	private function getExact($module, $page){
-		$this->query->exec($this->queryString($this->language->id, $this->host->id, $module, $page));
+		$this->query->exec(static::queryString($this->language->id, $this->host->id, $module, $page));
 		$data = $this->query->fetchRecord();
 		return $data;
 	}
 	
 	private function getModuleDefault($module){
-		$this->query->exec($this->queryString($this->language->id, $this->host->id, $module));
+		$this->query->exec(static::queryString($this->language->id, $this->host->id, $module));
 		$data = $this->query->fetchRecord();
 		return $data;
 	}
 	
 	private function getHostLangDefault(){
-		$this->query->exec($this->queryString($this->language->id, $this->host->id));
+		$this->query->exec(static::queryString($this->language->id, $this->host->id));
 		$data = $this->query->fetchRecord();
 		return $data;
 	}
 	
 	private function getLangDefault(){
-		$this->query->exec($this->queryString($this->language->id));
+		$this->query->exec(static::queryString($this->language->id));
 		$data = $this->query->fetchRecord();
 		return $data;
 	}
 	private function getDefault(){
-		$this->query->exec($this->queryString());
+		$this->query->exec(static::queryString());
 		$data = $this->query->fetchRecord();
 		return $data;
 	}
 	
-	protected function queryString($lang_id=null, $host_id=null, $module=null, $page=null){
+	protected static function queryString($lang_id=null, $host_id=null, $module=null, $page=null){
 		$lang_where = "lang_id ". ($lang_id === null ? "IS NULL " : "=".$lang_id);
 		$host_where = "host_id ". ($host_id === null ? "IS NULL " : "=".$host_id);
 		$module_where = "module ". ($module === null ? "IS NULL " : "='".$module."'");

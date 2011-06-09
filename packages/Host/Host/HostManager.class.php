@@ -64,12 +64,17 @@ class HostManager{
 	 */
 	public static function pageURL(){
 		$hostConfig = ConfigManager::getConfig("Host")->AuxConfig;
+
+		if(Cgi::getMode()){
+			return $hostConfig->cgiHost;
+		}
+		
 		if(empty($_SERVER["SERVER_NAME"])){
 			$_SERVER["SERVER_NAME"] = $hostConfig->cgiHost;
 		}
 		
 		$page_url = "";
-		if($_SERVER["SERVER_PORT"] != "80"){
+		if(isset($_SERVER["SERVER_PORT"]) and $_SERVER["SERVER_PORT"] != "80"){
 			$page_url .= $_SERVER["SERVER_NAME"] . ":" . $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
 		}
 		else{

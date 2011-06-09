@@ -12,7 +12,7 @@ class RewriteAliasURL extends RewriteURL{
 	}
 	
 	public function parseAliases(){
-		if($this->_aliasMap !== false){
+		if($this->_aliasMap !== false and isset($_SERVER['REQUEST_URI'])){
 			$uri = rawurldecode($_SERVER['REQUEST_URI']);
 			$uri = $this->ensureSourceLastDelimiter($uri);
 			foreach($this->_aliasMap as $url_alias){
@@ -25,11 +25,13 @@ class RewriteAliasURL extends RewriteURL{
 	}
 	
 	public function callParseCustomAliases(){
-		$uri = rawurldecode($_SERVER['REQUEST_URI']);
-		$uri = $this->ensureSourceLastDelimiter($uri);
-		if(method_exists($this, 'parseCustomAliases')){
-			$uri = $this->parseCustomAliases($uri);
-			$_SERVER['REQUEST_URI'] = $uri;
+		if(isset($_SERVER['REQUEST_URI'])){
+			$uri = rawurldecode($_SERVER['REQUEST_URI']);
+			$uri = $this->ensureSourceLastDelimiter($uri);
+			if(method_exists($this, 'parseCustomAliases')){
+				$uri = $this->parseCustomAliases($uri);
+				$_SERVER['REQUEST_URI'] = $uri;
+			}
 		}
 	}
 	

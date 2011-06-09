@@ -12,6 +12,6 @@ function smarty_function_rand($params, &$smarty){
 	
 	extract($params);
 	
-	return create_random_value($length, $type);
+	return generateRandomString($length, $type);
 }
 ?>

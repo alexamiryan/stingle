@@ -1,7 +1,11 @@
 <?
 class AES256
 {
-	public static function encrypt($string, $key){
+	public static function encrypt($string, $key = null){
+		if($key === null){
+			$key = ConfigManager::getConfig('Crypto','AES256')->AuxConfig->key;
+		}
+		
 		$td = mcrypt_module_open('rijndael-256', '', MCRYPT_MODE_CBC, '');
 
 		// Create the IV and determine the keysize length
@@ -16,7 +20,7 @@ class AES256
 		mcrypt_generic_init($td, $key, $iv);
 		
 		// Encrypt data
-		$encryptedString = base64_encode(mcrypt_generic($td, $string));
+		$encryptedString = bin2hex(mcrypt_generic($td, $string));
 		
 		// Terminate encryption handler
 		mcrypt_generic_deinit($td);
@@ -25,7 +29,11 @@ class AES256
 		return $encryptedString;
 	}
 	
-	public static function decrypt($string, $key){
+	public static function decrypt($string, $key = null){
+		if($key === null){
+			$key = ConfigManager::getConfig('Crypto','AES256')->AuxConfig->key;
+		}
+		
 		$td = mcrypt_module_open('rijndael-256', '', MCRYPT_MODE_CBC, '');
 		
 		// Create the IV and determine the keysize length
@@ -40,7 +48,7 @@ class AES256
 		mcrypt_generic_init($td, $key, $iv);
 		
 		// Decrypt encrypted string
-		$decryptedString = trim(mdecrypt_generic($td, base64_decode($string)));
+		$decryptedString = trim(mdecrypt_generic($td, pack("H*", $string)));
 		
 		// Terminate decryption handle and close module
 		mcrypt_generic_deinit($td);

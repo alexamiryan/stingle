@@ -123,7 +123,7 @@ function draw_combo_box($name, $values, $default = '', $parameters = ''){
  * @param string $type (mixed, chars, digits)
  * @return string
  */
-function create_random_value($length, $type = null){
+function generateRandomString($length, $type = null){
 	if($length === null){
 		$length = 12;
 	}
@@ -136,10 +136,10 @@ function create_random_value($length, $type = null){
 	$rand_value = '';
 	while(strlen($rand_value) < $length){
 		if($type == 'digits'){
-			$char = myrand(0, 9);
+			$char = myRand(0, 9);
 		}
 		else{
-			$char = chr(myrand(0, 255));
+			$char = chr(myRand(0, 255));
 		}
 		if($type == 'mixed'){
 			if(preg_match('/^[a-z0-9]$/i', $char)) $rand_value .= $char;
@@ -155,7 +155,7 @@ function create_random_value($length, $type = null){
 	return $rand_value;
 }
 
-function myrand($min = null, $max = null){
+function myRand($min = null, $max = null){
 	static $seeded;
 
 	if(!isset($seeded)){

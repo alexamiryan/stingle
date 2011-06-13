@@ -664,8 +664,13 @@ class UserManagement extends Filterable{
 		if($this->isUserExists(addslashes($this->getLoginById($user_id))) and count($extra_fields)){
 			$sql_statement = "update `".Tbl::get('TBL_USERS')."` set ";
 			foreach($extra_fields as $key => $value){
-				$sql_statement .= "`$key` = '$value', ";
-			}
+				if($value === null){
+					$sql_statement .= "`$key` = null, ";
+				}
+				else{
+					$sql_statement .= "`$key` = '$value', ";
+				}
+			} 
 			$sql_statement = substr($sql_statement, 0, -2);
 			$sql_statement .= " where `id`='$user_id'";
 			if($this->query->exec($sql_statement)){

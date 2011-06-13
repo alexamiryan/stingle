@@ -306,28 +306,30 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
     	$accessToken = $this->getAccessToken($code);
  		$extAlbum = $this->getAlbums($accessToken);    	
     	$filesArray = array ();
- 		foreach ($extAlbum as $albumObj) {
- 			if($albumObj->type == 'profile') {
- 				$extPhotosUrl = "https://graph.facebook.com/".$albumObj->id."/photos?$accessToken";
- 				try{
- 					$extPhotosObject = json_decode(file_get_contents($extPhotosUrl));
-		 		}
-		        catch(ErrorException $e){
-		        	return false;
-		        }
- 				foreach ($extPhotosObject->data as $excObj) {
- 					if($excObj->source !== null) {
- 						$photoObj = new FacebookPhoto();
- 						$photoObj->id = $excObj->id;
- 						$photoObj->picture = $excObj->picture;
- 						$photoObj->source = $excObj->source;
- 						$photoObj->width = $excObj->width;
- 						$photoObj->height = $excObj->height;
- 						$filesArray[] = $photoObj;
- 					}
- 				}
- 			}
- 		}
+    	if(is_array($extAlbum) and count($extAlbum)){
+	 		foreach ($extAlbum as $albumObj) {
+	 			if($albumObj->type == 'profile') {
+	 				$extPhotosUrl = "https://graph.facebook.com/".$albumObj->id."/photos?$accessToken";
+	 				try{
+	 					$extPhotosObject = json_decode(file_get_contents($extPhotosUrl));
+			 		}
+			        catch(ErrorException $e){
+			        	return false;
+			        }
+	 				foreach ($extPhotosObject->data as $excObj) {
+	 					if($excObj->source !== null) {
+	 						$photoObj = new FacebookPhoto();
+	 						$photoObj->id = $excObj->id;
+	 						$photoObj->picture = $excObj->picture;
+	 						$photoObj->source = $excObj->source;
+	 						$photoObj->width = $excObj->width;
+	 						$photoObj->height = $excObj->height;
+	 						$filesArray[] = $photoObj;
+	 					}
+	 				}
+	 			}
+	 		}
+    	}
  		return $filesArray;
 	}
 	

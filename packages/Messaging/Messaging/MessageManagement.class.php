@@ -124,7 +124,7 @@ class MessageManagement extends Filterable
 
 		array_unshift($receivers, $sender);
 		if(!empty($receivers)){
-			$sql_query = "insert into `" . Tbl::get('TBL_EXTRA') . "` (`message_id`, `receiver`, `sender`";
+			$sql_query = "insert into `" . Tbl::get('TBL_EXTRA') . "` (`message_id`, `receiver`, `sender`, `read`";
 			if($replied != 0){
 				$sql_query .= ", `replied`";
 			}
@@ -135,6 +135,12 @@ class MessageManagement extends Filterable
 					return false;
 				}
 				$sql_query .= "('" . intval($message_id) . "', '" . intval($receiver) . "', '" . intval($sender) . "'";
+				if($receiver == $sender){
+					$sql_query .= ", '1'";
+				}
+				else{
+					$sql_query .= ", '0'";
+				}
 				if($replied != 0){
 					$sql_query .= ", '" . intval($replied) . "'";
 				}

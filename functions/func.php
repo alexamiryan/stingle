@@ -407,6 +407,9 @@ function draw_hiddens_from_get_params($exclude_array = '') {
  * @return string|array
  */
 function getValue($array, $key){
-    return $array[$key];
+	if(isset($array[$key])){
+    	return $array[$key];
+	}
+	return false;
 }
 ?>

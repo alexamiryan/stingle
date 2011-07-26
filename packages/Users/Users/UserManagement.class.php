@@ -150,6 +150,7 @@ class UserManagement extends Filterable{
 	 */
 	public function createPermission($name, $description = ""){
 		if($this->query->exec("insert into `".Tbl::get('TBL_PERMISSIONS')."`(`name`,`description`) values('$name','$description')")){
+			HookManager::callHook("postCreateUserPermission", array("name" => $name, 'description'=>$description));
 			return true;
 		}
 		else{
@@ -165,6 +166,7 @@ class UserManagement extends Filterable{
 	 */
 	public function deletePermission($name){
 		if($this->query->exec("delete from `".Tbl::get('TBL_PERMISSIONS')."` where `name`='$name'")){
+			HookManager::callHook("postDeleteUserPermission", array("name" => $name));
 			return true;
 		}
 		else{
@@ -241,6 +243,7 @@ class UserManagement extends Filterable{
 					}
 				}
 			}
+			HookManager::callHook("postCreateUserGroup", array("name" => $name, 'type'=>$type, 'permissionsList' => $permissions_list, 'description'=>$description));
 			return true;
 		}
 		else{
@@ -256,6 +259,7 @@ class UserManagement extends Filterable{
 	 */
 	public function deleteGroup($name){
 		if($this->query->exec("delete from `".Tbl::get('TBL_GROUPS')."` where `name`='$name'")){
+			HookManager::callHook("postDeleteUserGroup", array("name" => $name));
 			return true;
 		}
 		else{
@@ -583,6 +587,7 @@ class UserManagement extends Filterable{
 	public function deleteUser($user_id){
 		$user_id = intval($user_id);
 		if($this->query->exec("delete from `".Tbl::get('TBL_USERS')."` where `id`='$user_id'")){
+			HookManager::callHook("postDeleteUser", array("userId" => $user_id));
 			return true;
 		}
 		else{
@@ -650,6 +655,7 @@ class UserManagement extends Filterable{
 				$this->query->exec("insert into `".Tbl::get('TBL_USERS_GROUPS')."`(`user_id`,`group_id`) values('$user_id', '$group_id')");
 			}
 		}
+		HookManager::callHook("postUserUpdate", array("userId" => $user_id, 'user'=>$user));
 		return true;
 	}
 
@@ -675,6 +681,7 @@ class UserManagement extends Filterable{
 			$sql_statement = substr($sql_statement, 0, -2);
 			$sql_statement .= " where `id`='$user_id'";
 			if($this->query->exec($sql_statement)){
+				HookManager::callHook("postUserUpdateExtra", array("userId" => $user_id, 'extraFields'=>$extra_fields));
 				return true;
 			}
 		}
@@ -706,6 +713,7 @@ class UserManagement extends Filterable{
 	public function enableUser($user_id){
 		$user_id = intval($user_id);
 		if($this->query->exec("update `".Tbl::get('TBL_USERS')."` set `enable`='1' where `id`='$user_id'")){
+			HookManager::callHook("postEnableUser", array("userId" => $user_id));
 			return true;
 		}
 		else{
@@ -722,6 +730,7 @@ class UserManagement extends Filterable{
 	public function disableUser($user_id){
 		$user_id = intval($user_id);
 		if($this->query->exec("update `".Tbl::get('TBL_USERS')."` set `enable`='0' where `id`='$user_id'")){
+			HookManager::callHook("postDisableUser", array("userId" => $user_id));
 			return true;
 		}
 		else{
@@ -760,6 +769,7 @@ class UserManagement extends Filterable{
 		else{
 			$date = date("Y-m-d", $utime);
 			if($this->query->exec("update `".Tbl::get('TBL_USERS')."` set `creation_date`='$date' where `id`='$user_id'")){
+				HookManager::callHook("postUserSetCreationDate", array("userId" => $user_id, 'date'=>$date));
 				return true;
 			}
 			else{
@@ -781,6 +791,7 @@ class UserManagement extends Filterable{
 			return false;
 		}
 		if($this->query->exec("update `".Tbl::get('TBL_USERS')."` set `login`='$new_login' where `id`='$user_id'")){
+			HookManager::callHook("postUserLoginChange", array("userId" => $user_id, 'login'=>$new_login));
 			return true;
 		}
 		else{
@@ -818,6 +829,7 @@ class UserManagement extends Filterable{
 		}
 
 		if($this->query->exec("update `".Tbl::get('TBL_USERS')."` set `password`='" . md5($password) . "' where `id`='$user_id'")){
+			HookManager::callHook("postUserSetPassword", array("userId" => $user_id, 'password'=>$password));
 			return true;
 		}
 		else{
@@ -1133,6 +1145,7 @@ class UserManagement extends Filterable{
 				$this->query->exec("insert into `".Tbl::get('TBL_USERS_GROUPS')."`(`user_id`,`group_id`) values('$user_id', '$group_id')");
 			}
 		}
+		HookManager::callHook("postUserSetGroups", array("userId" => $user_id, 'groupsList'=>$groups_list, 'primaryGroup'=>$primary_group));
 		return true;
 	}
 
@@ -1152,6 +1165,7 @@ class UserManagement extends Filterable{
 		foreach($perms_ids as $perm_id){
 			$this->query->exec("insert into `".Tbl::get('TBL_USERS_PERMISSIONS')."`(`user_id`,`permission_id`) values('$user_id', '$perm_id')");
 		}
+		HookManager::callHook("postUserSetPermissions", array("userId" => $user_id, 'permissions'=>$permissions_list));
 		return true;
 	}
 

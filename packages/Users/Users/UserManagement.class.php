@@ -567,6 +567,7 @@ class UserManagement extends Filterable{
 						$this->query->exec("insert into `".Tbl::get('TBL_USERS_GROUPS')."` (`user_id`,`group_id`) values($user_id,$group_id)");
 					}
 				}
+				HookManager::callHook("postUserCreation", array("userId" => $user_id, "login"=>$login, 'password'=>$password, 'userObj'=>$user));
 				return $user_id;
 			}
 		}

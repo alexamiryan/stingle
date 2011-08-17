@@ -200,7 +200,7 @@ class LanguageManager extends DbAccessor {
 	 * @return boolean
 	 */
 	public function defineAllConsts($cacheMinutes = null){
-		$constants = $this->getAllConsts(null, $cacheMinutes);
+		$constants = $this->getAllConsts(null, null, $cacheMinutes);
 		if(count($constants)){
 			foreach($constants as $const){
 				if(!defined($const['key'])){

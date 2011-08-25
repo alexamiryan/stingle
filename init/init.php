@@ -9,6 +9,7 @@ require_once(STINGLE_PATH . "core/Loader.class.php");
 require_once(STINGLE_PATH . "core/Model.class.php");
 require_once(STINGLE_PATH . "core/PackageManager.class.php");
 require_once(STINGLE_PATH . "core/Reg.class.php");
+require_once(STINGLE_PATH . "core/SiteMode.class.php");
 
 require_once(STINGLE_PATH . "core/Exceptions/EmptyArgumentException.class.php");
 require_once(STINGLE_PATH . "core/Exceptions/InvalidArrayArgumentException.class.php");
@@ -39,6 +40,7 @@ ob_start();
 
 Cgi::setMode(defined("IS_CGI"));
 Debug::setMode($config->Debug->enabled);
+SiteMode::set($config->SiteMode->mode);
 
 // Register User Hooks
 if(isset($config->Hooks)){

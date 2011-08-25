@@ -412,4 +412,28 @@ function getValue($array, $key){
 	}
 	return false;
 }
+
+/**
+ * Is site now in production mode
+ * 
+ * @return boolean
+ */
+function isInProductionMode(){
+	if (SiteMode::get() == SiteMode::MODE_PRODUCTION){
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Is site now in development mode
+ * 
+ * @return boolean
+ */
+function isInDevelopmentMode(){
+	if (SiteMode::get() == SiteMode::MODE_DEVELOPMENT){
+		return true;
+	}
+	return false;
+}
 ?>

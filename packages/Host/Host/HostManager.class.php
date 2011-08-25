@@ -112,8 +112,8 @@ class HostManager{
 			$_SERVER['HTTP_HOST'] = $hostConfig->cgiHost;
 		}
 		
-		if(Debug::getMode() and static::getDebugHostName() !==false ){
-			$host_name = static::getDebugHostName();
+		if(SiteMode::get()==SiteMode::MODE_DEVELOPMENT and static::getDevHostName() !==false ){
+			$host_name = static::getDevHostName();
 		}
 		else{
 			$host_name = static::noWWW($_SERVER['HTTP_HOST']);
@@ -125,12 +125,12 @@ class HostManager{
 		return static::protocol() . static::getHostName();		
 	}
 	
-	private static function getDebugHostName(){
+	private static function getDevHostName(){
 		if(!empty($_GET["host"])){
-			$_SESSION["debug_host"] = static::noWWW($_GET['host']);
+			$_SESSION["dev_host"] = static::noWWW($_GET['host']);
 		}
-		if(isset($_SESSION["debug_host"]) and !empty($_SESSION["debug_host"])){
-			return $_SESSION["debug_host"];
+		if(isset($_SESSION["dev_host"]) and !empty($_SESSION["dev_host"])){
+			return $_SESSION["dev_host"];
 		}
 		return false;
 	}

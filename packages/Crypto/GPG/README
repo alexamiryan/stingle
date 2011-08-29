@@ -1,0 +1,3 @@
+To install Pear GPG library run:
+
+/usr/local/zend/bin/pear install Crypt_GPG

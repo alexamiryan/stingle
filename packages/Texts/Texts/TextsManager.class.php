@@ -26,7 +26,7 @@ class  TextsManager extends DbAccessor{
 	 * @param string[optional] $lang
 	 * @return string
 	 */
-	public function getTextValue($textName, Host $host=NULL, Language $lang=NULL){
+	public function getTextValue($textName, Host $host=null, Language $lang=null, $cacheMinutes = null){
 		if($this->textNameExists($textName)){
 			if($host === null){
 				$host = $this->host;
@@ -43,7 +43,7 @@ class  TextsManager extends DbAccessor{
 			else{
 				$host_lang_id = HostLanguageManager::getHostLanguageId($host, $lang);
 				if($this->isAliased($text_id, $host_lang_id)){
-					return $this->getAlisedTextVal($text_id,$host_lang_id);
+					return $this->getAlisedTextVal($text_id, $host_lang_id, $cacheMinutes);
 				}
 			}
 			//return $this->getDefaultText($text_id); //Given text default value
@@ -52,7 +52,7 @@ class  TextsManager extends DbAccessor{
 		throw new InvalidArgumentException("No text with name '".$textName."'");
 	}
 
-	public function getDisplayProperty($textName, Host $host=NULL, Language $lang=NULL){
+	public function getDisplayProperty($textName, Host $host=null, Language $lang=null, $cacheMinutes = null){
 		if($this->textNameExists($textName)){
 			if($host === null){
 				$host = $this->host;
@@ -60,9 +60,9 @@ class  TextsManager extends DbAccessor{
 			if($lang === null){
 				$lang = $this->language;
 			}
-			$text_id = Text::getTextId($textName);
+			$text_id = Text::getTextId($textName, $cacheMinutes);
 
-			if($this->getDisplay($text_id,$lang->id, $host->id)==1){
+			if($this->getDisplay($text_id,$lang->id, $host->id, $cacheMinutes) == 1){
 				return "yes";
 			}
 			return "no";
@@ -70,13 +70,13 @@ class  TextsManager extends DbAccessor{
 		throw new InvalidArgumentException("No text with name '".$textName."'");
 	}
 
-	private function getDisplay($text_id, $lang_id, $host_id, $cacheMinutes = 0){
+	private function getDisplay($text_id, $lang_id, $host_id, $cacheMinutes = null){
 		if(!is_numeric($text_id) or !is_numeric($lang_id) or !is_numeric($host_id) ){
 			throw new InvalidIntegerArgumentException("Method arguments must be integer!!!");
 		}
 		$this->query->exec("SELECT `display` FROM ".Tbl::get('TBL_TEXTS_VALUES', 'Text') ." tv
 							LEFT JOIN `".Tbl::get('TBL_HOST_LANGUAGE', 'HostLanguageManager') ."` hl ON hl.`id`=tv.`host_language` 
-							WHERE `text_id`  = $text_id AND hl.`host_id` = $host_id AND hl.`lang_id` = $lang_id",$cacheMinutes);
+							WHERE `text_id`  = $text_id AND hl.`host_id` = $host_id AND hl.`lang_id` = $lang_id", $cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchField("display");
 		}
@@ -92,19 +92,19 @@ class  TextsManager extends DbAccessor{
 		$this->insertTextValue($text_id,$host_language_id,$value);
 	}
 
-	public function setDisplay($text_id, $host_language_id,$display){
+	public function setDisplay($text_id, $host_language_id, $display, $cacheMinutes = null){
 		$this->query->exec("INSERT INTO `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` (`text_id`,`host_language`,`display`)
 							VALUES ('$text_id','$host_language_id','$display') 
-							ON DUPLICATE KEY UPDATE `display`='$display'");
+							ON DUPLICATE KEY UPDATE `display`='$display'", $cacheMinutes);
 	}
 
-	public function isAliased($text_id, $host_lang_id){
+	public function isAliased($text_id, $host_lang_id, $cacheMinutes = null){
 		if(!is_numeric($text_id) or !is_numeric($host_lang_id)){
 			throw new InvalidArgumentException("No numeric arguments given");
 		}
 		$this->query->exec("SELECT tv.id FROM `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` tv
 							RIGHT JOIN ".Tbl::get('TBL_TEXTS_ALIASES', 'Text') ." ta ON tv.id = ta.value_id
-							WHERE ta.host_language = '$host_lang_id' AND tv.text_id = '$text_id'");
+							WHERE ta.host_language = '$host_lang_id' AND tv.text_id = '$text_id'", $cacheMinutes);
 		if($this->query->countRecords() == 1){
 			return true;
 		}
@@ -129,11 +129,11 @@ class  TextsManager extends DbAccessor{
 		}
 	}
 	
-	public function getTextValueId($text_id, $host_language_id){
+	public function getTextValueId($text_id, $host_language_id, $cacheMinutes = null){
 		if(!is_numeric($text_id) or !is_numeric($host_language_id)){
 			throw new InvalidIntegerArgumentException("text id and host_language_id should be an integer. text_id: ". $text_id ." and host_lang_id:".$host_language_id." given.");
 		}
-		$this->query->exec("SELECT id FROM `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` WHERE `text_id` = {$text_id} AND `host_language`={$host_language_id}");
+		$this->query->exec("SELECT id FROM `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` WHERE `text_id` = {$text_id} AND `host_language`={$host_language_id}", $cacheMinutes);
 		return $this->query->fetchField("id");
 	}
 
@@ -163,7 +163,7 @@ class  TextsManager extends DbAccessor{
 	 * @param unknown_type $cacheMinutes
 	 * @return unknown
 	 */
-	public function getHostTextValues($textName, Host $host, $cacheMinutes = 0){
+	public function getHostTextValues($textName, Host $host, $cacheMinutes = null){
 		if($this->textNameExists($textName)){
 			$values = array();
 			
@@ -171,7 +171,7 @@ class  TextsManager extends DbAccessor{
 
 			$this->query->exec("SELECT tv.*, tv.id value_id, hl.lang_id, hl.id unic_id  FROM `".Tbl::get('TBL_HOST_LANGUAGE', 'HostLanguageManager') ."` hl
 							LEFT JOIN `".Tbl::get('TBL_TEXTS_VALUES', 'Text') ."` tv ON (hl.`id`=tv.`host_language` AND tv.text_id=$text_id)
-							WHERE  hl.host_id = ".$host->id,$cacheMinutes);
+							WHERE  hl.host_id = ".$host->id, $cacheMinutes);
 			while (($rec = $this->query->fetchRecord()) != false) {
 				if(empty($rec["value"])){
 					$rec["value"] = static::EMPTY_TEXT_FLAG ;
@@ -185,24 +185,24 @@ class  TextsManager extends DbAccessor{
 		throw new InvalidArgumentException("No text with name '".$textName."'");
 	}
 	
-	private function getAlisedTextVal($text_id, $host_lang_id, $cacheMinutes = 0){
+	private function getAlisedTextVal($text_id, $host_lang_id, $cacheMinutes = null){
 		if(!is_numeric($text_id) or !is_numeric($host_lang_id)){
 			throw new InvalidIntegerArgumentException("Method arguments must be integer!!!");
 		}
 		$this->query->exec("SELECT tv.`value` FROM `".Tbl::get('TBL_TEXTS_ALIASES', 'Text')."` ta
 					LEFT JOIN `".Tbl::get('TBL_TEXTS_VALUES', 'Text')."` tv ON tv.id = ta.value_id 
 					 WHERE ta.`host_language` = $host_lang_id 
-					AND text_id = $text_id");
+					AND text_id = $text_id", $cacheMinutes);
 		return $this->query->fetchField("value");
 	}
 
-	private  function getTextVal($text_id, $lang_id, $host_id, $cacheMinutes = 0){
+	private  function getTextVal($text_id, $lang_id, $host_id, $cacheMinutes = null){
 		if(!is_numeric($text_id) or !is_numeric($lang_id) or !is_numeric($host_id) ){
 			throw new InvalidIntegerArgumentException("Method arguments must be integer!!!");
 		}
 		$this->query->exec("SELECT `value` FROM ".Tbl::get('TBL_TEXTS_VALUES', 'Text') ." tv
 							LEFT JOIN `".Tbl::get('TBL_HOST_LANGUAGE', 'HostLanguageManager') ."` hl ON hl.`id`=tv.`host_language` 
-							WHERE `text_id`  = $text_id AND hl.`host_id` = $host_id AND hl.`lang_id` = $lang_id",$cacheMinutes);
+							WHERE `text_id`  = $text_id AND hl.`host_id` = $host_id AND hl.`lang_id` = $lang_id", $cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchField("value");
 		}
@@ -224,8 +224,8 @@ class  TextsManager extends DbAccessor{
 	}*/
 
 
-	private function textNameExists($textName){
-		if($this->query->exec("SELECT count(*) as `count` FROM `".Tbl::get('TBL_TEXTS', 'Text') ."` WHERE `name`='$textName'")){
+	private function textNameExists($textName, $cacheMinutes = null){
+		if($this->query->exec("SELECT count(*) as `count` FROM `".Tbl::get('TBL_TEXTS', 'Text') ."` WHERE `name`='$textName'", $cacheMinutes)){
 			if($this->query->fetchField("count") == 1){
 				return true;
 			}

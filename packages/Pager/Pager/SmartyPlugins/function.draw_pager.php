@@ -78,7 +78,7 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 		
 		$pagerSnippetFileName = ConfigManager::getConfig("Pager","Pager")->AuxConfig->pagerSnippetFileName;
 		
-		return $smarty->fetch($smarty->getTplPath() .'incs/snippets/'. $pagerSnippetFileName);
+		return $smarty->fetch(Reg::get('smarty')->getFilePathFromTemplate(Reg::get('smarty')->snippetsPath . $pagerSnippetFileName));
 	}
 }
 ?>

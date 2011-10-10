@@ -12,6 +12,6 @@ function smarty_function_snippet($params, &$smarty){
 	foreach ($params as $key=>$value){
 		$smarty->assign($key, $value);
 	}
-	return $smarty->fetch($smarty->getSnippetsPath() . $file);
+	return $smarty->fetch($smarty->getFilePathFromTemplate($smarty->snippetsPath . $file));
 }
 ?>

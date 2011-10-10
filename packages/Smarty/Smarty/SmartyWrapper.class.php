@@ -26,6 +26,13 @@ class SmartyWrapper extends Smarty {
 	private $template;
 	
 	/**
+	 * 
+	 * Template name from which extends current template
+	 * @var string
+	 */
+	private $templateExtends;
+	
+	/**
 	 * The selected page layout. One of located in /templates/layouts folder
 	 */
 	private $layout;
@@ -138,7 +145,19 @@ class SmartyWrapper extends Smarty {
 	 * @var string
 	 */
 	private $defaultRelativeTplPath;
-
+	
+	/**
+	 * 
+	 * Templates config
+	 * @var Config
+	 */
+	private $templatesConfig;
+	
+	public $modulesPath = 'tpl/modules/';
+	public $chunksPath = 'tpl/incs/chunks/';
+	public $snippetsPath = 'tpl/incs/snippets/';
+	
+	
 
 	public function initialize($module, $page, $config){
 		if(empty($module) or empty($page)){
@@ -153,6 +172,8 @@ class SmartyWrapper extends Smarty {
 
 		$this->loadConfig($config);
 
+		$this->registerPlugin('modifier', 'filePath', array(&$this, 'getFilePathFromTemplate'));
+		
 		$this->isInitialized = true;
 	}
 
@@ -170,7 +191,8 @@ class SmartyWrapper extends Smarty {
 		$this->defaultRelativeTplPath = $config->defaultRelativeTplPath;
 		
 		// Set default template
-		$this->setTemplate($config->defaultTemplateName);
+		$this->templatesConfig = $config->templatesConfig;
+		$this->setTemplate($this->templatesConfig->defaultTemplateName);
 		
 		// Set default layout
 		$this->setLayout ( $config->defaultLayout );
@@ -196,9 +218,48 @@ class SmartyWrapper extends Smarty {
 	
 	public function setTemplate($template){
 		if(!is_dir($this->template_dir."templates/".$template)){
-			throw new InvalidArgumentException("Specified templates directory doesn't exist");
+			throw new InvalidArgumentException("Specified templates directory (".$this->template_dir."templates/".$template.") doesn't exist");
 		}
+		
+		if(!isset($this->templatesConfig->templates->$template)){
+			throw new RuntimeException("Given template name $template is unknown");
+		}
+		
+		$this->templateExtends = $this->templatesConfig->templates->$template;
 		$this->template = $template;
+	}
+	
+	/**
+	 * Returns file path from current template 
+	 * otherwise if template is extended from 
+	 * another template return path from parent 
+	 * template.
+	 * If function is used within file_exists pass 
+	 * second parameter true 
+	 * 
+	 * @param string $filename
+	 * @param boolean $withAbsolutePath
+	 * @return string
+	 * @throws RuntimeException
+	 */
+	public function getFilePathFromTemplate($filename, $withAbsolutePath = false){
+		$templatePathPrefix = $this->template_dir . $this->defaultRelativeTemplatesPath;
+		if($withAbsolutePath){
+			$returnTemplatePathPrefix = $this->template_dir . $this->defaultRelativeTemplatesPath;
+		}
+		else{
+			$returnTemplatePathPrefix = $this->defaultRelativeTemplatesPath;
+		}
+
+		if(file_exists($templatePathPrefix . $this->template . '/' . $filename)){
+			return $returnTemplatePathPrefix . $this->template . '/' . $filename;
+		}
+		elseif($this->templateExtends != "" and file_exists($templatePathPrefix .$this->templateExtends . '/' . $filename)){
+			return $returnTemplatePathPrefix .$this->templateExtends . '/' . $filename;
+		}
+		else{
+			return false;
+		}
 	}
 
 	/**
@@ -211,26 +272,25 @@ class SmartyWrapper extends Smarty {
 		if(empty($layout)){
 			throw new InvalidArgumentException("Layout is not specified");
 		}
-		if(file_exists($this->template_dir . $this->getTemplatePath() . 'layouts/' . $layout . '.tpl')){
-			$this->layout = $this->getTemplatePath() . 'layouts/' . $layout . '.tpl';				
+		if(file_exists($this->getFilePathFromTemplate('layouts/' . $layout . '.tpl', true))){
+			$this->layout = $this->getFilePathFromTemplate('layouts/' . $layout . '.tpl');				
 		}
 		elseif(file_exists($this->template_dir . "system/layouts/" . $layout . '.tpl')){
 			$this->layout = "system/layouts/" . $layout . '.tpl';
 		}
 		else{
-			throw new RuntimeException("Layout doesn't exist");
+			throw new RuntimeException("Layout $layout doesn't exist");
 		}
 	}
 
 	private function getCssFilePath($fileName){
 		if(strpos($fileName, "http://") === false){
-			$fileName = $this->template_dir . $this->getTemplatePath() . 'css/' . $fileName;
-			if(!file_exists($fileName)){
-				throw new RuntimeException("CSS file '$fileName' not found.");
+			$resultingFileName = SITE_PATH . $this->getFilePathFromTemplate('css/' . $fileName, true);
+			if($resultingFileName === false){
+				throw new TemplateFileNotFoundException("CSS file '$fileName' not found.");
 			}
-			$fileName = SITE_PATH . $fileName;
 		}
-		return $fileName;
+		return $resultingFileName;
 	}
 	
 	/**
@@ -265,13 +325,12 @@ class SmartyWrapper extends Smarty {
 	
 	private function getJsFilePath($fileName){
 		if(strpos($fileName, "http://") === false){
-			$fileName = $this->template_dir . $this->getTemplatePath() . 'js/' . $fileName;
-			if(!file_exists($fileName)){
-				throw new RuntimeException("JS file '$fileName' not found.");
+			$resultingFileName = SITE_PATH . $this->getFilePathFromTemplate('js/' . $fileName, true);
+			if($resultingFileName === false){
+				throw new TemplateFileNotFoundException("JS file '$fileName' not found.");
 			}
-			$fileName = SITE_PATH . $fileName;
 		}
-		return $fileName;
+		return $resultingFileName;
 	}
 	
 	/**
@@ -378,32 +437,16 @@ class SmartyWrapper extends Smarty {
 		if(empty($pageTplName)){
 			throw new InvalidArgumentException("Page filename is not specified");
 		}
-		if(!file_exists($this->template_dir . $this->getModulesPath() . $this->module . "/" . $pageTplName . ".tpl")){
+		
+		$result = $this->getFilePathFromTemplate($this->modulesPath . $this->module . "/" . $pageTplName . ".tpl");
+		
+		if($result === false){
 			throw new RuntimeException("Specified page is not found in current module");
 		}
+
 		$this->page = $pageTplName;
 	}
 
-	public function getTemplatePath(){
-		return $this->defaultRelativeTemplatesPath . $this->template . '/';
-	}
-	
-	public function getTplPath(){
-		return $this->getTemplatePath() . $this->defaultRelativeTplPath;
-	}
-	
-	public function getModulesPath(){
-		return $this->getTplPath() . 'modules/';
-	}
-	
-	public function getChunksPath(){
-		return $this->getTplPath() . 'incs/chunks/';
-	}
-	
-	public function getSnippetsPath(){
-		return $this->getTplPath() . 'incs/snippets/';
-	}
-	
 	/**
 	 * Set wrapper for non standard pages. Wrapper tpl file
 	 * should be located in module's "wrappers" directory
@@ -414,10 +457,9 @@ class SmartyWrapper extends Smarty {
 			throw new InvalidArgumentException("Wrapper name is not specified");
 		}
 
-		$wrapperPath = $this->template_dir . $this->getModulesPath() . $this->module . '/' . $this->wrappersDir . $wrapperName . ".tpl";
-
-		if(!file_exists($wrapperPath)){
-			throw new RuntimeException("Wrapper($wrapperPath) is not found. All wrappers should be located in module's \"{$this->wrappersDir}\" directory");
+		$wrapperPath = $this->getFilePathFromTemplate($this->modulesPath . $this->module . '/' . $this->wrappersDir . $wrapperName . ".tpl", true);
+		if($wrapperPath === false){
+			throw new TemplateFileNotFoundException("Wrapper($wrapperName) is not found. All wrappers should be located in module's \"{$this->wrappersDir}\" directory");
 		}
 
 		$this->wrapper = $wrapperName;
@@ -454,7 +496,7 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		// Check if page exists and if not show 404 error page
-		if(!file_exists("{$this->template_dir}{$this->getModulesPath()}{$this->module}/{$this->page}.tpl")){
+		if(!file_exists($this->getFilePathFromTemplate("{$this->modulesPath}{$this->module}/{$this->page}.tpl", true))){
 			header("HTTP/1.0 404 Not Found");
 			$this->module = $this->errorsModule;
 			$this->page = $this->error404Page;
@@ -474,18 +516,18 @@ class SmartyWrapper extends Smarty {
 		
 		// Template Paths
 		$this->assign ( '__ViewDirPath', $this->template_dir );
-		$this->assign ( '__TemplatePath', $this->getTemplatePath() );
-		$this->assign ( '__ModulesPath', $this->getModulesPath() );
-		$this->assign ( '__ChunksPath', $this->getChunksPath() );
-		$this->assign ( '__SnippetsPath', $this->getSnippetsPath() );
-		
+//		$this->assign ( '__TemplatePath', $this->getTemplatePath() );
+		$this->assign ( '__ModulesPath', $this->modulesPath );
+		$this->assign ( '__ChunksPath', $this->chunksPath );
+		$this->assign ( '__SnippetsPath', $this->snippetsPath );
+
 		// Check if wrapper is set and if yes include it
 		if(!empty($this->wrapper)){
-			$this->assign ( 'modulePageTpl', $this->getModulesPath() . $this->module . "/" . $this->page . ".tpl" );
-			$this->assign ( '__modulePageTpl', $this->getModulesPath() . $this->module . "/" . $this->wrappersDir . $this->wrapper . ".tpl" );
+			$this->assign ( 'modulePageTpl', $this->getFilePathFromTemplate($this->modulesPath . $this->module . "/" . $this->page . ".tpl" ));
+			$this->assign ( '__modulePageTpl', $this->getFilePathFromTemplate($this->modulesPath . $this->module . "/" . $this->wrappersDir . $this->wrapper . ".tpl" ));
 		}
 		else{
-			$this->assign ( '__modulePageTpl', $this->getModulesPath() . $this->module . "/" . $this->page . ".tpl" );
+			$this->assign ( '__modulePageTpl', $this->getFilePathFromTemplate($this->modulesPath . $this->module . "/" . $this->page . ".tpl" ));
 		}
 		
 		// Finally display

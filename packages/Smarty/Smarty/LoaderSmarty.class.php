@@ -3,6 +3,7 @@ class LoaderSmarty extends Loader{
 	protected function includes(){
 		require_once ('Core/Smarty.class.php');
 		require_once ('SmartyWrapper.class.php');
+		require_once ('Exceptions/TemplateFileNotFoundException.class.php');
 	}
 	
 	protected function loadSmarty(){

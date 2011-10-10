@@ -1,0 +1,5 @@
+<?
+class TemplateFileNotFoundException extends RuntimeException{
+	
+}
+?>

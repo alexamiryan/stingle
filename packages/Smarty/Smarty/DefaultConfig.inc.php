@@ -2,7 +2,6 @@
 $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_compile/",
 												'cacheDir' => "cache/templates_cache/",
 												'templateDir' => "view/",
-												'defaultTemplateName' => "default",
 												'defaultRelativeTemplatesPath' => "templates/",
 												'defaultRelativeTplPath' => "tpl/",
 												'defaultLayout' => "clean",
@@ -11,7 +10,14 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 												'errorsModule' => "error",
 												'errorPage' => "error",
 												'error404Page' => "404",
-												'exceptionPage' => "exception"),
+												'exceptionPage' => "exception",
+
+												'templatesConfig' => array(
+																			'defaultTemplateName' => "default",
+																			// TemplateName => Extends
+																			'templates' => array(	'default'  => '' )
+																		)
+												),
 
 						'Objects' => array(	'Smarty' => 'smarty'  ),
 						'Hooks' => array(  	'AfterRequestParser' => 'SmartyInit', 

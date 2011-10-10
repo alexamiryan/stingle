@@ -284,7 +284,8 @@ class SmartyWrapper extends Smarty {
 	}
 
 	private function getCssFilePath($fileName){
-		if(strpos($fileName, "http://") === false){
+		$resultingFileName = $fileName;
+		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
 			$resultingFileName = SITE_PATH . $this->getFilePathFromTemplate('css/' . $fileName, true);
 			if($resultingFileName === false){
 				throw new TemplateFileNotFoundException("CSS file '$fileName' not found.");
@@ -324,7 +325,8 @@ class SmartyWrapper extends Smarty {
 	}
 	
 	private function getJsFilePath($fileName){
-		if(strpos($fileName, "http://") === false){
+		$resultingFileName = $fileName;
+		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
 			$resultingFileName = SITE_PATH . $this->getFilePathFromTemplate('js/' . $fileName, true);
 			if($resultingFileName === false){
 				throw new TemplateFileNotFoundException("JS file '$fileName' not found.");

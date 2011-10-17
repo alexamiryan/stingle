@@ -159,6 +159,13 @@ class SmartyWrapper extends Smarty {
 	
 	
 
+	public function isInitialized(){
+		if($this->isInitialized){
+			return true;
+		}
+		return false;
+	}
+	
 	public function initialize($module, $page, $config){
 		if(empty($module) or empty($page)){
 			throw new InvalidArgumentException("One or both of the arguments are empty");

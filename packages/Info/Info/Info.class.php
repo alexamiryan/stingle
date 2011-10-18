@@ -2,26 +2,27 @@
 class Info
 {
 	private $elements = array();
-	private $sess_ref;
+	private $sessRef;
 
 	/**
-	 * Information transportation class
-	 *
-	 * @param string $session_variable (e.g. $_SESSION['error'])
+	 * @param string $sessionVariable (e.g. $_SESSION['error'])
 	 */
-	public function __construct(&$session_variable){
-		$this->sess_ref=&$session_variable;
-		if(!empty($session_variable) and is_array($session_variable)){
-			$this->elements=$session_variable;
+	public function __construct(&$sessionVariable){
+		$this->sessRef=&$sessionVariable;
+		if(!empty($sessionVariable) and is_array($sessionVariable)){
+			$this->elements=$sessionVariable;
 		}
 	}
 	
+	/**
+	 * Destructor
+	 */
 	public function __destruct(){
 		$this->updateSessionObj();
 	}
 
 	/**
-	 * Get count of information units
+	 * Get count of elements
 	 *
 	 * @return int
 	 */
@@ -30,35 +31,23 @@ class Info
 	}
 
 	/**
-	 * Add new information unit with replation
-	 * NOTE: Replace works only with shiftLang()
+	 * Add new element
 	 *
 	 * @param string $text
-	 * @param string $replace1
-	 * @param string $replace2
-	 * ..............
-	 * ..............
 	 */
 	public function add($text){
-		$replace=array();
-		$args_num = func_num_args();
-		$args = func_get_args();
-		if($args_num>1){
-			for($i=1;$i<$args_num;$i++){
-				array_push($replace, $args[$i]);
-			}
-		}
-		array_push($this->elements, array($text, $replace));
+		array_push($this->elements, $text);
 		$this->updateSessionObj();
 	}
 
 	/**
-	 * Shift one information unit
+	 * Shift one element
 	 *
 	 * @return string
 	 */
 	public function shift(){
-		if($this->getCount()>0 and ($text=array_shift($this->elements))){
+		$text = array_shift($this->elements);
+		if($text != null){
 			$this->updateSessionObj();
 			return $text;
 		}
@@ -68,37 +57,15 @@ class Info
 	/**
 	 * Clear queue
 	 *
-	 * @return none
 	 */
 	public function clear(){
 		$this->elements=array();
 		$this->updateSessionObj();
-		return true;
 	}
 
 	/**
-	 * Shift one information unit and eval it with constant
-	 *
-	 * @return string
+	 * Returns true if elements queue is empty
 	 */
-	public function shiftLang(){
-		if($this->getCount()>0){
-			$sh=$this->shift();
-			$value = @constant($sh[0]);
-			if(count($sh[1])){
-				for ($i=0;$i<count($sh[1]);$i++){
-					$sh[1][$i]="'" . str_replace("'", "\\'", $sh[1][$i]) . "'";
-				}
-				$args=implode(", ", $sh[1]);
-				eval('$value = sprintf($value,'.$args.');');
-			}
-			if(!empty($value)){
-				return nl2br($value);
-			}
-		}
-		return false;
-	}
-
 	public function isEmptyQueue(){
 		if(count($this->elements)==0){
 			return true;
@@ -107,21 +74,14 @@ class Info
 	}
 
 	/**
-	 * Returns an array with all information units
+	 * Returns an array with all elements
 	 *
 	 * @return array
 	 */
-	public function getAll($is_lang=true){
-		$ret_array=array();
-		foreach ($this->elements as $el){
-			if($is_lang){
-				$ret_array[]=$this->shiftLang();
-			}
-			else{
-				$ret_array[]=$this->shift();
-			}
-		}
-		return $ret_array;
+	public function getAll(){
+		$elementsToReturn = $this->elements;
+		$this->emptyQueue();
+		return $elementsToReturn;
 	}
 
 	/**
@@ -133,8 +93,11 @@ class Info
 		$this->elements=array();
 	}
 
+	/**
+	 * Update session variable
+	 */
 	private function updateSessionObj(){
-		$this->sess_ref=$this->elements;
+		$this->sessRef = $this->elements;
 	}
 }
 ?>

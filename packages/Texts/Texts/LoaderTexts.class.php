@@ -2,11 +2,12 @@
 class LoaderTexts extends Loader{
 	protected function includes(){
 		require_once ('Text.class.php');
+		require_once ('TextsGroup.class.php');
 		require_once ('TextsManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
-		Tbl::registerTableNames('Text');
+		Tbl::registerTableNames('TextsManager');
 	}
 	
 	protected function loadTextsManager(){

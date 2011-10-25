@@ -144,8 +144,8 @@ class HostLanguageManager extends LanguageManager {
 		throw new RuntimeException("No record with host_id ".$hostId." and lang_id ".$languageId." in ".Tbl::get('TBL_HOST_LANGUAGE'));
 	}
 	
-	public static function getHostLanguageId(Host $host, Language $language){
-		return static::_getHostLanguageId($host->id,$language->id);
+	public static function getHostLanguageId(Host $host, Language $language, $cacheMinutes = null){
+		return static::_getHostLanguageId($host->id,$language->id, $cacheMinutes);
 	}
 	/**
 	 * Get all possible pairs of Host Language

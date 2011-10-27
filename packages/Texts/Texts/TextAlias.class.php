@@ -1,12 +1,10 @@
 <?
-class TextValue
+class TextAlias
 {
 	public $id;
-	public $text;
-	public $value;
+	public $textValue;
 	public $language;
 	public $host;
 	public $hostLanguageId;
-	public $display = 1;
 }
 ?>

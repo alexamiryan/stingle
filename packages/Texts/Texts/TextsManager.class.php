@@ -27,6 +27,17 @@ class TextsManager extends DbAccessor{
 		return false;
 	}
 	
+	public function getTextsList($cacheMinutes = null){
+		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_TEXTS') . "`", $cacheMinutes);
+		
+		$texts = array();
+		foreach($this->query->fetchRecords() as $data){
+			array_push($texts, $this->getTextObjectFromData($data));
+		}
+		
+		return $texts;
+	}
+	
 	public function getTextById($textId, $cacheMinutes = null){
 		if(empty($textId)){
 			throw new InvalidArgumentException("\$textId have to be non empty");
@@ -115,6 +126,8 @@ class TextsManager extends DbAccessor{
 		$text->group = Reg::get(ConfigManager::getConfig("Texts")->Objects->TextsGroupManager)->getGroupById($data['group_id'], $cacheMinutes);
 		$text->name = $data['name'];
 		$text->description = $data['description'];
+		
+		return $text;
 	}
 }
 ?>

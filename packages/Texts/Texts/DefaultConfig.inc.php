@@ -1,8 +1,10 @@
 <?
 $defaultConfig = array(	
-						'Objects' => array(	'TextsManager' => 'textMgr',
-											'TextsValuesManager' => 'textValMgr',
-											'TextsGroupManager' => 'textGrpMgr'
+						'Objects' => array(	
+											'TextsGroupManager' => 'textsGrpMgr',
+											'TextsManager' => 'textsMgr',
+											'TextsValuesManager' => 'textsValMgr',
+											'TextsAliasManager' => 'textsAliasMgr'
 											),
 						'Memcache' => array(  'TextManager' => -1, 'Text' => -1  )
 					);

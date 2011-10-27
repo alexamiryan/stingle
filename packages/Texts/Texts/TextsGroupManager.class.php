@@ -1,5 +1,5 @@
 <?
-class TextsManager extends DbAccessor{
+class TextsGroupManager extends DbAccessor{
 	
 	const TBL_TEXTS_GROUPS = "texts_groups";
 	
@@ -43,8 +43,7 @@ class TextsManager extends DbAccessor{
 	}
 	
 	public function getGroupsList($cacheMinutes = null){
-		$this->query->exec("SELECT `name`
-								FROM `".Tbl::get('TBL_TEXTS_GROUPS') . "`", $cacheMinutes);
+		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_TEXTS_GROUPS') . "`", $cacheMinutes);
 		
 		$groups = array();
 		foreach($this->query->fetchRecords() as $data){

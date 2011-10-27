@@ -212,22 +212,9 @@ class TextsValuesManager extends Filterable{
 		$textValue->language = $hostLanguagePair['language'];
 		$textValue->host = $hostLanguagePair['host'];
 		$textValue->display = $data['display'];
+		$textValue->hostLanguageId = $data['host_language'];
 		
 		return $textValue;
-	}
-	
-	protected function getTextAliasObjectFromData($data, $cacheMinutes = null){
-		$textAlias = new TextAlias();
-		$hostLanguagePair = HostLanguageManager::getHostLanguagePair($data['host_language'], $cacheMinutes);
-		
-		$textAlias->id = $data['id'];
-		$textAlias->textValue = $this->getTextValueById($data['value_id'], $cacheMinutes);
-		$textAlias->value = $data['value'];
-		$textAlias->language = $hostLanguagePair['language'];
-		$textAlias->host = $hostLanguagePair['host'];
-		$textAlias->hostLanguageId = $data['host_language'];
-		
-		return $textAlias;
 	}
 }
 ?>

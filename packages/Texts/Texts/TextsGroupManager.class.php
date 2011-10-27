@@ -31,13 +31,13 @@ class TextsGroupManager extends DbAccessor{
 			throw new InvalidArgumentException("\$groupId have to be integer");
 		}
 		
-		if($this->query->countRecords() == 0){
-			throw new RuntimeException("There is no texts group with id $groupId");
-		}
-		
 		$this->query->exec("SELECT *
 								FROM `".Tbl::get('TBL_TEXTS_GROUPS') ."`
 								WHERE 	`id`  = '$groupId'", $cacheMinutes);
+		
+		if($this->query->countRecords() == 0){
+			throw new RuntimeException("There is no texts group with id $groupId");
+		}
 		
 		return $this->getGroupObjectFromData($this->query->fetchRecord());
 	}

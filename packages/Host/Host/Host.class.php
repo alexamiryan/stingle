@@ -2,9 +2,9 @@
 class Host{
 
 	public $id;
-	public $domain;
-	public $extension;
 	public $host;
+	public $extension;
+	public $subdomain;
 	public $wildcardOf = null;
 
 	const TBL_HOSTS = "hosts";
@@ -33,9 +33,9 @@ class Host{
 	 */
 	public static function setData($data, Host $host){
 		$host->id = $data["id"];
-		$host->domain = $data["domain"];
-		$host->extension = $data["extension"];
 		$host->host = $data["host"];
+		$host->extension = $data["extension"];
+		$host->subdomain = $data["subdomain"];
 		if(isset($data['wildcardOf'])){
 			$host->wildcardOf = $data['wildcardOf'];
 		}

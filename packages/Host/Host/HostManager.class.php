@@ -23,7 +23,6 @@ class HostManager{
 				$data['wildcardOf'] = $parentHostName;
 				$host = new Host();
 				Host::setData($data, $host);
-				$host->domain = str_replace(".".$host->extension,"",$host->host);
 				return $host;
 			}
 			throw new RuntimeException("There is no such host (".$originalHostName.")");

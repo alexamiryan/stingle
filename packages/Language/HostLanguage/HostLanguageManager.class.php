@@ -66,7 +66,7 @@ class HostLanguageManager extends LanguageManager {
 			Language::setData($lang_data,$l);
 			return $l;
 		}
-		throw new RuntimeException("Default language not defined for '". $this->host->domain.".".$this->host->extension."'");
+		throw new RuntimeException("Default language not defined for '". $this->host->host ."'");
 	}
 	
 	public function Languages(){

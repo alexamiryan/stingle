@@ -4,7 +4,8 @@ class Host{
 	public $id;
 	public $host;
 	public $extension;
-	public $subdomain;
+	public $subdomain = null;
+	public $baseDomain = null;
 	public $wildcardOf = null;
 
 	const TBL_HOSTS = "hosts";
@@ -35,7 +36,12 @@ class Host{
 		$host->id = $data["id"];
 		$host->host = $data["host"];
 		$host->extension = $data["extension"];
-		$host->subdomain = $data["subdomain"];
+		if(!empty($data["subdomain"])){
+			$host->subdomain = $data["subdomain"];
+			
+			$baseDomainPosition = strpos($data["host"], $data["subdomain"]) + strlen($data["subdomain"]);
+			$host->baseDomain = substr($data["host"], $baseDomainPosition+1);
+		}
 		if(isset($data['wildcardOf'])){
 			$host->wildcardOf = $data['wildcardOf'];
 		}

@@ -3,7 +3,6 @@ class Host{
 
 	public $id;
 	public $host;
-	public $extension;
 	public $subdomain = null;
 	public $baseDomain = null;
 	public $wildcardOf = null;
@@ -35,7 +34,6 @@ class Host{
 	public static function setData($data, Host $host){
 		$host->id = $data["id"];
 		$host->host = $data["host"];
-		$host->extension = $data["extension"];
 		if(!empty($data["subdomain"])){
 			$host->subdomain = $data["subdomain"];
 			

@@ -22,8 +22,8 @@ class RewriteAliasMap extends DbAccessor {
 	public function __construct(Host $host, $dbInstanceKey = null){
 		parent::__construct($dbInstanceKey);
 
-		if(empty($host)){
-			throw new InvalidArgumentException("\$host_ext have to be non empty string");
+		if(empty($host->host)){
+			throw new InvalidArgumentException("\$host have to be non empty Host object");
 		}
 
 		$this->host = $host;

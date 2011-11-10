@@ -317,7 +317,7 @@ function smart_cut($string, $char_limit, $trailing_chars = '...'){
 	if(empty($string) or $char_limit < 1){
 		return '';
 	}
-	$arr = split(' ', $string);
+	$arr = explode(' ', $string);
 	$ret_str = '';
 	$lend = 0;
 	foreach($arr as $word){

@@ -12,7 +12,7 @@ class HostLanguageManager extends LanguageManager {
 	public function __construct(Host $host, $dbInstanceKey = null){
 		$this->host = $host;
 		parent::__construct(null, $dbInstanceKey);
-		$this->hostLangs = $this->getHostLanguages();
+		$this->hostLangs = static::getHostLanguages($this->host);
 		$this->setCurrentHostLangId();
 	}
 	
@@ -80,18 +80,36 @@ class HostLanguageManager extends LanguageManager {
 	 * @param Host $host
 	 * @return array set of Language objects
 	 */
-	protected function getHostLanguages($cacheMinutes = null){
+	public static function getHostLanguages(Host $host, $cacheMinutes = null){
+		$sql = MySqlDbManager::getQueryObject();
 		$languages = array();
-		$this->query->exec("SELECT l.* FROM `".Tbl::get('TBL_HOST_LANGUAGE')."` hl
+		$sql->exec("SELECT l.* FROM `".Tbl::get('TBL_HOST_LANGUAGE')."` hl
 					LEFT JOIN `".Tbl::get("TBL_LANGUAGES", "Language") ."` l ON hl.lang_id=l.id
-					WHERE hl.host_id=".$this->host->id."", $cacheMinutes);
-		$langs_data = $this->query->fetchRecords();
+					WHERE hl.host_id=".$host->id."", $cacheMinutes);
+		$langs_data = $sql->fetchRecords();
 		foreach ($langs_data as $lang_data){
 			$lang = new Language();
 			Language::setData($lang_data, $lang);
 			$languages[]=$lang;
 		}
 		return $languages;
+	}
+	
+	/**
+	 * Get default language for given host
+	 *
+	 * @param Host $host
+	 * @return Language
+	 */
+	public static function getHostDefaultLanguage(Host $host, $cacheMinutes = null){
+		$sql = MySqlDbManager::getQueryObject();
+		$sql->exec("SELECT l.* FROM `".Tbl::get('TBL_HOST_LANGUAGE')."` hl
+					LEFT JOIN `".Tbl::get("TBL_LANGUAGES", "Language") ."` l ON hl.lang_id=l.id
+					WHERE hl.host_id='{$host->id}' and hl.default=1", $cacheMinutes);
+		$data = $sql->fetchRecord();
+		$lang = new Language();
+		Language::setData($data, $lang);
+		return $lang;
 	}
 	
 	/**

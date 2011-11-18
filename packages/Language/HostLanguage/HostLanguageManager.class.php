@@ -106,10 +106,13 @@ class HostLanguageManager extends LanguageManager {
 		$sql->exec("SELECT l.* FROM `".Tbl::get('TBL_HOST_LANGUAGE')."` hl
 					LEFT JOIN `".Tbl::get("TBL_LANGUAGES", "Language") ."` l ON hl.lang_id=l.id
 					WHERE hl.host_id='{$host->id}' and hl.default=1", $cacheMinutes);
-		$data = $sql->fetchRecord();
-		$lang = new Language();
-		Language::setData($data, $lang);
-		return $lang;
+		if($sql->countRecords()){
+			$data = $sql->fetchRecord();
+			$lang = new Language();
+			Language::setData($data, $lang);
+			return $lang;
+		}
+		return false;
 	}
 	
 	/**

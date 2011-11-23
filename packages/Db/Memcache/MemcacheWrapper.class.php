@@ -92,13 +92,6 @@ class MemcacheWrapper
     	            if($entries) {
         	            foreach($entries AS $eName => $eData) {
         	            	array_push($list, $eName);
-        	                /*$list[$eName] = array(
-        	                     'key' => $eName,
-        	                     'server' => $server,
-        	                     'slabId' => $slabId,
-        	                     'detail' => $eData,
-        	                     'age' => $items[$server]['items'][$slabId]['age'],
-        	                     );*/
         	            }
     	            }
     	        }

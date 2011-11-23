@@ -74,7 +74,7 @@ class MemcacheWrapper
 		if(empty($key)){
 			throw new InvalidArgumentException("\$key is empty");
 		}
-		return $this->memcache->delete($key, 0);
+		return $this->memcache->delete($key);
 	}
 	
 	/**
@@ -87,7 +87,10 @@ class MemcacheWrapper
 	    $items = $this->memcache->getExtendedStats('items');
 	    foreach($allSlabs as $server => $slabs) {
     	    foreach($slabs AS $slabId => $slabMeta) {
-    	        $cdump = $this->memcache->getExtendedStats('cachedump',(int)$slabId);
+    	    	if (!is_numeric($slabId)){
+					continue;
+				}
+				$cdump = $this->memcache->getExtendedStats('cachedump',(int)$slabId, 1000000);
     	        foreach($cdump AS $server => $entries) {
     	            if($entries) {
         	            foreach($entries AS $eName => $eData) {

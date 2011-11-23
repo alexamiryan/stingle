@@ -74,7 +74,7 @@ class MemcacheWrapper
 		if(empty($key)){
 			throw new InvalidArgumentException("\$key is empty");
 		}
-		return $this->memcache->delete($key);
+		return $this->memcache->delete($key, 0);
 	}
 	
 	/**

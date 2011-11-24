@@ -2,7 +2,7 @@
 
 abstract class Logger {
 	
-	abstract function log($message);
+	abstract function log($name, $value);
 }
 
 ?>

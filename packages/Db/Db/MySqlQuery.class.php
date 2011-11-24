@@ -21,6 +21,8 @@ class MySqlQuery
 
 	protected $logger;
 	protected $log = false;
+	
+	const LOGGER_NAME = 'MysqlQuery';
 
 	/**
 	 * Class constructor
@@ -102,7 +104,7 @@ class MySqlQuery
 		}
 
 		if($this->log){
-			$this->logger->log($sql_statement);
+			$this->logger->log(static::LOGGER_NAME, $sql_statement);
 		}
 		
 		if( ($this->result = mysql_query($query_str, $this->db_link)) != false ){

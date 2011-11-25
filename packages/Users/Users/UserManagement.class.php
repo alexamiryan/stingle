@@ -681,7 +681,8 @@ class UserManagement extends Filterable{
 			$sql_statement = substr($sql_statement, 0, -2);
 			$sql_statement .= " where `id`='$user_id'";
 			if($this->query->exec($sql_statement)){
-				HookManager::callHook("postUserUpdateExtra", array("userId" => $user_id, 'extraFields'=>$extra_fields));
+				$hookArgs =  array("userId" => $user_id, 'extraFields'=>$extra_fields);
+				HookManager::callHook("postUserUpdateExtra", $hookArgs);
 				return true;
 			}
 		}

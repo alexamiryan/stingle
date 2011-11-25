@@ -4,6 +4,7 @@ require_once(STINGLE_PATH . "core/Config.class.php");
 require_once(STINGLE_PATH . "core/ConfigManager.class.php");
 require_once(STINGLE_PATH . "core/Debug.class.php");
 require_once(STINGLE_PATH . "core/Dependency.class.php");
+require_once(STINGLE_PATH . "core/Hook.class.php");
 require_once(STINGLE_PATH . "core/HookManager.class.php");
 require_once(STINGLE_PATH . "core/Loader.class.php");
 require_once(STINGLE_PATH . "core/Model.class.php");
@@ -36,7 +37,7 @@ error_reporting($config->site->error_reporting);
 session_name($config->site->site_id);
 
 session_start();
-ob_start();
+ob_start('stingleOutputHandler');
 
 Cgi::setMode(defined("IS_CGI"));
 Debug::setMode($config->Debug->enabled);
@@ -47,11 +48,11 @@ if(isset($config->Hooks)){
 	foreach(get_object_vars($config->Hooks) as $hookName => $funcName){
 		if(is_object($funcName)){
 			foreach (get_object_vars($funcName) as $regFuncName){
-				HookManager::registerHook($hookName, $regFuncName);
+				HookManager::registerHook(new Hook($hookName, $regFuncName));
 			}
 		}
 		else{
-			HookManager::registerHook($hookName, $funcName);
+			HookManager::registerHook(new Hook($hookName, $funcName));
 		}
 	}
 }

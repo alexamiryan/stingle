@@ -9,7 +9,7 @@ class LoaderDBLogger extends Loader{
 	}
 	
 	public function hookLogRequest(){
-		if($config->AuxConfig->requestLogEnabled){
+		if($this->config->AuxConfig->requestLogEnabled){
 			DBLogger::logRequest();
 		}
 	}

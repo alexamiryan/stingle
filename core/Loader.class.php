@@ -29,19 +29,18 @@ abstract class Loader {
 	}
 	
 	final public function load($overrideObjects = false){
-		HookManager::callHook("BeforePluginInit", array(	'packageName' => $this->packageName, 
-															'pluginName' => $this->pluginName, 
-															'pluginConfig' => $this->config
-														));
+		$hookArgs = array(	'packageName' => $this->packageName, 
+							'pluginName' => $this->pluginName, 
+							'pluginConfig' => $this->config
+						);
+		
+		HookManager::callHook("BeforePluginInit", $hookArgs);
 		$this->includes();
 		$this->customInitBeforeObjects();
 		$this->loadObjects($overrideObjects);
 		$this->customInitAfterObjects();
 		$this->registerHooks();
-		HookManager::callHook("AfterPluginInit", array(		'packageName' => $this->packageName, 
-															'pluginName' => $this->pluginName, 
-															'pluginConfig' => $this->config
-														));
+		HookManager::callHook("AfterPluginInit", $hookArgs);
 	}
 	
 	protected function includes(){
@@ -114,11 +113,14 @@ abstract class Loader {
 			foreach (get_object_vars($this->config->Hooks) as $hookName=>$hookMethod){
 				if($this->packageManager->isHookRegistrationIsAllowed($hookMethod, $this->packageName, $this->pluginName)){
 					$hookMethodName = "hook$hookMethod";
-					if(HookManager::isHookRegistered($hookName, $hookMethodName, $this)){
+					
+					$hook = new Hook($hookName, $hookMethodName, $this);
+					
+					if(HookManager::isHookRegistered($hook)){
 						throw new RuntimeException("Hook $hookMethod is already registered.");
 					}
 					if(method_exists($this, $hookMethodName)){
-						HookManager::registerHook($hookName, $hookMethodName, $this);
+						HookManager::registerHook($hook);
 					}
 					else{
 						throw new RuntimeException("Hook method of plugin {$this->pluginName} in package {$this->packageName} for hook $hookName -> $hookMethodName doesn't exists!");

@@ -2,54 +2,99 @@
 class HookManager{
 	private static $hooks = array();
 	
-	public static function registerHook($hookName, $method, $object = null){
-		if(!isset(static::$hooks[$hookName])){
-			static::$hooks[$hookName] = array();
+	/**
+	 * Register new hook.
+	 * 
+	 * @param Hook $hook
+	 */
+	public static function registerHook(Hook $hook){
+		if(!isset(static::$hooks[$hook->getName()])){
+			static::$hooks[$hook->getName()] = array();
 		}
-		array_push(static::$hooks[$hookName], array("method" => $method, "object" => $object));
+		
+		array_push(static::$hooks[$hook->getName()], $hook);
 	}
 	
+	/**
+	 * Remove hook from registered hooks list
+	 * @param string $hookName
+	 */
 	public static function unRegisterHook($hookName){
 		if(isset(static::$hooks[$hookName])){
 			unset(static::$hooks[$hookName]);
 		}
 	}
 	
-	public static function callHook($hookName, Array $arguments = null){
+	/**
+	 * Call registered hook. More than one hook could be registered on one hook name. 
+	 * If hook(s) return something then you will get array with hooks with new 'return' 
+	 * key of returned value.
+	 * 
+	 * @param string $hookName
+	 * @param array $arguments
+	 */
+	public static function callHook($hookName, Array &$arguments = null){
 		if(static::isAnyHooksRegistered($hookName)){
-			$results = array();
 			foreach (static::$hooks[$hookName] as $hook){
-				$hookMethod = $hook['method'];
-				$hookObj = $hook['object'];
-				
-				if($hookObj !== null){
-					$hook['return'] = $hookObj->$hookMethod($arguments);
-				}
-				else{
-					$hook['return'] = $hookMethod($arguments);
-				}
-				array_push($results, $hook);
+				static::executeHook($hook, $arguments);
 			}
-			return $results;
 		}
 	}
 	
-	private static function isAnyHooksRegistered($hookName){
+	/**
+	 * Execute single hook.
+	 * 
+	 * @param Hook $hook
+	 * @param array $arguments
+	 */
+	public static function executeHook(Hook $hook, Array &$arguments = null){
+		$hookMethod = $hook->getMethod();
+		$hookObj = $hook->getObject();
+		
+		if($hookObj !== null){
+			$hookObj->$hookMethod($arguments);
+		}
+		else{
+			$hookMethod($arguments);
+		}
+	}
+	
+	/**
+	 * Get registered hooks list on given name
+	 * @param string $hookName
+	 * @return array|false
+	 */
+	public static function getRegisteredHooks($hookName){
+		if(static::isAnyHooksRegistered($hookName)){
+			return static::$hooks[$hookName];
+		}
+		return false;
+	}
+	
+	/**
+	 * Check if any hook is registered on given name
+	 * @param string $hookName
+	 * @return boolean
+	 */
+	public static function isAnyHooksRegistered($hookName){
 		if(isset(static::$hooks[$hookName]) and !empty(static::$hooks[$hookName])){
 			return true;
 		}
 		return false;
 	}
 	
-	public static function isHookRegistered($hookName, $method, $object = null){
-		if(isset(static::$hooks[$hookName]) and 
-			!empty(static::$hooks[$hookName]) and
-			array_key_exists($hookName, static::$hooks) and
-			array_key_exists("method", static::$hooks[$hookName]) and
-			static::$hooks[$hookName]["method"] == $method and
-			array_key_exists("object", static::$hooks[$hookName]) and  
-			static::$hooks[$hookName]["object"] == $object){
-				return true;
+	/**
+	 * Check if any hook is registered on given name
+	 * @param Hook $hook
+	 * @return boolean
+	 */
+	public static function isHookRegistered(Hook $hookToCheck){
+		if(isset(static::$hooks[$hookToCheck->getName()]) and !empty(static::$hooks[$hookToCheck->getName()])){
+			foreach(static::$hooks[$hookToCheck->getName()] as $hook){
+				if($hookToCheck === $hook){
+					return true;
+				}
+			}
 		}
 		return false;
 	}

@@ -1,14 +1,22 @@
 <?
 function default_exception_handler(Exception $e){
-	HookManager::callHook('NoDebugExceptionHandler', array('e' => $e));
+	$hookArgs = array('e' => $e);
+	HookManager::callHook('NoDebugExceptionHandler', $hookArgs);
 	
 	if(Debug::getMode()){
 		echo format_exception($e, true);
 	}
 	else{
-		HookManager::callHook('ExceptionHandler', array('e' => $e));
+		HookManager::callHook('ExceptionHandler', $hookArgs);
 	}
 	exit;
+}
+
+function stingleOutputHandler($buffer){
+	$hookArgs = array( 'buffer' => &$buffer );
+	
+	HookManager::callHook("onOutputHandler", $hookArgs);
+	return $buffer;
 }
 
 function shutdown(){

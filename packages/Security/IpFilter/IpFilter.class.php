@@ -21,13 +21,13 @@ class IpFilter extends DbAccessor {
 	 * 
 	 * @return boolean
 	 */
-	public function isBlocked(){
+	public function isBlocked($cacheMinutes = null){
 		if(Cgi::getMode()){
 			return true;
 		}
 		
-		$isBlocked = $this->isBlockedByIP() || $this->isBlockedByCountry();
-		$isWhiteListed = $this->isWhitelistedIP();
+		$isBlocked = $this->isBlockedByIP($cacheMinutes) || $this->isBlockedByCountry($cacheMinutes);
+		$isWhiteListed = $this->isWhitelistedIP($cacheMinutes);
 		
 		if($isBlocked and !$isWhiteListed){
 			return true;
@@ -40,10 +40,10 @@ class IpFilter extends DbAccessor {
 	 * 
 	 * @return boolean
 	 */
-	private function isWhitelistedIP(){
+	private function isWhitelistedIP($cacheMinutes = null){
 		$this->query->exec("SELECT count(*) as `count` 
 								FROM `".Tbl::get('TBL_SECURITY_WHITELISTED_IPS')."`
-								WHERE `ip` = '{$this->remoteIp}'");
+								WHERE `ip` = '{$this->remoteIp}'", $cacheMinutes);
 		
 		$count = $this->query->fetchField('count');
 		
@@ -58,10 +58,10 @@ class IpFilter extends DbAccessor {
 	 * 
 	 * @return boolean
 	 */
-	private function isBlockedByIP(){
+	private function isBlockedByIP($cacheMinutes = null){
 		$this->query->exec("SELECT count(*) as `count` 
 								FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_IPS')."`
-								WHERE `ip` = '{$this->remoteIp}'");
+								WHERE `ip` = '{$this->remoteIp}'", $cacheMinutes);
 		
 		$count = $this->query->fetchField('count');
 		
@@ -76,7 +76,7 @@ class IpFilter extends DbAccessor {
 	 * 
 	 * @return boolean
 	 */
-	private function isBlockedByCountry(){
+	private function isBlockedByCountry($cacheMinutes = null){
 		$myLocation = Reg::get(ConfigManager::getConfig('GeoIP', 'GeoIP')->Objects->GeoIP)->getLocation();
 		if(empty($myLocation)){
 			return false;
@@ -90,7 +90,7 @@ class IpFilter extends DbAccessor {
 		
 		$this->query->exec("SELECT count(*) as `count` 
 								FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES')."` 
-								WHERE `country` = '$countryCode'");
+								WHERE `country` = '$countryCode'", $cacheMinutes);
 		
 		$count = $this->query->fetchField('count');
 		

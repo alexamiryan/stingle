@@ -3,10 +3,15 @@ class LoaderIpFilter extends Loader{
 	protected function includes(){
 		require_once ('IPBlockedException.class.php');
 		require_once ('IpFilter.class.php');
+		require_once ('IpFilterManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
 		Tbl::registerTableNames('IpFilter');
+	}
+	
+	protected function loadIpFilterManager(){
+		Reg::register($this->config->Objects->IpFilterManager, new IpFilterManager());
 	}
 	
 	public function hookCheckForBlockedHost(){

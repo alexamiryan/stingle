@@ -16,6 +16,11 @@ class IpFilter extends DbAccessor {
 		}
 	}
 	
+	/**
+	 * Check if remote IP is blocked by our system
+	 * 
+	 * @return boolean
+	 */
 	public function isBlocked(){
 		if(Cgi::getMode()){
 			return true;
@@ -30,7 +35,11 @@ class IpFilter extends DbAccessor {
 		return false;
 	}
 	
-	
+	/**
+	 * Is remote IP in our whitelist list
+	 * 
+	 * @return boolean
+	 */
 	private function isWhitelistedIP(){
 		$this->query->exec("SELECT count(*) as `count` 
 								FROM `".Tbl::get('TBL_SECURITY_WHITELISTED_IPS')."`
@@ -44,7 +53,11 @@ class IpFilter extends DbAccessor {
 		return false;
 	}
 	
-	
+	/**
+	 * Is remote IP is in out blacklist list
+	 * 
+	 * @return boolean
+	 */
 	private function isBlockedByIP(){
 		$this->query->exec("SELECT count(*) as `count` 
 								FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_IPS')."`
@@ -58,6 +71,11 @@ class IpFilter extends DbAccessor {
 		return false;
 	}
 	
+	/**
+	 * Is remote IP blocked by country
+	 * 
+	 * @return boolean
+	 */
 	private function isBlockedByCountry(){
 		$myLocation = Reg::get(ConfigManager::getConfig('GeoIP', 'GeoIP')->Objects->GeoIP)->getLocation();
 		if(empty($myLocation)){

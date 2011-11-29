@@ -6,6 +6,11 @@ $defaultConfig = array(
 											'TextsValuesManager' => 'textsValMgr',
 											'TextsAliasManager' => 'textsAliasMgr'
 											),
-						'Memcache' => array(  'TextManager' => -1, 'Text' => -1  )
+						'Memcache' => array(  	
+												'TextsGroupManager' => -1, 
+												'TextsManager' => -1, 
+												'TextsValuesManager' => -1,
+												'TextsAliasManager' => -1
+											)
 					);
 ?>

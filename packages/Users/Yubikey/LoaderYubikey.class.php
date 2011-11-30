@@ -18,7 +18,7 @@ class LoaderYubikey extends Loader{
 		$yubikeyUserAuthorization = new YubikeyUserAuthorization(	Reg::get($usersConfig->Objects->UserManagement),
 																	$resultingConfig);
 		
-		Reg::register($this->config->Objects->YubikeyUserAuthorization, $yubikeyUserAuthorization);
+		$this->register($yubikeyUserAuthorization);
 	}
 }
 ?>

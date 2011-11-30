@@ -10,7 +10,7 @@ class LoaderUsersGps extends Loader{
 	}
 	
 	protected function loadUsersGps(){
-		Reg::register($this->config->Objects->UsersGps, new UsersGps());
+		$this->register(new UsersGps());
 	}
 }
 ?>

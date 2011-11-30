@@ -11,7 +11,7 @@ class LoaderGps extends Loader{
 	
 	protected function loadGps(){
 		$this->gps = new Gps();
-		Reg::register($this->config->Objects->Gps, $this->gps);
+		$this->register($this->gps);
 	}
 }
 ?>

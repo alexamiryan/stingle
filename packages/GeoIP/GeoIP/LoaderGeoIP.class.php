@@ -11,7 +11,7 @@ class LoaderGeoIP extends Loader{
 	}
 	
 	protected function loadGeoIP(){
-		Reg::register($this->config->Objects->GeoIP, new GeoIP());
+		$this->register(new GeoIP());
 	}
 }
 ?>

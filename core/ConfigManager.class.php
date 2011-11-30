@@ -7,6 +7,7 @@ class ConfigManager
 	
 	/**
 	 * Set Global Config
+	 * 
 	 * @param $config
 	 */
 	public static function setGlobalConfig($config){
@@ -23,6 +24,7 @@ class ConfigManager
 	
 	/**
 	 * Returns whole global config
+	 * 
 	 * @return Config
 	 */
 	public static function getGlobalConfig(){
@@ -31,6 +33,7 @@ class ConfigManager
 	
 	/**
 	 * Get Package config
+	 * 
 	 * @param string $packageName
 	 * @return Config
 	 */
@@ -49,6 +52,7 @@ class ConfigManager
 	
 	/**
 	 * Get plugin config
+	 * 
 	 * @param string $packageName
 	 * @param string $pluginName
 	 * @return Config
@@ -99,6 +103,7 @@ class ConfigManager
 	
 	/**
 	 * Merge two Config objects
+	 * 
 	 * @param Config $masterConfig
 	 * @param Config $slaveConfig
 	 * @return Config
@@ -128,6 +133,13 @@ class ConfigManager
 		return $slaveConfig;
 	}
 	
+	/**
+	 * Add config into existing one
+	 * 
+	 * @param array $where
+	 * @param string $key
+	 * @param string $value
+	 */
 	public static function addConfig($where, $key, $value){
 		if(!is_object(static::$cache)){
 			static::$cache = new Config();

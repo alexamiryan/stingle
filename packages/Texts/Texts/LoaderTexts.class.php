@@ -20,22 +20,22 @@ class LoaderTexts extends Loader{
 	}
 	
 	protected function loadTextsGroupManager(){
-		Reg::register($this->config->Objects->TextsGroupManager, new TextsGroupManager());
+		$this->register(new TextsGroupManager());
 	}
 	
 	protected function loadTextsManager(){
-		Reg::register($this->config->Objects->TextsManager, new TextsManager());
+		$this->register(new TextsManager());
 	}
 	
 	protected function loadTextsValuesManager(){
 		$host = Reg::get(ConfigManager::getConfig("Host")->Objects->Host);
 		$language = Reg::get(ConfigManager::getConfig("Language")->ObjectsIgnored->Language);
 		
-		Reg::register($this->config->Objects->TextsValuesManager, new TextsValuesManager($host, $language));
+		$this->register(new TextsValuesManager($host, $language));
 	}
 	
 	protected function loadTextsAliasManager(){
-		Reg::register($this->config->Objects->TextsAliasManager, new TextsAliasManager());
+		$this->register(new TextsAliasManager());
 	}
 }
 ?>

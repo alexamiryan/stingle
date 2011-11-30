@@ -16,12 +16,12 @@ class LoaderDb extends Loader{
 										$this->config->AuxConfig->name);
 		$this->db = MySqlDbManager::getDbObject();
 		$this->db->setConnectionEncoding($this->config->AuxConfig->encoding);
-		Reg::register($this->config->Objects->Db, $this->db);
+		$this->register($this->db);
 	}
 	
 	protected function loadQuery(){
 		$query = MySqlDbManager::getQueryObject();
-		Reg::register($this->config->Objects->Query, $query);
+		$this->register($query);
 	}
 }
 ?>

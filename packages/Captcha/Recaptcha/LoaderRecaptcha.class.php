@@ -7,7 +7,7 @@ class LoaderRecaptcha extends Loader{
 	}
 	
 	protected function loadRecaptcha(){
-		Reg::register($this->config->Objects->Recaptcha, new Recaptcha($this->config->AuxConfig));
+		$this->register(new Recaptcha($this->config->AuxConfig));
 	}
 }
 ?>

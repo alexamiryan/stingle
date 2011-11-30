@@ -10,7 +10,7 @@ class LoaderHostLanguage extends Loader{
 	
 	protected function loadHostLanguageManager(){
 		$hostConfig = ConfigManager::getConfig("Host","Host");
-		Reg::register($this->config->Objects->HostLanguageManager, new HostLanguageManager(Reg::get($hostConfig->Objects->Host)));
+		$this->register(new HostLanguageManager(Reg::get($hostConfig->Objects->Host)));
 	}
 }
 ?>

@@ -12,7 +12,7 @@ class LoaderRequestLimiter extends Loader{
 	protected function loadRequestLimiter(){
 		$this->requestLimiter = new RequestLimiter($this->config->AuxConfig);
 		
-		Reg::register($this->config->Objects->RequestLimiter, $this->requestLimiter);
+		$this->register($this->requestLimiter);
 	}
 	
 	public function hookRequestLimiterRun(){

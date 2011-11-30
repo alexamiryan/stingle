@@ -11,7 +11,7 @@ class LoaderIpFilter extends Loader{
 	}
 	
 	protected function loadIpFilterManager(){
-		Reg::register($this->config->Objects->IpFilterManager, new IpFilterManager());
+		$this->register(new IpFilterManager());
 	}
 	
 	public function hookCheckForBlockedHost(){

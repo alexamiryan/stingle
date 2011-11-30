@@ -5,11 +5,11 @@ class LoaderInfo extends Loader{
 	}
 	
 	protected function loadInfo(){
-		Reg::register($this->config->Objects->Info, new Info($_SESSION[$this->config->AuxConfig->infoSessionVar]));
+		$this->register(new Info($_SESSION[$this->config->AuxConfig->infoSessionVar]));
 	}
 	
 	protected function loadError(){
-		Reg::register($this->config->Objects->Error, new Info($_SESSION[$this->config->AuxConfig->errorSessionVar]));
+		$this->register(new Info($_SESSION[$this->config->AuxConfig->errorSessionVar]));
 	}	
 }
 ?>

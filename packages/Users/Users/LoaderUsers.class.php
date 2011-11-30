@@ -15,13 +15,13 @@ class LoaderUsers extends Loader{
 	
 	protected function loadUserManagement(){
 		$this->userManagement = new UserManagement();
-		Reg::register($this->config->Objects->UserManagement, $this->userManagement);
+		$this->register($this->userManagement);
 	}
 	
 	protected function loadUserAuthorization(){
 		$this->userAuthorization = new UserAuthorization(	$this->userManagement, 
 															$this->config->AuxConfig);
-		Reg::register($this->config->Objects->UserAuthorization, $this->userAuthorization);
+		$this->register($this->userAuthorization);
 	}
 	
 	public function hookUserAuthorization(){

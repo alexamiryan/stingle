@@ -8,7 +8,7 @@ class LoaderMemcache extends Loader{
 	protected function loadQuery(){
 		MySqlDbManager::setQueryClassName("MySqlQueryMemcache");
 		$query = new MySqlQueryMemcache(Reg::get(ConfigManager::getConfig("Db","Db")->Objects->Db));
-		Reg::register($this->config->Objects->Query, $query);
+		$this->register($query);
 	}
 	
 	public function hookAddMemcacheTimeConfig(Array $params){

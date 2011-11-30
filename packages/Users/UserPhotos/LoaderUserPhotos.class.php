@@ -12,7 +12,7 @@ class LoaderUserPhotos extends Loader{
 	}
 	
 	protected function loadUserPhotoManager(){
-		Reg::register($this->config->Objects->UserPhotoManager, new UserPhotoManager($this->config->AuxConfig));
+		$this->register(new UserPhotoManager($this->config->AuxConfig));
 	}
 }
 ?>

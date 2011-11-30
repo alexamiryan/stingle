@@ -14,15 +14,15 @@ class LoaderPageInfo extends Loader{
 		$languageConfig = ConfigManager::getConfig("Language");
 		
 		$this->pageInfo = new PageInfo(Reg::get($hostConfig->Objects->Host), Reg::get($languageConfig->Objects->LanguageManager)->getLanguage());
-		Reg::register($this->config->Objects->PageInfo, $this->pageInfo);
+		$this->register($this->pageInfo);
 	}
 	
 	public function hookSetPageInfo(){
 		$smartyConfig = ConfigManager::getConfig("Smarty");
-		$siteNavConfig = ConfigManager::getConfig("SiteNavigation")->AuxConfig;
+		$siteNavConfig = ConfigManager::getConfig("SiteNavigation");
 		
-		$module = Reg::get($siteNavConfig->Nav)->module;
-		$page = Reg::get($siteNavConfig->Nav)->page;
+		$module = Reg::get($siteNavConfig->ObjectsIgnored->Nav)->module;
+		$page = Reg::get($siteNavConfig->ObjectsIgnored->Nav)->page;
 		
 		$pageInfo = $this->pageInfo->getInfo($module, $page);
 		

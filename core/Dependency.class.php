@@ -3,6 +3,14 @@ class Dependency
 {
 	private $deps = array();
 	
+	/**
+	 * Add dependent plugin
+	 * 
+	 * @param string $packageName
+	 * @param string $pluginName
+	 * @throws InvalidArgumentException
+	 * @throws RuntimeException
+	 */
 	public function addPlugin($packageName, $pluginName){
 		if(empty($packageName)){
 			throw new InvalidArgumentException("\$packageName is empty");
@@ -24,14 +32,30 @@ class Dependency
 		}
 	}
 	
+	/**
+	 * Add dependent package
+	 * 
+	 * @param string $packageName
+	 */
 	public function addPackage($packageName){
 		$this->addPlugin($packageName, $packageName);
 	}
 	
+	/**
+	 * Get dependent packages
+	 * 
+	 * @return array
+	 */
 	public function getDependentPackages(){
 		return array_keys($this->deps);
 	}
 	
+	/**
+	 * Get dependent plugins
+	 * 
+	 * @param string $packageName
+	 * @return array
+	 */
 	public function getDependentPlugins($packageName = null){
 		if($packageName === null){
 			$returnDepsArray = array();

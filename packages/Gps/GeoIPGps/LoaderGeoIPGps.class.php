@@ -10,7 +10,7 @@ class LoaderGeoIPGps extends Loader{
 		$gpsConfig = ConfigManager::getConfig("Gps", "Gps");
 		
 		$geoIpGps = new GeoIPGps(Reg::get($geoIPConfig->Objects->GeoIP), Reg::get($gpsConfig->Objects->Gps));
-		Reg::register($this->config->Objects->GeoIPGps, $geoIpGps);
+		$this->register($geoIpGps);
 	}
 }
 ?>

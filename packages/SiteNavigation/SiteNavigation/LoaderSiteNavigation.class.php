@@ -7,16 +7,16 @@ class LoaderSiteNavigation extends Loader{
 	}
 	
 	protected function customInitBeforeObjects(){
-		$this->controller = new Controller($this->config->AuxConfig);
+		$this->controller = new Controller($this->config);
 	}
 	
 	protected function loadRequestParser(){
 		$this->requestParser = new RequestParser($this->config->AuxConfig);
-		Reg::register($this->config->Objects->RequestParser, $this->requestParser);
+		$this->register($this->requestParser);
 	}
 	
 	public function hookParse(){
-		Reg::register($this->config->AuxConfig->Nav, $this->requestParser->parse());
+		Reg::register($this->config->ObjectsIgnored->Nav, $this->requestParser->parse());
 	}
 	
 	public function hookExecController(){

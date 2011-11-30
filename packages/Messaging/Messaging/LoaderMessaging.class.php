@@ -11,8 +11,7 @@ class LoaderMessaging extends Loader{
 	}
 	
 	protected function loadMessageManagement(){
-		$messageManagement = new MessageManagement();
-		Reg::register($this->config->Objects->MessageManagement, $messageManagement);
+		$this->register(new MessageManagement());
 	}
 }
 ?>

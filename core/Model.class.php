@@ -1,6 +1,13 @@
 <?
 abstract class Model
 {
+	/**
+	 * Get list of constants in class whos names 
+	 * begin with $constNameBegins
+	 * 
+	 * @param string $constNameBegins
+	 * @return array
+	 */
 	public static function getConstsArray($constNameBegins){
 		$returnArray = array();
 		$reflection = new ReflectionClass(get_called_class());

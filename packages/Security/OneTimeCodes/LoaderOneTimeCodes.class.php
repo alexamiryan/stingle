@@ -10,7 +10,7 @@ class LoaderOneTimeCodes extends Loader{
 	}
 	
 	protected function loadOneTimeCodes(){
-		Reg::register($this->config->Objects->OneTimeCodes, new OneTimeCodes($this->config->AuxConfig));
+		$this->register(new OneTimeCodes($this->config->AuxConfig));
 	}
 }
 ?>

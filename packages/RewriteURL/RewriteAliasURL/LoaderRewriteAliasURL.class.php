@@ -13,7 +13,7 @@ class LoaderRewriteAliasURL extends Loader{
 		$hostConfig = ConfigManager::getConfig("Host","Host");
 		
 		$this->aliasMap = new RewriteAliasMap(Reg::get($hostConfig->Objects->Host));
-		Reg::register($this->config->Objects->aliasMap, $this->aliasMap);
+		$this->register($this->aliasMap);
 	}
 	
 	protected function loadrewriteAliasURL(){
@@ -21,7 +21,7 @@ class LoaderRewriteAliasURL extends Loader{
 		$hostConfig = ConfigManager::getConfig("Host","Host");
 		
 		$this->rewriteAliasURL =  new RewriteAliasURL($rewriteURLconfig, $this->aliasMap->getAliasMap(Reg::get($hostConfig->Objects->Host)));
-		Reg::register($this->config->Objects->rewriteAliasURL, $this->rewriteAliasURL);
+		$this->register($this->rewriteAliasURL);
 	}
 	
 	public function hookParseAliases(){

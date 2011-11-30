@@ -1,7 +1,6 @@
 <?
 $defaultConfig = array(	
-						'AuxConfig' => array(	'Nav' => 'nav',
-												'firstLevelName' => 'module',
+						'AuxConfig' => array(	'firstLevelName' => 'module',
 												'secondLevelName' => 'page',
 												'firstLevelDefaultValue' => 'home',
 												'secondLevelDefaultValue' => 'home',
@@ -9,6 +8,7 @@ $defaultConfig = array(
 												'validationRegExp' => '/^[a-zA-Z0-9_\-]+$/',
 												'modulesDir' => 'modules'),
 						'Objects' => array(	'RequestParser' => 'requestParser'  ),
+						'ObjectsIgnored' => array(	'Nav' => 'nav'  ),
 						'Hooks' => array(	'RequestParser' => 'Parse', 'Controller' => 'ExecController'  )
 					);
 ?>

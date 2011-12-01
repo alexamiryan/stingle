@@ -146,7 +146,7 @@ abstract class Loader {
 					if(method_exists($this, $loadFuncName)){
 						$this->$loadFuncName();
 						if(!Reg::isRegistered($this->config->Objects->$objectName)){
-							throw new RuntimeException("Loader function for object $objectName didn't registered anything!");
+							throw new RuntimeException("Loader function for object $objectName in plugin {$this->pluginName} of package {$this->packageName} didn't registered it's object in registry!");
 						}
 					}
 					else{

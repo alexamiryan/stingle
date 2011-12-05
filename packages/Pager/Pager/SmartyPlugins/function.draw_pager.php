@@ -4,11 +4,13 @@
  *
  * @param $id
  * @param $visualPagesCount
+ * @param $exclude
  * @return string
  */
 function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 	$id = null;
 	$visualPagesCount = null;
+	$excludedGetsArray = array();
 	
 	extract($params);
 	
@@ -19,6 +21,10 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 		$id = null;
 	}
 	
+	if(isset($exclude) and !empty($exclude)){
+		$excludedGetsArray = explode(",", str_replace(" ", "", $exclude));
+	}
+	
 	$pager = Pager::getPager($id);
 	
 	if($pager instanceof  Pager){
@@ -26,7 +32,7 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
                                 Reg::get('nav')->module,
                                 Reg::get('nav')->page,
                                 ConfigManager::getConfig("SiteNavigation")->AuxConfig->firstLevelDefaultValue) . 
-                                	get_all_get_params(array($pager->getUrlParam())
+                                	get_all_get_params(array_merge(array($pager->getUrlParam()), $excludedGetsArray)
                               );
 		$urlParam = $pager->getUrlParam();
 		$currentPageNumber = $pager->getCurrentPageNumber();

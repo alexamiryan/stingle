@@ -629,7 +629,12 @@ class UserManagement extends Filterable{
 		$fields = array_diff_key($fields, array('id' => 0, 'login' => "", 'permissions' => array(), 'groups' => array(), 'primary_group' => ''));
 		$sql_statement = "update `".Tbl::get('TBL_USERS')."` set ";
 		foreach($fields as $key => $value){
-			$sql_statement .= "`$key` = '" . addslashes($value) . "', ";
+			if($value === null){
+				$sql_statement .= "`$key` = null, ";
+			}
+			else{
+				$sql_statement .= "`$key` = '" . addslashes($value) . "', ";
+			}
 		}
 		$sql_statement = substr($sql_statement, 0, -2);
 		$sql_statement .= " where `id`='$user_id'";

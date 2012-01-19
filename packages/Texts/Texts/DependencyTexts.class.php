@@ -5,6 +5,7 @@ class DependencyTexts extends Dependency
 		$this->addPackage("Db");
 		$this->addPlugin("Host", "Host");
 		$this->addPlugin("Language", "HostLanguage");
+		$this->addPackage("Filter");
 	}
 }
 ?>

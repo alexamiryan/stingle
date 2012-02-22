@@ -19,7 +19,7 @@ class RewriteURL{
 	 *
 	 */
 	public function parseURL($setParams = true){
-		if($this->config->AuxConfig->enable_url_rewrite == "OFF") return;
+		if($this->config->enable_url_rewrite == "OFF") return;
 		/* grab URL query string */
 		$uri = $_SERVER['REQUEST_URI'];
 		/* slicing query string */
@@ -129,7 +129,7 @@ class RewriteURL{
 			}
 		}
 
-		return $this->config->AuxConfig->site_path . $strUrl;
+		return $this->config->site_path . $strUrl;
 	}
 
 	/**
@@ -228,21 +228,21 @@ class RewriteURL{
 	}
 
 	public function glink($strUrl){
-		if($this->config->AuxConfig->source_link_style == 'nice'){
-			if($this->config->AuxConfig->output_link_style == 'nice'){
-				$strUrl = $this->config->AuxConfig->site_path . $strUrl;
+		if($this->config->source_link_style == 'nice'){
+			if($this->config->output_link_style == 'nice'){
+				$strUrl = $this->config->site_path . $strUrl;
 			}
-			elseif($this->config->AuxConfig->output_link_style == 'default'){
+			elseif($this->config->output_link_style == 'default'){
 				$strUrl = static::alterLinkToDefault($strUrl);
 			}
 		}
-		elseif($this->config->AuxConfig->source_link_style == 'default'){
-			$strUrl = $this->config->AuxConfig->handler_script . "?" . $strUrl;
-			if($this->config->AuxConfig->output_link_style == 'nice'){
+		elseif($this->config->source_link_style == 'default'){
+			$strUrl = $this->config->handler_script . "?" . $strUrl;
+			if($this->config->output_link_style == 'nice'){
 				$strUrl = static::alterLinkToNice($strUrl);
 			}
-			if($this->config->AuxConfig->output_link_style == 'default'){
-				$strUrl = $this->config->AuxConfig->site_path . $strUrl;
+			if($this->config->output_link_style == 'default'){
+				$strUrl = $this->config->site_path . $strUrl;
 			}
 		}
 		$strUrl = static::ensureOutputLastDelimiter($strUrl);

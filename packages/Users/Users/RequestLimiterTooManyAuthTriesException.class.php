@@ -1,5 +1,5 @@
 <?
-class RequestLimiterTooManyAuthTriesException extends RequestLimiterBlockedException{
+class RequestLimiterTooManyAuthTriesException extends SecurityException{
 	
 }
 ?>

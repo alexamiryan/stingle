@@ -84,6 +84,14 @@ abstract class Filter {
 	public function setCondition($fieldName, $match, $values){
 		static::checkMatchExistance($match);
 		
+		$condtions = & $this->conditions;
+		foreach ($this->conditions as $key=>$condition) {
+			if($condition['field'] == $fieldName and $condition['condition']==$match){
+				unset($condtions[$key]);
+				break;
+			}
+		}
+		
 		$this->conditions[] = array('field' => $fieldName, 'condition' => $match, 'params' => $values);
 		return $this;
 	}

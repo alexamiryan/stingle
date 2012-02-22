@@ -48,7 +48,7 @@ class RewriteAliasURL extends RewriteURL{
 	
 	public function glink($strUrl){
 		$strUrl = parent::glink($strUrl);
-		if($this->config->output_link_style == 'nice'){
+		if($this->config->AuxConfig->output_link_style == 'nice'){
 			$strUrl = $this->addAliasToLink($strUrl);
 		}
 		

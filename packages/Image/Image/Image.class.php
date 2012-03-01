@@ -1,8 +1,10 @@
 <?
-class ImageManipulator extends Model
+class Image extends Model
 {
 	private $info;
-	private $image_res;
+	private $imageRes;
+	
+	public $fileName;
 	
 	const DIMENSIONS_EQUAL 									= 1;
 	const DIMENSIONS_SMALLER 								= 2;
@@ -31,14 +33,17 @@ class ImageManipulator extends Model
 		if(!file_exists($filePath)){
 			throw new InvalidArgumentException("Given file $filePath does not exists.");
 		}
-		$this->image_res=$this->createImageRes($filePath);
-		$this->info=getimagesize($filePath);
+		
+		$this->imageRes = $this->createImageRes($filePath);
+		$this->info = getimagesize($filePath);
+		
+		$this->fileName = basename($filePath);
 	}
 	/**
 	 * Destructor
 	 */
 	public function __destruct(){
-		unset ($this->image_res);
+		unset ($this->imageRes);
 	}
 
 	/**
@@ -52,19 +57,19 @@ class ImageManipulator extends Model
 		}
 		switch ($info[2]){
 			case IMAGETYPE_JPEG:
-				$image_res=@imagecreatefromjpeg($filename);
+				$imageRes=@imagecreatefromjpeg($filename);
 				break;
 			case IMAGETYPE_GIF:
-				$image_res=@imagecreatefromgif($filename);
+				$imageRes=@imagecreatefromgif($filename);
 				break;
 			case IMAGETYPE_PNG:
-				$image_res=@imagecreatefrompng($filename);
+				$imageRes=@imagecreatefrompng($filename);
 				break;
 		}
-		if(!is_resource($image_res)){
+		if(!is_resource($imageRes)){
 			throw new RuntimeException("Unable to create resource from image!");
 		}
-		return $image_res;
+		return $imageRes;
 	}
 
 	/**
@@ -115,7 +120,7 @@ class ImageManipulator extends Model
 			}
 			if($mode==1){
 				$resized_image = imagecreatetruecolor($width, $this->info[1]*$width/$this->info[0]);
-				if(!imagecopyresampled($resized_image, $this->image_res, 0, 0, 0, 0, $width, $this->info[1]*$width/$this->info[0], $this->info[0], $this->info[1])){
+				if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $width, $this->info[1]*$width/$this->info[0], $this->info[0], $this->info[1])){
 					throw new RuntimeException("Unable to resize image!");
 				}
 				else{
@@ -125,7 +130,7 @@ class ImageManipulator extends Model
 			}
 			elseif($mode==2){
 				$resized_image = imagecreatetruecolor($this->info[0]*$height/$this->info[1], $height);
-				if(!imagecopyresampled($resized_image, $this->image_res, 0, 0, 0, 0, $this->info[0]*$height/$this->info[1], $height, $this->info[0], $this->info[1])){
+				if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $this->info[0]*$height/$this->info[1], $height, $this->info[0], $this->info[1])){
 					throw new RuntimeException("Unable to resize image!");
 				}
 				else{
@@ -134,12 +139,12 @@ class ImageManipulator extends Model
 				}
 			}
 			else{
-				$resized_image=$this->image_res;
+				$resized_image=$this->imageRes;
 			}
 		}
 		else{
 			$resized_image = imagecreatetruecolor($width, $height);
-			if(!imagecopyresampled($resized_image, $this->image_res, 0, 0, 0, 0, $width, $height, $this->info[0], $this->info[1])){
+			if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $width, $height, $this->info[0], $this->info[1])){
 				throw new RuntimeException("Unable to resize image!");
 			}
 			else{
@@ -147,7 +152,7 @@ class ImageManipulator extends Model
 				$this->info[1]=$height;
 			}
 		}
-		$this->image_res=$resized_image;
+		$this->imageRes=$resized_image;
 	}
 
 	/**
@@ -160,12 +165,12 @@ class ImageManipulator extends Model
 	 */
 	public function writeJpeg($to_filename=null, $progrssive_jpeg=0, $quality=100){
 		if($progrssive_jpeg){
-			@imageinterlace($this->image_res, 1);
+			@imageinterlace($this->imageRes, 1);
 		}
 		if($progrssive_jpeg){
-			@imageinterlace($this->image_res, 0);
+			@imageinterlace($this->imageRes, 0);
 		}
-		if(!imagejpeg($this->image_res, $to_filename, $quality)){
+		if(!imagejpeg($this->imageRes, $to_filename, $quality)){
 			throw new RuntimeException("Unable to write image file!");
 		}
 	}
@@ -177,7 +182,7 @@ class ImageManipulator extends Model
 	 * @return bool
 	 */
 	public function writeGif($to_filename=null){
-		if(!imagegif($this->image_res, $to_filename)){
+		if(!imagegif($this->imageRes, $to_filename)){
 			throw new RuntimeException("Unable to write image file!");
 		}
 	}
@@ -189,7 +194,7 @@ class ImageManipulator extends Model
 	 * @return bool
 	 */
 	public function writePng($to_filename=null){
-		if(!imagepng($this->image_res, $to_filename)){
+		if(!imagepng($this->imageRes, $to_filename)){
 			throw new RuntimeException("Unable to write image file!");
 		}
 	}
@@ -215,22 +220,22 @@ class ImageManipulator extends Model
 		
 		switch ($corner){
 			case self::CORNER_TOP_LEFT:
-				if(!imagecopymerge ($this->image_res, $img_res, 0, 0, 0, 0, $img_info[0], $img_info[1], $alpha)){
+				if(!imagecopymerge ($this->imageRes, $img_res, 0, 0, 0, 0, $img_info[0], $img_info[1], $alpha)){
 					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
 			case self::CORNER_TOP_RIGHT:
-				if(!imagecopymerge ($this->image_res, $img_res, $this->info[0]-$img_info[0], 0, 0, 0, $img_info[0], $img_info[1], $alpha)){
+				if(!imagecopymerge ($this->imageRes, $img_res, $this->info[0]-$img_info[0], 0, 0, 0, $img_info[0], $img_info[1], $alpha)){
 					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
 			case self::CORNER_BOTTOM_LEFT:
-				if(!imagecopymerge ($this->image_res, $img_res, 0, $this->info[1]-$img_info[1], 0, 0, $img_info[0], $img_info[1], $alpha)){
+				if(!imagecopymerge ($this->imageRes, $img_res, 0, $this->info[1]-$img_info[1], 0, 0, $img_info[0], $img_info[1], $alpha)){
 					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
 			case self::CORNER_BOTTOM_RIGHT:
-				if(!imagecopymerge ($this->image_res, $img_res, $this->info[0]-$img_info[0], $this->info[1]-$img_info[1], 0, 0, $img_info[0], $img_info[1], $alpha)){
+				if(!imagecopymerge ($this->imageRes, $img_res, $this->info[0]-$img_info[0], $this->info[1]-$img_info[1], 0, 0, $img_info[0], $img_info[1], $alpha)){
 					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
@@ -258,11 +263,11 @@ class ImageManipulator extends Model
 			throw new RuntimeException("Unable to add background!");
 		}
 		
-		if(!imagecopy ($newImg, $this->image_res, ($img_info[0]-$this->info[0])/2,($img_info[1]-$this->info[1])/2,0,0,$this->info[0],$this->info[1])){
+		if(!imagecopy ($newImg, $this->imageRes, ($img_info[0]-$this->info[0])/2,($img_info[1]-$this->info[1])/2,0,0,$this->info[0],$this->info[1])){
 			throw new RuntimeException("Unable to add background!");
 		}
-		unset($this->image_res);
-		$this->image_res=$newImg;
+		unset($this->imageRes);
+		$this->imageRes=$newImg;
 	}
 
 	/**
@@ -280,12 +285,12 @@ class ImageManipulator extends Model
 		}
 		
 		$cropped_image = imagecreatetruecolor($width, $height);
-		if(!imagecopy($cropped_image, $this->image_res, 0, 0, $x, $y, $width, $height)){
+		if(!imagecopy($cropped_image, $this->imageRes, 0, 0, $x, $y, $width, $height)){
 			throw new RuntimeException("Unable to crop!");
 		}
 		
-		@imagedestroy($this->image_res);
-		$this->image_res=$cropped_image;
+		@imagedestroy($this->imageRes);
+		$this->imageRes=$cropped_image;
 		$this->info[0] = $width;
 		$this->info[1] = $height;
 	}
@@ -340,6 +345,7 @@ class ImageManipulator extends Model
 	public function getDimensions(){
 		return array($this->info[0], $this->info[1]);
 	}
+	
 	/**
 	 * Rotate image
 	 *
@@ -362,12 +368,12 @@ class ImageManipulator extends Model
 		if(!($bg_blue>=0 and $bg_blue<=255)){
 			throw new InvalidArgumentException("\$bg_blue needs to be between 0 and 255!");
 		}
-		if(!($rotated_image=imagerotate($this->image_res, $angle, imagecolorexact($this->image_res, $bg_red, $bg_green, $bg_blue)))){
+		if(!($rotated_image=imagerotate($this->imageRes, $angle, imagecolorexact($this->imageRes, $bg_red, $bg_green, $bg_blue)))){
 			throw new RuntimeException("Unable to rotate!");
 		}
 
-		@imagedestroy($this->image_res);
-		$this->image_res=$rotated_image;
+		@imagedestroy($this->imageRes);
+		$this->imageRes=$rotated_image;
 		
 		$tmp = $this->info[0];
 		$this->info[0] = $this->info[1];

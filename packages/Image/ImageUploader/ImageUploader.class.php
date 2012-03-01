@@ -28,7 +28,7 @@ class ImageUploader
 	    }
 	    
 	    // Check if we are able to create image resource from this file.
-	    $image = new ImageManipulator($file['tmp_name']);
+	    $image = new Image($file['tmp_name']);
 	    
 	    $savePath = $uploadDir . $fileName;
 	    
@@ -52,7 +52,7 @@ class ImageUploader
 				break;
 		}
 	    
-	    return $fileName;
+	    return $savePath;
 	}
 	
 	public static function deleteImage($fileName, $uploadDir = null){

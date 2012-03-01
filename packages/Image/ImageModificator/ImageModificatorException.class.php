@@ -1,0 +1,6 @@
+<?
+class ImageModificatorException extends Exception
+{
+	
+}
+?>

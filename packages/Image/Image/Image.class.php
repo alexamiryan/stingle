@@ -5,6 +5,7 @@ class Image extends Model
 	private $imageRes;
 	
 	public $fileName;
+	public $filePath;
 	
 	const DIMENSIONS_EQUAL 									= 1;
 	const DIMENSIONS_SMALLER 								= 2;
@@ -37,6 +38,7 @@ class Image extends Model
 		$this->imageRes = $this->createImageRes($filePath);
 		$this->info = getimagesize($filePath);
 		
+		$this->filePath = $filePath;
 		$this->fileName = basename($filePath);
 	}
 	/**
@@ -158,45 +160,54 @@ class Image extends Model
 	/**
 	 * Write jpeg file
 	 *
-	 * @param string $to_filename (If is null, jpeg will be outputed directly)
+	 * @param string $filePath (If is null, jpeg will be outputed directly)
 	 * @param int $progrssive_jpeg (Set to 1 only for jpg outputs);
 	 * @param int $quality (0-100)
 	 * @return bool
 	 */
-	public function writeJpeg($to_filename=null, $progrssive_jpeg=0, $quality=100){
+	public function writeJpeg($filePath=null, $progrssive_jpeg=0, $quality=100){
 		if($progrssive_jpeg){
 			@imageinterlace($this->imageRes, 1);
 		}
 		if($progrssive_jpeg){
 			@imageinterlace($this->imageRes, 0);
 		}
-		if(!imagejpeg($this->imageRes, $to_filename, $quality)){
+		if(!imagejpeg($this->imageRes, $filePath, $quality)){
 			throw new RuntimeException("Unable to write image file!");
 		}
+		
+		$this->filePath = $filePath;
+		$this->fileName = basename($filePath);
 	}
 
 	/**
 	 * Write gif file
 	 *
-	 * @param string $to_filename (If is null, gif will be outputed directly)
+	 * @param string $filePath (If is null, gif will be outputed directly)
 	 * @return bool
 	 */
-	public function writeGif($to_filename=null){
-		if(!imagegif($this->imageRes, $to_filename)){
+	public function writeGif($filePath=null){
+		if(!imagegif($this->imageRes, $filePath)){
 			throw new RuntimeException("Unable to write image file!");
 		}
+		
+		$this->filePath = $filePath;
+		$this->fileName = basename($filePath);
 	}
 
 	/**
 	 * Write gif file
 	 *
-	 * @param string $to_filename (If is null, png will be outputed directly)
+	 * @param string $filePath (If is null, png will be outputed directly)
 	 * @return bool
 	 */
-	public function writePng($to_filename=null){
-		if(!imagepng($this->imageRes, $to_filename)){
+	public function writePng($filePath=null){
+		if(!imagepng($this->imageRes, $filePath)){
 			throw new RuntimeException("Unable to write image file!");
 		}
+		
+		$this->filePath = $filePath;
+		$this->fileName = basename($filePath);
 	}
 
 	/**

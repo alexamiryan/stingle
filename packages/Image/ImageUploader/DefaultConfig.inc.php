@@ -7,7 +7,7 @@ $defaultConfig = array(
 																				'image/pjpeg',
 																				'image/png'
 																			),
-												'minimumSize' => array('largeSideMinSize'=> 400, 'smallSideMinSize' => 400)
+												'minimumSize' => array('largeSideMinSize'=> 50, 'smallSideMinSize' => 50)
 											)
 					);
 ?>

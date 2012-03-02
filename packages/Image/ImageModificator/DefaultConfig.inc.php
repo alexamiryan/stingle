@@ -1,6 +1,9 @@
 <?
 $defaultConfig = array(	
 						'AuxConfig' => array(	'imageModels' => array(
+													/*
+													 * Example Config
+													 * 
 													'small' => array(
 														'actions' => array(
 															'crop' => array(
@@ -19,6 +22,7 @@ $defaultConfig = array(
 															)
 														)
 													)
+													*/
 												)
 						),
 						'Objects' => array(	'ImageModificator' => 'imageMod' )

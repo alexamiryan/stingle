@@ -52,7 +52,7 @@ class ImageUploader
 				break;
 		}
 	    
-	    return $savePath;
+	    return $image;
 	}
 	
 	public static function deleteImage($fileName, $uploadDir = null){

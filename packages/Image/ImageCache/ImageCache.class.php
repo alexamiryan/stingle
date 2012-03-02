@@ -7,11 +7,10 @@ class ImageCache
 		$this->config = $config;
 		
 		ensurePathLastSlash($this->config->cacheDir);
-		ensurePathLastSlash($this->config->dataDir);
 	}
 	
 	public function generateImageCache($folderName, Image $image, $forceGenerate = false){
-		if(!isset($this->config->folders->$folderName)){
+		if(!in_array($folderName, $this->config->folders->toArray())){
 			throw new InvalidArgumentException("There is no such folder defined with name $folderName!");
 		}
 		if(!file_exists($this->config->cacheDir . $folderName)){
@@ -28,6 +27,31 @@ class ImageCache
 	}
 	
 	/**
+	 * Checks if image cache is present
+	 * 
+	 * @param string $folderName
+	 * @param string $fileName
+	 * @throws InvalidArgumentException
+	 * @throws RuntimeException
+	 * @return boolean
+	 */
+	public function isImageCached($folderName, $fileName){
+		if(!in_array($folderName, $this->config->folders->toArray())){
+			throw new InvalidArgumentException("There is no such folder defined with name $folderName!");
+		}
+		if(!file_exists($this->config->cacheDir . $folderName)){
+			throw new RuntimeException("There is no such folder $folderName in cache directory!");
+		}
+		
+		$resultingFilePath = $this->config->cacheDir . $folderName . "/" . $fileName;
+		
+		if(file_exists($resultingFilePath)){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
 	 * Clear cache of given photo filename 
 	 * @param string $fileName
 	 */
@@ -39,6 +63,15 @@ class ImageCache
 			if(file_exists($this->config->cacheDir . $folderName . "/" . $fileName)){
 				@unlink($this->config->cacheDir . $folderName . "/" . $fileName);
 			}
+		}
+	}
+	
+	/**
+	 * Clear whole image cache 
+	 */
+	public function clearWholeImageCache(){
+		foreach ($this->config->folders as $folderName){
+			@unlink($this->config->cacheDir . $folderName . "/*");
 		}
 	}
 }

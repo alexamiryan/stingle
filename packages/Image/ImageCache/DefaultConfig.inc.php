@@ -5,6 +5,7 @@ $defaultConfig = array(
 																	'small',
 																	'medium',
 																	'big'
-																))
+																)),
+						'Objects' => array(	'ImageCache' => 'imageCache' )
 					);
 ?>

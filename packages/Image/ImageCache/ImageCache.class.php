@@ -9,6 +9,16 @@ class ImageCache
 		ensurePathLastSlash($this->config->cacheDir);
 	}
 	
+	/**
+	 * Generate image cache and return resulting path
+	 * 
+	 * @param string $folderName
+	 * @param Image $image
+	 * @param boolean $forceGenerate
+	 * @throws InvalidArgumentException
+	 * @throws RuntimeException
+	 * @return string
+	 */
 	public function generateImageCache($folderName, Image $image, $forceGenerate = false){
 		if(!in_array($folderName, $this->config->folders->toArray())){
 			throw new InvalidArgumentException("There is no such folder defined with name $folderName!");

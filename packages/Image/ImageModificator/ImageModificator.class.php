@@ -108,7 +108,7 @@ class ImageModificator extends DbAccessor
 	 * @throws InvalidArgumentException
 	 * @throws ImageModificatorException
 	 */
-	public function saveCropSettings(Image $image, $modelName, $x, $y, $width, $height){
+	public function saveCropSettings(Image $image, $modelName, Config $cropSettings){
 		if(!isset($this->config->imageModels->$modelName)){
 			throw new InvalidArgumentException("There is no such image model with name $modelName");
 		}
@@ -120,19 +120,19 @@ class ImageModificator extends DbAccessor
 		list($imageW, $imageH) = $image->getDimensions();
 		list($ratioW, $ratioH) = explode(":", $this->config->imageModels->$modelName->actions->{self::ACTION_CROP}->ratio);
 		
-		if(!($width+$x <= $imageW) or !($height+$y <= $imageH)){
+		if(!($cropSettings->width+$cropSettings->x <= $imageW) or !($cropSettings->height+$cropSettings->y <= $imageH)){
 			throw new InvalidArgumentException("Crop window is not fitting into image!");
 		}
 		
-		if(round($width/$height) != round($ratioW/$ratioH)){
+		if(round($cropSettings->width/$cropSettings->height) != round($ratioW/$ratioH)){
 			throw new InvalidArgumentException("Given crop window is not at needed ratio!");
 		}
 		
 		
 		$this->query->exec("INSERT INTO `".Tbl::get("TBL_CROP_SETTINGS")."`
 								(`model_name`, `filename`, `x`, `y`, `width`, `height`)
-								VALUES ('$modelName', '{$image->fileName}', '$x', '$y', '$width', '$height')
-							ON DUPLICATE KEY UPDATE `x`='$x', `y`='$y', `width`='$width', `height`='$height'");
+								VALUES ('$modelName', '{$image->fileName}', '{$cropSettings->x}', '{$cropSettings->y}', '{$cropSettings->width}', '{$cropSettings->height}')
+							ON DUPLICATE KEY UPDATE `x`='{$cropSettings->x}', `y`='{$cropSettings->y}', `width`='{$cropSettings->width}', `height`='{$cropSettings->height}'");
 	}
 	
 	/**
@@ -271,7 +271,7 @@ class ImageModificator extends DbAccessor
 	 * @param Config $mainImageCropSettings
 	 * @return Config
 	 */
-	public static function getProportionalCropInitCords(Image $mainImage, Image $proportionalImage, Config $mainImageCropSettings){
+	public static function getProportionalCropCords(Image $mainImage, Image $proportionalImage, Config $mainImageCropSettings){
 		list($mainWidth, $mainHeight) = $mainImage->getDimensions();
 		list($propWidth, $propHeight) = $proportionalImage->getDimensions();
 		
@@ -313,6 +313,44 @@ class ImageModificator extends DbAccessor
 		else{
 			$cropMinSize->width = $smallSideMinSize;
 			$cropMinSize->height = round($ratioH/$ratioW * $smallSideMinSize);
+		}
+		
+		return $cropMinSize;
+	}
+	
+	/**
+	 * Get proportional min sizes for crop. Can be used to define minin 
+	 * crop size for proportional resized image.
+	 * 
+	 * @param Image $originalImage
+	 * @param Image $proportionalImage
+	 * @param string $modelName
+	 * @throws InvalidArgumentException
+	 * @return Config
+	 */
+	public function getProportionalCropMinSize(Image $originalImage, Image $proportionalImage, $modelName){
+		if(!isset($this->config->imageModels->$modelName)){
+			throw new InvalidArgumentException("There is no such image model with name $modelName");
+		}
+		
+		$smallSideMinSize = $this->config->imageModels->$modelName->actions->crop->smallSideMinSize;
+		$ratio = $this->config->imageModels->$modelName->actions->crop->ratio;
+		
+		list($origWidth, $origHeight) = $originalImage->getDimensions();
+		list($propWidth, $propHeight) = $proportionalImage->getDimensions();
+		list($ratioW, $ratioH) = explode(":", $ratio);
+		
+		$coefficientW = $origWidth/$propWidth;
+		$coefficientH = $origHeight/$propHeight;
+		
+		$cropMinSize = new Config();
+		if($origWidth >= $origHeight){
+			$cropMinSize->width = round($ratioW/$ratioH * $smallSideMinSize / $coefficientW);
+			$cropMinSize->height = $smallSideMinSize / $coefficientH;
+		}
+		else{
+			$cropMinSize->width = $smallSideMinSize / $coefficientW;
+			$cropMinSize->height = round($ratioH/$ratioW * $smallSideMinSize / $coefficientH);
 		}
 		
 		return $cropMinSize;

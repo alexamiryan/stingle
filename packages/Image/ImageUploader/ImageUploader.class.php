@@ -91,7 +91,7 @@ class ImageUploader
 		
 		if(!file_exists($uploadDir . $fileName)){
 			if($strict){
-				throw new InvalidArgumentException("File $filename in  directory $uploadDir doesn't exists.");
+				throw new InvalidArgumentException("File $fileName in  directory $uploadDir doesn't exists.");
 			}
 			else{
 				return;

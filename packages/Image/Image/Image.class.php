@@ -32,7 +32,7 @@ class Image extends Model
 			throw new InvalidArgumentException("\$filename is empty!");
 		}
 		if(!file_exists($filePath)){
-			throw new InvalidArgumentException("Given file $filePath does not exists.");
+			throw new RuntimeException("Given file $filePath does not exists.");
 		}
 		
 		$this->imageRes = $this->createImageRes($filePath);

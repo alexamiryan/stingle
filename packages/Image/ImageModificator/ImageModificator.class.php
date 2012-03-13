@@ -120,11 +120,11 @@ class ImageModificator extends DbAccessor
 		list($imageW, $imageH) = $image->getDimensions();
 		list($ratioW, $ratioH) = explode(":", $this->config->imageModels->$modelName->actions->{self::ACTION_CROP}->ratio);
 		
-		if(!($cropSettings->width+$cropSettings->x <= $imageW) or !($cropSettings->height+$cropSettings->y <= $imageH)){
+		if($cropSettings->x + $cropSettings->width > $imageW or $cropSettings->y + $cropSettings->height > $imageH){
 			throw new InvalidArgumentException("Crop window is not fitting into image!");
 		}
 		
-		if(round($cropSettings->width/$cropSettings->height) != round($ratioW/$ratioH)){
+		if($cropSettings->height == 0 or round($cropSettings->width/$cropSettings->height) != round($ratioW/$ratioH)){
 			throw new InvalidArgumentException("Given crop window is not at needed ratio!");
 		}
 		
@@ -209,8 +209,8 @@ class ImageModificator extends DbAccessor
 		$widthUnchanged = false;
 		$heightUnchanged = false;
 		
-		$derivedW = round($imageH * $ratioW / $ratioH);
-		$derivedH = round($imageW * $ratioH / $ratioW);
+		$derivedW = floor($imageH * $ratioW / $ratioH);
+		$derivedH = floor($imageW * $ratioH / $ratioW);
 		
 		if($ratioW >= $ratioH){
 			if($imageW >= $imageH){
@@ -241,12 +241,12 @@ class ImageModificator extends DbAccessor
 		
 		if($widthUnchanged === true){
 			$x = 0;
-			$y = round(($imageH - $derivedH)/2);
+			$y = floor(($imageH - $derivedH)/2);
 			$width = $imageW;
 			$height = $derivedH;
 		}
 		elseif($heightUnchanged === true){
-			$x = round(($imageW - $derivedW)/2);
+			$x = floor(($imageW - $derivedW)/2);
 			$y = 0;
 			$width = $derivedW;
 			$height = $imageH;
@@ -275,13 +275,13 @@ class ImageModificator extends DbAccessor
 		list($mainWidth, $mainHeight) = $mainImage->getDimensions();
 		list($propWidth, $propHeight) = $proportionalImage->getDimensions();
 		
-		$factor = round(($propWidth / $mainWidth),20);		
+		$factorW = $propWidth / $mainWidth;		
+		$factorH = $propHeight / $mainHeight;		
 		$initCoordsConfig = new Config(); 
-		$initCoordsConfig->x = ceil($factor * $mainImageCropSettings->x);
-		$initCoordsConfig->y = ceil($factor * $mainImageCropSettings->y);
-		$initCoordsConfig->width = ceil($factor * $mainImageCropSettings->width);
-		$initCoordsConfig->height = ceil($factor * $mainImageCropSettings->height);
-		
+		$initCoordsConfig->x = floor($factorW * $mainImageCropSettings->x);
+		$initCoordsConfig->y = floor($factorH * $mainImageCropSettings->y);
+		$initCoordsConfig->width = floor($factorW * $mainImageCropSettings->width);
+		$initCoordsConfig->height = floor($factorH * $mainImageCropSettings->height);
 		return $initCoordsConfig;
 	}
 	
@@ -307,12 +307,12 @@ class ImageModificator extends DbAccessor
 		
 		$cropMinSize = new Config();
 		if($imageWidth >= $imageHeight){
-			$cropMinSize->width = round($ratioW/$ratioH * $smallSideMinSize);
+			$cropMinSize->width = floor($ratioW/$ratioH * $smallSideMinSize);
 			$cropMinSize->height = $smallSideMinSize;
 		}
 		else{
 			$cropMinSize->width = $smallSideMinSize;
-			$cropMinSize->height = round($ratioH/$ratioW * $smallSideMinSize);
+			$cropMinSize->height = floor($ratioH/$ratioW * $smallSideMinSize);
 		}
 		
 		return $cropMinSize;
@@ -345,12 +345,12 @@ class ImageModificator extends DbAccessor
 		
 		$cropMinSize = new Config();
 		if($origWidth >= $origHeight){
-			$cropMinSize->width = round($ratioW/$ratioH * $smallSideMinSize / $coefficientW);
-			$cropMinSize->height = $smallSideMinSize / $coefficientH;
+			$cropMinSize->width = floor($ratioW/$ratioH * $smallSideMinSize / $coefficientW);
+			$cropMinSize->height = floor($smallSideMinSize / $coefficientH);
 		}
 		else{
-			$cropMinSize->width = $smallSideMinSize / $coefficientW;
-			$cropMinSize->height = round($ratioH/$ratioW * $smallSideMinSize / $coefficientH);
+			$cropMinSize->width = floor($smallSideMinSize / $coefficientW);
+			$cropMinSize->height = floor($ratioH/$ratioW * $smallSideMinSize / $coefficientH);
 		}
 		
 		return $cropMinSize;

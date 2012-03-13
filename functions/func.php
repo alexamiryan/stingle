@@ -1,6 +1,7 @@
 <?
 function format_exception(Exception $e, $insert_pre = false){
-	$message =  "Message:\n" . $e->getMessage() . "\n\n" .
+	$message = get_class($e) . "\n" .
+	"Message:\n" . $e->getMessage() . "\n\n" .
 	"File: " . $e->getFile() . " on line " . $e->getLine() . "\n\n" .
 	"Trace:\n" . $e->getTraceAsString() . "\n\n" .
 	"Get:\n". print_r($_GET,true) . "\n\n" .
@@ -13,40 +14,6 @@ function format_exception(Exception $e, $insert_pre = false){
 	}
 
 	return $message;
-}
-
-function format_error($errno, $errstr, $errfile, $errline, $insert_pre = false){
-	$trace = debug_backtrace();
-	$trace_str = "";
-	for($i=2; $i < count($trace); $i++){
-		$trace_str .= $trace[$i]["file"] . ":" . $trace[$i]["line"] . " - " . $trace[$i]["function"];
-		if(!empty($trace[$i]["class"])){
-			$trace_str .= " - " . $trace[$i]["class"];
-		}
-		$trace_str .= "\n";
-	}
-	$message =  "Message:\n" . $errstr . "\n\n" .
-	"File: " . $errfile . " on line " . $errline . "\n\n" .
-	"Trace: \n" . $trace_str . "\n\n" .
-	"Get:\n". print_r($_GET,true) . "\n\n" .
-	"Post:\n". print_r($_POST,true) . "\n\n" .
-	"Cookie:\n". print_r($_COOKIE,true) . "\n\n" .
-	"Server:\n". print_r($_SERVER,true) . "\n\n" .
-	"Code: " . $errno;
-	if($insert_pre){
-		$message = "<pre>$message</pre>";
-	}
-
-	return $message;
-}
-
-function set_leading_zeros($number){
-	if(strlen($number)<2){
-		return "0$number";
-	}
-	else{
-		return $number;
-	}
 }
 
 function ensurePathLastSlash(&$path){
@@ -90,30 +57,6 @@ function get_age ($birthday){
 		$YearDiff--;
 	}
 	return $YearDiff;
-}
-
-/**
- * Draws HTML combo box
- *
- * @param string $name
- * @param assoc_array $values
- * @param string $default
- * @param string $parameters
- * @return string HTML
- */
-function draw_combo_box($name, $values, $default = '', $parameters = ''){
-	$field = '<select name="' . $name . '"';
-	if(!empty($parameters)) $field .= ' ' . $parameters;
-	$field .= '>';
-	foreach($values as $key => $val){
-		$field .= '<option value="' . $key . '"';
-		if($default == $key){
-			$field .= ' SELECTED';
-		}
-		$field .= '>' . $val . '</option>';
-	}
-	$field .= '</select>';
-	return $field;
 }
 
 /**
@@ -374,31 +317,6 @@ function removeAccents($msg){
 	return preg_replace(array_keys($a), array_values($a), $msg);
 }
 
-function get_age_from_birthday ($birthday){
-	list($Year, $Month, $Day) = explode("-",$birthday);
-
-	$YearDiff = date("Y") - $Year;
-	if(date("m") < $Month || (date("m") == $Month && date("d") < $Day)){
-		$YearDiff--;
-	}
-	return $YearDiff;
-}
-
-function draw_hiddens_from_get_params($exclude_array = '') {
-	global $_GET;
-	if (!is_array($exclude_array)) $exclude_array = array();
-	$hiddens = '';
-	if (is_array($_GET) && (sizeof($_GET) > 0)) {
-		reset($_GET);
-		while (list($key, $value) = each($_GET)) {
-			if ( (strlen($value) > 0) && (!in_array($key, $exclude_array))) {
-				$hiddens .= '<input type="hidden" name="'.$key.'" value="'.$value.'">';
-			}
-		}
-	}
-
-	return $hiddens;
-}
 /**
  * Get value of array by key
  *

@@ -64,7 +64,7 @@ class ImageModificator extends DbAccessor
 		}
 		else{
 			if(isset($cropConfig->applyDefaultCrop) and $cropConfig->applyDefaultCrop == true){
-				$cropSettings = static::getDefaultCropSettings($image, $cropConfig);
+				$cropSettings = static::getDefaultCropSettings($image, $cropConfig->ratio);
 			}
 			else{
 				throw new ImageModificatorException("Crop settings not found for image {$image->fileName}");
@@ -147,7 +147,7 @@ class ImageModificator extends DbAccessor
 		}
 		
 		$this->query->exec("DELETE FROM `".Tbl::get("TBL_CROP_SETTINGS")."` 
-								WHERE `filename` = '".$image->fileName."'");
+								WHERE `filename` = '$fileName'");
 	}
 	
 	/**
@@ -190,16 +190,13 @@ class ImageModificator extends DbAccessor
 	 * @param Config $cropConfig
 	 * @return Config
 	 */
-	public static function getDefaultCropSettings(Image $image, Config $cropConfig){
-		if(!isset($cropConfig->ratio)){
-			throw new InvalidArgumentException("Ratio is not specified to crop image {$image->fileName}");
-		}
-		if(!preg_match('/^[1-9]\d*\:[1-9]\d*$/', $cropConfig->ratio)){
+	public static function getDefaultCropSettings(Image $image, $ratio){
+		if(!preg_match('/^[1-9]\d*\:[1-9]\d*$/', $ratio)){
 			throw new InvalidArgumentException("Invalid ratio specified. Ratio should be in D:D format.");
 		}
 		
 		list($imageW, $imageH) = $image->getDimensions();
-		list($ratioW, $ratioH) = explode(":", $cropConfig->ratio);
+		list($ratioW, $ratioH) = explode(":", $ratio);
 		
 		$x = 0;
 		$y = 0;
@@ -293,7 +290,7 @@ class ImageModificator extends DbAccessor
 	 * @throws InvalidArgumentException
 	 * @return Config
 	 */
-	public function getCropMinSize(Image $image, $modelName){
+	public function getCropMinSize($modelName){
 		if(!isset($this->config->imageModels->$modelName)){
 			throw new InvalidArgumentException("There is no such image model with name $modelName");
 		}
@@ -301,12 +298,11 @@ class ImageModificator extends DbAccessor
 		$smallSideMinSize = $this->config->imageModels->$modelName->actions->crop->smallSideMinSize;
 		$ratio = $this->config->imageModels->$modelName->actions->crop->ratio;
 		
-		list($imageWidth, $imageHeight) = $image->getDimensions();
 		list($ratioW, $ratioH) = explode(":", $ratio);
 		
 		
 		$cropMinSize = new Config();
-		if($imageWidth >= $imageHeight){
+		if($ratioW >= $ratioH){
 			$cropMinSize->width = floor($ratioW/$ratioH * $smallSideMinSize);
 			$cropMinSize->height = $smallSideMinSize;
 		}

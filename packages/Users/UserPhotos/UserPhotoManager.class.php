@@ -154,6 +154,17 @@ class UserPhotoManager extends Filterable
 		
 		ImageUploader::deleteImage($photo->fileName, $uploadDir);
 		
+		
+		if(PackageManager::isPluginLoaded("Image", "ImageCache")){
+			Reg::get(ConfigManager::getConfig("Image", "ImageCache")->Objects->ImageCache)->
+				clearImageCache($photo->fileName);
+		}
+		
+		if(PackageManager::isPluginLoaded("Image", "ImageModificator")){
+			Reg::get(ConfigManager::getConfig("Image", "ImageModificator")->Objects->ImageModificator)->
+				deleteCropSettings($photo->fileName);
+		}
+		
 		$this->query->exec("DELETE FROM `".Tbl::get('TBL_USERS_PHOTOS')."` 
 								WHERE `id` = '{$photo->id}' LIMIT 1");
 		

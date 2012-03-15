@@ -17,7 +17,7 @@ class LoaderRewriteAliasURL extends Loader{
 	}
 	
 	protected function loadrewriteAliasURL(){
-		$rewriteURLconfig = $this->packageManager->getPluginConfig("RewriteURL", "RewriteURL");
+		$rewriteURLconfig = $this->packageManager->getPluginConfig("RewriteURL", "RewriteURL")->AuxConfig;
 		$hostConfig = ConfigManager::getConfig("Host","Host");
 		
 		$this->rewriteAliasURL =  new RewriteAliasURL($rewriteURLconfig, $this->aliasMap->getAliasMap(Reg::get($hostConfig->Objects->Host)));

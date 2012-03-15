@@ -33,9 +33,14 @@ class SmartyWrapper extends Smarty {
 	private $templateExtends;
 	
 	/**
-	 * The selected page layout. One of located in /templates/layouts folder
+	 * The selected page layout name. One of located in /templates/layouts folder
 	 */
-	private $layout;
+	private $layoutName;
+	
+	/**
+	 * The selected page layout path. One of located in /templates/layouts folder
+	 */
+	private $layoutPath;
 
 	/**
 	 * CSSs that should be added to the displayed page
@@ -295,14 +300,15 @@ class SmartyWrapper extends Smarty {
 			throw new InvalidArgumentException("Layout is not specified");
 		}
 		if(file_exists($this->getFilePathFromTemplate('layouts/' . $layout . '.tpl', true))){
-			$this->layout = $this->getFilePathFromTemplate('layouts/' . $layout . '.tpl');				
+			$this->layoutPath = $this->getFilePathFromTemplate('layouts/' . $layout . '.tpl');
 		}
 		elseif(file_exists($this->template_dir . "system/layouts/" . $layout . '.tpl')){
-			$this->layout = "system/layouts/" . $layout . '.tpl';
+			$this->layoutPath = "system/layouts/" . $layout . '.tpl';
 		}
 		else{
 			throw new RuntimeException("Layout $layout doesn't exist");
 		}
+		$this->layoutName = $layout;
 	}
 
 	private function getCssFilePath($fileName){
@@ -519,6 +525,16 @@ class SmartyWrapper extends Smarty {
 			return;
 		}
 		
+		// Call layout init hook if there is any
+		$hookFunctionName = 'initLayout_' . $this->layoutName;
+		if(function_exists($hookFunctionName)){
+			$hookName = 'hookInitLayout_' . $this->layoutName;
+			$layoutHook = new Hook($hookName, $hookFunctionName);
+			HookManager::registerHook($layoutHook);
+			
+			HookManager::callHook($hookName);
+		}
+		
 		// Check if page exists and if not show 404 error page
 		if(!file_exists($this->getFilePathFromTemplate("{$this->modulesPath}{$this->module}/{$this->page}.tpl", true))){
 			header("HTTP/1.0 404 Not Found");
@@ -554,7 +570,7 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		// Finally display
-		parent::display ( $this->layout );
+		parent::display ( $this->layoutPath );
 	}
 }
 ?>

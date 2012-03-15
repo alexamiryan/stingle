@@ -55,74 +55,20 @@ class UserPhotoManager extends Filterable
 		if($uploadDir !== null){
 			$imageUploaderConfig = new Config();
 			$imageUploaderConfig->uploadDir = $uploadDir;
-			$fileName = ImageUploader::upload($file, null, $imageUploaderConfig);
+			$image = ImageUploader::upload($file, null, $imageUploaderConfig);
 		}
 		else{
-			$fileName = ImageUploader::upload($file);
+			$image = ImageUploader::upload($file);
 		}
 		
 		$this->query->exec("INSERT INTO `".Tbl::get('TBL_USERS_PHOTOS')."` 
 													(`user_id`, `filename`) 
-													VALUES ('$userId', '$fileName')");
+													VALUES ('$userId', '".$image->fileName."')");
 		$photoId = $this->query->getLastInsertId();
-		$this->applyDefaultCropSettings($photoId);
 		
 		return $photoId;
 	}
 	
-	
-	/**
-	 * Apply default crop settings to photo. 
-	 * Default crop is on the center and max available size.
-	 * 
-	 * @param integer $photoId
-	 */
-	public function applyDefaultCropSettings($photoId){
-		if(empty($photoId) or !is_numeric($photoId)){
-			throw new InvalidArgumentException("Invalid \$photoId specified!");
-		}
-		
-		$photo = $this->getPhoto($photoId);
-		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader")->AuxConfig;
-		
-		$image = new ImageManipulator($imageUploaderConfig->uploadDir . $photo->fileName);
-		list($width, $height) = $image->getDimensions();
-		
-		$cropParams = array();
-		if($width >= $height) {
-			$cropParams['x'] = ($width / 2) - ($height / 2);
-			$cropParams['y'] = 0;
-			$cropParams['width'] = $height;
-			$cropParams['height'] = $height;
-		}
-		else {
-			$cropParams['x'] = 0;
-			$cropParams['y'] = ($height / 2) - ($width / 2);
-			$cropParams['width'] = $width;
-			$cropParams['height'] = $width; 
-		}
-		$this->updatePhotoCropSettings($photo->id, $cropParams);
-	}
-	
-	
-	/**
-	 * Update existing photo's crop settings.
-	 * 
-	 * @param integer $photoId
-	 * @param array $cropParams (x, y, width, height)
-	 * @throws InvalidArgumentException
-	 */
-	public function updatePhotoCropSettings($photoId, $cropParams){
-		if(empty($photoId) or !is_numeric($photoId)){
-			throw new InvalidArgumentException("Invalid \$photoId specified!");
-		}
-		
-		$this->query->exec("UPDATE `".Tbl::get('TBL_USERS_PHOTOS')."` 	SET	`crop_x`='{$cropParams['x']}', 
-																			`crop_y`='{$cropParams['y']}',
-																			`crop_width`='{$cropParams['width']}',
-																			`crop_height`='{$cropParams['height']}'
-																		WHERE `id` = '{$photoId}'");
-	}
 	
 	/**
 	 * Check if user don't have any default photo and 
@@ -208,6 +154,17 @@ class UserPhotoManager extends Filterable
 		
 		ImageUploader::deleteImage($photo->fileName, $uploadDir);
 		
+		
+		if(Reg::get('packageMgr')->isPluginLoaded("Image", "ImageCache")){
+			Reg::get(ConfigManager::getConfig("Image", "ImageCache")->Objects->ImageCache)->
+				clearImageCache($photo->fileName);
+		}
+		
+		if(Reg::get('packageMgr')->isPluginLoaded("Image", "ImageModificator")){
+			Reg::get(ConfigManager::getConfig("Image", "ImageModificator")->Objects->ImageModificator)->
+				deleteCropSettings($photo->fileName);
+		}
+		
 		$this->query->exec("DELETE FROM `".Tbl::get('TBL_USERS_PHOTOS')."` 
 								WHERE `id` = '{$photo->id}' LIMIT 1");
 		
@@ -274,10 +231,6 @@ class UserPhotoManager extends Filterable
 		$userPhotoObj->fileName = $dbRow['filename'];
 		$userPhotoObj->default = $dbRow['default'];
 		$userPhotoObj->approved = $dbRow['approved'];
-		$userPhotoObj->cropX = $dbRow['crop_x'];
-		$userPhotoObj->cropY = $dbRow['crop_y'];
-		$userPhotoObj->cropWidth = $dbRow['crop_width'];
-		$userPhotoObj->cropHeight = $dbRow['crop_height'];
 		
 		return $userPhotoObj;
 	}

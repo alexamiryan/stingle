@@ -122,18 +122,23 @@ abstract class Filterable extends DbAccessor{
 	
 	protected function generateOrder(Filter $filter = null){
 		if($filter){
-			$order_statemnent = '';
-			foreach($filter->getOrder() as $one_order){
-				list($field, $order_name) = $one_order;
-				$table_alias = $this->getFilterableFieldAlias($field);
-				$order_statemnent .= " `$table_alias`.`$field` $order_name, ";
+			if($filter->is_order_random){
+				$order_statemnent = ' rand()';
 			}
-			
-			foreach($filter->getExtraOrder() as $one_order){
-				list($table_alias, $field, $order_name) = $one_order;
-				$order_statemnent .= " `$table_alias`.`$field` $order_name, ";
+			else{
+				$order_statemnent = '';
+				foreach($filter->getOrder() as $one_order){
+					list($field, $order_name) = $one_order;
+					$table_alias = $this->getFilterableFieldAlias($field);
+					$order_statemnent .= " `$table_alias`.`$field` $order_name, ";
+				}
+				
+				foreach($filter->getExtraOrder() as $one_order){
+					list($table_alias, $field, $order_name) = $one_order;
+					$order_statemnent .= " `$table_alias`.`$field` $order_name, ";
+				}
+				$order_statemnent = substr($order_statemnent, 0, -2);
 			}
-			$order_statemnent = substr($order_statemnent, 0, -2);
 			if(!empty($order_statemnent)){
 				$order_statemnent = ' ORDER BY' . $order_statemnent;
 			}

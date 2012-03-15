@@ -464,4 +464,37 @@ function parse($text, $params = null){
 	}
 	return false;
 }
+/**
+ * 
+ * @param Array $array
+ */
+function addSlashesToArray(&$array){
+	foreach($array as $key => $val){
+		if(is_array($val)){
+			addslashesToArray($val);
+		}
+		else{
+			$array[$key] = addslashes($val);
+		}
+	}
+}
+/**
+ * 
+ * @param Array $array
+ */
+function stripSlashesFromArray(&$array){
+	if(!is_array($array)){
+		stripslashes($array);
+	}
+	else{
+		foreach($array as $key => $val){
+			if(is_array($val)){
+				stripSlashesFromArray($val);
+			}
+			else{
+				$array[$key] = stripslashes($val);
+			}
+		}
+	}
+}
 ?>

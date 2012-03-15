@@ -76,7 +76,7 @@ class ImageUploader
 	 * @throws RuntimeException
 	 * @throws InvalidArgumentException
 	 */
-	public static function deleteImage($fileName, $uploadDir = null, $strict = true){
+	public static function deleteImage($fileName, $uploadDir = null, $strict = false){
 		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader")->AuxConfig;
 		if($uploadDir === null and isset($imageUploaderConfig->uploadDir)){
 			$uploadDir = $imageUploaderConfig->uploadDir;

@@ -155,12 +155,12 @@ class UserPhotoManager extends Filterable
 		ImageUploader::deleteImage($photo->fileName, $uploadDir);
 		
 		
-		if(PackageManager::isPluginLoaded("Image", "ImageCache")){
+		if(Reg::get('packageMgr')->isPluginLoaded("Image", "ImageCache")){
 			Reg::get(ConfigManager::getConfig("Image", "ImageCache")->Objects->ImageCache)->
 				clearImageCache($photo->fileName);
 		}
 		
-		if(PackageManager::isPluginLoaded("Image", "ImageModificator")){
+		if(Reg::get('packageMgr')->isPluginLoaded("Image", "ImageModificator")){
 			Reg::get(ConfigManager::getConfig("Image", "ImageModificator")->Objects->ImageModificator)->
 				deleteCropSettings($photo->fileName);
 		}

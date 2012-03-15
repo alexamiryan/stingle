@@ -1,8 +1,6 @@
 <?
 class UsersFilter extends Filter {
 	
-	public $is_order_random = false;
-	
 	public function __construct($only_enabled_users = true){
 		if ($only_enabled_users){
 			$this->setCondition(UserManagement::FILTER_ENABLED_FIELD, Filter::MATCH_EQUAL, UserManagement::STATE_ENABLE_ENABLED);
@@ -51,11 +49,6 @@ class UsersFilter extends Filter {
 		}
 		
 		parent::setOrder($field, $order);
-		return $this;
-	}
-	
-	public function setRandOrder(){
-		$this->is_order_random = true;
 		return $this;
 	}
 	

@@ -24,6 +24,8 @@ abstract class Filter {
 	protected $order = array();
 	protected $extraOrder = array();
 	
+	public $is_order_random = false;
+	
 	private static function detectMatchConstant($name){
 		return preg_match("/MATCH_[A-Z]+/", $name);
 	}
@@ -148,9 +150,7 @@ abstract class Filter {
 	}
 	
 	public function setRandOrder(){
-		array_push($this->extraOrder, array(
-			'' ,'rand()', ''
-		));
+		$this->is_order_random = true;
 		return $this;
 	}
 	

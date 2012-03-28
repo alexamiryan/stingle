@@ -7,6 +7,7 @@ function format_exception(Exception $e, $insert_pre = false){
 	"Get:\n". print_r($_GET,true) . "\n\n" .
 	"Post:\n". print_r($_POST,true) . "\n\n" .
 	"Cookie:\n". print_r($_COOKIE,true) . "\n\n" .
+	"Session:\n". print_r($_SESSION,true) . "\n\n" .
 	"Server:\n". print_r($_SERVER,true) . "\n\n" .
 	"Code: " . $e->getCode();
 	if($insert_pre){

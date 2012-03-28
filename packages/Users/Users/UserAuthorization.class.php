@@ -108,14 +108,15 @@ class UserAuthorization extends DbAccessor{
 		}
 		elseif(!empty($_COOKIE[$this->config->loginCookieName])){
 			$cookieData = explode(":", $_COOKIE[$this->config->loginCookieName]);
-			$userId = $cookieData[0];
-			$encryptedSalt = $cookieData[1];
-			
-			$correctSalt = hash('sha256', $this->um->getLoginById($userId) . ":" . $this->um->getPassword($userId));
-			
-			if($encryptedSalt === $correctSalt){
-				$this->usr = $this->um->getObjectById($userId);
-				$this->doLogin($this->usr->getLogin(), $this->um->getPassword($this->usr->getId()), false, true);
+			if(count($cookieData) == 2){
+				list($userId, $encryptedSalt) = $cookieData;
+				
+				$correctSalt = hash('sha256', $this->um->getLoginById($userId) . ":" . $this->um->getPassword($userId));
+				
+				if($encryptedSalt === $correctSalt){
+					$this->usr = $this->um->getObjectById($userId);
+					$this->doLogin($this->usr->getLogin(), $this->um->getPassword($this->usr->getId()), false, true);
+				}
 			}
 		}
 		return $this->usr;

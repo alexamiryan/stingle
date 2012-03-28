@@ -20,6 +20,7 @@ abstract class Filter {
 	protected $extraJoins = array();
 	protected $extraWheres = array();
 	protected $customWheres = array();
+	protected $customJoins = array();
 	protected $limits = array();
 	protected $order = array();
 	protected $extraOrder = array();
@@ -132,6 +133,11 @@ abstract class Filter {
 		return $this;
 	}
 	
+	protected function setCustomJoin($customJoin){
+		$this->customJoins = $customJoin;
+		return $this;
+	}
+	
 	public function setLimits($offset, $length = null){
 		if($length === null){
 			$this->limits = array(0, $offset);
@@ -201,8 +207,14 @@ abstract class Filter {
 		return $this->extraWheres;
 	}
 	
+	// XIMIA: need to remove this
 	public function getCustomWheres(){
 		return $this->customWheres;
+	}
+
+	// XIMIA: need to remove this
+	public function getCustomJoins(){
+		return $this->customJoins;
 	}
 }
 

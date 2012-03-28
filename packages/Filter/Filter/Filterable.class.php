@@ -103,6 +103,11 @@ abstract class Filterable extends DbAccessor{
 				}
 			}
 			
+			$customJoins = $filter->getCustomJoins();
+			if(!empty($customJoins)){
+				$joins .= " $customJoins";
+			}
+			
 			return $joins;
 		}
 		return false;

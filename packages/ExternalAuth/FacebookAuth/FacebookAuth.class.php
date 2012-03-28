@@ -129,7 +129,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 		if(is_array($fbUser)){
 			foreach ($fbUser as $key => $field) {
 				if($field != null) {
-					$othersArray[$key] = addslashes($field);
+					$othersArray[$key] = $field;
 				}
 			}
 		}
@@ -388,7 +388,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 		}
 		$this->query->exec("INSERT INTO `".Tbl::get('TBL_FB_USER_INFO')."` 
 									(`user_id`,`ext_user_id`, `name`) VALUES
-									('$userId', '$extUser->id', '".(isset($extUser->otherFields["name"]) ? $extUser->otherFields["name"] : "")."')");
+									('$userId', '$extUser->id', '".(isset($extUser->otherFields["name"]) ? addslashes($extUser->otherFields["name"]) : "")."')");
 	}
 	
 	/**

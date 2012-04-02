@@ -12,7 +12,7 @@ class LoaderFacebookAuth extends Loader{
 	}
 	
 	protected function loadFacebookAuth(){	
-		$fbAuth = new FacebookAuth($this->config->auxConfig);
+		$fbAuth = new FacebookAuth($this->config->AuxConfig);
 		$this->register($fbAuth);
 	}
 }

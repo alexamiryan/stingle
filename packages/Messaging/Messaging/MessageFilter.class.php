@@ -1,12 +1,38 @@
 <?
 class MessageFilter extends Filter {
 	
-	public function setId($match, $id){
-		if(!is_numeric($id)){
-			throw new InvalidIntegerArgumentException("\$id have to be integer.");
+	public function __construct($headersOnly = true){
+		parent::__construct();
+		
+		if($headersOnly){
+			$this->qb->select(new Field("*"));
+		}
+		else{
+			$this->qb->select(array(
+					new Field('id', 'main'), 
+					new Field('subject', 'main'), 
+					new Field('date', 'main'), 
+					new Field('sender', 'extra'), 
+					new Field('read', 'extra'), 
+					new Field('trashed', 'extra'), 
+					new Field('deleted', 'extra')));
 		}
 		
-		$this->setCondition(MessageManagement::FILTER_ID_FIELD, $match, $id);
+		$this->qb->from(Tbl::get('TBL_MESSAGES', 'MessageManagement'), "main")
+			->leftJoin(Tbl::get('TBL_EXTRA', 'MessageManagement'), "extra", 
+					$this->qb->expr()->equal(new Field('id', 'main'), new Field('message_id', 'extra')));
+	}
+	
+	public function setSelectCount(){
+		$this->qb->select($this->qb->expr()->count(new Field('*', 'cnt')));
+	}
+	
+	public function setId($id){
+		if(empty($id) or !is_numeric($id)){
+			throw new InvalidIntegerArgumentException("\$id have to be non zero integer.");
+		}
+		
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("id", "main"), $id));
 		return $this;
 	}
 	
@@ -15,7 +41,7 @@ class MessageFilter extends Filter {
 			throw new InvalidTimestampArgumentException("\$date have to be integer.");
 		}
 		
-		$this->setCondition(MessageManagement::FILTER_DATE_FIELD, Filter::MATCH_GREATER_EQUAL, $date);
+		$this->qb->andWhere($this->qb->expr()->greaterEqual(new Field("date", "main"), $date));
 		return $this;
 	}
 	
@@ -24,7 +50,7 @@ class MessageFilter extends Filter {
 			throw new InvalidTimestampArgumentException("\$date have to be integer.");
 		}
 		
-		$this->setCondition(MessageManagement::FILTER_DATE_FIELD, Filter::MATCH_LESS_EQUAL, $date);
+		$this->qb->andWhere($this->qb->expr()->lessEqual(new Field("date", "main"), $date));
 		return $this;
 	}
 		
@@ -33,7 +59,7 @@ class MessageFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$senderId have to be integer.");
 		}
 		
-		$this->setCondition(MessageManagement::FILTER_SENDER_FIELD, Filter::MATCH_EQUAL, $senderId);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("sender", "extra"), $senderId));
 		return $this;
 	}
 	
@@ -42,22 +68,7 @@ class MessageFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$receiverId have to be integer.");
 		}
 		
-		$this->setCondition(MessageManagement::FILTER_RECEIVER_FIELD, Filter::MATCH_EQUAL, $receiverId);
-		return $this;
-	}
-	
-	public function setWorker($workerGroupId){
-		if(!is_numeric($workerGroupId)){
-			throw new InvalidIntegerArgumentException("\$workerGroupId have to be integer.");
-		}
-		
-		$this->setExtraJoin(
-			WUM_USERS_GROUPS, "ug", "user_id",
-			MessageManagement::FILTER_RECEIVER_FIELD,
-			MySqlDatabase::JOIN_LEFT
-		);
-		$this->setExtraWhere("ug", "group_id", $workerGroupId, Filter::MATCH_EQUAL);
-		$this->setExtraWhere("ug", "is_primary", 1, Filter::MATCH_EQUAL);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("receiver", "extra"), $receiverId));
 		return $this;
 	}
 	
@@ -69,17 +80,13 @@ class MessageFilter extends Filter {
 			case MessageManagement::BOX_INBOX :
 				$this->setTrashedStatus(MessageManagement::STATUS_TRASHED_UNTRASHED);
 				$this->setDeletedStatus(MessageManagement::STATUS_DELETED_UNDELETED);
-				$this->setFieldsComparison(MessageManagement::FILTER_RECEIVER_FIELD, 
-											MessageManagement::FILTER_SENDER_FIELD, 
-											Filter::MATCH_NOT_EQUAL);
+				$this->qb->andWhere($this->qb->expr()->notEqual(new Field("receiver", "extra"), new Field("sender", "extra")));
 				$this->setReceiver($userId);
 				break;
 			case MessageManagement::BOX_SENT :
 				$this->setTrashedStatus(MessageManagement::STATUS_TRASHED_UNTRASHED);
 				$this->setDeletedStatus(MessageManagement::STATUS_DELETED_UNDELETED);
-				$this->setFieldsComparison(MessageManagement::FILTER_RECEIVER_FIELD, 
-											MessageManagement::FILTER_SENDER_FIELD, 
-											Filter::MATCH_EQUAL);
+				$this->qb->andWhere($this->qb->expr()->equal(new Field("receiver", "extra"), new Field("sender", "extra")));
 				$this->setSender($userId);
 				break;
 			case MessageManagement::BOX_TRASH :
@@ -100,7 +107,7 @@ class MessageFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$readStatus have to be integer.");
 		}
 		
-		$this->setCondition(MessageManagement::FILTER_READ_FIELD, FIlter::MATCH_EQUAL, $readStatus);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("read", "extra"), $readStatus));
 		return $this;
 	}
 	
@@ -109,7 +116,7 @@ class MessageFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$trashedStatus have to be integer.");
 		}
 		
-		$this->setCondition(MessageManagement::FILTER_TRASHED_FIELD, FIlter::MATCH_EQUAL, $trashedStatus);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("trashed", "extra"), $trashedStatus));
 		return $this;
 	}
 	
@@ -117,9 +124,17 @@ class MessageFilter extends Filter {
 		if(!is_numeric($deletedStatus)){
 			throw new InvalidIntegerArgumentException("\$deletedStatus have to be integer.");
 		}
-		$this->setCondition(MessageManagement::FILTER_DELETED_FIELD, FIlter::MATCH_EQUAL, $deletedStatus);
+		
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("deleted", "extra"), $deletedStatus));
 		return $this;
 	}
 	
+	public function setOrderDateAsc(){
+		$this->setOrder(new Field("date", "main"), MySqlDatabase::ORDER_ASC);
+	}
+	
+	public function setOrderDateDesc(){
+		$this->setOrder(new Field("date", "main"), MySqlDatabase::ORDER_DESC);
+	}
 }
 ?>

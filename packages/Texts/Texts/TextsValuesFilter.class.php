@@ -1,65 +1,55 @@
 <?
 class TextsValuesFilter extends Filter {
 	
+	public function __construct(){
+		parent::__construct();
 	
-	public function setId($textValId, $match = Filter::MATCH_EQUAL){
-		if(empty($textValId)){
-			throw new InvalidIntegerArgumentException("\$textValId have to be not empty");
-		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
-		
-		if(!is_array($textValId)){
-			if(!is_numeric($textValId)){
-				throw new InvalidIntegerArgumentException("\$textValId have to be non zero integer");
-			}
-			$textValId = array($textValId);
+		$this->qb->select(new Field("*", "texts_vals"))
+			->from(Tbl::get('TBL_TEXTS_VALUES', 'TextsValuesManager'), "texts_vals");
+	}
+	
+	public function setId($textValId){
+		if(empty($textValId) or !is_numeric($textValId)){
+			throw new InvalidIntegerArgumentException("\$textValId have to be non zero integer");
 		}
 		
-		if(count($textValId) == 1){
-			$this->setCondition(TextsValuesManager::FILTER_ID_FIELD, $match, $textValId[0]);
-		}
-		else{
-			$this->setCondition(TextsValuesManager::FILTER_ID_FIELD, $match, $textValId);
-		}
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("id", "texts_vals"), $textValId));
 		return $this;
 	}
 	
-	public function setTextId($textId, $match = Filter::MATCH_EQUAL){
-		if(empty($textId)){
+	public function setIdIn($textValIds){
+		if(empty($textValIds) or !is_array($textValIds)){
+			throw new InvalidIntegerArgumentException("\$textValIds have to be not empty array");
+		}
+		
+		$this->qb->andWhere($this->qb->expr()->in(new Field("id", "texts_vals"), $textValIds));
+		return $this;
+	}
+	
+	public function setTextId($textId){
+		if(empty($textId) or !is_numeric($textId)){
 			throw new InvalidIntegerArgumentException("\$textId have to be not empty");
 		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
 		
-		if(!is_array($textId)){
-			if(!is_numeric($textId)){
-				throw new InvalidIntegerArgumentException("\$textId have to be non zero integer");
-			}
-			$textId = array($textId);
-		}
-		
-		if(count($textId) == 1){
-			$this->setCondition(TextsValuesManager::FILTER_TEXT_ID_FIELD, $match, $textId[0]);
-		}
-		else{
-			$this->setCondition(TextsValuesManager::FILTER_TEXT_ID_FIELD, $match, $textId);
-		}
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("text_id", "texts_vals"), $textId));
 		return $this;
 	}
 	
-	public function setHostLanguageId($hostLanguageId, $match = Filter::MATCH_EQUAL){
-		if(empty($hostLanguageId)){
-			throw new InvalidIntegerArgumentException("\$hostLanguageId have to be not empty");
-		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
+	public function setTextIdIn($textIds){
+		if(empty($textIds) or !is_array($textIds)){
+			throw new InvalidIntegerArgumentException("\$textIds have to be not empty array");
 		}
 		
-		$this->setCondition(TextsValuesManager::FILTER_HOST_LANGUAGE_FIELD, $match, $hostLanguageId);
+		$this->qb->andWhere($this->qb->expr()->in(new Field("text_id", "texts_vals"), $textIds));
+		return $this;
+	}
+	
+	public function setHostLanguageId($hostLanguageId){
+		if(empty($hostLanguageId) or !is_numeric($hostLanguageId)){
+			throw new InvalidIntegerArgumentException("\$hostLanguageId have to be non zero integer");
+		}
 		
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("host_language", "texts_vals"), $hostLanguageId));
 		return $this;
 	}
 	
@@ -68,7 +58,7 @@ class TextsValuesFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$display have to be integer");
 		}
 		
-		$this->setCondition(TextsValuesManager::FILTER_DISPLAY_FIELD, Filter::MATCH_EQUAL, $display);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("display", "texts_vals"), $display));
 		return $this;
 	}
 	

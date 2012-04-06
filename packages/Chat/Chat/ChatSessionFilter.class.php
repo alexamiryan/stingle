@@ -1,15 +1,19 @@
 <?
 class ChatSessionFilter extends Filter {
 	
-	public function setId($id, $match = Filter::MATCH_EQUAL){
+	public function __construct(){
+		parent::__construct();
+	
+		$this->qb->select(new Field("*", "chat_msg"))
+			->from(Tbl::get('TBL_CHAT_SESSIONS', 'ChatSessionManager'), "chat_sess");
+	}
+	
+	public function setId($id){
 		if(empty($id) or !is_numeric($id)){
 			throw new InvalidIntegerArgumentException("\$id have to be non zero integer");
 		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
 		
-		$this->setCondition(ChatSessionManager::FILTER_ID_FIELD, $match, $id);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("id", "chat_sess"), $id));
 		return $this;
 	}
 	
@@ -18,7 +22,7 @@ class ChatSessionFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$id have to be non zero integer");
 		}
 		
-		$this->setCondition(ChatSessionManager::FILTER_INVITER_USER_ID_FIELD, Filter::MATCH_EQUAL, $id);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("inviter_user_id", "chat_sess"), $id));
 		return $this;
 	}
 	
@@ -27,59 +31,49 @@ class ChatSessionFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$id have to be non zero integer");
 		}
 		
-		$this->setCondition(ChatSessionManager::FILTER_INVITED_USER_ID_FIELD, Filter::MATCH_EQUAL, $id);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("invited_user_id", "chat_sess"), $id));
 		return $this;
 	}
 	
-	public function setSessionStartDate($time, $match = Filter::MATCH_GREATER){
+	public function setSessionStartDate($time){
 		if(empty($time)){
 			throw new InvalidArgumentException("\$time have to be non empty string");
 		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
-		$this->setCondition(ChatSessionManager::FILTER_DATE_FIELD, $match, $time);
+		
+		$this->qb->andWhere($this->qb->expr()->greater(new Field("date", "chat_sess"), time));
 		return $this;
 	}
 	
-	public function setSessionCloseDate($time, $match = Filter::MATCH_GREATER){
+	public function setSessionCloseDateGreater($time){
 		if(empty($time)){
 			throw new InvalidArgumentException("\$time have to be non empty string");
 		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
-		$this->setCondition(ChatSessionManager::FILTER_CLOSED_DATE_FIELD, $match, $time);
+		
+		$this->qb->andWhere($this->qb->expr()->greater(new Field("closed_date", "chat_sess"), time));
 		return $this;
 	}
 	
-	public function setSessionClosedStatus($status, $match = Filter::MATCH_EQUAL){
+	public function setSessionClosedStatus($status){
 		if(!is_numeric($status)){
 			throw new InvalidIntegerArgumentException("\$status have to be non zero integer");
 		}
 		if(!in_array($status, ChatSessionManager::getConstsArray("CLOSED_STATUS"))){
 			throw new InvalidIntegerArgumentException("Invalid \$status specified");
 		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
 		
-		$this->setCondition(ChatSessionManager::FILTER_CLOSED_FIELD, $match, $status);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("closed", "chat_sess"), $status));
 		return $this;
 	}
 	
-	public function setSessionClosedReason($reason, $match = Filter::MATCH_EQUAL){
+	public function setSessionClosedReason($reason){
 		if(!is_numeric($reason)){
 			throw new InvalidIntegerArgumentException("\$status have to be non zero integer");
 		}
 		if(!in_array($reason, ChatSessionManager::getConstsArray("CLOSED_REASON"))){
 			throw new InvalidIntegerArgumentException("Invalid \$status specified");
 		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
 		
-		$this->setCondition(ChatSessionManager::FILTER_CLOSED_REASON_FIELD, $match, $reason);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("closed_reason", "chat_sess"), $reason));
 		return $this;
 	}
 	
@@ -88,7 +82,11 @@ class ChatSessionFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$userId have to be non zero integer");
 		}
 		
-		$this->setCustomWhere("(`sess`.`inviter_user_id`='$userId' OR `sess`.`invited_user_id`='$userId')");
+		$orClause = new Orx();
+		$orClause->add($this->qb->expr()->equal(new Field("inviter_user_id", "chat_sess"), $userId));
+		$orClause->add($this->qb->expr()->equal(new Field("invited_user_id", "chat_sess"), $userId));
+		
+		$this->qb->andWhere($orClause);
 		return $this;
 	}
 	
@@ -100,22 +98,22 @@ class ChatSessionFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$userId2 have to be non zero integer");
 		}
 		
-		$this->setCustomWhere("
-								(
-									`sess`.`inviter_user_id`='$userId1' 
-									AND 
-									`sess`.`invited_user_id` = '$userId2'
-								)
-								OR
-								(
-									`sess`.`inviter_user_id`='$userId2' 
-									AND 
-									`sess`.`invited_user_id` = '$userId1'
-								)
-							");
+		$andClause1 = new Andx();
+		$andClause1->add($this->qb->expr()->equal(new Field('inviter_user_id', 'chat_sess'), $userId1));
+		$andClause1->add($this->qb->expr()->equal(new Field('invited_user_id', 'chat_sess'), $userId2));
+		
+		$andClause2 = new Andx();
+		$andClause2->add($this->qb->expr()->equal(new Field('inviter_user_id', 'chat_sess'), $userId2));
+		$andClause2->add($this->qb->expr()->equal(new Field('invited_user_id', 'chat_sess'), $userId1));
+		
+		$orClause = new Orx();
+		$orClause->add($andClause1);
+		$orClause->add($andClause2);
+		
+		$this->qb->andWhere($orClause);
+		
 		return $this;
 	}
-	
 	
 }
 ?>

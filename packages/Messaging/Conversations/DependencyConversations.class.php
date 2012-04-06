@@ -1,5 +1,5 @@
 <?
-class DependencyMessaging extends Dependency
+class DependencyConversations extends Dependency
 {
 	public function __construct(){
 		$this->addPackage("Db");

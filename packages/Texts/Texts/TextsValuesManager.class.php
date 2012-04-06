@@ -1,12 +1,7 @@
 <?
-class TextsValuesManager extends Filterable{
+class TextsValuesManager extends DbAccessor{
 	
 	const TBL_TEXTS_VALUES = "texts_values";
-	
-	const FILTER_ID_FIELD = "id";
-	const FILTER_TEXT_ID_FIELD = "text_id";
-	const FILTER_HOST_LANGUAGE_FIELD = "host_language";
-	const FILTER_DISPLAY_FIELD = "display";
 	
 	private $host;
 	private $language;
@@ -16,18 +11,6 @@ class TextsValuesManager extends Filterable{
 		
 		$this->host = $host;
 		$this->language = $language;
-	}
-	
-	protected function getFilterableFieldAlias($field){
-		switch($field){
-			case static::FILTER_ID_FIELD :
-			case static::FILTER_TEXT_ID_FIELD :
-			case static::FILTER_HOST_LANGUAGE_FIELD :
-			case static::FILTER_DISPLAY_FIELD :
-				return "texts_vals";
-		}
-
-		throw new RuntimeException("Specified field does not exist or not filterable");
 	}
 	
 	public function getTextValue($textName, $groupName, Host $host=null, Language $lang=null, $cacheMinutes = null){
@@ -100,12 +83,7 @@ class TextsValuesManager extends Filterable{
 			$filter = new TextsValuesFilter();
 		}
 
-		$sqlQuery = "SELECT * FROM `".Tbl::get('TBL_TEXTS_VALUES')."` `texts_vals`
-						{$this->generateJoins($filter)}
-						WHERE 1
-						{$this->generateWhere($filter)}
-						{$this->generateOrder($filter)}
-						{$this->generateLimits($filter)}";
+		$sqlQuery = $filter->getSQL();
 	
 		if($pager !== null){
 			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);

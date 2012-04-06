@@ -1,22 +1,11 @@
 <?
-class MessageManagement extends Filterable
+class MessageManagement extends DbAccessor
 {
 	
 	const TBL_MESSAGES = "wmsg_messages";
 	const TBL_EXTRA = "wmsg_extra";
 	
 	
-	/**
-	 * Filterable fields
-	 */
-	const FILTER_ID_FIELD = "id";
-	const FILTER_DATE_FIELD = "date";
-	const FILTER_SENDER_FIELD = "sender";
-	const FILTER_RECEIVER_FIELD = "receiver";
-	const FILTER_READ_FIELD = "read";
-	const FILTER_DELETED_FIELD = "deleted";
-	const FILTER_TRASHED_FIELD = "trashed";
-
 	/**
 	 * Boxes
 	 */
@@ -44,22 +33,6 @@ class MessageManagement extends Filterable
 	 */
 	public function __construct($dbInstanceKey = null) {
 		parent::__construct($dbInstanceKey);
-	}
-
-	protected function getFilterableFieldAlias($field){
-		switch($field){
-			case static::FILTER_ID_FIELD :
-			case static::FILTER_DATE_FIELD :
-				return "main";
-			case static::FILTER_SENDER_FIELD :
-			case static::FILTER_RECEIVER_FIELD :
-			case static::FILTER_READ_FIELD :
-			case static::FILTER_DELETED_FIELD :
-			case static::FILTER_TRASHED_FIELD :
-				return "extra";
-		}
-
-		throw new Exception("Specified field does not exist or not filterable");
 	}
 
 	/**
@@ -488,12 +461,14 @@ class MessageManagement extends Filterable
 	 * @return array
 	 */
 	public function getMessagesCount(MessageFilter $filter = null, $cacheMinutes = 0){
-		$sqlQuery = "SELECT count(*) as `cnt`
-					FROM `".Tbl::get('TBL_MESSAGES')."` main
-					LEFT JOIN `".Tbl::get('TBL_EXTRA')."` extra
-					ON (main.`id` = extra.`message_id`)
-					{$this->generateJoins($filter)}
-					WHERE 1 {$this->generateWhere($filter)}";
+		
+		if($filter === null){
+			$filter = new MessageFilter($headersOnly);
+		}
+		
+		$filter->setSelectCount();
+		
+		$sqlQuery = $filter->getSQL();
 
 		$this->query->exec($sqlQuery, $cacheMinutes);
 
@@ -509,21 +484,12 @@ class MessageManagement extends Filterable
 	 * @return array
 	 */
 	public function getMessages(MessageFilter $filter = null, MysqlPager $pager = null, $headersOnly = true, $cacheMinutes = 0){
-		if($headersOnly){
-			$selectFields = "main.`id`, main.`subject`, main.`date`, extra.`sender`, extra.`read`, extra.`trashed`, extra.`deleted`";
-		}
-		else{
-			$selectFields = "*";
+		
+		if($filter === null){
+			$filter = new MessageFilter($headersOnly);
 		}
 
-		$sqlQuery = "SELECT $selectFields
-					FROM `".Tbl::get('TBL_MESSAGES')."` main
-					LEFT JOIN `".Tbl::get('TBL_EXTRA')."` extra
-					ON (main.`id` = extra.`message_id`)
-					{$this->generateJoins($filter)}
-					WHERE 1
-					{$this->generateWhere($filter)}
-					{$this->generateOrder($filter)}";
+		$sqlQuery = $filter->getSQL();
 
 		if($pager !== null){
 			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);

@@ -2,32 +2,53 @@
 class UsersFilter extends Filter {
 	
 	public function __construct($only_enabled_users = true){
+		parent::__construct();
+		
+		$this->qb->select(new Field("id", "users"))
+			->from(Tbl::get('TBL_USERS', 'UserManagement'), "users");
+		
 		if ($only_enabled_users){
-			$this->setCondition(UserManagement::FILTER_ENABLED_FIELD, Filter::MATCH_EQUAL, UserManagement::STATE_ENABLE_ENABLED);
+			$this->qb->andWhere($this->qb->expr()->equal(new Field('enable', "users"), UserManagement::STATE_ENABLE_ENABLED));
 		}
 	}
 	
-	public function setUserId($user_id, $match = Filter::MATCH_EQUAL){
-		if(empty($user_id)){
-			throw new InvalidIntegerArgumentException("\$user_id have to be not empty");
-		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
-		
-		if(!is_array($user_id)){
-			if(!is_numeric($user_id)){
-				throw new InvalidIntegerArgumentException("\$user_id have to be non zero integer");
-			}
-			$user_id = array($user_id);
+	public function setSelectCount(){
+		$this->qb->select($this->qb->expr()->count(new Field('*', 'cnt')));
+	}
+	
+	public function setUserIdEqual($userId){
+		if(empty($userId) or !is_numeric($userId)){
+			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");
 		}
 		
-		if(count($user_id) == 1){
-			$this->setCondition(UserManagement::FILTER_USER_ID_FIELD, $match, $user_id[0]);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('id', "users"), $userId));
+		return $this;
+	}
+	
+	public function setUserIdNotEqual($userId){
+		if(empty($userId) or !is_numeric($userId)){
+			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");
 		}
-		else{
-			$this->setCondition(UserManagement::FILTER_USER_ID_FIELD, $match, $user_id);
+	
+		$this->qb->andWhere($this->qb->expr()->notEqual(new Field('id', "users"), $userId));
+		return $this;
+	}
+	
+	public function setUserIdIn(array $userIds){
+		if(empty($userIds) or !is_array($userIds)){
+			throw new InvalidIntegerArgumentException("\$userIds have to be not empty array");
 		}
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field('id', "users"), $userIds));
+		return $this;
+	}
+	
+	public function setUserIdNotIn(array $userIds){
+		if(empty($userIds) or !is_array($userIds)){
+			throw new InvalidIntegerArgumentException("\$userIds have to be not empty array");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->notIn(new Field('id', "users"), $userIds));
 		return $this;
 	}
 	
@@ -36,45 +57,17 @@ class UsersFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$state have to be integer");
 		}
 		
-		$this->setCondition(UserManagement::FILTER_ENABLED_FIELD, Filter::MATCH_EQUAL, $status);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('enabled', "users"), $status));
 		return $this;
 	}
 	
-	public function setOrder($field, $order = MysqlDatabase::ORDER_ASC){
-		if(empty($field)){
-			throw new InvalidArgumentException("\$field have to be non empty string");
-		}
-		if(empty($order)){
-			throw new InvalidArgumentException("\$order have to be non empty string");
-		}
-		
-		parent::setOrder($field, $order);
-		return $this;
-	}
-	
-	public function setOnlineStatus($state){
-		if(empty($state)){
-			throw new InvalidArgumentException("\$state have to be non empty integer or array");
-		}
-		
-		if(!is_array($state)){
-			$state = array($state);
-		}
-		
-		if(count($state)==1){
-			$this->setCondition(UserManagement::FILTER_ONLINE_FIELD, Filter::MATCH_EQUAL, $state[0]);
-		}
-		else{
-			$this->setCondition(UserManagement::FILTER_ONLINE_FIELD, Filter::MATCH_IN, $state);
-		}
-		return $this;
-	}
 	
 	public function setLoginLike($login){
 		if(empty($login)){
 			throw new InvalidArgumentException("\$login have to be non empty string");
 		}
-		$this->setCondition(UserManagement::FILTER_LOGIN_FIELD, Filter::MATCH_STARTS, $login);
+		
+		$this->qb->andWhere($this->qb->expr()->like(new Field('login', "users"), "$login%"));
 		return $this;
 	}
 	
@@ -82,76 +75,114 @@ class UsersFilter extends Filter {
 		if(empty($email)){
 			throw new InvalidArgumentException("\$email have to be non empty string");
 		}
-		$this->setCondition(UserManagement::FILTER_EMAIL_FIELD, Filter::MATCH_EQUAL, $email);
+		
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('email', "users"), $email));
 		return $this;
 	}
 	
-	public function setEmailConfirmationStatus($status = UserManagement::STATE_EMAIL_CONFIRMED){
-		if(!is_numeric($status)){
-			throw new InvalidIntegerArgumentException("\$status have to be integer");
-		}
-		$this->setCondition(UserManagement::FILTER_EMAIL_CONFIRMED_FIELD, Filter::MATCH_EQUAL, $status);
-		return $this;
-	}
-	
-	public function setGroups($groups, $isGroupNamesGiven = true){
-		if(empty($groups)){
-			throw new InvalidArgumentException("\$groups have to be non empty string or array");
-		}
-		if(!is_array($groups)){
-			$groups = array($groups);
+	public function setGroupId($groupId){
+		if(empty($groupId) or !is_numeric($groupId)){
+			throw new InvalidArgumentException("\$groupId have to be non empty integer");
 		}
 		
-		$this->setExtraJoin(
-			UserManagement::TBL_USERS_GROUPS, "ug", "user_id",
-			UserManagement::FILTER_USER_ID_FIELD,
-			MySqlDatabase::JOIN_LEFT
-		);
+		$this->joinUsersGroupsTable();
 		
-		if($isGroupNamesGiven){
-			$this->setExtraJoin(
-				UserManagement::TBL_GROUPS, "groups", "id",
-				UserManagement::FILTER_GROUP_ID_FIELD,
-				MySqlDatabase::JOIN_LEFT
-			);
-			if(count($groups)==1){
-				$this->setCondition(UserManagement::FILTER_GROUP_NAME_FIELD, Filter::MATCH_EQUAL, $groups[0]);
-			}
-			else{
-				$this->setCondition(UserManagement::FILTER_GROUP_NAME_FIELD, Filter::MATCH_IN, $groups);
-			}
-		}
-		else{
-			if(count($groups)==1){
-				$this->setCondition(UserManagement::FILTER_GROUP_ID_FIELD, Filter::MATCH_EQUAL, $groups[0]);
-			}
-			else{
-				$this->setCondition(UserManagement::FILTER_GROUP_ID_FIELD, Filter::MATCH_IN, $groups);
-			}
-		}
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('group_id', "users_groups"), $groupId));
+		
 		return $this;
 	}
 	
-	public function setLastPing($time, $match = Filter::MATCH_GREATER){
+	public function setGroupIds($groupIds){
+		if(empty($groupIds) or !is_array($groupIds)){
+			throw new InvalidArgumentException("\$groupIds have to be non empty array");
+		}
+	
+		$this->joinUsersGroupsTable();
+	
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field('group_id', "users_groups"), $groupIds));
+	
+		return $this;
+	}
+	
+	public function setGroupName($groupName){
+		if(empty($groupName) or !is_string($groupName)){
+			throw new InvalidArgumentException("\$groupName have to be non empty string");
+		}
+	
+		$this->joinUsersGroupsTable();
+		$this->joinGroupsTable();
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('name', "groups"), $groupName));
+	
+		return $this;
+	}
+	
+	public function setGroupNames($groupNames){
+		if(empty($groupNames) or !is_array($groupNames)){
+			throw new InvalidArgumentException("\$groupNames have to be non empty string");
+		}
+	
+		$this->joinUsersGroupsTable();
+		$this->joinGroupsTable();
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field('name', "groups"), $groupNames));
+	
+		return $this;
+	}
+	
+	public function setCreationDateGreater($time){
 		if(empty($time)){
 			throw new InvalidArgumentException("\$time have to be non empty string");
 		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
-		$this->setCondition(UserManagement::FILTER_LAST_PING_FIELD, $match, $time);
+		
+		$this->qb->andWhere($this->qb->expr()->greater(new Field('creation_date', "users"), $time));
 		return $this;
 	}
 	
-	public function setCreationDate($time, $match = Filter::MATCH_GREATER){
+	public function setCreationDateLess($time){
 		if(empty($time)){
 			throw new InvalidArgumentException("\$time have to be non empty string");
 		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
-		$this->setCondition(UserManagement::FILTER_CREATION_DATE_FIELD, $match, $time);
+	
+		$this->qb->andWhere($this->qb->expr()->less(new Field('creation_date', "users"), $time));
 		return $this;
+	}
+	
+	public function setCreationDateGreaterEqual($time){
+		if(empty($time)){
+			throw new InvalidArgumentException("\$time have to be non empty string");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->greaterEqual(new Field('creation_date', "users"), $time));
+		return $this;
+	}
+	
+	public function setCreationDateLessEqual($time){
+		if(empty($time)){
+			throw new InvalidArgumentException("\$time have to be non empty string");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->lessEqual(new Field('creation_date', "users"), $time));
+		return $this;
+	}
+	
+	public function setOrderCreationDateAsc(){
+		$this->setOrder(new Field('creation_date', 'users'), MySqlDatabase::ORDER_ASC);
+	}
+	
+	public function setOrderCreationDateDesc(){
+		$this->setOrder(new Field('creation_date', 'users'), MySqlDatabase::ORDER_DESC);
+	}
+	
+	protected function joinUsersGroupsTable(){
+		$this->qb->leftJoin(Tbl::get('TBL_USERS_GROUPS', 'UserManagement'),	'users_groups',
+				$this->qb->expr()->equal(new Field('id', 'users'), new Field('user_id', 'users_groups')));
+	}
+	
+	protected function joinGroupsTable(){
+		$this->qb->leftJoin(Tbl::get('TBL_GROUPS', 'UserManagement'),	'groups',
+				$this->qb->expr()->equal(new Field('group_id', 'users_groups'), new Field('id', 'groups')));
 	}
 }
 ?>

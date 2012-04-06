@@ -1,15 +1,28 @@
 <?
 class ChatInvitationsFilter extends Filter {
 	
-	public function setId($id, $match = Filter::MATCH_EQUAL){
-		if(!is_numeric($id)){
+	public function __construct(){
+		parent::__construct();
+	
+		$this->qb->select(new Field("*", "inv"))
+			->from(Tbl::get('TBL_CHAT_INVITATIONS', 'ChatInvitationManager'), "inv");
+	}
+	
+	public function setId($id){
+		if(empty($id) or !is_numeric($id)){
 			throw new InvalidIntegerArgumentException("\$id have to be non zero integer");
 		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
+
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("id", "inv"), $id));
+		return $this;
+	}
+	
+	public function setIdGreater($id){
+		if(empty($id) or !is_numeric($id)){
+			throw new InvalidIntegerArgumentException("\$id have to be non zero integer");
 		}
-		
-		$this->setCondition(ChatInvitationManager::FILTER_ID_FIELD, $match, $id);
+	
+		$this->qb->andWhere($this->qb->expr()->greater(new Field("id", "inv"), $id));
 		return $this;
 	}
 	
@@ -18,7 +31,7 @@ class ChatInvitationsFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$id have to be non zero integer");
 		}
 		
-		$this->setCondition(ChatInvitationManager::FILTER_SENDER_USER_ID_FIELD, Filter::MATCH_EQUAL, $id);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("sender_user_id", "inv"), $id));
 		return $this;
 	}
 	
@@ -27,33 +40,19 @@ class ChatInvitationsFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$id have to be non zero integer");
 		}
 		
-		$this->setCondition(ChatInvitationManager::FILTER_RECEIVER_USER_ID_FIELD, Filter::MATCH_EQUAL, $id);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("receiver_user_id", "inv"), $id));
 		return $this;
 	}
 	
-	public function setInvitationDate($time, $match = Filter::MATCH_GREATER){
-		if(empty($time)){
-			throw new InvalidArgumentException("\$time have to be non empty string");
-		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
-		$this->setCondition(ChatInvitationManager::FILTER_DATE_FIELD, $match, $time);
-		return $this;
-	}
-	
-	public function setInvitationStatus($status, $match = Filter::MATCH_EQUAL){
+	public function setInvitationStatus($status){
 		if(!is_numeric($status)){
 			throw new InvalidIntegerArgumentException("\$status have to be non zero integer");
 		}
 		if(!in_array($status, ChatInvitationManager::getConstsArray("STATUS"))){
 			throw new InvalidIntegerArgumentException("Invalid \$status specified");
 		}
-		if(empty($match)){
-			throw new InvalidArgumentException("\$match have to be non empty string");
-		}
 		
-		$this->setCondition(ChatInvitationManager::FILTER_STATUS_FIELD, $match, $status);
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("status", "inv"), $status));
 		return $this;
 	}
 	
@@ -62,7 +61,11 @@ class ChatInvitationsFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$userId have to be non zero integer");
 		}
 		
-		$this->setCustomWhere("(`inv`.`sender_user_id`='$userId' OR `inv`.`receiver_user_id`='$userId')");
+		$orClause = new Orx();
+		$orClause->add($this->qb->expr()->equal(new Field('sender_user_id', 'inv'), $userId));
+		$orClause->add($this->qb->expr()->equal(new Field('receiver_user_id', 'inv'), $userId));
+		
+		$this->qb->andWhere($orClause);
 		return $this;
 	}
 	
@@ -74,19 +77,20 @@ class ChatInvitationsFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$userId2 have to be non zero integer");
 		}
 		
-		$this->setCustomWhere("
-								(
-									`inv`.`sender_user_id`='$userId1' 
-									AND 
-									`inv`.`receiver_user_id` = '$userId2'
-								)
-								OR
-								(
-									`inv`.`sender_user_id`='$userId2' 
-									AND 
-									`inv`.`receiver_user_id` = '$userId1'
-								)
-							");
+		$andClause1 = new Andx();
+		$andClause1->add($this->qb->expr()->equal(new Field('sender_user_id', 'inv'), $userId1));
+		$andClause1->add($this->qb->expr()->equal(new Field('receiver_user_id', 'inv'), $userId2));
+		
+		$andClause2 = new Andx();
+		$andClause2->add($this->qb->expr()->equal(new Field('sender_user_id', 'inv'), $userId2));
+		$andClause2->add($this->qb->expr()->equal(new Field('receiver_user_id', 'inv'), $userId1));
+		
+		$orClause = new Orx();
+		$orClause->add($andClause1);
+		$orClause->add($andClause2);
+		
+		$this->qb->andWhere($orClause);
+		
 		return $this;
 	}
 }

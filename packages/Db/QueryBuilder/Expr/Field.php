@@ -5,13 +5,13 @@ class Field extends Base{
 	protected $_postSeparator = '';
 	
 	protected $_field = '';
-	protected $_alias;
-	protected $_newAalias;
+	protected $_tableAlias;
+	protected $_fieldAalias;
 	
-	public function __construct($field, $alias = null, $newAlias = null){
+	public function __construct($field, $tableAlias = null, $fieldAlias = null){
 		$this->_field = $field;
-		$this->_alias = $alias;
-		$this->_newAalias = $newAlias;
+		$this->_tableAlias = $tableAlias;
+		$this->_fieldAalias = $fieldAlias;
 	}
 	
 	public function __toString(){
@@ -22,12 +22,12 @@ class Field extends Base{
 		
 		$returnString = $field;
 		
-		if($this->_alias !== null){
-			$returnString = "`$this->_alias`.$field";
+		if($this->_tableAlias !== null){
+			$returnString = "`$this->_tableAlias`.$field";
 		}
 		
-		if($this->_newAalias !== null){
-			$returnString .= " as `$this->_newAalias`";
+		if($this->_fieldAalias !== null){
+			$returnString .= " as `$this->_fieldAalias`";
 		}
 		
 		return $returnString;

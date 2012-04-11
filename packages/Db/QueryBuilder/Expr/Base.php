@@ -71,6 +71,10 @@ abstract class Base
         return $this;
     }
 
+    public function getParts(){
+    	return $this->_parts;
+    }
+    
     public function count()
     {
         return count($this->_parts);

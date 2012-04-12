@@ -1,5 +1,5 @@
 <?
-class ChatInvitationManager extends Filterable
+class ChatInvitationManager extends DbAccessor
 {
 	const TBL_CHAT_INVITATIONS = 'chat_invitations';
 	
@@ -7,12 +7,6 @@ class ChatInvitationManager extends Filterable
 	const STATUS_ACCEPTED = 1;
 	const STATUS_CANCELED = -1;
 	const STATUS_DECLINED = -2;
-	
-	const FILTER_ID_FIELD = 'id';
-	const FILTER_SENDER_USER_ID_FIELD = 'sender_user_id';
-	const FILTER_RECEIVER_USER_ID_FIELD = 'receiver_user_id';
-	const FILTER_DATE_FIELD = 'date';
-	const FILTER_STATUS_FIELD = 'status';
 	
 	private $invitationClearTimeout = 5;  // in minutes
 	
@@ -24,30 +18,16 @@ class ChatInvitationManager extends Filterable
 		}
 	}
 	
-	protected function getFilterableFieldAlias($field){
-		switch($field){
-			case static::FILTER_ID_FIELD :
-			case static::FILTER_SENDER_USER_ID_FIELD :
-			case static::FILTER_RECEIVER_USER_ID_FIELD :
-			case static::FILTER_DATE_FIELD :
-			case static::FILTER_STATUS_FIELD :
-				return "inv";
-		}
-
-		throw new RuntimeException("Specified field does not exist or not filterable");
-	}
-	
 	public function getInvitations(ChatInvitationsFilter $filter){
 		$invitationsObjects = array();
 		
-		$invitationRows = $this->query->exec("SELECT `inv`.*
-											FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."` `inv`
-											{$this->generateJoins($filter)}
-											WHERE 1
-											{$this->generateWhere($filter)}
-											{$this->generateOrder($filter)}
-											{$this->generateLimits($filter)}"
-											)->fetchRecords();
+		if($filter == null){
+			$filter = new ChatInvitationsFilter();
+		}
+		
+		$sqlQuery = $filter->getSQL();
+		
+		$invitationRows = $this->query->exec($sqlQuery)->fetchRecords();
 										
 		foreach ($invitationRows as $invitationRow){
 			array_push($invitationsObjects, $this->getInvitationObject($invitationRow));

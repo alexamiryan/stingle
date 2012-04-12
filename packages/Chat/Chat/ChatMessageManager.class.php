@@ -1,19 +1,11 @@
 <?
-class ChatMessageManager extends Filterable
+class ChatMessageManager extends DbAccessor
 {
 	const TBL_CHAT_MESSAGES = 'chat_messages';
 	
 	const IS_SYSTEM_YES = 1;
 	const IS_SYSTEM_NO = 0;
 	
-	const FILTER_ID_FIELD = "id";
-	const FILTER_SENDER_USER_ID_FIELD = "sender_user_id";
-	const FILTER_RECEIVER_USER_ID_FIELD = "receiver_user_id";
-	const FILTER_DATETIME_FIELD = "datetime";
-	const FILTER_MESSAGE_FIELD = "message";
-	const FILTER_IS_SYSTEM_FIELD = "read";
-	
-
 	private $logMinutes = 30;  // in minutes
 	
 	public function __construct(Config $config, $dbInstanceKey = null){
@@ -22,20 +14,6 @@ class ChatMessageManager extends Filterable
 		if(isset($config->logMinutes)){
 			$this->logMinutes = $config->logMinutes;
 		}
-	}
-	
-	protected function getFilterableFieldAlias($field){
-		switch($field){
-			case self::FILTER_ID_FIELD :
-			case self::FILTER_SENDER_USER_ID_FIELD :
-			case self::FILTER_RECEIVER_USER_ID_FIELD :
-			case self::FILTER_DATETIME_FIELD :
-			case self::FILTER_MESSAGE_FIELD :
-			case self::FILTER_IS_SYSTEM_FIELD :
-				return "chat_messages";
-		}
-		
-		throw new RuntimeException("Specified field does not exist or not filterable");
 	}
 	
 	public function getLogMinutes(){
@@ -85,13 +63,7 @@ class ChatMessageManager extends Filterable
 			$filter = new ChatMessageFilter();
 		}
 		
-		$sqlQuery = "SELECT `chat_messages`.*
-						FROM `".Tbl::get('TBL_CHAT_MESSAGES')."` `chat_messages`
-						{$this->generateJoins($filter)}
-						WHERE 1
-						{$this->generateWhere($filter)}
-						{$this->generateOrder($filter)}
-						{$this->generateLimits($filter)}";
+		$sqlQuery = $filter->getSQL();
 		
 		if($pager !== null){
 			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);

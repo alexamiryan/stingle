@@ -1,13 +1,7 @@
 <?
-class UserPhotoManager extends Filterable
+class UserPhotoManager extends DbAccessor
 {
 	const TBL_USERS_PHOTOS = 'users_photos';
-	
-	const FILTER_USER_PHOTO_ID_FIELD 	= "id";
-	const FILTER_USER_ID_FIELD 			= "user_id";
-	const FILTER_FILENAME_FIELD 		= "filename";
-	const FILTER_DEFAULT_FIELD 			= "default";
-	const FILTER_APPROVED_FIELD 		= "approved";
 	
 	const STATUS_APPROVED_YES	= 1;
 	const STATUS_APPROVED_NO 	= 0;
@@ -23,18 +17,6 @@ class UserPhotoManager extends Filterable
 	public function __construct($config, $dbInstanceKey = null){
 		parent::__construct($dbInstanceKey);
 		$this->config = $config;
-	}
-	
-	protected function getFilterableFieldAlias($field){
-		switch($field){
-			case static::FILTER_USER_PHOTO_ID_FIELD :
-			case static::FILTER_USER_ID_FIELD :
-			case static::FILTER_FILENAME_FIELD :
-			case static::FILTER_DEFAULT_FIELD :
-			case static::FILTER_APPROVED_FIELD :
-				return "up";
-		}
-		throw new RuntimeException("Specified field does not exist or not filterable");
 	}
 	
 	public function uploadPhoto($file, $userId, $uploadDir = null){
@@ -186,14 +168,13 @@ class UserPhotoManager extends Filterable
 		$this->correctDefaultPhoto($photo->userId);
 	}
 	
-	public function getPhotos(Filter $filter, MysqlPager $pager = null, $cacheMinutes = null){
-		$sqlQuery = "SELECT `up`.*
-						FROM `".Tbl::get('TBL_USERS_PHOTOS')."` `up`
-						{$this->generateJoins($filter)}
-						WHERE 1
-						{$this->generateWhere($filter)}
-						{$this->generateOrder($filter)}
-						{$this->generateLimits($filter)}";
+	public function getPhotos(UserPhotosFilter $filter, MysqlPager $pager = null, $cacheMinutes = null){
+		
+		if($filter == null){
+			$filter = new UserPhotosFilter();
+		}
+		
+		$sqlQuery = $filter->getSQL();
 		
 		if($pager !== null){
 			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);

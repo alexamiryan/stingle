@@ -145,29 +145,24 @@ function redirect($url){
 
 /**
  * Checks validity of given email addess
- * Also check's domain name for validity
+ * Also checks domain name for validity via DNS
  *
  * @param string $address
  * @return boolean
  */
-function valid_email($address){
-	$ret_val = false;
-	if(filter_var($address, FILTER_VALIDATE_EMAIL)){
-		$host = substr($address, strpos($address, '@') + 1);
+function valid_email($email){
+	$isValid = false;
+	if(filter_var($email, FILTER_VALIDATE_EMAIL)){
+		$host = substr($email, strpos($email, '@') + 1);
 
-		//$host=$host . '.';
-		if(function_exists('getmxrr')){
-			if(getmxrr($host, $mxhosts) == false && gethostbyname($host) == $host) $ret_val = false;
-			else
-			$ret_val = true;
+		if(function_exists('getmxrr') and getmxrr($host, $mxhosts) != false){
+			$isValid = true;
 		}
-		else{
-			if(gethostbyname($host) == $host) $ret_val = false;
-			else
-			$ret_val = true;
+		elseif(gethostbyname($host) != $host){
+			$isValid = true;
 		}
 	}
-	return $ret_val;
+	return $isValid;
 }
 
 function getCurrentUrl($exclude = array()){

@@ -1,5 +1,5 @@
 <?
-class UserManagement extends Filterable{
+class UserManagement extends DbAccessor{
 	
 	const TBL_USERS 				= "wum_users";
 	const TBL_USERS_GROUPS 			= "wum_users_groups";
@@ -11,18 +11,6 @@ class UserManagement extends Filterable{
 	const TBL_GROUPS_PERMISSIONS 	= "wum_groups_permissions";
 	
 	
-	const FILTER_USER_ID_FIELD = "id";
-	const FILTER_LOGIN_FIELD = "login";
-	const FILTER_CREATION_DATE_FIELD = "creation_date";
-	const FILTER_ENABLED_FIELD = "enable";
-	const FILTER_EMAIL_FIELD = "email";
-	const FILTER_ONLINE_FIELD = "online";
-	const FILTER_LAST_PING_FIELD = "last_ping";
-	const FILTER_LAST_LOGIN_FIELD = "last_login";
-	const FILTER_EMAIL_CONFIRMED_FIELD = "email_confirmed";
-	const FILTER_GROUP_ID_FIELD = "group_id";
-	const FILTER_GROUP_NAME_FIELD = "name";
-
 	const STATE_ENABLE_ENABLED = 1;
 	const STATE_ENABLE_DISABLED = 0;
 
@@ -34,27 +22,6 @@ class UserManagement extends Filterable{
 
 	public function __construct($dbInstanceKey = null){
 		parent::__construct($dbInstanceKey);
-	}
-
-	protected function getFilterableFieldAlias($field){
-		switch($field){
-			case static::FILTER_USER_ID_FIELD :
-			case static::FILTER_ENABLED_FIELD :
-			case static::FILTER_LOGIN_FIELD :
-			case static::FILTER_EMAIL_FIELD :
-			case static::FILTER_CREATION_DATE_FIELD :
-			case static::FILTER_ONLINE_FIELD :
-			case static::FILTER_LAST_PING_FIELD :
-			case static::FILTER_LAST_LOGIN_FIELD :
-			case static::FILTER_EMAIL_CONFIRMED_FIELD :
-				return "users";
-			case static::FILTER_GROUP_ID_FIELD :
-				return "ug";
-			case static::FILTER_GROUP_NAME_FIELD :
-				return "groups";
-		}
-
-		throw new RuntimeException("Specified field does not exist or not filterable");
 	}
 
 	/**
@@ -1194,16 +1161,14 @@ class UserManagement extends Filterable{
 	 * @param UsersFilter $filter
 	 * @return integer
 	 */
-	public function getUsersListCount(Filter $usersFilter = null, $cacheMinutes = 0){
-		if($usersFilter == null){
-			$usersFilter = new UsersFilter();
+	public function getUsersListCount(UsersFilter $filter = null, $cacheMinutes = 0){
+		if($filter === null){
+			$filter = new UsersFilter();
 		}
-
-		$sqlQuery = "SELECT count(`users`.`id`) as `cnt`
-						FROM `".Tbl::get('TBL_USERS')."` `users`
-						{$this->generateJoins($usersFilter)}
-						WHERE 1
-						{$this->generateWhere($usersFilter)}";
+		
+		$filter->setSelectCount();
+		
+		$sqlQuery = $filter->getSQL();
 
 		$this->query->exec($sqlQuery, $cacheMinutes);
 		return $this->query->fetchField('cnt');
@@ -1216,21 +1181,15 @@ class UserManagement extends Filterable{
 	 * @param MysqlPager $pager
 	 * @return array[User]
 	 */
-	public function getUsersList(Filter $usersFilter = null, MysqlPager $pager = null, $cacheMinutes = 0){
+	public function getUsersList(UsersFilter $filter = null, MysqlPager $pager = null, $cacheMinutes = 0){
 		$users = array();
 
-		if($usersFilter == null){
-			$usersFilter = new UsersFilter();
+		if($filter == null){
+			$filter = new UsersFilter();
 		}
 
-		$sqlQuery = "SELECT `users`.`id`
-						FROM `".Tbl::get('TBL_USERS')."` `users`
-						{$this->generateJoins($usersFilter)}
-						WHERE 1
-						{$this->generateWhere($usersFilter)}
-						{$this->generateOrder($usersFilter)}
-						{$this->generateLimits($usersFilter)}";
-	
+		$sqlQuery = $filter->getSQL();
+		
 		if($pager !== null){
 			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);
 		}

@@ -1,5 +1,5 @@
 <?
-class ChatSessionManager extends Filterable
+class ChatSessionManager extends DbAccessor
 {
 	const TBL_CHAT_SESSIONS = 'chat_sessions';
 	
@@ -11,14 +11,6 @@ class ChatSessionManager extends Filterable
 	const CLOSED_REASON_MONEY = 3;
 	const CLOSED_REASON_SYNC_UI = 4;
 	
-	const FILTER_ID_FIELD = 'id';
-	const FILTER_INVITER_USER_ID_FIELD = 'inviter_user_id';
-	const FILTER_INVITED_USER_ID_FIELD = 'invited_user_id';
-	const FILTER_DATE_FIELD = 'date';
-	const FILTER_CLOSED_FIELD = 'closed';
-	const FILTER_CLOSED_REASON_FIELD = 'closed_reason';
-	const FILTER_CLOSED_DATE_FIELD = 'closed_date';
-	
 	private $sessionClearTimeout = 10;  // in minutes
 	
 	public function __construct(Config $config, $dbInstanceKey = null){
@@ -27,21 +19,6 @@ class ChatSessionManager extends Filterable
 		if(isset($config->sessionClearTimeout)){
 			$this->sessionClearTimeout = $config->sessionClearTimeout;
 		}
-	}
-	
-	protected function getFilterableFieldAlias($field){
-		switch($field){
-			case static::FILTER_ID_FIELD :
-			case static::FILTER_INVITER_USER_ID_FIELD :
-			case static::FILTER_INVITED_USER_ID_FIELD :
-			case static::FILTER_DATE_FIELD :
-			case static::FILTER_CLOSED_FIELD :
-			case static::FILTER_CLOSED_REASON_FIELD :
-			case static::FILTER_CLOSED_DATE_FIELD :
-				return "sess";
-		}
-
-		throw new RuntimeException("Specified field does not exist or not filterable");
 	}
 	
 	public static function getInterlocutorsFromSessions($chatSessions){
@@ -80,14 +57,13 @@ class ChatSessionManager extends Filterable
 	public function getChatSessions(ChatSessionFilter $filter, $myUserId = null){
 		$chatSessions = array();
 		
-		$sessionRows = $this->query->exec("SELECT `sess`.*
-										FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` `sess`
-										{$this->generateJoins($filter)}
-										WHERE 1
-										{$this->generateWhere($filter)}
-										{$this->generateOrder($filter)}
-										{$this->generateLimits($filter)}"
-									)->fetchRecords();
+		if($filter == null){
+			$filter = new ChatSessionFilter();
+		}
+		
+		$sqlQuery = $filter->getSQL();
+		
+		$sessionRows = $this->query->exec($sqlQuery)->fetchRecords();
 										
 		foreach ($sessionRows as $sessionRow){
 			array_push($chatSessions, $this->getChatSessionObject($sessionRow, $myUserId));

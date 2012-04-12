@@ -4,7 +4,7 @@ class ChatSessionFilter extends Filter {
 	public function __construct(){
 		parent::__construct();
 	
-		$this->qb->select(new Field("*", "chat_msg"))
+		$this->qb->select(new Field("*", "chat_sess"))
 			->from(Tbl::get('TBL_CHAT_SESSIONS', 'ChatSessionManager'), "chat_sess");
 	}
 	
@@ -115,5 +115,12 @@ class ChatSessionFilter extends Filter {
 		return $this;
 	}
 	
+	public function setOrderDateAsc(){
+		$this->setOrder(new Field("date", "chat_sess"), MySqlDatabase::ORDER_ASC);
+	}
+	
+	public function setOrderDateDesc(){
+		$this->setOrder(new Field("date", "chat_sess"), MySqlDatabase::ORDER_DESC);
+	}
 }
 ?>

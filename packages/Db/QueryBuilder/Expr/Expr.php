@@ -206,9 +206,9 @@ class Expr
      * @param mixed $x Argument to be used in COUNT() function.
      * @return Func
      */
-    public function count($x)
+    public function count($x, $alias = null)
     {
-        return new Func('COUNT', array($x));
+        return new Func('COUNT', array($x), $alias);
     }
 
     /**
@@ -217,9 +217,15 @@ class Expr
      * @param mixed $x Argument to be used in COUNT(DISTINCT) function.
      * @return string
      */
-    public function countDistinct($x)
+    public function countDistinct($x, $alias = null)
     {
-        return 'COUNT(DISTINCT ' . implode(', ', func_get_args()) . ')';
+        $returnStr = 'COUNT(DISTINCT ' . implode(', ', func_get_args()) . ')';
+        
+        if($alias != null){
+        	$returnStr .= "as `$alias`";
+        }
+        
+        return $returnStr;
     }
 
     /**
@@ -448,6 +454,10 @@ class Expr
      */
     public function like($x, $y)
     {
+    	if ( !($y instanceof Literal) and !($y instanceof Field)) {
+    		$y = $this->_quoteLiteral($y);
+    	}
+    	
         return new Comparison($x, 'LIKE', $y);
     }
 

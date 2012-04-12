@@ -13,7 +13,7 @@ class UsersFilter extends Filter {
 	}
 	
 	public function setSelectCount(){
-		$this->qb->select($this->qb->expr()->count(new Field('*', 'cnt')));
+		$this->qb->select($this->qb->expr()->count(new Field('*'), 'cnt'));
 	}
 	
 	public function setUserIdEqual($userId){

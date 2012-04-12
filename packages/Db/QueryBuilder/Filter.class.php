@@ -6,6 +6,13 @@ abstract class Filter{
 		$this->qb = new QueryBuilder();
 	}
 	
+	/**
+	 * Clone also inner objects
+	 */
+	public function __clone(){
+        $this->qb = clone $this->qb;
+    }
+	
 	public function setOrder(Field $field, $order = null){
 		$this->qb->addOrderBy($field, $order);
 	}

@@ -34,15 +34,23 @@ class Func
 {
     private $_name;
     private $_arguments;
+    private $_alias;
 
-    public function __construct($name, $arguments)
+    public function __construct($name, $arguments, $alias = null)
     {
         $this->_name = $name;
         $this->_arguments = (array) $arguments;
+        $this->_alias = $alias;
     }
 
     public function __toString()
     {
-        return $this->_name . '(' . implode(', ', $this->_arguments) . ')';
+        $returnStr = $this->_name . '(' . implode(', ', $this->_arguments) . ')';
+        
+        if($this->_alias != null){
+        	$returnStr .= " as `{$this->_alias}`";
+        }
+        
+        return $returnStr;
     }
 }

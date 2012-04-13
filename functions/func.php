@@ -411,4 +411,12 @@ function stripSlashesFromArray(&$array){
 		}
 	}
 }
+
+/**
+ * Checks is array assouciative
+ * @param array $arr
+ */
+function isAssoc(array $array){
+	return array_keys($array) !== range(0, count($array) - 1);
+}
 ?>

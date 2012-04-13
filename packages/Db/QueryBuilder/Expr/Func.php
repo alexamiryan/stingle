@@ -33,13 +33,15 @@
 class Func
 {
     private $_name;
-    private $_arguments;
+    private $_arguments = array();
     private $_alias;
 
-    public function __construct($name, $arguments, $alias = null)
+    public function __construct($name, $arguments = null, $alias = null)
     {
         $this->_name = $name;
-        $this->_arguments = (array) $arguments;
+        if($arguments != null){
+       		$this->_arguments = (array) $arguments;
+        }
         $this->_alias = $alias;
     }
 

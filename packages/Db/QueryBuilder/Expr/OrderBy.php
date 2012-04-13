@@ -51,7 +51,9 @@ class OrderBy
 
     public function add($sort, $order = null)
     {
-        $order = ! $order ? 'ASC' : $order;
+    	if(!$sort instanceof Func){
+        	$order = ! $order ? 'ASC' : $order;
+    	}
         $this->_parts[] = $sort . ' '. $order;
     }
 

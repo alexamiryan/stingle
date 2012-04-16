@@ -15,6 +15,7 @@ class LoaderQueryBuilder extends Loader{
 		require_once ('Expr/Orx.php');
 		require_once ('Expr/Select.php');
 		require_once ('Expr/Field.php');
+		require_once ('Expr/Insert.php');
 		require_once ('Expr/Expr.php');
 		require_once ('QueryBuilder.class.php');
 		require_once ('Filter.class.php');

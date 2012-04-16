@@ -35,7 +35,8 @@ class QueryBuilder
     const SELECT = 0;
     const DELETE = 1;
     const UPDATE = 2;
-
+    const INSERT = 3;
+    
     /** The builder states. */
     const STATE_DIRTY = 0;
     const STATE_CLEAN = 1;
@@ -45,6 +46,7 @@ class QueryBuilder
      */
     private $_sqlParts = array(
         'select'  => array(),
+        'insert'  => null,
         'from'    => array(),
         'join'    => array(),
         'set'     => array(),
@@ -79,6 +81,8 @@ class QueryBuilder
      * @var array The parameter type map of this query.
      */
     private $_paramTypes = array();
+    
+    private $onDuplicateKeyUpdate = false;
 
 
     /**
@@ -158,6 +162,10 @@ class QueryBuilder
             case self::UPDATE:
                 $sql = $this->_getSQLForUpdate();
                 break;
+            
+			case self::INSERT:
+				$sql = $this->_getSQLForInsert();
+				break;
 
             case self::SELECT:
             default:
@@ -681,8 +689,12 @@ class QueryBuilder
      * @param string $value The value, expression, placeholder, etc.
      * @return QueryBuilder This QueryBuilder instance.
      */
-    public function set($key, $value)
+    public function set(Field $key, $value)
     {
+    	if ( !($value instanceof Literal) and !($value instanceof Field)) {
+    		$value = $this->expr()->quoteLiteral($value);
+    	}
+    	
         return $this->add('set', new Comparison($key, Comparison::EQ, $value), true);
     }
 
@@ -927,6 +939,41 @@ class QueryBuilder
     	}
     	return $this->add('limit', "$offset, $length", false);
     }
+    
+    public function insert($tblName, $type = Insert::TYPE_NORMAL){
+    	
+    	$this->_type = self::INSERT;
+    	
+    	return $this->add('insert', new Insert($tblName, $type), false);
+    }
+    
+    public function fields($fields){
+    	if($this->_sqlParts['insert'] instanceof Insert){
+    		if(!is_array($fields)){
+    			$fields = func_get_args();
+    		}
+    		$this->_sqlParts['insert']->setFields($fields);
+    	}
+    	
+    	return $this;
+    }
+    
+    public function values($values){
+    	if($this->_sqlParts['insert'] instanceof Insert){
+    		if(!is_array($values)){
+    			$values = func_get_args();
+    		}
+    		$this->_sqlParts['insert']->setValues($values);
+    	}
+    	
+    	return $this;
+    }
+    
+    public function onDuplicateKeyUpdate(){
+   	 	$this->onDuplicateKeyUpdate = true;
+   	 	
+   	 	return $this;
+    }
 
     /**
      * Get a query part by its name.
@@ -964,6 +1011,13 @@ class QueryBuilder
               . $this->_getReducedSQLQueryPart('set', array('pre' => ' SET ', 'separator' => ', '))
               . $this->_getReducedSQLQueryPart('where', array('pre' => ' WHERE '))
               . $this->_getReducedSQLQueryPart('orderBy', array('pre' => ' ORDER BY ', 'separator' => ', '));
+    }
+    
+    private function _getSQLForInsert()
+    {
+    	return 'INSERT'
+    	. $this->_getReducedSQLQueryPart('insert', array('pre' => ' ', 'separator' => ''))
+    	. ($this->onDuplicateKeyUpdate ? $this->_getReducedSQLQueryPart('set', array('pre' => ' ON DUPLICATE KEY UPDATE ', 'separator' => ', ')) : '');
     }
 
     private function _getSQLForSelect()

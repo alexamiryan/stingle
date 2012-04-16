@@ -69,7 +69,7 @@ class Expr
     public function equal($x, $y)
     {
     	if ( !($y instanceof Literal) and !($y instanceof Field)) {
-    		$y = $this->_quoteLiteral($y);
+    		$y = $this->quoteLiteral($y);
     	}
         return new Comparison($x, Comparison::EQ, $y);
     }
@@ -90,7 +90,7 @@ class Expr
     public function notEqual($x, $y)
     {
     	if ( !($y instanceof Literal) and !($y instanceof Field)) {
-    		$y = $this->_quoteLiteral($y);
+    		$y = $this->quoteLiteral($y);
     	}
         return new Comparison($x, Comparison::NEQ, $y);
     }
@@ -390,7 +390,7 @@ class Expr
         if (is_array($y)) {
             foreach ($y as &$literal) {
                 if ( !($literal instanceof Literal) and !($y instanceof Field)) {
-                    $literal = $this->_quoteLiteral($literal);
+                    $literal = $this->quoteLiteral($literal);
                 }
             }
         }
@@ -412,7 +412,7 @@ class Expr
         if (is_array($y)) {
             foreach ($y as &$literal) {
                 if ( !($literal instanceof Literal) and !($y instanceof Field)) {
-                    $literal = $this->_quoteLiteral($literal);
+                    $literal = $this->quoteLiteral($literal);
                 }
             }
         }
@@ -455,7 +455,7 @@ class Expr
     public function like($x, $y)
     {
     	if ( !($y instanceof Literal) and !($y instanceof Field)) {
-    		$y = $this->_quoteLiteral($y);
+    		$y = $this->quoteLiteral($y);
     	}
     	
         return new Comparison($x, 'LIKE', $y);
@@ -529,7 +529,7 @@ class Expr
      * @param mixed $literal The literal value.
      * @return string
      */
-    private function _quoteLiteral($literal)
+    public function quoteLiteral($literal)
     {
         if (is_numeric($literal) && !is_string($literal)) {
             return (string) $literal;

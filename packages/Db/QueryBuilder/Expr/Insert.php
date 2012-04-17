@@ -37,7 +37,7 @@ class Insert
     const TYPE_IGNORE = 4;
     
     private $tableName;
-    private $values;
+    private $values = array();
     private $fields = null;
     private $type;
     
@@ -46,8 +46,8 @@ class Insert
     	$this->type = $type;
     }
 
-    public function setValues($values){
-    	$this->values = $values;
+    public function addValues($values){
+    	array_push($this->values, $values);
     }
     
     public function setFields($fields){
@@ -62,16 +62,21 @@ class Insert
     		$returnStr .= "(`" . implode("`,`", $this->fields) . "`) ";
     	}
     	
-    	if(isset($this->values[0]) and $this->values[0] instanceof QueryBuilder and $this->values[0]->getType() == QueryBuilder::SELECT){
-    		$returnStr .= "({$this->values[0]})";
+    	if(isset($this->values[0][0]) and $this->values[0][0] instanceof QueryBuilder and $this->values[0][0]->getType() == QueryBuilder::SELECT){
+    		$returnStr .= "({$this->values[0][0]})";
     	}
     	else{
     		if(($this->fields !== null and is_array($this->fields)) or !isAssoc($this->values)){
-    			$returnStr .= "VALUES (" . $this->_getValues($this->values) . ")";
+    			$returnStr .= "VALUES ";
+    			foreach($this->values as $values){
+	    			$returnStr .= "(" . $this->_getValues($values) . "),";
+    			}
+    			
+    			$returnStr = trim($returnStr, ",");
     		}
     		else{
-    			$returnStr .= "(`" . implode("`,`", array_keys($this->values)) . "`) ";
-    			$returnStr .= "VALUES (" . $this->_getValues(array_values($this->values)) . ")";
+    			$returnStr .= "(`" . implode("`,`", array_keys($this->values[0])) . "`) ";
+    			$returnStr .= "VALUES (" . $this->_getValues(array_values($this->values[0])) . ")";
     		}
     	}
     	

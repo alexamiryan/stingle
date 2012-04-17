@@ -940,13 +940,81 @@ class QueryBuilder
     	return $this->add('limit', "$offset, $length", false);
     }
     
-    public function insert($tblName, $type = Insert::TYPE_NORMAL){
+    /**
+     * Insert new row into table
+     * 
+     * <code>
+     * 		$qb->insert("users")
+     * 			->values(array('user_id'=>"1", 'email'=>"john@doe.com"))
+     * 			->onDuplicateKeyUpdate()
+     * 			->set(new Field('email'), 'john@doe.com');
+     * </code>
+     * 
+     * @param string $tableName Table name
+     * @param integer $type Type of the insert query
+     * @return QueryBuilder This QueryBuilder instance.
+     */
+    public function insert($tableName, $type = Insert::TYPE_NORMAL){
     	
     	$this->_type = self::INSERT;
     	
-    	return $this->add('insert', new Insert($tblName, $type), false);
+    	return $this->add('insert', new Insert($tableName, $type), false);
     }
     
+    
+    /**
+     * Insert delayed statement
+     * 
+     * @param string $tableName Table name
+     * @return QueryBuilder This QueryBuilder instance.
+     */
+    public function insertDelayed($tableName){
+    	return $this->insert($tableName, Insert::TYPE_DELAYED);
+    }
+    
+    /**
+     * Insert ignore statement
+     *
+     * @param string $tableName Table name
+     * @return QueryBuilder This QueryBuilder instance.
+     */
+    public function insertIgnore($tableName){
+    	return $this->insert($tableName, Insert::TYPE_IGNORE);
+    }
+    
+    /**
+     * Insert high priority statement
+     *
+     * @param string $tableName Table name
+     * @return QueryBuilder This QueryBuilder instance.
+     */
+    public function insertHighPriority($tableName){
+    	return $this->insert($tableName, Insert::TYPE_HIGH_PRIORITY);
+    }
+    
+    /**
+     * Insert low priority statement
+     *
+     * @param string $tableName Table name
+     * @return QueryBuilder This QueryBuilder instance.
+     */
+    public function insertLowPriority($tableName){
+    	return $this->insert($tableName, Insert::TYPE_LOW_PRIORITY);
+    }
+    
+    
+    /**
+     * Specify fileds list for insert statement
+     * 
+     * <code>
+     * 		$qb->insert("users")
+     * 			->fields('user_id', 'login')
+     * 			->values("1", "john");
+     * </code>
+     * 
+     * @param mixed $fields Fields list
+     * @return QueryBuilder This QueryBuilder instance.
+     */
     public function fields($fields){
     	if($this->_sqlParts['insert'] instanceof Insert){
     		if(!is_array($fields)){
@@ -958,19 +1026,46 @@ class QueryBuilder
     	return $this;
     }
     
+    /**
+     * Specify values list for insert statement
+     *
+     * <code>
+     * 		$qb->insert("users")
+     * 			->values(array('user_id'=>"1", 'email'=>"john@doe.com"))
+     * </code>
+     *
+     * @param mixed $values Values list. Can be linear, associative array or SELECT stament
+     * @return QueryBuilder This QueryBuilder instance.
+     */
     public function values($values){
     	if($this->_sqlParts['insert'] instanceof Insert){
     		if(!is_array($values)){
     			$values = func_get_args();
     		}
-    		$this->_sqlParts['insert']->setValues($values);
+    		$this->_sqlParts['insert']->addValues($values);
     	}
     	
     	return $this;
     }
     
+    /**
+     * Specifies that it is needed to add  ON DUPLICATE KEY UPDATE 
+     * statement at the end of insert query.
+     * Use 'set' function to set parameters for update.
+     * 
+     * <code>
+     * 		$qb->insert("users")
+     * 			->values(array('user_id'=>"1", 'email'=>"john@doe.com"))
+     * 			->onDuplicateKeyUpdate()
+     * 			->set(new Field('email'), 'john@doe.com');
+     * </code>
+     * 
+     * @return QueryBuilder This QueryBuilder instance.
+     */
     public function onDuplicateKeyUpdate(){
-   	 	$this->onDuplicateKeyUpdate = true;
+    	if($this->getType() == self::INSERT){
+   	 		$this->onDuplicateKeyUpdate = true;
+    	}
    	 	
    	 	return $this;
     }

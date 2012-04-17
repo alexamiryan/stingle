@@ -172,7 +172,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 			}
 			$fbUser->gender = null;
 		}		
-		$extUser->otherFields = $this->fillOtherFieldsFromFBUser($fbUser);
+		$extUser->otherFields = $fbUser;
 		return $extUser;
 	}
 	
@@ -193,7 +193,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 		}
 		if(empty($code)) {
      		$this->redirectToDialog();   
-    	}    	
+    	}
     	$accessToken = $this->getAccessToken($code);
     	$fbUser = $this->getFBUserFromGraph($accessToken);
     	$extUser = $this->createExternalUser($fbUser);
@@ -388,7 +388,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 		}
 		$this->query->exec("INSERT INTO `".Tbl::get('TBL_FB_USER_INFO')."` 
 									(`user_id`,`ext_user_id`, `name`) VALUES
-									('$userId', '$extUser->id', '".(isset($extUser->otherFields["name"]) ? addslashes($extUser->otherFields["name"]) : "")."')");
+									('$userId', '$extUser->id', '".(isset($extUser->otherFields->name) ? addslashes($extUser->otherFields->name) : "")."')");
 	}
 	
 	/**

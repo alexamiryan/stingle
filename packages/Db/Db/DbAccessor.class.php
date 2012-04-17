@@ -34,6 +34,10 @@ abstract class DbAccessor extends Model{
 		$this->init();
 	}
 	
+	public function __clone(){
+		$this->query = clone $this->query;
+	}
+	
 	public function init(){
 		$this->db = MySqlDbManager::getDbObject($this->dbInstanceKey);
 		$this->query = MySqlDbManager::getQueryObject($this->dbInstanceKey);

@@ -1,9 +1,13 @@
 <?
 class LoaderConversations extends Loader{
 	protected function includes(){
-		require_once ('Conversation.class.php');
-		require_once ('ConversationMessage.class.php');
-		require_once ('ConversationManager.class.php');
+		require_once ('Objects/Conversation.class.php');
+		require_once ('Objects/ConversationMessage.class.php');
+		require_once ('Filters/ConversationFilter.class.php');
+		require_once ('Filters/ConversationMessagesFilter.class.php');
+		require_once ('Managers/ConversationManager.class.php');
+		require_once ('Exceptions/ConversationException.class.php');
+		require_once ('Exceptions/ConversationNotUniqueException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

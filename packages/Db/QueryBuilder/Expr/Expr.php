@@ -184,9 +184,9 @@ class Expr
      * @param mixed $x Argument to be used in MAX() function.
      * @return Func
      */
-    public function max($x)
+    public function max($x, $alias = null)
     {
-        return new Func('MAX', array($x));
+        return new Func('MAX', array($x), $alias);
     }
 
     /**
@@ -195,9 +195,9 @@ class Expr
      * @param mixed $x Argument to be used in MIN() function.
      * @return Func
      */
-    public function min($x)
+    public function min($x, $alias = null)
     {
-        return new Func('MIN', array($x));
+        return new Func('MIN', array($x), $alias);
     }
 
     /**

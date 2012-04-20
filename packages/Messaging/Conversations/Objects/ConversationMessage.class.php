@@ -1,10 +1,10 @@
 <?
-class Conversation{
+class ConversationMessage {
 	public $id;
 	public $uuid;
 	public $date;
-	public $senderUser;
+	public $sender;
 	public $message;
-	public $read = 0;
+	public $read;
 }
 ?>

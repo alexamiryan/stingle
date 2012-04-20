@@ -534,7 +534,7 @@ class Expr
         if (is_numeric($literal) && !is_string($literal)) {
             return (string) $literal;
         } else {
-            return "'" . str_replace("'", "''", $literal) . "'";
+            return "'" . $literal . "'";
         }
     }
 

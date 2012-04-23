@@ -129,7 +129,7 @@ class ConversationManager extends DbAccessor{
 		return $this->query->exec($sqlQuery)->fetchField("cnt");
 	}
 	
-	public function getConversationMessages(ConversationMessagesFilter $filter, MysqlPager $pager = null){
+	public function getConversationMessages(ConversationMessagesFilter $filter, MysqlPager $pager = null, $reduced = false){
 		$messages = array();
 	
 		$sqlQuery = $filter->getSQL();
@@ -144,7 +144,7 @@ class ConversationManager extends DbAccessor{
 		$messageRows = $this->query->fetchRecords();
 	
 		foreach ($messageRows as $messageRow){
-			array_push($messages, $this->getConversationMessageObject($messageRow));
+			array_push($messages, $this->getConversationMessageObject($messageRow, $reduced));
 		}
 	
 		return $messages;
@@ -157,8 +157,8 @@ class ConversationManager extends DbAccessor{
 	 * @throws ConversationNotUniqueException
 	 * @return Conversation
 	 */
-	public function getConversationMessage(ConversationMessagesFilter $filter){
-		$messages = $this->getConversationMessages($filter);
+	public function getConversationMessage(ConversationMessagesFilter $filter, $reduced = false){
+		$messages = $this->getConversationMessages($filter, $reduced);
 		if(count($messages) !== 1){
 			throw new ConversationNotUniqueException("There is no conversation message or it is not unique.");
 		}
@@ -359,7 +359,7 @@ class ConversationManager extends DbAccessor{
 		return $conversation;
 	}
 	
-	protected function getConversationMessageObject($messageRow){
+	protected function getConversationMessageObject($messageRow, $reduced = false){
 		$message = new ConversationMessage();
 	
 		$userManagement = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManagement);
@@ -367,10 +367,22 @@ class ConversationManager extends DbAccessor{
 		$message->id = $messageRow['id'];
 		$message->uuid = $messageRow['uuid'];
 		$message->date = $messageRow['date'];
-		$message->sender = $userManagement->getObjectById($messageRow['sender_id']);
+		$message->senderId = $messageRow['sender_id'];
+		if(!$reduced){
+			$message->sender = $userManagement->getObjectById($messageRow['sender_id']);
+		}
 		$message->message = $messageRow['message'];
 		$message->read = $messageRow['read'];
 		$message->hasAttachment = $messageRow['has_attachment'];
+		
+		if(!$reduced and $message->hasAttachment == '1'){
+			$attachMgr = Reg::get(ConfigManager::getConfig("Messaging", "Conversations")->Objects->ConversationAttachmentManager);
+			
+			$filter = new ConversationAttachmentFilter();
+			$filter->setMessageId($message->id);
+			
+			$message->attachments = $attachMgr->getAttachments($filter);
+		}
 	
 		return $message;
 	}

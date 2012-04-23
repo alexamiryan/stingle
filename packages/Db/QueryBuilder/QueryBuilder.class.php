@@ -1094,7 +1094,7 @@ class QueryBuilder
     private function _getSQLForDelete()
     {
          return 'DELETE'
-              . $this->_getReducedSQLQueryPart('from', array('pre' => ' ', 'separator' => ', '))
+              . $this->_getReducedSQLQueryPart('from', array('pre' => ' FROM ', 'separator' => ', '))
               . $this->_getReducedSQLQueryPart('where', array('pre' => ' WHERE '))
               . $this->_getReducedSQLQueryPart('orderBy', array('pre' => ' ORDER BY ', 'separator' => ', '));
     }

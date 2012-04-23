@@ -23,10 +23,6 @@ class MessageFilter extends Filter {
 					$this->qb->expr()->equal(new Field('id', 'main'), new Field('message_id', 'extra')));
 	}
 	
-	public function setSelectCount(){
-		$this->qb->select($this->qb->expr()->count(new Field('*'), 'cnt'));
-	}
-	
 	public function setId($id){
 		if(empty($id) or !is_numeric($id)){
 			throw new InvalidIntegerArgumentException("\$id have to be non zero integer.");

@@ -12,10 +12,6 @@ class UsersFilter extends Filter {
 		}
 	}
 	
-	public function setSelectCount(){
-		$this->qb->select($this->qb->expr()->count(new Field('*'), 'cnt'));
-	}
-	
 	public function setUserIdEqual($userId){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");

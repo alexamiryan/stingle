@@ -6,5 +6,6 @@ class ConversationMessage {
 	public $sender;
 	public $message;
 	public $read;
+	public $hasAttachment = 0;
 }
 ?>

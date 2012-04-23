@@ -28,5 +28,9 @@ abstract class Filter{
 	public function getSQL(){
 		return $this->qb->getSQL();
 	}
+	
+	public function setSelectCount(){
+		$this->qb->select($this->qb->expr()->count(new Field('*'), 'cnt'));
+	}
 }
 ?>

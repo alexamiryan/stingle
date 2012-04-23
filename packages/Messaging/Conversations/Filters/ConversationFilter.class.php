@@ -8,10 +8,6 @@ class ConversationFilter extends Filter {
 			->from(Tbl::get('TBL_CONVERSATIONS', 'ConversationManager'), "conv");
 	}
 	
-	public function setSelectCount(){
-		$this->qb->select($this->qb->expr()->count(new Field('*'), 'cnt'));
-	}
-	
 	public function setId($id){
 		if(empty($id) or !is_numeric($id)){
 			throw new InvalidIntegerArgumentException("\$id have to be non zero integer.");

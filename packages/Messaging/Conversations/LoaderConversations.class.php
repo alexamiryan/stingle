@@ -6,6 +6,7 @@ class LoaderConversations extends Loader{
 		require_once ('Filters/ConversationFilter.class.php');
 		require_once ('Filters/ConversationMessagesFilter.class.php');
 		require_once ('Managers/ConversationManager.class.php');
+		require_once ('Managers/ConversationAttachmentManager.class.php');
 		require_once ('Exceptions/ConversationException.class.php');
 		require_once ('Exceptions/ConversationNotUniqueException.class.php');
 	}
@@ -16,6 +17,10 @@ class LoaderConversations extends Loader{
 	
 	protected function loadConversationManager(){
 		$this->register(new ConversationManager());
+	}
+	
+	protected function loadConversationAttachmentManager(){
+		$this->register(new ConversationAttachmentManager($this->config->AuxConfig));
 	}
 }
 ?>

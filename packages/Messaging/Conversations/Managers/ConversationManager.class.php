@@ -235,6 +235,24 @@ class ConversationManager extends DbAccessor{
 		return ($count == 1 ? true : false);
 	}
 	
+	public function setMessageHasAttachment(ConversationMessage $message){
+		$qb = new QueryBuilder();
+		
+		$qb->update(Tbl::get('TBL_CONVERSATION_MESSAGES'))
+			->set(new Field('has_attachment'), 1)
+			->where($qb->expr()->equal(new Field('id'), $message->id));
+		
+		$this->query->exec($qb->getSQL());
+		
+		$qb = new QueryBuilder();
+		
+		$qb->update(Tbl::get('TBL_CONVERSATIONS'))
+			->set(new Field('has_attachment'), 1)
+			->where($qb->expr()->equal(new Field('uuid'), $message->uuid));
+		
+		$this->query->exec($qb->getSQL());
+	}
+	
 	protected function addMessageToConversation($uuid, $senderId, $message){
 		if(empty($uuid) or !is_numeric($uuid)){
 			throw InvalidArgumentException("UUID have to be non zero integer.");
@@ -352,6 +370,7 @@ class ConversationManager extends DbAccessor{
 		$message->sender = $userManagement->getObjectById($messageRow['sender_id']);
 		$message->message = $messageRow['message'];
 		$message->read = $messageRow['read'];
+		$message->hasAttachment = $messageRow['has_attachment'];
 	
 		return $message;
 	}

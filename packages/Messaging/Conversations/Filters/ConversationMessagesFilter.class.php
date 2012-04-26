@@ -18,8 +18,8 @@ class ConversationMessagesFilter extends Filter {
 	}
 	
 	public function setIdGreater($id){
-		if(empty($id) or !is_numeric($id)){
-			throw new InvalidIntegerArgumentException("\$id have to be non zero integer.");
+		if(!is_numeric($id)){
+			throw new InvalidIntegerArgumentException("\$id have to be integer.");
 		}
 	
 		$this->qb->andWhere($this->qb->expr()->greater(new Field("id", "conv_msgs"), $id));

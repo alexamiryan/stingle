@@ -7,6 +7,7 @@ class DependencyConversations extends Dependency
 		$this->addPlugin("Users", "Users");
 		$this->addPlugin("FileUploader", "FileUploader");
 		$this->addPlugin("Image", "ImageUploader");
+		$this->addPlugin("Comet", "Comet");
 	}
 }
 ?>

@@ -1,0 +1,3 @@
+<?
+class ConversationNotExistException extends ConversationException{ }
+?>

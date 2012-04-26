@@ -66,7 +66,7 @@ class Insert
     		$returnStr .= "({$this->values[0][0]})";
     	}
     	else{
-    		if(($this->fields !== null and is_array($this->fields)) or !isAssoc($this->values)){
+    		if(($this->fields !== null and is_array($this->fields)) or (isset($this->values[0]) and !isAssoc($this->values[0]))){
     			$returnStr .= "VALUES ";
     			foreach($this->values as $values){
 	    			$returnStr .= "(" . $this->_getValues($values) . "),";

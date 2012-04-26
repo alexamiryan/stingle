@@ -25,7 +25,27 @@ class ConversationManager extends DbAccessor{
 		
 		$conversation = $this->getConversation($filter);
 		
+		if(!$this->isConversationBelongsToUser($conversation->uuid, $senderId)){
+			throw new ConversationNotOwnException("Conversation does not belong to user");
+		}
+		
 		$this->addMessageToConversation($conversation->uuid, $senderId, $message);
+	}
+	
+	public function sendMessageByUUID($uuid, $senderId, $message){
+		$filter = new ConversationFilter();
+		$filter->setUUID($uuid);
+		
+		$count = $this->getConversationsCount($filter);
+		if($count == 0){
+			throw new ConversationNotExistException("There is no conversation with uuid $uuid");
+		}
+		
+		if(!$this->isConversationBelongsToUser($uuid, $senderId)){
+			throw new ConversationNotOwnException("Conversation does not belong to user");
+		}
+		
+		$this->addMessageToConversation($uuid, $senderId, $message);
 	}
 	
 	public function markConversationAsRead($userId, $uuid){
@@ -173,6 +193,15 @@ class ConversationManager extends DbAccessor{
 		return $this->query->exec($sqlQuery)->fetchField("cnt");
 	}
 	
+	public function getMessagesLastId(){
+		$qb = new QueryBuilder();
+		
+		$qb->select($qb->expr()->max(new Field('id'), 'maxId'))
+			->from(Tbl::get('TBL_CONVERSATION_MESSAGES'));
+		
+		return $this->query->exec($qb->getSQL())->fetchField('maxId');
+	}
+	
 	public function markConversationMessageAsRead($conversationMessageId){
 		if(empty($conversationMessageId) or !is_numeric($conversationMessageId)){
 			throw new InvalidIntegerArgumentException("\$conversationMessageId have to be non zero integer.");
@@ -264,10 +293,11 @@ class ConversationManager extends DbAccessor{
 			throw InvalidArgumentException("message have to be non empty string.");
 		}
 		
+		$qb = new QueryBuilder();
+		
 		$qb->insert(Tbl::get('TBL_CONVERSATION_MESSAGES'))
 			->values(array(
 					'uuid'=>$uuid, 
-					'user_id'=>$userId1, 
 					'sender_id'=>$senderId,
 					'message'=>$message));
 		

@@ -9,8 +9,11 @@ class LoaderConversations extends Loader{
 		require_once ('Filters/ConversationAttachmentFilter.class.php');
 		require_once ('Managers/ConversationManager.class.php');
 		require_once ('Managers/ConversationAttachmentManager.class.php');
+		require_once ('Managers/ConversationComet.class.php');
 		require_once ('Exceptions/ConversationException.class.php');
 		require_once ('Exceptions/ConversationNotUniqueException.class.php');
+		require_once ('Exceptions/ConversationNotExistException.class.php');
+		require_once ('Exceptions/ConversationNotOwnException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

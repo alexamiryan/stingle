@@ -153,7 +153,7 @@ class ConversationManager extends DbAccessor{
 		$messages = array();
 	
 		$sqlQuery = $filter->getSQL();
-	
+		
 		if($pager !== null){
 			$this->query = $pager->executePagedSQL($sqlQuery);
 		}
@@ -178,7 +178,7 @@ class ConversationManager extends DbAccessor{
 	 * @return Conversation
 	 */
 	public function getConversationMessage(ConversationMessagesFilter $filter, $reduced = false){
-		$messages = $this->getConversationMessages($filter, $reduced);
+		$messages = $this->getConversationMessages($filter, null, $reduced);
 		if(count($messages) !== 1){
 			throw new ConversationNotUniqueException("There is no conversation message or it is not unique.");
 		}

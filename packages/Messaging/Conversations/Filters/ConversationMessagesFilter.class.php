@@ -26,6 +26,15 @@ class ConversationMessagesFilter extends Filter {
 		return $this;
 	}
 	
+	public function setIdLess($id){
+		if(!is_numeric($id)){
+			throw new InvalidIntegerArgumentException("\$id have to be integer.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->less(new Field("id", "conv_msgs"), $id));
+		return $this;
+	}
+	
 	public function setUUID($uuid){
 		if(empty($uuid) or !is_numeric($uuid)){
 			throw new InvalidIntegerArgumentException("\$uuid have to be non zero integer.");
@@ -51,6 +60,14 @@ class ConversationMessagesFilter extends Filter {
 	
 		$this->qb->andWhere($this->qb->expr()->equal(new Field("read", "conv_msgs"), $status));
 		return $this;
+	}
+	
+	public function setOrderIdAsc(){
+		$this->setOrder(new Field('id', 'conv_msgs'), MySqlDatabase::ORDER_ASC);
+	}
+	
+	public function setOrderIdDesc(){
+		$this->setOrder(new Field('id', 'conv_msgs'), MySqlDatabase::ORDER_DESC);
 	}
 	
 	public function setOrderDateAsc(){

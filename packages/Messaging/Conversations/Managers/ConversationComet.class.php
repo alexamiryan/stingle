@@ -1,10 +1,10 @@
 <?
 class ConversationComet extends CometChunk{
 	
-	private $lastId;
-	private $uuid;
+	protected $lastId;
+	protected $uuid;
 	
-	private $newMessages;
+	protected $newMessages;
 	
 	public function __construct($params){
 		$this->setName('conv');
@@ -29,8 +29,7 @@ class ConversationComet extends CometChunk{
 	}
 	
 	public function getDataArray(){
-		
-		$responseArray = null;
+		$responseArray = array();
 		
 		$responseArray['lastId'] = Reg::get('convMgr')->getMessagesLastId();
 		

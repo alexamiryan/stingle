@@ -7,6 +7,10 @@
 
 
 function smarty_function_chunk($params, &$smarty){
-	return $smarty->fetch($smarty->getFilePathFromTemplate($smarty->chunksPath . $params['file'], true));
+	$filePath = $smarty->getFilePathFromTemplate($smarty->chunksPath . $params['file'], true);
+	if($filePath !== false){
+		return $smarty->fetch($filePath);
+	}
+	return "";
 }
 ?>

@@ -1,19 +1,19 @@
 <?
 class ChatComet extends CometChunk{
 	
-	private $chatSessionUpdates = array();
-	private $invitationsToMe  = array();
-	private $myInvitations  = array();
-	private $lastId = null;
-	private $lastInvId = null;
-	private $money  = null;
-	private $closeAllSessions  = false;
-	private $openSessions  = null;
-	private $openMyInvitations  = null;
-	private $openInvitationsToMe  = null;
+	protected $chatSessionUpdates = array();
+	protected $invitationsToMe  = array();
+	protected $myInvitations  = array();
+	protected $lastId = null;
+	protected $lastInvId = null;
+	protected $money  = null;
+	protected $closeAllSessions  = false;
+	protected $openSessions  = null;
+	protected $openMyInvitations  = null;
+	protected $openInvitationsToMe  = null;
 	
-	private $redirect  = null;
-	private $messages  = array();
+	protected $redirect  = null;
+	protected $messages  = array();
 	
 	public function __construct($params){
 		$this->setName('chat');
@@ -22,46 +22,46 @@ class ChatComet extends CometChunk{
 		$this->lastInvId = $params['lastInvId'];
 	}
 	
-	private function setRedirect($url){
+	protected function setRedirect($url){
 		$this->setIsAnyData();
 		$this->redirect = $url;
 	}
 	
 	
-	private function addMessage($message){
+	protected function addMessage($message){
 		$this->setIsAnyData();
 		if(!in_array($message, $this->messages)){
 			array_push($this->messages, $message);
 		}
 	}
 	
-	private function addChatSession(ChatSession $chatSession){
+	protected function addChatSession(ChatSession $chatSession){
 		$this->setIsAnyData();
 		if(!in_array($chatSession, $this->chatSessionUpdates)){
 			array_push($this->chatSessionUpdates, $chatSession);
 		}
 	}
 	
-	private function setInvitationsToMe($array){
+	protected function setInvitationsToMe($array){
 		if(!empty($array)){
 			$this->setIsAnyData();
 		}
 		$this->invitationsToMe = $array;
 	}
 	
-	private function setMyInvitations($array){
+	protected function setMyInvitations($array){
 		if(!empty($array)){
 			$this->setIsAnyData();
 		}
 		$this->myInvitations = $array;
 	}
 	
-	private function setMoney($money){
+	protected function setMoney($money){
 		$this->setIsAnyData();
 		$this->money = $money;
 	}
 	
-	private function closeAllSessions($reason = 0, $redirectUrl = null){
+	protected function closeAllSessions($reason = 0, $redirectUrl = null){
 		$this->setIsAnyData();
 		$this->closeAllSessions = array("reason"=>$reason, 'redirectUrl' => $redirectUrl);
 	}
@@ -220,7 +220,7 @@ class ChatComet extends CometChunk{
 			$this->lastId = $DbLastId;
 		}
 			
-		$responseArray = null;
+		$responseArray = array();
 		
 		if(!empty($this->chatSessionUpdates)){
 			$responseArray['chatSessionUpdates'] = $this->chatSessionUpdates;

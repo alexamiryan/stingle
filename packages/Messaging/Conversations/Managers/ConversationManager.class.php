@@ -29,7 +29,7 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		$this->addMessageToConversation($conversation->uuid, $senderId, $message);
+		return $this->addMessageToConversation($conversation->uuid, $senderId, $message);
 	}
 	
 	public function sendMessageByUUID($uuid, $senderId, $message){
@@ -45,31 +45,36 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		$this->addMessageToConversation($uuid, $senderId, $message);
+		return $this->addMessageToConversation($uuid, $senderId, $message);
 	}
 	
 	public function markConversationAsRead($userId, $uuid){
+		$this->changeConversationReadStatus($userId, $uuid, self::STATUS_READ_READ);
+	}
+	
+	public function markConversationAsUnread($userId, $uuid){
+		$this->changeConversationReadStatus($userId, $uuid, self::STATUS_READ_UNREAD);
+	}
+	
+	public function changeConversationReadStatus($userId, $uuid, $status){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidIntegerArgumentException("\$userId have to be non zero integer.");
 		}
 		if(empty($uuid) or !is_numeric($uuid)){
 			throw new InvalidIntegerArgumentException("\$uuid have to be non zero integer.");
 		}
+		if(!in_array($status, $this->getConstsArray("STATUS_READ"))){
+			throw new InvalidIntegerArgumentException("Invalid status specified.");
+		}
 	
 		$qb = new QueryBuilder();
-		
-		$maxMessagesId = $this->query->exec(
-				$qb->select($qb->expr()->max(new Field('uuid')))->from(Tbl::get('TBL_CONVERSATION_MESSAGES'))->getSQL()
-			)->fetchField('maxId');
-		
-		$qb = new QueryBuilder();
-		
+	
 		$qb->update(Tbl::get('TBL_CONVERSATIONS'))
-			->set(new Field('read'), self::STATUS_READ_READ)
+			->set(new Field('read'), $status)
 			->where($qb->expr()->equal(new Field('uuid'), $uuid))
-			->andWhere($qb->expr()->equal(new Field('user_id'), userId));
-		
-		return $this->query->exec($qb->getSQL())->affected();
+			->andWhere($qb->expr()->equal(new Field('user_id'), $userId));
+	
+		$this->query->exec($qb->getSQL());
 	}
 	
 	public function trashConversation($userId, $uuid){
@@ -77,11 +82,19 @@ class ConversationManager extends DbAccessor{
 	}
 	
 	public function deleteConversation($userId, $uuid){
-		return $this->changeTrashedStatus($userId, $uuid, self::STATUS_TRASHED_DELETED);
+		$this->changeTrashedStatus($userId, $uuid, self::STATUS_TRASHED_DELETED);
+		
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_CONVERSATIONS'))
+			->set(new Field('fetch_from'), $this->getMessagesLastId())
+			->where($qb->expr()->equal(new Field('uuid'), $uuid))
+			->andWhere($qb->expr()->equal(new Field('user_id'), $userId));
+		
+		$this->query->exec($qb->getSQL());
 	}
 	
 	public function restoreConversation($userId, $uuid){
-		return $this->changeTrashedStatus($userId, $uuid, self::STATUS_TRASHED_NOT_TRAHSED);
+		$this->changeTrashedStatus($userId, $uuid, self::STATUS_TRASHED_NOT_TRAHSED);
 	}
 	
 	public function changeTrashedStatus($userId, $uuid, $status){
@@ -100,12 +113,12 @@ class ConversationManager extends DbAccessor{
 		$qb->update(Tbl::get('TBL_CONVERSATIONS'))
 			->set(new Field('trashed'), $status)
 			->where($qb->expr()->equal(new Field('uuid'), $uuid))
-			->andWhere($qb->expr()->equal(new Field('user_id'), userId));
+			->andWhere($qb->expr()->equal(new Field('user_id'), $userId));
 	
-		return $this->query->exec($qb->getSQL())->affected();
+		$this->query->exec($qb->getSQL());
 	}
 	
-	public function getConversations(ConversationFilter $filter, MysqlPager $pager = null){
+	public function getConversations(ConversationFilter $filter, MysqlPager $pager = null, $reduced = false){
 		$conversations = array();
 		
 		$sqlQuery = $filter->getSQL();
@@ -120,7 +133,7 @@ class ConversationManager extends DbAccessor{
 		$conversationRows = $this->query->fetchRecords();
 		
 		foreach ($conversationRows as $conversationRow){
-			array_push($conversations, $this->getConversationObject($conversationRow));
+			array_push($conversations, $this->getConversationObject($conversationRow, $reduced));
 		}
 		
 		return $conversations;
@@ -133,8 +146,8 @@ class ConversationManager extends DbAccessor{
 	 * @throws ConversationNotUniqueException
 	 * @return Conversation
 	 */
-	public function getConversation(ConversationFilter $filter){
-		$conversations = $this->getConversations($filter);
+	public function getConversation(ConversationFilter $filter, $reduced = false){
+		$conversations = $this->getConversations($filter, null, $reduced);
 		if(count($conversations) !== 1){
 			throw new ConversationNotUniqueException("There is no such conversation or it is not unique.");
 		}
@@ -175,7 +188,7 @@ class ConversationManager extends DbAccessor{
 	 *
 	 * @param ConversationFilter $filter
 	 * @throws ConversationNotUniqueException
-	 * @return Conversation
+	 * @return ConversationMessage
 	 */
 	public function getConversationMessage(ConversationMessagesFilter $filter, $reduced = false){
 		$messages = $this->getConversationMessages($filter, null, $reduced);
@@ -207,13 +220,38 @@ class ConversationManager extends DbAccessor{
 			throw new InvalidIntegerArgumentException("\$conversationMessageId have to be non zero integer.");
 		}
 	
+		// Get message
+		$filter = new ConversationMessagesFilter();
+		$filter->setId($conversationMessageId);
+		
+		$message = $this->getConversationMessage($filter, true);
+		
+		// Change read status
 		$qb = new QueryBuilder();
-	
 		$qb->update(Tbl::get('TBL_CONVERSATION_MESSAGES'))
 			->set(new Field('read'), self::STATUS_READ_READ)
-			->where($qb->expr()->equal(new Field('id'), $conversationMessageId));
-	
-		return $this->query->exec($qb->getSQL())->affected();
+			->where($qb->expr()->equal(new Field('id'), $message->id));
+		$this->query->exec($qb->getSQL())->affected();
+		
+		// Get Conversation of message receiver
+		$conversationFilter = new ConversationFilter();
+		$conversationFilter->setUUID($message->uuid);
+		$conversationFilter->setUserId($message->receiverId);
+		$conversation = $this->getConversation($conversationFilter);
+		
+		$unreadFilter = new ConversationMessagesFilter();
+		$unreadFilter->setSenderId($message->senderId);
+		$unreadFilter->setUUID($message->uuid);
+		if($conversation->fetchFrom != null){
+			$unreadFilter->setIdGreater($conversation->fetchFrom);
+		}
+		$unreadFilter->setReadStatus(self::STATUS_READ_UNREAD);
+		
+		$unreadsCount = $this->getConversationMessagesCount($unreadFilter);
+		
+		if($unreadsCount == 0){
+			$this->markConversationAsRead($message->receiverId, $message->uuid);
+		}
 	}
 	
 	public function isConversationExists($userId1, $userId2){
@@ -244,7 +282,7 @@ class ConversationManager extends DbAccessor{
 			->set(new Field('last_msg_date'), ($date !== null ? $date : 'NOW()'))
 			->where($qb->expr()->equal(new Field('uuid'), $uuid));
 		
-		return $this->query->exec($qb->getSQL())->affected();
+		$this->query->exec($qb->getSQL());
 	}
 	
 	public function isConversationBelongsToUser($uuid, $userId){
@@ -289,21 +327,47 @@ class ConversationManager extends DbAccessor{
 		if(empty($senderId) or !is_numeric($senderId)){
 			throw new InvalidIntegerArgumentException("senderId have to be non zero integer.");
 		}
-		if(empty($message)){
-			throw InvalidArgumentException("message have to be non empty string.");
-		}
 		
+		// Get Conversation
+		$filter = new ConversationFilter();
+		$filter->setUUID($uuid);
+		$filter->setUserId($senderId);
+		$conversation = $this->getConversation($filter, true);
+		
+		// Insert new message into DB
 		$qb = new QueryBuilder();
-		
 		$qb->insert(Tbl::get('TBL_CONVERSATION_MESSAGES'))
 			->values(array(
 					'uuid'=>$uuid, 
 					'sender_id'=>$senderId,
+					'receiver_id'=>$conversation->interlocutorId,
 					'message'=>$message));
 		
 		$this->query->exec($qb->getSQL());
+		$messageId = $this->query->getLastInsertId();
 		
-		return $this->query->affected();
+		// Mark conversation as unread for interlocutor
+		$this->markConversationAsUnread($conversation->interlocutorId, $uuid);
+		
+		// Get Interlocutors Conversation
+		$filter = new ConversationFilter();
+		$filter->setUUID($uuid);
+		$filter->setUserId($conversation->interlocutorId);
+		$interConv = $this->getConversation($filter, true);
+		
+		// Restore conversation if it is trashed or deleted
+		if($interConv->trashed != self::STATUS_TRASHED_NOT_TRAHSED){
+			$this->restoreConversation($conversation->interlocutorId, $uuid);
+		}
+		
+		// Update Conversation last message date
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_CONVERSATIONS'))
+			->set(new Field('last_msg_date'), new Literal((String)new Func("NOW")))
+			->where($qb->expr()->equal(new Field('uuid'), $uuid));
+		$this->query->exec($qb->getSQL());
+		
+		return $messageId;
 	}
 	
 	protected function getMaxUUID(){
@@ -345,8 +409,6 @@ class ConversationManager extends DbAccessor{
 					'interlocutor_id'=>$userId2));
 		
 		$this->query->exec($qb->getSQL());
-		
-		return $this->query->affected();
 	}
 	
 	protected function getNewUUID(){
@@ -371,15 +433,19 @@ class ConversationManager extends DbAccessor{
 		return $uuid;
 	}
 	
-	protected function getConversationObject($conversationRow){
+	protected function getConversationObject($conversationRow, $reduced = false){
 		$conversation = new Conversation();
-		
-		$userManagement = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManagement);
 		
 		$conversation->id = $conversationRow['id'];
 		$conversation->uuid = $conversationRow['uuid'];
-		$conversation->user = $userManagement->getObjectById($conversationRow['user_id']);
-		$conversation->interlocutor = $userManagement->getObjectById($conversationRow['interlocutor_id']);
+		$conversation->userId = $conversationRow['user_id'];
+		$conversation->interlocutorId = $conversationRow['interlocutor_id'];
+		if(!$reduced){
+			$userManagement = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManagement);
+			
+			$conversation->user = $userManagement->getObjectById($conversationRow['user_id']);
+			$conversation->interlocutor = $userManagement->getObjectById($conversationRow['interlocutor_id']);
+		}
 		$conversation->lastMsgDate = $conversationRow['last_msg_date'];
 		$conversation->read = $conversationRow['read'];
 		$conversation->trashed = $conversationRow['trashed'];
@@ -392,14 +458,16 @@ class ConversationManager extends DbAccessor{
 	protected function getConversationMessageObject($messageRow, $reduced = false){
 		$message = new ConversationMessage();
 	
-		$userManagement = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManagement);
-	
 		$message->id = $messageRow['id'];
 		$message->uuid = $messageRow['uuid'];
 		$message->date = $messageRow['date'];
 		$message->senderId = $messageRow['sender_id'];
+		$message->receiverId = $messageRow['receiver_id'];
 		if(!$reduced){
+			$userManagement = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManagement);
+			
 			$message->sender = $userManagement->getObjectById($messageRow['sender_id']);
+			$message->receiver = $userManagement->getObjectById($messageRow['receiver_id']);
 		}
 		$message->message = $messageRow['message'];
 		$message->read = $messageRow['read'];

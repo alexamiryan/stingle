@@ -24,7 +24,7 @@ class FileUploader
 	        	$fileName = $file["name"];
 	        }
 	        
-	        return move_uploaded_file($tmpName, $this->uploadDir . basename($fileName));
+	        return move_uploaded_file($tmpName, $uploadDir . basename($fileName));
 	    }
 	    return $fileName;
 	}

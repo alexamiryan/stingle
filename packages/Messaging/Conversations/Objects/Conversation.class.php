@@ -2,7 +2,9 @@
 class Conversation{
 	public $id;
 	public $uuid;
+	public $userId;
 	public $user;
+	public $interlocutorId;
 	public $interlocutor;
 	public $lastMsgDate;
 	public $read = 0;

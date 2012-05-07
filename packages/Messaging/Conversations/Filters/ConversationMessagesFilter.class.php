@@ -53,6 +53,15 @@ class ConversationMessagesFilter extends Filter {
 		return $this;
 	}
 	
+	public function setReceiverId($receiverId){
+		if(empty($receiverId) or !is_numeric($receiverId)){
+			throw new InvalidIntegerArgumentException("\$receiverId have to be non zero integer.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("receiver_id", "conv_msgs"), $receiverId));
+		return $this;
+	}
+	
 	public function setReadStatus($status){
 		if(!is_numeric($status)){
 			throw new InvalidIntegerArgumentException("\$status have to be integer.");

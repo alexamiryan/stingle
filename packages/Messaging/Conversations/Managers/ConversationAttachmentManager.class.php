@@ -3,12 +3,12 @@ class ConversationAttachmentManager extends DbAccessor{
 	
 	const TBL_CONVERSATION_ATTACHEMENTS		= "conversation_attachments";
 	
-	protected $uploadDir;
+	protected $config;
 	
 	public function __construct(Config $config, $dbInstanceKey = null){
 		parent::__construct($dbInstanceKey);
 		
-		$this->uploadDir = $config->uploadDir;
+		$this->config = $config;
 	}
 	
 	public function getAttachments(ConversationAttachmentFilter $filter, MysqlPager $pager = null){
@@ -76,7 +76,7 @@ class ConversationAttachmentManager extends DbAccessor{
 	
 		$convMgr->setMessageHasAttachment($message);
 		
-		return $this->query->exec($sqlQuery)->affected();
+		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
 	/**
@@ -85,17 +85,15 @@ class ConversationAttachmentManager extends DbAccessor{
 	 * @return ConversationAttachment
 	 */
 	public function addAttachment($file){
-		$systemFilename = self::findNewFileName($this->uploadDir);
+		$systemFilename = self::findNewFileName($this->config->uploadDir);
 		
-		$imageUploaderConfig = ConfigManager::getConfig("Image", "ImageUploader")->AuxConfig;
-		$attachsImgUpConfig = clone($imageUploaderConfig);
-		$attachsImgUpConfig->uploadDir = $this->uploadDir;
-		
-		if (in_array($file["type"], $imageUploaderConfig->acceptedMimeTypes->toArray())){
+		$attachsImgUpConfig = $this->config->imageUploaderConfig;
+		$attachsImgUpConfig->uploadDir = $this->config->uploadDir;
+		if (in_array($file["type"], $attachsImgUpConfig->acceptedMimeTypes->toArray())){
 			ImageUploader::upload($file, $systemFilename, $attachsImgUpConfig);
 		}
 		else{
-			FileUploader::upload($file, $systemFilename, $this->uploadDir);
+			FileUploader::upload($file, $systemFilename, $this->config->uploadDir);
 		}
 		
 		$qb = new QueryBuilder();
@@ -114,12 +112,15 @@ class ConversationAttachmentManager extends DbAccessor{
 		return $this->getAttachment($filter);
 	}
 	
-	public function outputAttachmentContents(ConversationAttachmentFilter $filter){
-		$attachment = $this->getAttachment($filter);
+	public function outputAttachmentContents(ConversationAttachment $attachment){
+		$filename = $this->config->uploadDir . $attachment->systemFilename;
 		
-		$filename = $this->uploadDir . $attachment->systemFilename;
-		
-		header("Content-Disposition: attachment; filename={$attachment->filename}");
+		if (in_array($attachment->mimeType, $this->config->imageUploaderConfig->acceptedMimeTypes->toArray())){
+			header("Content-Disposition: filename={$attachment->filename}");
+		}
+		else{
+			header("Content-Disposition: attachment; filename={$attachment->filename}");
+		}
 		header("Content-Type: {$attachment->mimeType}");
 		header("Content-Length: " . filesize($filename));
 		readfile($filename);
@@ -138,7 +139,7 @@ class ConversationAttachmentManager extends DbAccessor{
 		$qb->delete(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS'))
 			->where($qb->expr()->equal(new Field('id'), $attachment->id));
 		
-		@unlink($this->uploadDir . $attachment->systemFilename);
+		@unlink($this->config->uploadDir . $attachment->systemFilename);
 		
 		return $this->query->exec($qb->getSQL())->affected();
 	}
@@ -164,6 +165,7 @@ class ConversationAttachmentManager extends DbAccessor{
 		$attachment->systemFilename = $attachmentRow['system_filename'];
 		$attachment->filename = $attachmentRow['filename'];
 		$attachment->mimeType = $attachmentRow['mime_type'];
+		$attachment->isImage = in_array($attachment->mimeType, $this->config->imageUploaderConfig->acceptedMimeTypes->toArray());
 		$attachment->date = $attachmentRow['date'];
 	
 		return $attachment;

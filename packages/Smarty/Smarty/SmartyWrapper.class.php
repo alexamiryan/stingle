@@ -509,6 +509,30 @@ class SmartyWrapper extends Smarty {
 		$this->isOutputDisabled = true;
 	}
 
+	private function defaultAssingns(){
+		// CSS & JS files
+		$this->assign ( '__cssFiles', $this->cssFiles );
+		$this->assign ( '__jsFiles', $this->jsFiles );
+		
+		// Other options
+		$this->assign( '__pageTitle', $this->pageTitle );
+		$this->assign( '__pageDescription', $this->description );
+		$this->assign( '__pageKeywords', $this->keywords );
+		
+		$this->assign ( '__CustomHeadTags', $this->CustomHeadTags );
+		
+		// Template Paths
+		$this->assign ( '__ViewDirPath', $this->template_dir );
+		$this->assign ( '__ModulesPath', $this->modulesPath );
+		$this->assign ( '__ChunksPath', $this->chunksPath );
+		$this->assign ( '__SnippetsPath', $this->snippetsPath );
+	}
+	
+	public function fetch($template, $cache_id = null, $compile_id = null, $parent = null, $display = false){
+		$this->defaultAssingns();
+		return parent::fetch($template, $cache_id, $compile_id, $parent, $display);
+	}
+	
 	/**
 	 * Display a module page. <b>The $tpl var should be relative to /templates/modules
 	 * folder without a '/' at the begining.</b>
@@ -543,22 +567,7 @@ class SmartyWrapper extends Smarty {
 			$this->removeWrapper();
 		}
 		
-		// CSS & JS files
-		$this->assign ( '__cssFiles', $this->cssFiles );
-		$this->assign ( '__jsFiles', $this->jsFiles );
-
-		// Other options
-		$this->assign( '__pageTitle', $this->pageTitle );
-		$this->assign( '__pageDescription', $this->description );
-		$this->assign( '__pageKeywords', $this->keywords );
-
-		$this->assign ( '__CustomHeadTags', $this->CustomHeadTags );
-		
-		// Template Paths
-		$this->assign ( '__ViewDirPath', $this->template_dir );
-		$this->assign ( '__ModulesPath', $this->modulesPath );
-		$this->assign ( '__ChunksPath', $this->chunksPath );
-		$this->assign ( '__SnippetsPath', $this->snippetsPath );
+		$this->defaultAssingns();
 
 		// Check if wrapper is set and if yes include it
 		if(!empty($this->wrapper)){

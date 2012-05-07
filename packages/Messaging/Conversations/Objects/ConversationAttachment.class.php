@@ -5,6 +5,7 @@ class ConversationAttachment {
 	public $systemFilename;
 	public $filename;
 	public $mimeType;
+	public $isImage;
 	public $date;
 }
 ?>

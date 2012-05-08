@@ -19,7 +19,6 @@ class GenericCometChunk extends CometChunk{
 			if(isset($_SESSION['cometFinish']) and $_SESSION['cometFinish'] == true){
 				unset($_SESSION['cometFinish']);
 				$this->setIsAnyData();
-				
 			}
 			session_write_close();
 			$this->lastCheckTime = time();

@@ -20,16 +20,30 @@ class ConversationManager extends DbAccessor{
 			$this->openConversation($senderId, $receiverId);
 		}
 		
+		$uuid = null;
+		
 		$filter = new ConversationFilter();
-		$filter->setUserId($senderId)->setInterlocutorId($receiverId);
+		$filter->setUserId($senderId);
+		$filter->setInterlocutorId($receiverId);
 		
-		$conversation = $this->getConversation($filter);
+		$conversationsCount = $this->getConversationsCount($filter);
+		if($conversationsCount == 0){
+			$uuid = $this->openConversation($senderId, $receiverId);
+		}
+		else{
+			$filter = new ConversationFilter();
+			$filter->setUserId($senderId);
+			$filter->setInterlocutorId($receiverId);
+			
+			$conversation = $this->getConversation($filter);
+			$uuid = $conversation->uuid;
+		}
 		
-		if(!$this->isConversationBelongsToUser($conversation->uuid, $senderId)){
+		if(!$this->isConversationBelongsToUser($uuid, $senderId)){
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		return $this->addMessageToConversation($conversation->uuid, $senderId, $message);
+		return $this->addMessageToConversation($uuid, $senderId, $message);
 	}
 	
 	public function sendMessageByUUID($uuid, $senderId, $message){
@@ -84,12 +98,21 @@ class ConversationManager extends DbAccessor{
 	public function deleteConversation($userId, $uuid){
 		$this->changeTrashedStatus($userId, $uuid, self::STATUS_TRASHED_DELETED);
 		
+		$messagesLastId = $this->getMessagesLastId();
+		
 		$qb = new QueryBuilder();
 		$qb->update(Tbl::get('TBL_CONVERSATIONS'))
-			->set(new Field('fetch_from'), $this->getMessagesLastId())
+			->set(new Field('fetch_from'), $messagesLastId)
 			->where($qb->expr()->equal(new Field('uuid'), $uuid))
 			->andWhere($qb->expr()->equal(new Field('user_id'), $userId));
+		$this->query->exec($qb->getSQL());
 		
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_CONVERSATION_MESSAGES'))
+			->set(new Field('read'), self::STATUS_READ_READ)
+			->where($qb->expr()->equal(new Field('uuid'), $uuid))
+			->andWhere($qb->expr()->equal(new Field('receiver_id'), $userId))
+			->andWhere($qb->expr()->less(new Field('id'), $messagesLastId));
 		$this->query->exec($qb->getSQL());
 	}
 	
@@ -398,6 +421,10 @@ class ConversationManager extends DbAccessor{
 			throw new InvalidIntegerArgumentException("\$userId2 have to be non zero integer.");
 		}
 		
+		$db = MySqlDbManager::getDbObject();
+		
+		$db->lockTables(Tbl::get('TBL_CONVERSATIONS'), "w");
+		
 		$newUUID = $this->getMaxUUID() + 1;
 		
 		$qb = new QueryBuilder();
@@ -409,6 +436,18 @@ class ConversationManager extends DbAccessor{
 					'interlocutor_id'=>$userId2));
 		
 		$this->query->exec($qb->getSQL());
+		
+		$qb->insert(Tbl::get('TBL_CONVERSATIONS'))
+			->values(array(
+				'uuid'=>$newUUID,
+				'user_id'=>$userId2,
+				'interlocutor_id'=>$userId1));
+		
+		$this->query->exec($qb->getSQL());
+		
+		$db->unlockTables();
+		
+		return $newUUID;
 	}
 	
 	protected function getNewUUID(){

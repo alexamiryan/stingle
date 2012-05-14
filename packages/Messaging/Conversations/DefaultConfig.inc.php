@@ -1,6 +1,7 @@
 <?
 $defaultConfig = array(	
 						'AuxConfig' => array( 'uploadDir' => 'uploads/attachs/',
+								'attachmentsClearTimeout' => 4, // In Days
 								'imageUploaderConfig' => array(	'saveFormat' => 'jpeg',
 																'acceptedMimeTypes' => array(	'image/gif',
 																								'image/jpeg',
@@ -11,6 +12,6 @@ $defaultConfig = array(
 											) ),
 						'Objects' => array(	
 								'ConversationManager' => 'convMgr',
-								'ConversationAttachmentManager' => 'conAttvMgr' )
+								'ConversationAttachmentManager' => 'convAttMgr' )
 					);
 ?>

@@ -28,12 +28,18 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 	$pager = Pager::getPager($id);
 	
 	if($pager instanceof  Pager){
-		$link = RewriteURL::generateCleanBaseLink(
-                                Reg::get('nav')->module,
-                                Reg::get('nav')->page,
-                                ConfigManager::getConfig("SiteNavigation")->AuxConfig->firstLevelDefaultValue) . 
-                                	get_all_get_params(array_merge(array($pager->getUrlParam()), $excludedGetsArray)
-                              );
+		if(isset($baseLink) and !empty($baseLink)){
+			// Remove heading slash if present
+			$link = ltrim($baseLink, "/");
+		}
+		else{
+			$link = RewriteURL::generateCleanBaseLink(
+	                                Reg::get('nav')->module,
+	                                Reg::get('nav')->page,
+	                                ConfigManager::getConfig("SiteNavigation")->AuxConfig->firstLevelDefaultValue) . 
+	                                	get_all_get_params(array_merge(array($pager->getUrlParam()), $excludedGetsArray)
+	                              );
+		}
 		$urlParam = $pager->getUrlParam();
 		$currentPageNumber = $pager->getCurrentPageNumber();
 		$pagesCount = $pager->getTotalPagesCount();
@@ -82,12 +88,7 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 			$smarty->assign("pagerNumbersArray", $pagerNumbersArray);
 		}
 		
-		if(isset($tplSnippetFile) and !empty($tplSnippetFile)){
-			$pagerSnippetFileName = $tplSnippetFile;
-		}
-		else{
-			$pagerSnippetFileName = ConfigManager::getConfig("Pager","Pager")->AuxConfig->pagerSnippetFileName;
-		}
+		$pagerSnippetFileName = ConfigManager::getConfig("Pager","Pager")->AuxConfig->pagerSnippetFileName;
 		
 		return $smarty->fetch(Reg::get('smarty')->getFilePathFromTemplate(Reg::get('smarty')->snippetsPath . $pagerSnippetFileName));
 	}

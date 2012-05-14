@@ -256,15 +256,26 @@ class ConversationManager extends DbAccessor{
 			->where($qb->expr()->equal(new Field('id'), $message->id));
 		$this->query->exec($qb->getSQL())->affected();
 		
+		$this->correctConversationReadStatus($message->uuid, $message->receiverId);		
+	}
+	
+	private function correctConversationReadStatus($uuid, $receiverUserId){
+		if(empty($receiverUserId) or !is_numeric($receiverUserId)){
+			throw new InvalidIntegerArgumentException("\$receiverUserId have to be non zero integer.");
+		}
+		if(empty($uuid) or !is_numeric($uuid)){
+			throw new InvalidIntegerArgumentException("\$uuid have to be non zero integer.");
+		}
+		
 		// Get Conversation of message receiver
 		$conversationFilter = new ConversationFilter();
-		$conversationFilter->setUUID($message->uuid);
-		$conversationFilter->setUserId($message->receiverId);
+		$conversationFilter->setUUID($uuid);
+		$conversationFilter->setUserId($receiverUserId);
 		$conversation = $this->getConversation($conversationFilter);
 		
 		$unreadFilter = new ConversationMessagesFilter();
-		$unreadFilter->setSenderId($message->senderId);
-		$unreadFilter->setUUID($message->uuid);
+		$unreadFilter->setReceiverId($receiverUserId);
+		$unreadFilter->setUUID($uuid);
 		if($conversation->fetchFrom != null){
 			$unreadFilter->setIdGreater($conversation->fetchFrom);
 		}
@@ -273,8 +284,27 @@ class ConversationManager extends DbAccessor{
 		$unreadsCount = $this->getConversationMessagesCount($unreadFilter);
 		
 		if($unreadsCount == 0){
-			$this->markConversationAsRead($message->receiverId, $message->uuid);
+			$this->markConversationAsRead($receiverUserId, $uuid);
 		}
+	}
+	
+	public function markAllMessagesAsRead($uuid, $receiverUserId){
+		if(empty($receiverUserId) or !is_numeric($receiverUserId)){
+			throw new InvalidIntegerArgumentException("\$receiverUserId have to be non zero integer.");
+		}
+		if(empty($uuid) or !is_numeric($uuid)){
+			throw new InvalidIntegerArgumentException("\$uuid have to be non zero integer.");
+		}
+	
+		// Change read status on all messages
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_CONVERSATION_MESSAGES'))
+			->set(new Field('read'), self::STATUS_READ_READ)
+			->where($qb->expr()->equal(new Field('uuid'), $uuid))
+			->andWhere($qb->expr()->equal(new Field('receiver_id'), $receiverUserId));
+		$this->query->exec($qb->getSQL())->affected();
+	
+		$this->correctConversationReadStatus($uuid, $receiverUserId);
 	}
 	
 	public function isConversationExists($userId1, $userId2){

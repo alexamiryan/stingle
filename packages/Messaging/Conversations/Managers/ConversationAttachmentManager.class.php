@@ -144,6 +144,39 @@ class ConversationAttachmentManager extends DbAccessor{
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
+	public function clearGarbage(){
+		$db = MySqlDbManager::getDbObject();
+		
+		$db->lockTables(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS'), "w");
+		
+		$qb = new QueryBuilder();
+	
+		$qb->select(new Field("system_filename"))
+			->from(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS', 'ConversationAttachmentManager'))
+			->where($qb->expr()->isNull(new Field('message_id')))
+			->andWhere($qb->expr()->greater($qb->expr()->diff(new Func("NOW"), new Field('date')), 60*60*24 * $this->config->attachmentsClearTimeout));
+		
+		$this->query->exec($qb->getSQL());
+		while(($row = $this->query->fetchRecord()) != null){
+			try{
+				@unlink($this->config->uploadDir . $row['system_filename']);
+			}
+			catch (ErrorException $e){ }
+		}
+		
+		$qb = new QueryBuilder();
+	
+		$qb->delete(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS', 'ConversationAttachmentManager'))
+			->where($qb->expr()->isNull(new Field('message_id')))
+			->andWhere($qb->expr()->greater($qb->expr()->diff(new Func("NOW"), new Field('date')), 60*60*24 * $this->config->attachmentsClearTimeout));
+		
+		$deletedCount = $this->query->exec($qb->getSQL())->affected();
+		
+		$db->unlockTables();
+		
+		return $deletedCount;
+	}
+	
 	private static function findNewFileName($uploadDir){
 		$fileName = generateRandomString(32);
 		while(true){

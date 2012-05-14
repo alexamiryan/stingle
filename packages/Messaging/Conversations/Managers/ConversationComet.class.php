@@ -2,6 +2,7 @@
 class ConversationComet extends CometChunk{
 	
 	protected $lastId;
+	protected $newLastId;
 	protected $uuid;
 	
 	protected $newMessages;
@@ -24,6 +25,7 @@ class ConversationComet extends CometChunk{
 		
 		if(count($messages) > 0){
 			$this->newMessages = $messages;
+			$this->newLastId = $messages[count($messages)-1]->id;
 			$this->setIsAnyData();
 		}
 	}
@@ -31,7 +33,12 @@ class ConversationComet extends CometChunk{
 	public function getDataArray(){
 		$responseArray = array();
 		
-		$responseArray['lastId'] = Reg::get('convMgr')->getMessagesLastId();
+		if(!empty($this->newLastId)){
+			$responseArray['lastId'] = $this->newLastId;
+		}
+		else{
+			$responseArray['lastId'] = Reg::get('convMgr')->getMessagesLastId();
+		}
 		
 		if(is_array($this->newMessages) and count($this->newMessages)>0){
 			$responseArray['messages'] = $this->newMessages;

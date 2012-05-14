@@ -53,11 +53,18 @@ abstract class Pager{
 			$this->id = $id;
 		}
 		
+		$this->initPageNumberFromGet();
+		
+		static::$pagerInstances[$this->id] = $this;
+	}
+	
+	/**
+	 * Initiate page namber from $_GET[]
+	 */
+	private function initPageNumberFromGet(){
 		if(array_key_exists($this->getUrlParam(), $_GET) and is_numeric($_GET[$this->getUrlParam()]) and $_GET[$this->getUrlParam()] > 0){
 			$this->pageNumber = intval($_GET[$this->getUrlParam()]);
 		}
-		
-		static::$pagerInstances[$this->id] = $this;
 	}
 	
 	/**
@@ -142,6 +149,9 @@ abstract class Pager{
 		}
 		
 		$this->UrlParam = $urlParam;
+		
+		//Reinit page number
+		$this->initPageNumberFromGet();
 	}
 	
 	/**

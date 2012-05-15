@@ -30,7 +30,7 @@ class Reg
 	 * 
 	 * @param string $key
 	 * @param bool $throwException
-	 * @return PackageManager|MysqlQuery|UserManagement|LanguageManager|Nav|SmartyWrapper|FormKey
+	 * @return PackageManager|MysqlQuery|MySqlDatabase|UserManagement|LanguageManager|Nav|SmartyWrapper|FormKey
 	 */
 	public static function get($key){
 		if(!static::isRegistered($key)){

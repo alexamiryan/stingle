@@ -61,7 +61,7 @@ abstract class Base
                 $class = get_class($arg);
 
                 if ( ! in_array($class, $this->_allowedClasses)) {
-                    throw new \InvalidArgumentException("Expression of type '$class' not allowed in this context.");
+                    throw new \InvalidArgumentException("Expression of type '$class' not allowed in this context (".get_class($this).").");
                 }
             }
 

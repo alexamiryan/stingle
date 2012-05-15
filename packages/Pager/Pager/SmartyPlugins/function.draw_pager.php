@@ -29,8 +29,8 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 	
 	if($pager instanceof  Pager){
 		if(isset($baseLink) and !empty($baseLink)){
-			// Remove heading slash if present
-			$link = ltrim($baseLink, "/");
+			// Remove heading slash if present and ensure last slash
+			$link = RewriteURL::ensureSourceLastDelimiter(ltrim($baseLink, "/"));
 		}
 		else{
 			$link = RewriteURL::generateCleanBaseLink(
@@ -88,7 +88,12 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 			$smarty->assign("pagerNumbersArray", $pagerNumbersArray);
 		}
 		
-		$pagerSnippetFileName = ConfigManager::getConfig("Pager","Pager")->AuxConfig->pagerSnippetFileName;
+		if(isset($tplSnippetFile)){
+			$pagerSnippetFileName = $tplSnippetFile;
+		}
+		else{
+			$pagerSnippetFileName = ConfigManager::getConfig("Pager","Pager")->AuxConfig->pagerSnippetFileName;
+		}
 		
 		return $smarty->fetch(Reg::get('smarty')->getFilePathFromTemplate(Reg::get('smarty')->snippetsPath . $pagerSnippetFileName));
 	}

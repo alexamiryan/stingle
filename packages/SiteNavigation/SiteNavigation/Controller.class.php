@@ -9,24 +9,26 @@ class Controller
 	
 	public function exec(){
 		$nav = Reg::get($this->config->ObjectsIgnored->Nav);
-		$module = $nav->{$this->config->AuxConfig->firstLevelName};
-		$page = $nav->{$this->config->AuxConfig->secondLevelName};
-		$action = $nav->{$this->config->AuxConfig->actionName};
 		
-		if(@file_exists("{$this->config->AuxConfig->modulesDir}/$module/config.php")){
-			include ("{$this->config->AuxConfig->modulesDir}/$module/config.php");
+		$firstLevel = $this->config->AuxConfig->firstLevelName;
+		$secondLevel = $this->config->AuxConfig->secondLevelName;
+		$action = $this->config->AuxConfig->actionName;
+		
+		
+		if(@file_exists("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/config.php")){
+			include ("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/config.php");
 		}
 
-		if(@file_exists("{$this->config->AuxConfig->modulesDir}/$module/common.php")){
-			include ("{$this->config->AuxConfig->modulesDir}/$module/common.php");
+		if(@file_exists("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/common.php")){
+			include ("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/common.php");
 		}		
 		
-		if(!empty($action) and @file_exists("{$this->config->AuxConfig->modulesDir}/$module/actions/$action.php")){
-			include ("{$this->config->AuxConfig->modulesDir}/$module/actions/$action.php");
+		if(!empty($nav->$action) and @file_exists("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/actions/{$nav->$action}.php")){
+			include ("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/actions/{$nav->$action}.php");
 		}
 		
-		if(file_exists("{$this->config->AuxConfig->modulesDir}/$module/$page.php")){
-			include ("{$this->config->AuxConfig->modulesDir}/$module/$page.php");
+		if(file_exists("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/{$nav->$secondLevel}.php")){
+			include ("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/{$nav->$secondLevel}.php");
 		}
 	}
 }

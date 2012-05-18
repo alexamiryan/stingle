@@ -114,7 +114,7 @@ class ConversationManager extends DbAccessor{
 			->set(new Field('read'), self::STATUS_READ_READ)
 			->where($qb->expr()->equal(new Field('uuid'), $uuid))
 			->andWhere($qb->expr()->equal(new Field('receiver_id'), $userId))
-			->andWhere($qb->expr()->less(new Field('id'), $messagesLastId));
+			->andWhere($qb->expr()->lessEqual(new Field('id'), $messagesLastId));
 		$this->query->exec($qb->getSQL());
 	}
 	

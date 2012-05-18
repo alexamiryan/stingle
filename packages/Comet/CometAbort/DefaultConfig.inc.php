@@ -1,0 +1,3 @@
+<?
+$defaultConfig = array( );
+?>

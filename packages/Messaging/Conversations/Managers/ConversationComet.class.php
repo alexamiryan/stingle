@@ -1,32 +1,33 @@
 <?
 class ConversationComet extends CometChunk{
 	
-	protected $lastId;
 	protected $newLastId;
-	protected $uuid;
+	
+	protected $params;
 	
 	protected $newMessages;
 	
 	public function __construct($params){
 		$this->setName('conv');
 		
-		$this->lastId = $params['lastId'];
-		$this->uuid = $params['uuid'];
+		$this->params = $params;
 	}
 	
 	
 	public function run(){
-		$filter = new ConversationMessagesFilter();
-		
-		$filter->setUUID($this->uuid);
-		$filter->setIdGreater($this->lastId);
-		
-		$messages = Reg::get('convMgr')->getConversationMessages($filter);
-		
-		if(count($messages) > 0){
-			$this->newMessages = $messages;
-			$this->newLastId = $messages[count($messages)-1]->id;
-			$this->setIsAnyData();
+		if(isset($this->params['uuid']) and isset($this->params['lastId'])){
+			$filter = new ConversationMessagesFilter();
+			
+			$filter->setUUID($this->params['uuid']);
+			$filter->setIdGreater($this->params['lastId']);
+			
+			$messages = Reg::get('convMgr')->getConversationMessages($filter);
+			
+			if(count($messages) > 0){
+				$this->newMessages = $messages;
+				$this->newLastId = $messages[count($messages)-1]->id;
+				$this->setIsAnyData();
+			}
 		}
 	}
 	

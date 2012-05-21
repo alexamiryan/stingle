@@ -84,10 +84,7 @@ class ConversationMessagesFilter extends Filter {
 				$this->qb->andWhere($this->qb->expr()->in(new Field("deleted", "conv_msgs"), array(0, $myUserId)));
 				break;
 			case ConversationManager::STATUS_DELETED_YES:
-				$orX = new Orx();
-				$orX->add($this->qb->expr()->equal(new Field("deleted", "conv_msgs"), -1));
-				$orX->add($this->qb->expr()->notEqual(new Field("deleted", "conv_msgs"), $myUserId));
-				$this->qb->andWhere($orX);
+				$this->qb->andWhere($this->qb->expr()->notIn(new Field("deleted", "conv_msgs"), array(0, $myUserId)));
 				break;
 		}
 		

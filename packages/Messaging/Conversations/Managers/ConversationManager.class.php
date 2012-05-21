@@ -11,6 +11,9 @@ class ConversationManager extends DbAccessor{
 	const STATUS_TRASHED_TRAHSED 		= 1;
 	const STATUS_TRASHED_DELETED 		= 2;
 	
+	const STATUS_DELETED_NO 			= 0;
+	const STATUS_DELETED_YES			= 1;
+	
 	public function __construct($dbInstanceKey = null){
 		parent::__construct($dbInstanceKey);
 	}
@@ -251,20 +254,117 @@ class ConversationManager extends DbAccessor{
 		
 		$message = $this->getConversationMessage($filter, true);
 		
+		if($message->read == self::STATUS_READ_UNREAD){
+			// Change read status
+			$qb = new QueryBuilder();
+			$qb->update(Tbl::get('TBL_CONVERSATION_MESSAGES'))
+				->set(new Field('read'), self::STATUS_READ_READ)
+				->where($qb->expr()->equal(new Field('id'), $message->id));
+			$this->query->exec($qb->getSQL())->affected();
+			
+			$this->correctConversationReadStatus($message->uuid, $message->receiverId);
+		}
+	}
+	
+	public function deleteConversationMessage($conversationMessageId, $myUserId){
+		return $this->changeConversationMessageDeletedStatus($conversationMessageId, $myUserId, self::STATUS_DELETED_YES);
+	}
+	
+	public function undeleteConversationMessage($conversationMessageId, $myUserId){
+		return $this->changeConversationMessageDeletedStatus($conversationMessageId, $myUserId, self::STATUS_DELETED_NO);
+	}
+	
+	/**
+	 * Change Conversation message deleted status.
+	 * 
+	 * Example:
+	 * 
+	 * Id1 sends message to Id2
+	 * Message is not deleted by anyone 	-> deleted = 0
+	 * Message deleted only by Id1 			-> deleted = Id2
+	 * Message deleted only by Id2			-> deleted = Id1
+	 * Message deleted by both				-> deleted = -1
+	 * 
+	 * @param integer $conversationMessageId
+	 * @param integer $myUserId
+	 * @param integer $status
+	 * @throws InvalidIntegerArgumentException
+	 */
+	public function changeConversationMessageDeletedStatus($conversationMessageId, $myUserId, $status){
+		if(empty($conversationMessageId) or !is_numeric($conversationMessageId)){
+			throw new InvalidIntegerArgumentException("\$conversationMessageId have to be non zero integer.");
+		}
+		if(!is_numeric($status) or !in_array($status, self::getConstsArray("STATUS_DELETED"))){
+			throw new InvalidIntegerArgumentException("Invalid \$status specified.");
+		}
+		if(empty($myUserId) or !is_numeric($myUserId)){
+			throw new InvalidIntegerArgumentException("\$myUserId have to be non zero integer.");
+		}
+	
+		// Get message
+		$filter = new ConversationMessagesFilter();
+		$filter->setId($conversationMessageId);
+	
+		$message = $this->getConversationMessage($filter, true);
+		
+		$interlocutorId = null;
+		if($message->senderId == $myUserId){
+			$interlocutorId = $message->receiverId;
+		}
+		else{
+			$interlocutorId = $message->senderId;
+		}
+		
+		$finalDeletedStatus = null;
+		switch($status){
+			case self::STATUS_DELETED_YES :
+				switch($message->deleted){
+					case 0:
+						$finalDeletedStatus = $interlocutorId;
+						break;
+					case -1:
+						$finalDeletedStatus = -1;
+						break;
+					case $myUserId:
+						$finalDeletedStatus = -1;
+						break;
+					case $interlocutorId:
+						$finalDeletedStatus = $interlocutorId;
+						break;
+				}
+				break;
+			case self::STATUS_DELETED_NO :
+				switch($message->deleted){
+					case 0:
+						$finalDeletedStatus = 0;
+						break;
+					case -1:
+						$finalDeletedStatus = $myUserId;
+						break;
+					case $myUserId:
+						$finalDeletedStatus = $myUserId;
+						break;
+					case $interlocutorId:
+						$finalDeletedStatus = 0;
+						break;
+				}
+				break;
+		}
+		
 		// Change read status
 		$qb = new QueryBuilder();
 		$qb->update(Tbl::get('TBL_CONVERSATION_MESSAGES'))
-			->set(new Field('read'), self::STATUS_READ_READ)
+			->set(new Field('deleted'), $finalDeletedStatus)
 			->where($qb->expr()->equal(new Field('id'), $message->id));
-		$this->query->exec($qb->getSQL())->affected();
+		if($status == self::STATUS_DELETED_YES and $message->receiverId == $myUserId){
+			$qb->set(new Field('read'), self::STATUS_READ_READ);
+		}
 		
-		$filter = new ConversationFilter();
-		$filter->setUUID($message->uuid);
-		$filter->setUserId($message->receiverId);
-		$conversation = $this->getConversation($filter, true);
-		
+		$affected = $this->query->exec($qb->getSQL())->affected();
+	
 		$this->correctConversationReadStatus($message->uuid, $message->receiverId);
-		$this->decrementConversationUnreadCount($conversation);
+		
+		return $affected;
 	}
 	
 	protected function correctConversationReadStatus($uuid, $receiverUserId){
@@ -283,6 +383,7 @@ class ConversationManager extends DbAccessor{
 		
 		$unreadFilter = new ConversationMessagesFilter();
 		$unreadFilter->setReceiverId($receiverUserId);
+		$unreadFilter->setDeletedStatus(ConversationManager::STATUS_DELETED_NO, $receiverUserId);
 		$unreadFilter->setUUID($uuid);
 		if($conversation->fetchFrom != null){
 			$unreadFilter->setIdGreater($conversation->fetchFrom);
@@ -294,6 +395,19 @@ class ConversationManager extends DbAccessor{
 		if($unreadsCount == 0){
 			$this->markConversationAsRead($receiverUserId, $uuid);
 		}
+		$this->setConversationUnreadCount($conversation, $unreadsCount);
+	}
+	
+	protected function setConversationUnreadCount(Conversation $conversation, $unreadCount){
+		if(!is_numeric($unreadCount)){
+			throw new InvalidIntegerArgumentException("\$unreadCount have to be integer.");
+		}
+		
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_CONVERSATIONS'))
+			->set(new Field('unread_count'), $unreadCount)
+			->where($qb->expr()->equal(new Field('id'), $conversation->id));
+		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
 	protected function incrementConversationUnreadCount(Conversation $conversation){
@@ -575,6 +689,7 @@ class ConversationManager extends DbAccessor{
 		}
 		$message->message = $messageRow['message'];
 		$message->read = $messageRow['read'];
+		$message->deleted = $messageRow['deleted'];
 		$message->hasAttachment = $messageRow['has_attachment'];
 		
 		if(!$reduced and $message->hasAttachment == '1'){

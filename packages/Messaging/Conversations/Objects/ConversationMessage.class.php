@@ -9,6 +9,7 @@ class ConversationMessage {
 	public $receiver;
 	public $message;
 	public $read;
+	public $deleted;
 	public $hasAttachment = 0;
 	public $attachments = array();
 }

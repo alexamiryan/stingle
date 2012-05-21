@@ -1,7 +1,7 @@
 <?
 class ConversationMessagesFilter extends Filter {
 	
-	public function __construct($headersOnly = true){
+	public function __construct(){
 		parent::__construct();
 		
 		$this->qb->select(new Field("*"))
@@ -68,6 +68,29 @@ class ConversationMessagesFilter extends Filter {
 		}
 	
 		$this->qb->andWhere($this->qb->expr()->equal(new Field("read", "conv_msgs"), $status));
+		return $this;
+	}
+	
+	public function setDeletedStatus($status, $myUserId){
+		if(!is_numeric($status) or !in_array($status, ConversationManager::getConstsArray("STATUS_DELETED"))){
+			throw new InvalidIntegerArgumentException("Invalid \$status specified.");
+		}
+		if(empty($myUserId) or !is_numeric($myUserId)){
+			throw new InvalidIntegerArgumentException("\$myUserId have to be non zero integer.");
+		}
+		
+		switch($status){
+			case ConversationManager::STATUS_DELETED_NO:
+				$this->qb->andWhere($this->qb->expr()->in(new Field("deleted", "conv_msgs"), array(0, $myUserId)));
+				break;
+			case ConversationManager::STATUS_DELETED_YES:
+				$orX = new Orx();
+				$orX->add($this->qb->expr()->equal(new Field("deleted", "conv_msgs"), -1));
+				$orX->add($this->qb->expr()->notEqual(new Field("deleted", "conv_msgs"), $myUserId));
+				$this->qb->andWhere($orX);
+				break;
+		}
+		
 		return $this;
 	}
 	

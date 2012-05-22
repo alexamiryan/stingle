@@ -23,24 +23,12 @@ class ConversationManager extends DbAccessor{
 			$this->openConversation($senderId, $receiverId);
 		}
 		
-		$uuid = null;
-		
 		$filter = new ConversationFilter();
 		$filter->setUserId($senderId);
 		$filter->setInterlocutorId($receiverId);
 		
-		$conversationsCount = $this->getConversationsCount($filter);
-		if($conversationsCount == 0){
-			$uuid = $this->openConversation($senderId, $receiverId);
-		}
-		else{
-			$filter = new ConversationFilter();
-			$filter->setUserId($senderId);
-			$filter->setInterlocutorId($receiverId);
-			
-			$conversation = $this->getConversation($filter);
-			$uuid = $conversation->uuid;
-		}
+		$conversation = $this->getConversation($filter);
+		$uuid = $conversation->uuid;
 		
 		if(!$this->isConversationBelongsToUser($uuid, $senderId)){
 			throw new ConversationNotOwnException("Conversation does not belong to user");
@@ -367,7 +355,7 @@ class ConversationManager extends DbAccessor{
 		return $affected;
 	}
 	
-	protected function correctConversationReadStatus($uuid, $receiverUserId){
+	public function correctConversationReadStatus($uuid, $receiverUserId){
 		if(empty($receiverUserId) or !is_numeric($receiverUserId)){
 			throw new InvalidIntegerArgumentException("\$receiverUserId have to be non zero integer.");
 		}
@@ -535,11 +523,14 @@ class ConversationManager extends DbAccessor{
 		// Insert new message into DB
 		$qb = new QueryBuilder();
 		$qb->insert(Tbl::get('TBL_CONVERSATION_MESSAGES'))
-			->values(array(
-					'uuid'=>$uuid, 
-					'sender_id'=>$senderId,
-					'receiver_id'=>$conversation->interlocutorId,
-					'message'=>$message));
+			->values(
+					array(
+						'uuid' => $uuid, 
+						'sender_id' => $senderId,
+						'receiver_id' => $conversation->interlocutorId,
+						'message' => $message
+						)
+					);
 		
 		$this->query->exec($qb->getSQL());
 		$messageId = $this->query->getLastInsertId();
@@ -608,18 +599,24 @@ class ConversationManager extends DbAccessor{
 		$qb = new QueryBuilder();
 		
 		$qb->insert(Tbl::get('TBL_CONVERSATIONS'))
-			->values(array(
-					'uuid'=>$newUUID, 
-					'user_id'=>$userId1, 
-					'interlocutor_id'=>$userId2));
+			->values(
+					array(
+						'uuid' => $newUUID, 
+						'user_id' => $userId1, 
+						'interlocutor_id' => $userId2
+						)
+					);
 		
 		$this->query->exec($qb->getSQL());
 		
 		$qb->insert(Tbl::get('TBL_CONVERSATIONS'))
-			->values(array(
-				'uuid'=>$newUUID,
-				'user_id'=>$userId2,
-				'interlocutor_id'=>$userId1));
+			->values(
+					array(
+						'uuid' => $newUUID,
+						'user_id' => $userId2,
+						'interlocutor_id' => $userId1
+						)
+					);
 		
 		$this->query->exec($qb->getSQL());
 		

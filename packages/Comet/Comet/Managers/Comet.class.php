@@ -56,9 +56,19 @@ class Comet{
 	public function getOutputArray(){
 		$output = array();
 		
+		$causedBy = array();
+		
 		foreach($this->chunks as $chunkName => $chunk){
-			$output[$chunkName] = $chunk->getDataArray();
+			if($chunk->isAnyData()){
+				array_push($causedBy, $chunkName);
+			}
+			$data = $chunk->getDataArray();
+			if(!empty($data)){
+				$output[$chunkName] = $data;
+			}
 		}
+		
+		$output['causedBy'] = $causedBy;
 		
 		if(!empty($output)){
 			return $output;

@@ -1,48 +1,30 @@
 <?
 class ConversationComet extends CometChunk{
 	
-	protected $newLastId;
+	protected $name = "conv";
 	
-	protected $params;
-	
-	protected $newMessages;
-	
-	public function __construct($params){
-		$this->setName('conv');
-		
-		$this->params = $params;
-	}
-	
+	protected $messages = array();
 	
 	public function run(){
-		if(isset($this->params['uuid']) and isset($this->params['lastId'])){
+		if(isset($this->params['msgId']) and isset($this->params['uuid'])){
 			$filter = new ConversationMessagesFilter();
 			
+			$filter->setId($this->params['msgId']);
 			$filter->setUUID($this->params['uuid']);
-			$filter->setIdGreater($this->params['lastId']);
 			
-			$messages = Reg::get('convMgr')->getConversationMessages($filter);
-			
-			if(count($messages) > 0){
-				$this->newMessages = $messages;
-				$this->newLastId = $messages[count($messages)-1]->id;
+			try{
+				array_push($this->messages, Reg::get('convMgr')->getConversationMessage($filter));
 				$this->setIsAnyData();
 			}
+			catch(ConversationNotUniqueException $e){ }
 		}
 	}
 	
 	public function getDataArray(){
 		$responseArray = array();
 		
-		if(!empty($this->newLastId)){
-			$responseArray['lastId'] = $this->newLastId;
-		}
-		else{
-			$responseArray['lastId'] = Reg::get('convMgr')->getMessagesLastId();
-		}
-		
-		if(is_array($this->newMessages) and count($this->newMessages)>0){
-			$responseArray['messages'] = $this->newMessages;
+		if(!empty($this->messages)){
+			$responseArray['messages'] = $this->messages;
 		}
 		
 		return $responseArray;

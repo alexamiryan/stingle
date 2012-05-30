@@ -71,6 +71,15 @@ class ConversationMessagesFilter extends Filter {
 		return $this;
 	}
 	
+	public function setHasAttachment($status){
+		if(!is_numeric($status)){
+			throw new InvalidIntegerArgumentException("\$status have to be integer.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("has_attachment", "conv_msgs"), $status));
+		return $this;
+	}
+	
 	public function setDeletedStatus($status, $myUserId){
 		if(!is_numeric($status) or !in_array($status, ConversationManager::getConstsArray("STATUS_DELETED"))){
 			throw new InvalidIntegerArgumentException("Invalid \$status specified.");

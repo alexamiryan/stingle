@@ -14,6 +14,9 @@ class ConversationManager extends DbAccessor{
 	const STATUS_DELETED_NO 			= 0;
 	const STATUS_DELETED_YES			= 1;
 	
+	const STATUS_HAS_ATTACHMENT_NO		= 0;
+	const STATUS_HAS_ATTACHMENT_YES		= 1;
+	
 	public function __construct($dbInstanceKey = null){
 		parent::__construct($dbInstanceKey);
 	}
@@ -96,6 +99,7 @@ class ConversationManager extends DbAccessor{
 			->set(new Field('fetch_from'), $messagesLastId)
 			->set(new Field('read'), self::STATUS_READ_READ)
 			->set(new Field('unread_count'), 0)
+			->set(new Field('has_attachment'), self::STATUS_HAS_ATTACHMENT_NO)
 			->where($qb->expr()->equal(new Field('uuid'), $uuid))
 			->andWhere($qb->expr()->equal(new Field('user_id'), $userId));
 		$this->query->exec($qb->getSQL());
@@ -344,19 +348,21 @@ class ConversationManager extends DbAccessor{
 		$qb->update(Tbl::get('TBL_CONVERSATION_MESSAGES'))
 			->set(new Field('deleted'), $finalDeletedStatus)
 			->where($qb->expr()->equal(new Field('id'), $message->id));
+		
 		if($status == self::STATUS_DELETED_YES and $message->receiverId == $myUserId){
 			$qb->set(new Field('read'), self::STATUS_READ_READ);
 		}
 		
 		$affected = $this->query->exec($qb->getSQL())->affected();
 	
-		$this->correctConversationReadStatus($message->uuid, $message->receiverId);
+		$this->correctConversationReadStatus($message->uuid, $myUserId);
+		$this->correctConversationHasAttachment($message->uuid, $myUserId);
 		
 		return $affected;
 	}
 	
-	public function correctConversationReadStatus($uuid, $receiverUserId){
-		if(empty($receiverUserId) or !is_numeric($receiverUserId)){
+	public function correctConversationReadStatus($uuid, $userId){
+		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidIntegerArgumentException("\$receiverUserId have to be non zero integer.");
 		}
 		if(empty($uuid) or !is_numeric($uuid)){
@@ -366,12 +372,12 @@ class ConversationManager extends DbAccessor{
 		// Get Conversation of message receiver
 		$conversationFilter = new ConversationFilter();
 		$conversationFilter->setUUID($uuid);
-		$conversationFilter->setUserId($receiverUserId);
+		$conversationFilter->setUserId($userId);
 		$conversation = $this->getConversation($conversationFilter);
 		
 		$unreadFilter = new ConversationMessagesFilter();
-		$unreadFilter->setReceiverId($receiverUserId);
-		$unreadFilter->setDeletedStatus(ConversationManager::STATUS_DELETED_NO, $receiverUserId);
+		$unreadFilter->setReceiverId($userId);
+		$unreadFilter->setDeletedStatus(ConversationManager::STATUS_DELETED_NO, $userId);
 		$unreadFilter->setUUID($uuid);
 		if($conversation->fetchFrom != null){
 			$unreadFilter->setIdGreater($conversation->fetchFrom);
@@ -381,9 +387,43 @@ class ConversationManager extends DbAccessor{
 		$unreadsCount = $this->getConversationMessagesCount($unreadFilter);
 		
 		if($unreadsCount == 0){
-			$this->markConversationAsRead($receiverUserId, $uuid);
+			$this->markConversationAsRead($userId, $uuid);
 		}
 		$this->setConversationUnreadCount($conversation, $unreadsCount);
+	}
+	
+	public function correctConversationHasAttachment($uuid, $userId){
+		if(empty($userId) or !is_numeric($userId)){
+			throw new InvalidIntegerArgumentException("\$receiverUserId have to be non zero integer.");
+		}
+		if(empty($uuid) or !is_numeric($uuid)){
+			throw new InvalidIntegerArgumentException("\$uuid have to be non zero integer.");
+		}
+	
+		// Get Conversation of user
+		$conversationFilter = new ConversationFilter();
+		$conversationFilter->setUUID($uuid);
+		$conversationFilter->setUserId($userId);
+		$conversation = $this->getConversation($conversationFilter);
+	
+		// Find how much messages with attachments in conversation
+		$filter = new ConversationMessagesFilter();
+		$filter->setUUID($uuid);
+		$filter->setDeletedStatus(ConversationManager::STATUS_DELETED_NO, $userId);
+		$filter->setHasAttachment(self::STATUS_HAS_ATTACHMENT_YES);
+		if($conversation->fetchFrom != null){
+			$filter->setIdGreater($conversation->fetchFrom);
+		}
+	
+		$msgsWithAttachmentsCount = $this->getConversationMessagesCount($filter);
+		
+		// Correct has attachment status accordingly
+		if($msgsWithAttachmentsCount == 0 and $conversation->hasAttachment == self::STATUS_HAS_ATTACHMENT_YES){
+			$this->setConversationHasNoAttachment($uuid, $userId);
+		}
+		elseif($msgsWithAttachmentsCount > 0 and $conversation->hasAttachment == self::STATUS_HAS_ATTACHMENT_NO){
+			$this->setConversationHasAttachment($uuid, $userId);
+		}
 	}
 	
 	protected function setConversationUnreadCount(Conversation $conversation, $unreadCount){
@@ -497,11 +537,37 @@ class ConversationManager extends DbAccessor{
 		
 		$this->query->exec($qb->getSQL());
 		
+		$this->setConversationHasAttachment($message->uuid);
+	}
+	
+	public function setConversationHasAttachment($uuid, $userId = null){
+		$this->changeConversationHasAttachmentStatus($uuid, self::STATUS_HAS_ATTACHMENT_YES, $userId);
+	}
+	
+	public function setConversationHasNoAttachment($uuid, $userId = null){
+		$this->changeConversationHasAttachmentStatus($uuid, self::STATUS_HAS_ATTACHMENT_NO, $userId);
+	}
+	
+	public function changeConversationHasAttachmentStatus($uuid, $status, $userId = null){
+		if(empty($uuid) or !is_numeric($uuid)){
+			throw new InvalidIntegerArgumentException("\$uuid have to be non zero integer.");
+		}
+		if(!is_numeric($status) or !in_array($status, $this->getConstsArray("STATUS_HAS_ATTACHMENT"))){
+			throw new InvalidIntegerArgumentException("Invalid \$status specified");
+		}
+		if($userId !== null and (empty($userId) or !is_numeric($userId))){
+			throw new InvalidIntegerArgumentException("\$userId have to be non zero integer.");
+		}
+		
 		$qb = new QueryBuilder();
 		
 		$qb->update(Tbl::get('TBL_CONVERSATIONS'))
-			->set(new Field('has_attachment'), 1)
-			->where($qb->expr()->equal(new Field('uuid'), $message->uuid));
+			->set(new Field('has_attachment'), $status)
+			->where($qb->expr()->equal(new Field('uuid'), $uuid));
+		
+		if($userId !== null and !empty($userId) and is_numeric($userId)){
+			$qb->andWhere($qb->expr()->equal(new Field('user_id'), $userId));
+		}
 		
 		$this->query->exec($qb->getSQL());
 	}
@@ -547,7 +613,12 @@ class ConversationManager extends DbAccessor{
 		// Increment unreads count for interlocutor
 		$this->incrementConversationUnreadCount($interConv);
 		
-		// Restore conversation if it is trashed or deleted
+		// Restore conversation if it is trashed or deleted for user
+		if($conversation->trashed != self::STATUS_TRASHED_NOT_TRAHSED){
+			$this->restoreConversation($conversation->userId, $uuid);
+		}
+		
+		// Restore conversation if it is trashed or deleted for interlocutor
 		if($interConv->trashed != self::STATUS_TRASHED_NOT_TRAHSED){
 			$this->restoreConversation($conversation->interlocutorId, $uuid);
 		}
@@ -562,7 +633,7 @@ class ConversationManager extends DbAccessor{
 		return $messageId;
 	}
 	
-	protected function getMaxUUID(){
+	public function getMaxUUID(){
 		$qb = new QueryBuilder();
 	
 		$sqlQuery = $qb->select($qb->expr()->max(new Field('uuid'), 'maxId'))

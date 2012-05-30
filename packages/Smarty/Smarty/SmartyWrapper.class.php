@@ -559,6 +559,16 @@ class SmartyWrapper extends Smarty {
 			HookManager::callHook($hookName);
 		}
 		
+		// Call per template hook
+		$hookFunctionName = 'initTemplate_' . $this->template;
+		if(function_exists($hookFunctionName)){
+			$hookName = 'hookInitTemplate_' . $this->template;
+			$templateHook = new Hook($hookName, $hookFunctionName);
+			HookManager::registerHook($templateHook);
+				
+			HookManager::callHook($hookName);
+		}
+		
 		// Check if page exists and if not show 404 error page
 		if(!file_exists($this->getFilePathFromTemplate("{$this->modulesPath}{$this->module}/{$this->page}.tpl", true))){
 			header("HTTP/1.0 404 Not Found");

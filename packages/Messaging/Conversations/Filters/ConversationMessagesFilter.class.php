@@ -17,6 +17,15 @@ class ConversationMessagesFilter extends Filter {
 		return $this;
 	}
 	
+	public function setIdIn($ids){
+		if(empty($id) or !is_array($ids)){
+			throw new InvalidIntegerArgumentException("\$id have to be non empty array");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field("id", "conv_msgs"), $ids));
+		return $this;
+	}
+	
 	public function setIdGreater($id){
 		if(!is_numeric($id)){
 			throw new InvalidIntegerArgumentException("\$id have to be integer.");

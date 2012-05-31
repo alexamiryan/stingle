@@ -1,7 +1,7 @@
 <?
 class ConversationFilter extends Filter {
 	
-	public function __construct($headersOnly = true){
+	public function __construct(){
 		parent::__construct();
 		
 		$this->qb->select(new Field("*"))

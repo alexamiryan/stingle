@@ -1,62 +1,57 @@
 <?
 class CometEventsChunk extends CometChunk{
 	
-	protected $newLastId;
+	protected $name = "events";
 	
-	protected $params;
-	protected $chunks = array();
+	protected $eventHandlers = array();
 	protected $cometEvents;
+	protected $newEvents = array();
 	
 	public function __construct($params){
-		$this->setName('events');
+		parent::__construct($params);
 		
-		$this->params = $params;
 		$this->cometEvents = Reg::get(ConfigManager::getConfig("Comet", "CometEvents")->Objects->CometEvents);
 	}
 	
-	public function addChunk(CometChunk $chunk){
-		$this->chunks[$chunk->getName()] = $chunk;
+	public function addHandler(CometEventHandler $handler){
+		$this->eventHandlers[$handler->getName()] = $handler;
 	}
 	
-	public function isAnyChunk(){
-		if(count($this->chunks) > 0){
+	public function isAnyHandler(){
+		if(count($this->eventHandlers) > 0){
 			return true;
 		}
 		return false;
 	}
 	
-	public function isChunkRegistered($chunkName){
-		if(in_array($chunkName, array_keys($this->chunks))){
+	public function isEventHandlerRegistered($handlerName){
+		if(in_array($handlerName, array_keys($this->eventHandlers))){
 			return true;
 		}
 		return false;
 	}
 	
-	public function getChunks(){
-		return $this->chunks;
+	public function getEventHandlers(){
+		return $this->eventHandlers;
 	}
 	
-	public function getChunk($chunkName){
-		if($this->isChunkRegistered($chunkName)){
-			return $this->chunks[$chunkName];
+	public function getEventHandler($handlerName){
+		if($this->isEventHandlerRegistered($handlerName)){
+			return $this->eventHandlers[$handlerName];
 		}
 		return false;
 	}
 	
 	public function run(){
 		if(isset($this->params['lastId']) and isset($this->params['userId'])){
-			$newEvents = $this->cometEvents->getNewEvents($this->params['lastId'], $this->params['userId']);
+			$this->newEvents = $this->cometEvents->getNewEvents($this->params['lastId'], $this->params['userId']);
 			
-			if(count($newEvents) > 0){
-				foreach($newEvents as $event){
-					if($this->isChunkRegistered($event->name)){
-						$chunk = $this->getChunk($event->name);
-						if($chunk){
-							$chunk->mergeParams($event->data);
-							$chunk->run();
-							$this->setIsAnyData();
-						}
+			foreach($this->newEvents as $event){
+				if(isset($this->eventHandlers[$event->name]) and is_a($this->eventHandlers[$event->name], "CometEventHandler")){
+					if($this->eventHandlers[$event->name]->isAnyData($event->data)){
+						$this->setIsAnyData();
 					}
+					break;
 				}
 			}
 		}
@@ -67,12 +62,25 @@ class CometEventsChunk extends CometChunk{
 		
 		$responseArray['lastId'] = $this->cometEvents->getEventsLastId();
 		
-		if($this->isAnyChunk()){
+		if(count($this->newEvents) and $this->isAnyHandler()){
+			$handlersData = array();
+			
+			foreach($this->newEvents as $event){
+				if(!isset($handlersData[$event->name]) or !is_array($handlersData[$event->name])){
+					$handlersData[$event->name] = array();
+				}
+				array_push($handlersData[$event->name], $event->data);
+			}
+			
 			$responseArray['chunks'] = array();
-			foreach($this->getChunks() as $innerChunkName =>$innerChunk){
-				$data = $innerChunk->getDataArray();
+			
+			foreach($this->getEventHandlers() as $handlerName => $handler){
+				if(!isset($handlersData[$handlerName])){
+					$handlersData[$handlerName] = array();
+				}
+				$data = $handler->getDataArray($handlersData[$handlerName]);
 				if(!empty($data)){
-					$responseArray['chunks'][$innerChunkName] = $data;
+					$responseArray['chunks'][$handlerName] = $data;
 				}
 			}
 		}

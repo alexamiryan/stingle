@@ -106,7 +106,7 @@ class TextsManager extends DbAccessor{
 		return $this->query->affected();
 	}
 	
-	public function deleteText(Texts $text){
+	public function deleteText(Text $text){
 		if(empty($text->id)){
 			throw new InvalidArgumentException("Text ID have to be specified");
 		}

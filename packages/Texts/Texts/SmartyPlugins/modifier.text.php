@@ -7,7 +7,17 @@
  * @return string
  */
 function smarty_modifier_text($name, $group){
-	$textValMgr = Reg::get(ConfigManager::getConfig("Texts", "Texts")->Objects->TextsValuesManager);
-	return $textValMgr->getTextValue($name, $group);
+	try{
+		$textValMgr = Reg::get(ConfigManager::getConfig("Texts", "Texts")->Objects->TextsValuesManager);
+		return $textValMgr->getTextValue($name, $group);
+	}
+	catch(Exception $e){
+		if(Debug::getMode()){
+			return "_~#~_";
+		}
+		else{
+			return "";
+		}
+	}
 }
 ?>

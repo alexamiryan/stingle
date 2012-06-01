@@ -3,6 +3,15 @@ class ConversationEventComet extends CometEventHandler{
 	
 	protected $name = "conv";
 	
+	public function isAnyData($params){
+		if(!empty($params) and isset($this->params['uuid']) and is_numeric($this->params['uuid'])){
+			if(isset($params['uuid']) and $params['uuid'] == $this->params['uuid']){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public function getDataArray($params){
 		$messages = array();
 		if(count($params) and isset($this->params['uuid'])){

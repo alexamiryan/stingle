@@ -18,7 +18,7 @@ class ConversationMessagesFilter extends Filter {
 	}
 	
 	public function setIdIn($ids){
-		if(empty($id) or !is_array($ids)){
+		if(empty($ids) or !is_array($ids)){
 			throw new InvalidIntegerArgumentException("\$id have to be non empty array");
 		}
 	

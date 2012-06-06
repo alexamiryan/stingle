@@ -2,28 +2,17 @@
 class CometEvents extends DbAccessor{
 	const TBL_COMET_EVENTS = "comet_events";
 	
-	public function getNewEvents($lastId, $userId, $reduced = false){
-		if(!is_numeric($lastId)){
-			throw new InvalidArgumentException("\$lastId have to be integer");
-		}
+	public function getEvents(CometEventsFilter $filter, $reduced = false){
+		$this->query->exec($filter->getSQL());
 		
-		$qb = new QueryBuilder();
-		
-		$qb->select("*")
-			->from(Tbl::get("TBL_COMET_EVENTS"))
-			->where($qb->expr()->greater(new Field('id'), $lastId))
-			->andWhere($qb->expr()->equal(new Field('user_id'), $userId));
-		
-		$this->query->exec($qb->getSQL());
-		
-		$newEvents = array(); 
+		$events = array(); 
 		if($this->query->countRecords() > 0){
 			while(($row = $this->query->fetchRecord()) != null){
-				array_push($newEvents, $this->getEventObjectFromData($row, $reduced));
+				array_push($events, $this->getEventObjectFromData($row, $reduced));
 			}
 		}
 		
-		return $newEvents;
+		return $events;
 	}
 	
 	public function getEventsLastId(){
@@ -41,11 +30,14 @@ class CometEvents extends DbAccessor{
 		return $maxId;
 	}
 	
-	public function addEvent($name, $userId, $data = array()){
+	public function addEvent($name, $selfUserId, $userId = null, $data = array()){
 		if(empty($name)){
 			throw new InvalidArgumentException("\$name have to be non empty string");
 		}
-		if(empty($userId) or !is_numeric($userId)){
+		if(empty($selfUserId) or !is_numeric($selfUserId)){
+			throw new InvalidArgumentException("\$selfUserId have to be non zero integer");
+		}
+		if($userId !== null and (empty($userId) or !is_numeric($userId))){
 			throw new InvalidArgumentException("\$userId have to be non zero integer");
 		}
 		if(!is_array($data)){
@@ -53,15 +45,16 @@ class CometEvents extends DbAccessor{
 		}
 		
 		$qb = new QueryBuilder();
-		
-		$qb->insert(Tbl::get('TBL_COMET_EVENTS'))
-			->values(
-					array(
+
+		$values = array(
 						'name' => $name,
-						'user_id' => $userId,
+						'self_user_id' => $selfUserId,
 						'data' => serialize($data)
-						)
-					);
+						);
+		if($userId !== null){
+			$values['user_id'] = $userId;
+		}
+		$qb->insert(Tbl::get('TBL_COMET_EVENTS'))->values($values);
 		
 		return $this->query->exec($qb->getSQL())->affected();
 	}
@@ -70,9 +63,11 @@ class CometEvents extends DbAccessor{
 		$event = new CometEvent();
 		$event->id = $eventRow['id'];
 		$event->date = $eventRow['date'];
+		$event->selfUserId = $eventRow['self_user_id'];
 		$event->userId = $eventRow['user_id'];
 		if(!$reduced){
 			$userManagement = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManagement);
+			$event->selfUser = $userManagement->getObjectById($eventRow['self_user_id']);
 			$event->user = $userManagement->getObjectById($eventRow['user_id']);
 		}
 		$event->name = $eventRow['name'];

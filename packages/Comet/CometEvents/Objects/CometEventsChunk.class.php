@@ -44,14 +44,32 @@ class CometEventsChunk extends CometChunk{
 	
 	public function run(){
 		if(isset($this->params['lastId']) and isset($this->params['userId'])){
-			$this->newEvents = $this->cometEvents->getNewEvents($this->params['lastId'], $this->params['userId']);
+			$userIdsToMonitor = array();
+			foreach($this->getEventHandlers() as $handlerName => $handler){
+				if(is_a($handler, "CometBroadcastEventHandler") and $handler->isBroadcast == true){
+					$userIdsToMonitor = array_merge($userIdsToMonitor, $handler->getUsersListToListenTo());
+				}
+			}
+			
+			$filter = new CometEventsFilter();
+			$filter->setUserId($this->params['userId']);
+			$filter->setIdGreater($this->params['lastId']);
+			$this->newEvents = $this->cometEvents->getEvents($filter);
+			
+			if(count($userIdsToMonitor)){
+				$filter = new CometEventsFilter();
+				$filter->setSelfUserIdIn($userIdsToMonitor);
+				$filter->setUserIdNull();
+				$filter->setIdGreater($this->params['lastId']);
+				$this->newEvents = array_merge($this->newEvents, $this->cometEvents->getEvents($filter));
+			}
 			
 			foreach($this->newEvents as $event){
 				if(isset($this->eventHandlers[$event->name]) and is_a($this->eventHandlers[$event->name], "CometEventHandler")){
 					if($this->eventHandlers[$event->name]->isAnyData($event->data)){
 						$this->setIsAnyData();
+						break;
 					}
-					break;
 				}
 			}
 		}
@@ -65,6 +83,7 @@ class CometEventsChunk extends CometChunk{
 		if(count($this->newEvents) and $this->isAnyHandler()){
 			$handlersData = array();
 			
+			// Collect and group data for each handler
 			foreach($this->newEvents as $event){
 				if(!isset($handlersData[$event->name]) or !is_array($handlersData[$event->name])){
 					$handlersData[$event->name] = array();
@@ -74,6 +93,7 @@ class CometEventsChunk extends CometChunk{
 			
 			$responseArray['chunks'] = array();
 			
+			// Pass collected data to handlers and get their responce
 			foreach($this->getEventHandlers() as $handlerName => $handler){
 				if(!isset($handlersData[$handlerName])){
 					$handlersData[$handlerName] = array();

@@ -5,6 +5,8 @@ abstract class CometEventHandler{
 	
 	protected $name = null;
 	
+	public $isBroadcast = false;
+	
 	public function __construct($params = array()){
 		if($this->name === null or empty($this->name)){
 			throw new RuntimeException("Chunk name can't be empty!");
@@ -37,10 +39,16 @@ abstract class CometEventHandler{
 		return $this->name;
 	}
 	
+	/**
+	 * @param array $params Receives linear array of single event data
+	 */
 	public function isAnyData($params){
 		return true;
 	}
 	
+	/**
+	 * @param array $params Receives 2 dimensional array of all event datas that corresponds to given handler
+	 */
 	abstract public function getDataArray($params);
 }
 ?>

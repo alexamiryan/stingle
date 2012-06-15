@@ -27,8 +27,10 @@ class CometAbort extends CometChunk{
 		if($count > 0){
 			$this->setIsAnyData();
 			
-			$qb = new QueryBuilder();
+			// Sleep 3 times runInterval to let other threads(tabs) to grab this abort row
+			usleep(ConfigManager::getConfig("Comet")->AuxConfig->runInterval * 1000000 * 3);
 			
+			$qb = new QueryBuilder();
 			$qb->delete(Tbl::get("TBL_COMET_ABORT"))
 				->where($qb->expr()->equal(new Field('id'), $this->id));
 			

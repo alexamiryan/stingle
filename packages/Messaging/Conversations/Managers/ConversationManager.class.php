@@ -246,16 +246,19 @@ class ConversationManager extends DbAccessor{
 		
 		$message = $this->getConversationMessage($filter, true);
 		
+		$affected = 0;
 		if($message->read == self::STATUS_READ_UNREAD){
 			// Change read status
 			$qb = new QueryBuilder();
 			$qb->update(Tbl::get('TBL_CONVERSATION_MESSAGES'))
 				->set(new Field('read'), self::STATUS_READ_READ)
 				->where($qb->expr()->equal(new Field('id'), $message->id));
-			$this->query->exec($qb->getSQL())->affected();
+			$affected = $this->query->exec($qb->getSQL())->affected();
 			
 			$this->correctConversationReadStatus($message->uuid, $message->receiverId);
 		}
+		
+		return $affected;
 	}
 	
 	public function deleteConversationMessage($conversationMessageId, $myUserId){

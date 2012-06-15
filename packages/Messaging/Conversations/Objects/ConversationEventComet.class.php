@@ -36,7 +36,7 @@ class ConversationEventComet extends CometEventHandler{
 				$filter->setUUID($this->params['uuid']);
 					
 				try{
-					array_push($messages, Reg::get('convMgr')->getConversationMessage($filter));
+					$messages = Reg::get('convMgr')->getConversationMessages($filter);
 				}
 				catch(ConversationNotUniqueException $e){ }
 			}

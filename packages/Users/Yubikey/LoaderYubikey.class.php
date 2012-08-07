@@ -10,7 +10,7 @@ class LoaderYubikey extends Loader{
 		Tbl::registerTableNames('YubikeyUserAuthorization');
 	}
 	
-	protected function loadYubikeyUserAuthorization(){
+	protected function hookYubicoAuth($params){
 		$usersConfig = ConfigManager::getConfig("Users","Users");
 		
 		$resultingConfig = ConfigManager::mergeConfigs($usersConfig->AuxConfig, $this->config->AuxConfig);

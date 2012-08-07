@@ -55,6 +55,9 @@ abstract class Base
 
     public function add($arg)
     {
+    	if($arg instanceof QueryBuilder){
+    		echo $arg->getSQL() . "<br><br>";
+    	}
         if ( $arg !== null || ($arg instanceof self && $arg->count() > 0) ) {
             // If we decide to keep Base instances, we can use this check
             if ( ! is_string($arg)) {

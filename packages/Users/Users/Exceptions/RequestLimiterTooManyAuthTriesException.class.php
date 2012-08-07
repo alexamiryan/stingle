@@ -1,0 +1,5 @@
+<?
+class RequestLimiterTooManyAuthTriesException extends SecurityException{
+	
+}
+?>

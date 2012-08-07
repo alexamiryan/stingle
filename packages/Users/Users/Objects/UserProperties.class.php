@@ -1,0 +1,5 @@
+<?
+class UserProperties{
+	public $userId;
+}
+?>

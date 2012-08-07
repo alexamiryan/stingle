@@ -4,13 +4,9 @@ $defaultConfig = array(
 												'loginCookieName' => 'login-cookie',
 												'rememberDaysCount' => 30,
 												'bruteForceProtectionEnabled' => true,
-												'failedAuthLimit' => 5,
-												'userPropertiesMap' => array(),
-												'siteSalt' => 'o&&Y@J5l2t]7M}#@zWuCzQXlx0U1NZ:x%`EYH;="6j1q(?_"sDxZ;]|:Fv>3f(K',
-												'pbdkf2IterationCount' => 10000
-								),
+												'failedAuthLimit' => 5),
 
-						'Objects' => array(		'UserManager' => 'um', 
+						'Objects' => array(		'UserManagement' => 'um', 
 												'UserAuthorization' => 'userAuth'),
 						'ObjectsIgnored' => array(  'User' => 'usr'  ),
 						'Hooks' => array(	'AfterPackagesLoad' => 'UserAuthorization'  ),

@@ -1,8 +1,7 @@
 <?
-class DependencyFormKey extends Dependency
+class DependencyAES256 extends Dependency
 {
 	public function __construct(){
-		$this->addPackage("Security");
 		$this->addPlugin("Crypto", "Crypto");
 	}
 }

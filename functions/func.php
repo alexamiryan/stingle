@@ -68,6 +68,10 @@ function get_age ($birthday){
  * @return string
  */
 function generateRandomString($length, $type = null){
+	if(!Reg::get('packageMgr')->isPluginLoaded('Crypto', 'Crypto')){
+		throw new RuntimeException("Crypto plugin is not loaded!");
+	}
+	
 	if($length === null){
 		$length = 12;
 	}
@@ -80,10 +84,10 @@ function generateRandomString($length, $type = null){
 	$rand_value = '';
 	while(strlen($rand_value) < $length){
 		if($type == 'digits'){
-			$char = myRand(0, 9);
+			$char = Crypto::s_rand(0, 9);
 		}
 		else{
-			$char = chr(myRand(0, 255));
+			$char = chr(Crypto::s_rand(0, 255));
 		}
 		if($type == 'mixed'){
 			if(preg_match('/^[a-z0-9]$/i', $char)) $rand_value .= $char;
@@ -97,27 +101,6 @@ function generateRandomString($length, $type = null){
 	}
 
 	return $rand_value;
-}
-
-function myRand($min = null, $max = null){
-	static $seeded;
-
-	if(!isset($seeded)){
-		mt_srand((double)microtime() * 1000000);
-		$seeded = true;
-	}
-
-	if(isset($min) && isset($max)){
-		if($min >= $max){
-			return $min;
-		}
-		else{
-			return mt_rand($min, $max);
-		}
-	}
-	else{
-		return mt_rand();
-	}
 }
 
 /**

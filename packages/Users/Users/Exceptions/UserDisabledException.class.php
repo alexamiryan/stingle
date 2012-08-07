@@ -1,0 +1,3 @@
+<?
+class UserDisabledException extends UserException{ }
+?>

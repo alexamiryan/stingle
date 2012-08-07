@@ -1,0 +1,3 @@
+<?
+class NoRandomProviderException extends CryptoException{ }
+?>

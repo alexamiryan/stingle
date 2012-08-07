@@ -32,5 +32,13 @@ abstract class Filter{
 	public function setSelectCount(){
 		$this->qb->select($this->qb->expr()->count(new Field('*'), 'cnt'));
 	}
+	
+	public function getQb(){
+		return $this->qb;
+	}
+	
+	public function setQb($qb){
+		$this->qb = $qb;
+	}
 }
 ?>

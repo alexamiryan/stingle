@@ -5,7 +5,6 @@ class DependencyUsers extends Dependency
 		$this->addPackage("Db");
 		$this->addPlugin("Db", "QueryBuilder");
 		$this->addPackage("Security");
-		$this->addPlugin("Crypto", "Crypto");
 	}
 }
 ?>

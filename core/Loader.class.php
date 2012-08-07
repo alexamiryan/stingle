@@ -76,7 +76,7 @@ abstract class Loader {
 	}
 	
 	/**
-	 * You can extend this function and 
+	 * You can extend this function and
 	 * make some custom post objects load
 	 * procedures 
 	 */

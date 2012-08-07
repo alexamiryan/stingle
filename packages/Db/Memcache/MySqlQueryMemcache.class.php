@@ -63,7 +63,7 @@ class MySqlQueryMemcache extends MySqlQuery
 	 * Execute SQL query
 	 *
 	 * @param string $sql_statement
-	 * @param int $cache_time (in minutes)
+	 * @param int $cacheMinutes (in minutes) -1 - Unlimited, 0 - Turned off, >0 for given amount of minutes
 	 * @return MySqlQueryMemcache
 	 */
 	public function exec($sqlStatement, $cacheMinutes = 0){

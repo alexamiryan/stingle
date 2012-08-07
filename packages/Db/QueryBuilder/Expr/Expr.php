@@ -397,7 +397,10 @@ class Expr
         elseif($y instanceof QueryBuilder){
         	$y = array($y->getSQL());
         }
-        return new Func($x . ' IN', (array) $y);
+        elseif($y instanceof Unionx){
+        	$y = array($y);
+        }
+        return new Func($x . ' IN', $y);
     }
 
     /**

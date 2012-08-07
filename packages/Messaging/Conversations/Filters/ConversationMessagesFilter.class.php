@@ -1,11 +1,11 @@
 <?
-class ConversationMessagesFilter extends Filter {
+class ConversationMessagesFilter extends MergeableFilter{
 	
 	public function __construct(){
-		parent::__construct();
+		parent::__construct(Tbl::get('TBL_CONVERSATION_MESSAGES', 'ConversationManager'), "conv_msgs", "user_id");
 		
 		$this->qb->select(new Field("*"))
-			->from(Tbl::get('TBL_CONVERSATION_MESSAGES', 'ConversationManager'), "conv_msgs");
+			->from($this->primaryTable, $this->primaryTableAlias);
 	}
 	
 	public function setId($id){

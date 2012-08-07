@@ -1,5 +1,5 @@
 <?
-class YubikeyUserAuthorization extends UserAuthorization{
+class YubikeyUserAuthorization extends DbAccessor{
 	
 	const TBL_KEYS = "wum_yubico_keys";
 	const TBL_KEYS_TO_USERS = "wum_yubico_keys_to_users";
@@ -21,9 +21,7 @@ class YubikeyUserAuthorization extends UserAuthorization{
 	 * @param var $usr
 	 * @param var $sessionVar
 	 */
-	public function __construct(UserManagement $um, Config $config, $dbInstanceKey = null){
-		parent::__construct($um, $config, $dbInstanceKey);
-		
+	public function __construct(Config $config, $dbInstanceKey = null){
 		$this->authYubikey = new Yubikey($config->yubico_id, $config->yubico_key);
 	}
 	

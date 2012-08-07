@@ -7,9 +7,7 @@ class UserManagement extends DbAccessor{
 	const TBL_REG_CODES 			= "wum_reg_codes";
 	const TBL_PERMISSIONS 			= "wum_permissions";
 	const TBL_GROUPS 				= "wum_groups";
-	const TBL_GROUPS_TYPES 			= "wum_groups_types";
 	const TBL_GROUPS_PERMISSIONS 	= "wum_groups_permissions";
-	
 	
 	const STATE_ENABLE_ENABLED = 1;
 	const STATE_ENABLE_DISABLED = 0;
@@ -160,50 +158,17 @@ class UserManagement extends DbAccessor{
 		}
 	}
 
-	/**
-	 * Indicates is groups type exists
-	 *
-	 * @param unknown_type $type_name
-	 * @return  bool
-	 */
-	public function isGroupTypeExists($type_name, $cacheMinutes = null){
-		if($this->query->exec("SELECT count(*) as `count` FROM `".Tbl::get('TBL_GROUPS_TYPES')."` WHERE `name`='$type_name'", $cacheMinutes)){
-			if($this->query->fetchField("count") == 1){
-				return true;
-			}
-		}
-		return false;
-	}
-	/**
-	 * Returns Id of given group type name
-	 *
-	 * @param unknown_type $type_name
-	 * @return int
-	 */
-	public function getGroupTypeIdByName($type_name, $cacheMinutes = null){
-		$this->query->exec("SELECT id FROM `".Tbl::get('TBL_GROUPS_TYPES')."` WHERE `name`='$type_name'", $cacheMinutes);
-		$group_type_id = $this->query->fetchField("id");
-		if($group_type_id){
-			return $group_type_id;
-		}
-		else{
-			return false;
-		}
-	}
+	
 	/**
 	 * Create new group
 	 *
 	 * @param string $name
-	 * @param string $type
 	 * @param array $permissions_list
 	 * @param string $description
 	 * @return bool
 	 */
-	public function createGroup($name, $type, $permissions_list = array(), $description = ""){
-		if(!$this->isGroupTypeExists($type)){
-			return false;
-		}
-		elseif($this->query->exec("insert into `".Tbl::get('TBL_GROUPS')."`(`name`,`type`,`description`) values('$name','{$this->getGroupTypeIdByName($type)}','$description')")){
+	public function createGroup($name, $permissions_list = array(), $description = ""){
+		if($this->query->exec("insert into `".Tbl::get('TBL_GROUPS')."`(`name`,`description`) values('$name','$description')")){
 			$group_id = $this->query->getLastInsertId();
 			if(!empty($permissions_list) and !(($perms_ids = $this->getPermsIds($permissions_list)) === false)){
 				if(count($perms_ids)){
@@ -212,7 +177,7 @@ class UserManagement extends DbAccessor{
 					}
 				}
 			}
-			$hookArgs = array("name" => $name, 'type'=>$type, 'permissionsList' => $permissions_list, 'description'=>$description);
+			$hookArgs = array("name" => $name, 'permissionsList' => $permissions_list, 'description'=>$description);
 			HookManager::callHook("postCreateUserGroup", $hookArgs);
 			return true;
 		}
@@ -354,20 +319,12 @@ class UserManagement extends DbAccessor{
 	}
 
 	/**
-	 * Get list of groups of given type (All types by defaul)
+	 * Get list of groups
 	 *
 	 * @return array
 	 */
-	public function getGroupsList($type = 'all', $cacheMinutes = null){
-		if($type == 'all'){
-			$query = "SELECT * FROM `".Tbl::get('TBL_GROUPS')."`";
-		}
-		elseif($this->isGroupTypeExists($type)){
-			$query = "SELECT * FROM `".Tbl::get('TBL_GROUPS')."` WHERE `type` = '{$this->getGroupTypeIdByName($type)}'";
-		}
-		else{
-			return false;
-		}
+	public function getGroupsList($cacheMinutes = null){
+		$query = "SELECT * FROM `".Tbl::get('TBL_GROUPS')."`";
 
 		if($this->query->exec($query, $cacheMinutes)){
 			return $this->query->fetchRecords();
@@ -978,27 +935,18 @@ class UserManagement extends DbAccessor{
 	}
 
 	/**
-	 * Get groups that specified user belongs to. If $group_types is specified returns only groups of given type(s)
+	 * Get groups that specified user belongs to. 
 	 *
 	 * @param string $user_id
-	 * @param array $group_types
 	 * @return array
 	 */
-	public function getUserGroups($user_id, $group_types = array(), $cacheMinutes = null){
+	public function getUserGroups($user_id, $cacheMinutes = null){
 		$user_id = intval($user_id);
 		$this->query->exec("select `group_id` from `".Tbl::get('TBL_USERS_GROUPS')."` where `user_id`='$user_id'", $cacheMinutes);
 		$groups_ids_count = $this->query->countRecords();
 		if($groups_ids_count){
 			$groups_ids = $this->query->fetchFields(0, true);
 			$sql_statement = "select `name` from `".Tbl::get('TBL_GROUPS')."` where `id` in (" . implode(', ', $groups_ids) . ")";
-
-			if(!empty($group_types)){
-				$group_types_ids = array();
-				foreach($group_types as $group_type){
-					array_push($group_types_ids, $this->getGroupTypeIdByName($group_type));
-				}
-				$sql_statement .= " AND `type` IN (" . implode(', ', $group_types_ids) . ")";
-			}
 
 			$this->query->exec($sql_statement, $cacheMinutes);
 			return $this->query->fetchFields(0, true);
@@ -1189,7 +1137,6 @@ class UserManagement extends DbAccessor{
 		}
 
 		$sqlQuery = $filter->getSQL();
-		
 		if($pager !== null){
 			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);
 		}

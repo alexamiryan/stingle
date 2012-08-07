@@ -1,0 +1,3 @@
+<?
+class UserNotUniqueException extends UserException{ }
+?>

@@ -1,14 +1,14 @@
 <?
-class UsersFilter extends Filter {
+class UsersFilter extends MergeableFilter{
 	
 	public function __construct($only_enabled_users = true){
-		parent::__construct();
+		parent::__construct(Tbl::get('TBL_USERS', 'UserManagement'), "users", "id");
 		
-		$this->qb->select(new Field("id", "users"))
-			->from(Tbl::get('TBL_USERS', 'UserManagement'), "users");
+		$this->qb->select(new Field("id", $this->primaryTableAlias))
+			->from($this->primaryTable, $this->primaryTableAlias);
 		
 		if ($only_enabled_users){
-			$this->qb->andWhere($this->qb->expr()->equal(new Field('enable', "users"), UserManagement::STATE_ENABLE_ENABLED));
+			$this->setEnableStatus(UserManagement::STATE_ENABLE_ENABLED);
 		}
 	}
 	
@@ -17,7 +17,7 @@ class UsersFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->equal(new Field('id', "users"), $userId));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('id', $this->primaryTableAlias), $userId));
 		return $this;
 	}
 	
@@ -26,7 +26,7 @@ class UsersFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->notEqual(new Field('id', "users"), $userId));
+		$this->qb->andWhere($this->qb->expr()->notEqual(new Field('id', $this->primaryTableAlias), $userId));
 		return $this;
 	}
 	
@@ -35,7 +35,7 @@ class UsersFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$userIds have to be not empty array");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->in(new Field('id', "users"), $userIds));
+		$this->qb->andWhere($this->qb->expr()->in(new Field('id', $this->primaryTableAlias), $userIds));
 		return $this;
 	}
 	
@@ -44,7 +44,7 @@ class UsersFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$userIds have to be not empty array");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->notIn(new Field('id', "users"), $userIds));
+		$this->qb->andWhere($this->qb->expr()->notIn(new Field('id', $this->primaryTableAlias), $userIds));
 		return $this;
 	}
 	
@@ -53,7 +53,7 @@ class UsersFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$state have to be integer");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->equal(new Field('enabled', "users"), $status));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('enable', $this->primaryTableAlias), $status));
 		return $this;
 	}
 	
@@ -63,7 +63,7 @@ class UsersFilter extends Filter {
 			throw new InvalidArgumentException("\$login have to be non empty string");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->like(new Field('login', "users"), "$login%"));
+		$this->qb->andWhere($this->qb->expr()->like(new Field('login', $this->primaryTableAlias), "$login%"));
 		return $this;
 	}
 	
@@ -72,7 +72,7 @@ class UsersFilter extends Filter {
 			throw new InvalidArgumentException("\$email have to be non empty string");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->equal(new Field('email', "users"), $email));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('email', $this->primaryTableAlias), $email));
 		return $this;
 	}
 	
@@ -132,7 +132,7 @@ class UsersFilter extends Filter {
 			throw new InvalidArgumentException("\$time have to be non empty string");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->greater(new Field('creation_date', "users"), $time));
+		$this->qb->andWhere($this->qb->expr()->greater(new Field('creation_date', $this->primaryTableAlias), $time));
 		return $this;
 	}
 	
@@ -141,7 +141,7 @@ class UsersFilter extends Filter {
 			throw new InvalidArgumentException("\$time have to be non empty string");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->less(new Field('creation_date', "users"), $time));
+		$this->qb->andWhere($this->qb->expr()->less(new Field('creation_date', $this->primaryTableAlias), $time));
 		return $this;
 	}
 	
@@ -150,7 +150,7 @@ class UsersFilter extends Filter {
 			throw new InvalidArgumentException("\$time have to be non empty string");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->greaterEqual(new Field('creation_date', "users"), $time));
+		$this->qb->andWhere($this->qb->expr()->greaterEqual(new Field('creation_date', $this->primaryTableAlias), $time));
 		return $this;
 	}
 	
@@ -159,7 +159,7 @@ class UsersFilter extends Filter {
 			throw new InvalidArgumentException("\$time have to be non empty string");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->lessEqual(new Field('creation_date', "users"), $time));
+		$this->qb->andWhere($this->qb->expr()->lessEqual(new Field('creation_date', $this->primaryTableAlias), $time));
 		return $this;
 	}
 	

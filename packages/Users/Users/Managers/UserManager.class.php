@@ -45,7 +45,7 @@ class UserManager extends DbAccessor{
 		
 		$users = array();
 		if($this->query->countRecords()){
-			foreach($this->query->fetchRecord() as $row){
+			foreach($this->query->fetchRecords() as $row){
 				array_push($users, $this->getUserObjectFromData($row, $initObjects, $cacheMinutes));
 			}
 		}
@@ -53,26 +53,73 @@ class UserManager extends DbAccessor{
 		return $users;
 	}
 	
-	public function getUser(UsersFilter $filter, $initObjects = self::INIT_ALL){
-		$users = $this->getUsersList($filter, null, $initObjects);
+	/**
+	 * Get user list count
+	 *
+	 * @param UsersFilter $filter
+	 * @return integer
+	 */
+	public function getUsersListCount(UsersFilter $filter = null, $cacheMinutes = 0){
+		if($filter === null){
+			$filter = new UsersFilter();
+		}
+	
+		$filter->setSelectCount();
+	
+		$sqlQuery = $filter->getSQL();
+	
+		$this->query->exec($sqlQuery, $cacheMinutes);
+		return $this->query->fetchField('cnt');
+	}
+	
+	public function getUser(UsersFilter $filter, $initObjects = self::INIT_ALL, $cacheMinutes = 0){
+		$users = $this->getUsersList($filter, null, $initObjects, $cacheMinutes);
 		if(count($users) !== 1){
 			throw new UserNotUniqueException("There is no such user or user is not unique.");
 		}
 		return $users[0];
 	}
 	
-	public function getUserById($userId, $initObjects = self::INIT_ALL){
+	public function getUserById($userId, $initObjects = self::INIT_ALL, $cacheMinutes = 0){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidArgumentException("\$userId have to be non zero integer");
 		}
 		
 		$filter = new UsersFilter();
 		$filter->setUserIdEqual($userId);
-		$users = $this->getUsersList($filter, null, $initObjects);
+		$users = $this->getUsersList($filter, null, $initObjects, $cacheMinutes);
 		if(count($users) !== 1){
 			throw new UserNotUniqueException("There is no such user or user is not unique.");
 		}
 		return $users[0];
+	}
+	
+	public function getIdByLogin($login, $cacheMinutes = 0){
+		if(empty($login)){
+			throw new InvalidArgumentException("\$login have to be non empty string");
+		}
+	
+		$filter = new UsersFilter();
+		$filter->setLogin($login);
+		$users = $this->getUsersList($filter, null, static::INIT_NONE, $cacheMinutes);
+		if(count($users) !== 1){
+			throw new UserNotUniqueException("There is no such user or user is not unique.");
+		}
+		return $users[0]->id;
+	}
+	
+	public function isUserExists($login, $cacheMinutes = 0){
+		if(empty($login)){
+			throw new InvalidArgumentException("\$login have to be non empty string");
+		}
+	
+		$filter = new UsersFilter();
+		$filter->setLogin($login);
+		$usersCount = $this->getUsersListCount($filter, $cacheMinutes);
+		if($usersCount > 0){
+			return true;
+		}
+		return false;
 	}
 	
 	public function createUser(User $user){
@@ -94,16 +141,17 @@ class UserManager extends DbAccessor{
 		
 		$newUserId = $this->query->exec($qb->getSQL())->getLastInsertId();
 		
-		if($user->properties != null){
+		if($user->props != null){
 			$qb = new QueryBuilder();
 		
-			$values = array();			
+			$values = array();		
 			foreach($this->config->userPropertiesMap as $objectKey => $dbKey){
-				$values[$dbKey] = $properties->$objectKey;
+				if(isset($user->props->$objectKey)){
+					$values[$dbKey] = $user->props->$objectKey;
+				}
 			}
 			
 			$values['user_id']  = $newUserId;
-			
 			$qb->insert(Tbl::get('TBL_USERS_PROPERTIES'))->values($values);
 			
 			$this->query->exec($qb->getSQL());
@@ -112,7 +160,7 @@ class UserManager extends DbAccessor{
 		return $newUserId;
 	}
 	
-	public function editUser(User $user){
+	public function updateUser(User $user){
 		$qb = new QueryBuilder();
 		
 		$qb->update(Tbl::get('TBL_USERS'))
@@ -127,8 +175,8 @@ class UserManager extends DbAccessor{
 			->set(new Field('last_login_ip'), $user->lastLoginIP)
 			->where($qb->expr()->equal(new Field('id'), $user->id));
 		
-		if($user->properties != null){
-			$this->editUserProperties($user->properties);
+		if($user->props != null){
+			$this->editUserProperties($user->props);
 		}
 		
 		return $this->query->exec($qb->getSQL())->affected();
@@ -210,7 +258,7 @@ class UserManager extends DbAccessor{
 	
 	protected function getPropertiesObject($userId, $cacheMinutes = 0){
 
-		if(empty($user) or !is_numeric($userId)){
+		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidArgumentException("\$userId have to be non zero integer");
 		}
 		
@@ -218,8 +266,7 @@ class UserManager extends DbAccessor{
 		
 		$qb->select(new Field('*'))
 			->from(Tbl::get('TBL_USERS_PROPERTIES'))
-			->where($qb->expr()->in(new Field('user_id'), $userId));
-		
+			->where($qb->expr()->equal(new Field('user_id'), $userId));
 		$this->query->exec($qb->getSQL());
 		
 		$properties = new UserProperties();
@@ -242,7 +289,7 @@ class UserManager extends DbAccessor{
 		$user = new User();
 		
 		$user->id = $data['id'];
-		$user->enabled = $data['enable'];
+		$user->enabled = $data['enabled'];
 		$user->creationDate = $data['creation_date'];
 		$user->login = $data['login'];
 		$user->password = $data['password'];
@@ -255,12 +302,14 @@ class UserManager extends DbAccessor{
 		if($initObjects !== 0){
 			$isInitAll = ($initObjects == -1 ? true : false);
 			if($isInitAll or ($initObjects & self::INIT_PROPERTIES) != 0){
-				$user->properties = $this->getPropertiesObject($cacheMinutes);
+				$user->props = $this->getPropertiesObject($user->id, $cacheMinutes);
 			}
 			if($isInitAll or ($initObjects & self::INIT_PERMISSIONS) != 0){
-				$user->permissions = $this->getPermissionsObject($user->id, $cacheMinutes);
+				$user->perms = $this->getPermissionsObject($user->id, $cacheMinutes);
 			}
 		}
+		
+		return $user;
 	}
 	
 }

@@ -48,12 +48,12 @@ class UserGroupsManager extends DbAccessor{
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
-	public function getGroups(UserGroupsFilter $filter = null){
+	public function getGroups(UserGroupsFilter $filter = null, $cacheMinutes = 0){
 		if($filter === null){
 			$filter = new UserGroupsFilter();
 		}
 		
-		$this->query->exec($filter->getSQL());
+		$this->query->exec($filter->getSQL(), $cacheMinutes);
 		
 		$groups = array();
 		if($this->query->countRecords()){
@@ -63,6 +63,25 @@ class UserGroupsManager extends DbAccessor{
 		}
 		
 		return $groups;
+	}
+	
+	public function getGroup(UserGroupsFilter $filter = null, $cacheMinutes = 0){
+		$groups = $this->getGroups($filter, $cacheMinutes);
+		if(count($groups) !== 1){
+			throw new UserNotUniqueException("There is no such group or group is not unique.");
+		}
+		return $groups[0];
+	}
+	
+	public function getGroupByName($name, $cacheMinutes = 0){
+		if(empty($name)){
+			throw new InvalidArgumentException("\$name have to be non empty string");
+		}
+		
+		$filter = new UserGroupsFilter();
+		$filter->setName($name);
+		
+		return $this->getGroup($filter, $cacheMinutes);
 	}
 	
 	public function addUserToGroup(User $user, UserGroup $group){

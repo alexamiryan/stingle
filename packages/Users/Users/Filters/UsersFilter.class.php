@@ -8,7 +8,7 @@ class UsersFilter extends MergeableFilter{
 			->from($this->primaryTable, $this->primaryTableAlias);
 		
 		if ($onlyEnabledUsers){
-			$this->setEnableStatus(UserManagement::STATE_ENABLED_ENABLED);
+			$this->setEnabledStatus(UserManager::STATE_ENABLED_ENABLED);
 		}
 	}
 	
@@ -57,6 +57,14 @@ class UsersFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setLogin($login){
+		if(empty($login)){
+			throw new InvalidArgumentException("\$login have to be non empty string");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('login', $this->primaryTableAlias), $login));
+		return $this;
+	}
 	
 	public function setLoginLike($login){
 		if(empty($login)){
@@ -170,8 +178,17 @@ class UsersFilter extends MergeableFilter{
 		$this->setOrder(new Field('creation_date', 'users'), MySqlDatabase::ORDER_DESC);
 	}
 	
+	public function setEmailConfirmationStatus($status = UserManager::STATE_EMAIL_CONFIRMED){
+		if(!is_numeric($status)){
+			throw new InvalidIntegerArgumentException("\$status have to be integer");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('email_confirmed', "users"), $status));
+		return $this;
+	}
+	
 	protected function joinUsersPropertiesTable(){
-		$this->qb->leftJoin(Tbl::get('TBL_USERS_PROPERTIES', 'UserManagemer'),	'users_prop',
+		$this->qb->leftJoin(Tbl::get('TBL_USERS_PROPERTIES', 'UserManager'),	'users_prop',
 				$this->qb->expr()->equal(new Field('id', 'users'), new Field('user_id', 'users_prop')));
 	}
 	

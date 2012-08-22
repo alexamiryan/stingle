@@ -1,0 +1,3 @@
+<?
+class YubikeyRequiredException extends YubikeyException{}
+?>

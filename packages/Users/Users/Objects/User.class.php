@@ -11,7 +11,7 @@ class User{
 	public $emailConfirmed = 0;
 	public $lastLoginDate;
 	public $lastLoginIP;
-	public $properties = null;
-	public $permissions = null;
+	public $props = null;
+	public $perms = null;
 }
 ?>

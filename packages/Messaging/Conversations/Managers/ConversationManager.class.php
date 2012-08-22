@@ -729,10 +729,10 @@ class ConversationManager extends DbAccessor{
 		$conversation->userId = $conversationRow['user_id'];
 		$conversation->interlocutorId = $conversationRow['interlocutor_id'];
 		if(!$reduced){
-			$userManagement = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManagement);
+			$UserManager = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManager);
 			
-			$conversation->user = $userManagement->getObjectById($conversationRow['user_id']);
-			$conversation->interlocutor = $userManagement->getObjectById($conversationRow['interlocutor_id']);
+			$conversation->user = $UserManager->getUserById($conversationRow['user_id']);
+			$conversation->interlocutor = $UserManager->getUserById($conversationRow['interlocutor_id']);
 		}
 		$conversation->lastMsgDate = $conversationRow['last_msg_date'];
 		$conversation->read = $conversationRow['read'];
@@ -753,10 +753,10 @@ class ConversationManager extends DbAccessor{
 		$message->senderId = $messageRow['sender_id'];
 		$message->receiverId = $messageRow['receiver_id'];
 		if(!$reduced){
-			$userManagement = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManagement);
+			$UserManager = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManager);
 			
-			$message->sender = $userManagement->getObjectById($messageRow['sender_id']);
-			$message->receiver = $userManagement->getObjectById($messageRow['receiver_id']);
+			$message->sender = $UserManager->getUserById($messageRow['sender_id']);
+			$message->receiver = $UserManager->getUserById($messageRow['receiver_id']);
 		}
 		$message->message = $messageRow['message'];
 		$message->read = $messageRow['read'];

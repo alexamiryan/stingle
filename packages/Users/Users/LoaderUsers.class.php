@@ -14,7 +14,6 @@ class LoaderUsers extends Loader{
 		require_once ('Filters/UserPermissionsFilter.class.php');
 		require_once ('Filters/UsersFilter.class.php');
 		require_once ('Exceptions/UserException.class.php');
-		require_once ('Exceptions/RequestLimiterTooManyAuthTriesException.class.php');
 		require_once ('Exceptions/UserAuthFailedException.class.php');
 		require_once ('Exceptions/UserDisabledException.class.php');
 		require_once ('Exceptions/UserNotUniqueException.class.php');
@@ -28,6 +27,12 @@ class LoaderUsers extends Loader{
 	
 	protected function loadUserManager(){
 		$this->register(new UserManager($this->config->AuxConfig));
+	}
+	protected function loadUserGroupsManager(){
+		$this->register(new UserGroupsManager());
+	}
+	protected function loadUserPermissionsManager(){
+		$this->register(new UserPermissionsManager());
 	}
 	
 	protected function loadUserAuthorization(){

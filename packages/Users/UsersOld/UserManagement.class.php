@@ -1,5 +1,5 @@
 <?
-class UserManagement extends DbAccessor{
+class UserManager extends DbAccessor{
 	
 	const TBL_USERS 				= "wum_users";
 	const TBL_USERS_GROUPS 			= "wum_users_groups";

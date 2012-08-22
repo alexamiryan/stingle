@@ -23,7 +23,7 @@ class UserGroupsFilter extends MergeableFilter{
 			throw new InvalidIntegerArgumentException("\$name have to be not empty string");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->notEqual(new Field('id', $this->primaryTableAlias), $userId));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('name', $this->primaryTableAlias), $name));
 		return $this;
 	}
 	

@@ -10,7 +10,7 @@ class UserAuthorization extends DbAccessor{
 	const EXCEPTION_INCORRECT_LOGIN_PASSWORD = 1;
 	const EXCEPTION_ACCOUNT_DISABLED = 2;
 	
-	public function __construct(UserManagement $um, Config $config, $dbInstanceKey = null){
+	public function __construct(UserManager $um, Config $config, $dbInstanceKey = null){
 		parent::__construct($dbInstanceKey);
 		
 		$this->um = $um;

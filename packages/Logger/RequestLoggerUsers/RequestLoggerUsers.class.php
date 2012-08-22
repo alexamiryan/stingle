@@ -9,7 +9,7 @@ class RequestLoggerUsers extends DBLogger {
 		$userObj = Reg::get(ConfigManager::getConfig("Users", "Users")->ObjectsIgnored->User);
 
 		if($userObj->isAuthorized()){
-			$userId = $userObj->getId();
+			$userId = $userObj->id;
 			$userObjectSerialized = "'". mysql_real_escape_string(serialize($userObj)) . "'";
 		}
 

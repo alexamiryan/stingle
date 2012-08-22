@@ -4,7 +4,7 @@
 	 *
 	 * @author Aram Gevorgyan
 	 */
-	class ExternalUserManagement {
+	class ExternalUserManager {
 		
 		/**
 		 * Function is static. It's doing extraUser registration.
@@ -16,7 +16,7 @@
 		 * @return integer|boolean
 		 */
 		public static function registerExtUser(ExternalUser $extUser, ExternalAuth $extAuth) {
-			$um = Reg::get(ConfigManager::getConfig("Users", "Users")->Objects->UserManagement);
+			$um = Reg::get(ConfigManager::getConfig("Users", "Users")->Objects->UserManager);
 						
 			$tepmOwnUser = new User();
 						
@@ -35,7 +35,7 @@
 		 * @return string 
 		 */
 		private static function findFreeRandomUsername($prefix){
-			$um = Reg::get(ConfigManager::getConfig("Users", "Users")->Objects->UserManagement);
+			$um = Reg::get(ConfigManager::getConfig("Users", "Users")->Objects->UserManager);
 			$possibleUsername = $prefix . "_" . generateRandomString(6);
 			if(!$um->isUserExists($possibleUsername, 0)){
 				return $possibleUsername; 

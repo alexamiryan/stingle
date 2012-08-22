@@ -66,9 +66,9 @@ class CometEvents extends DbAccessor{
 		$event->selfUserId = $eventRow['self_user_id'];
 		$event->userId = $eventRow['user_id'];
 		if(!$reduced){
-			$userManagement = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManagement);
-			$event->selfUser = $userManagement->getObjectById($eventRow['self_user_id']);
-			$event->user = $userManagement->getObjectById($eventRow['user_id']);
+			$UserManager = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManager);
+			$event->selfUser = $UserManager->getUserById($eventRow['self_user_id']);
+			$event->user = $UserManager->getUserById($eventRow['user_id']);
 		}
 		$event->name = $eventRow['name'];
 		$event->data = unserialize($eventRow['data']);

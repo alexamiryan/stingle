@@ -1,5 +1,4 @@
 <?
-
 class UserProfile extends Profile{
 	
 	const TBL_PROFILE_SAVE = "users_profile";

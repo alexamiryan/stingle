@@ -6,12 +6,9 @@ class YubikeyUserAuthorization extends DbAccessor{
 	const TBL_KEYS_TO_GROUPS = "wum_yubico_keys_to_groups";
 	const TBL_AUTH_USERS = "wum_yubico_auth_users";
 	const TBL_AUTH_GROUPS = "wum_yubico_auth_groups";
-
 	
 	const STATUS_YUBIKEY_ENABLED = 1;
 	const STATUS_YUBIKEY_DISABLED = 0;
-	
-	const EXCEPTION_INVALID_YUBIKEY = 4;
 	
 	protected $authYubikey;
 	
@@ -25,37 +22,25 @@ class YubikeyUserAuthorization extends DbAccessor{
 		$this->authYubikey = new Yubikey($config->yubico_id, $config->yubico_key);
 	}
 	
-	/**
-	 * Does login operation
-	 * @param string $username
-	 * @param string $password
-	 * @param string $yubikeyOTP
-	 * @param bool $writeCookie
-	 * @param bool $isPasswordEncrypted
-	 *
-	 * @throws RuntimeException (Codes: 1 - Incorrect login/password combination,
-	 * 									2 - Account is disabled
-	 * 									3 - User is not in Users group
-	 * 									4 - Invalid Yubikey)
-	 */
-	public function doLogin($username, $password, $writeCookie = false, $isPasswordEncrypted = false, $yubikeyOTP = null){
+	
+	public function auth(User $user, $yubikeyOTP = null){
 		
-		parent::doLogin($username, $password, $writeCookie, $isPasswordEncrypted);
-		
-		if($this->isYubikeyRequired($this->usr->getId())){
-			$available_yubikeys = $this->getAvailableYubikeysList($this->usr->getId());
+		if($this->isYubikeyRequired($user->id)){
+			if(empty($yubikeyOTP)){
+				throw new YubikeyRequiredException("Yubikey is required for authorization");
+			}
+			
+			$available_yubikeys = $this->getAvailableYubikeysList($user->id);
 			
 			if(!in_array($this->getYubikeyKeyByOTP($yubikeyOTP), $available_yubikeys)){
-				$this->doLogout();
-				throw new RuntimeException("Invalid Yubikey", static::EXCEPTION_INVALID_YUBIKEY);
+				throw new InvalidYubikeyException("Invalid Yubikey");
 			}
 			else{
 				try{
 					$this->authYubikey->verify($yubikeyOTP);
 				}
 				catch(YubikeyException $e){
-					$this->doLogout();
-					throw new RuntimeException("Yubikey Validation Failed", static::EXCEPTION_INVALID_YUBIKEY);
+					throw new InvalidYubikeyException("Yubikey Validation Failed");
 				}
 			}
 
@@ -69,7 +54,7 @@ class YubikeyUserAuthorization extends DbAccessor{
 	 */
 	public function isYubikeyRequired($user_id, $cacheMinutes = null){
 		$this->query->exec("SELECT count(*) AS `cnt`
-								FROM `".Tbl::get('TBL_USERS_GROUPS', 'UserManagement')."` `ug`
+								FROM `".Tbl::get('TBL_USERS_GROUPS', 'UserManager')."` `ug`
 								INNER JOIN `".Tbl::get('TBL_AUTH_GROUPS')."` `yag` ON (`ug`.`group_id` = `yag`.`group_id`)
 								WHERE `ug`.`user_id`='$user_id'",
 							$cacheMinutes);
@@ -96,7 +81,7 @@ class YubikeyUserAuthorization extends DbAccessor{
 	 */
 	protected function getAvailableYubikeysList($user_id, $cacheMinutes = null){
 		$this->query->exec("SELECT `yk`.`key`
-								FROM `".Tbl::get('TBL_USERS_GROUPS', 'UserManagement')."` `ug`
+								FROM `".Tbl::get('TBL_USERS_GROUPS', 'UserManager')."` `ug`
 								INNER JOIN `".Tbl::get('TBL_KEYS_TO_GROUPS')."` `yg` ON (`ug`.`group_id` = `yg`.`group_id`)
 								INNER JOIN `".Tbl::get('TBL_KEYS')."` `yk`  ON (`yk`.`id` = `yg`.`yubikey_id`)
 								WHERE `ug`.`user_id`='$user_id' AND `yk`.`status` = '".static::STATUS_YUBIKEY_ENABLED."'

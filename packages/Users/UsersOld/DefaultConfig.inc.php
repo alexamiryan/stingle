@@ -6,10 +6,10 @@ $defaultConfig = array(
 												'bruteForceProtectionEnabled' => true,
 												'failedAuthLimit' => 5),
 
-						'Objects' => array(		'UserManagement' => 'um', 
+						'Objects' => array(		'UserManager' => 'um', 
 												'UserAuthorization' => 'userAuth'),
 						'ObjectsIgnored' => array(  'User' => 'usr'  ),
 						'Hooks' => array(	'AfterPackagesLoad' => 'UserAuthorization'  ),
-						'Memcache' => array(  'UserManagement' => 360  )
+						'Memcache' => array(  'UserManager' => 360  )
 					);
 ?>

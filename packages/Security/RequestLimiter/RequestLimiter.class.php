@@ -3,6 +3,7 @@ class RequestLimiter extends DbAccessor {
 	
 	const TBL_SECURITY_FLOODER_IPS 	= "security_flooder_ips";
 	const TBL_SECURITY_REQUESTS_LOG 	= "security_requests_log";
+	const TBL_SECURITY_INVALID_LOGINS_LOG 	= 'security_invalid_logins_log';
 	
 	private $config;
 	

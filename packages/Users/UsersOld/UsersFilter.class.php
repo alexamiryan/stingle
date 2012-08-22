@@ -2,13 +2,13 @@
 class UsersFilter extends MergeableFilter{
 	
 	public function __construct($only_enabled_users = true){
-		parent::__construct(Tbl::get('TBL_USERS', 'UserManagement'), "users", "id");
+		parent::__construct(Tbl::get('TBL_USERS', 'UserManager'), "users", "id");
 		
 		$this->qb->select(new Field("id", $this->primaryTableAlias))
 			->from($this->primaryTable, $this->primaryTableAlias);
 		
 		if ($only_enabled_users){
-			$this->setEnableStatus(UserManagement::STATE_ENABLE_ENABLED);
+			$this->setEnableStatus(UserManager::STATE_ENABLE_ENABLED);
 		}
 	}
 	
@@ -172,12 +172,12 @@ class UsersFilter extends MergeableFilter{
 	}
 	
 	protected function joinUsersGroupsTable(){
-		$this->qb->leftJoin(Tbl::get('TBL_USERS_GROUPS', 'UserManagement'),	'users_groups',
+		$this->qb->leftJoin(Tbl::get('TBL_USERS_GROUPS', 'UserManager'),	'users_groups',
 				$this->qb->expr()->equal(new Field('id', 'users'), new Field('user_id', 'users_groups')));
 	}
 	
 	protected function joinGroupsTable(){
-		$this->qb->leftJoin(Tbl::get('TBL_GROUPS', 'UserManagement'),	'groups',
+		$this->qb->leftJoin(Tbl::get('TBL_GROUPS', 'UserManager'),	'groups',
 				$this->qb->expr()->equal(new Field('group_id', 'users_groups'), new Field('id', 'groups')));
 	}
 }

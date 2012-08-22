@@ -1,7 +1,7 @@
 <?
 class LoaderUsers extends Loader{
 	protected function includes(){
-		require_once ('UserManagement.class.php');
+		require_once ('UserManager.class.php');
 		require_once ('UserAuthorization.class.php');
 		require_once ('User.class.php');
 		require_once ('UsersFilter.class.php');
@@ -9,17 +9,17 @@ class LoaderUsers extends Loader{
 	}
 	
 	protected function customInitBeforeObjects(){
-		Tbl::registerTableNames('UserManagement');
+		Tbl::registerTableNames('UserManager');
 		Tbl::registerTableNames('UserAuthorization');
 	}
 	
-	protected function loadUserManagement(){
-		$this->userManagement = new UserManagement();
-		$this->register($this->userManagement);
+	protected function loadUserManager(){
+		$this->UserManager = new UserManager();
+		$this->register($this->UserManager);
 	}
 	
 	protected function loadUserAuthorization(){
-		$this->userAuthorization = new UserAuthorization(	$this->userManagement, 
+		$this->userAuthorization = new UserAuthorization(	$this->UserManager, 
 															$this->config->AuxConfig);
 		$this->register($this->userAuthorization);
 	}

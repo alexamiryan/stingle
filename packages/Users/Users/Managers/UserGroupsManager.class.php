@@ -68,7 +68,7 @@ class UserGroupsManager extends DbAccessor{
 	public function getGroup(UserGroupsFilter $filter = null, $cacheMinutes = 0){
 		$groups = $this->getGroups($filter, $cacheMinutes);
 		if(count($groups) !== 1){
-			throw new UserNotUniqueException("There is no such group or group is not unique.");
+			throw new UserNotFoundException("There is no such group or group is not unique.");
 		}
 		return $groups[0];
 	}

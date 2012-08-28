@@ -28,9 +28,6 @@ class UserGroupsFilter extends MergeableFilter{
 	}
 	
 	public function setUser(User $user){
-		if($user->isEmpty()){
-			throw new InvalidIntegerArgumentException("\$user have to be initialized User object");
-		}
 		$this->joinUsersGroupsTable();
 		
 		$this->qb->andWhere($this->qb->expr()->notEqual(new Field('user_id', 'users_groups'), $user->id));

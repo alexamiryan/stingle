@@ -1,0 +1,3 @@
+<?
+class UserNotFoundException extends UserException{ }
+?>

@@ -37,12 +37,23 @@ class UserAuthorization extends DbAccessor{
 				
 			if($userData['password'] === $hashToCheck){
 				$usr = $this->doLogin($userData['id'], $additionalCredentials, $writeCookie);
+				
+				try{
+					$hookParams = array("user" => $usr, "additionalCredentials" => $additionalCredentials);
+					HookManager::callHook("UserAuthSuccess", $hookParams);
+				}
+				catch(UserAuthFailedException $e){
+					$this->doLogout();
+					throw $e;
+				}
+				
 				return $usr;
 			}
 		}
 		
 		// Failed login nothing returned from above code
-		HookManager::callHook("UserAuthFail", array("username" => $username));
+		$hookParams = array("username" => $username);
+		HookManager::callHook("UserAuthFail", $hookParams);
 		
 		throw new UserAuthFailedException("Incorrect login/password combination");
 	}
@@ -64,7 +75,8 @@ class UserAuthorization extends DbAccessor{
 		
 		$this->checkIfLoginIsAllowed($usr);
 		
-		HookManager::callHook("UserAuthSuccess", array("user" => $usr, "additionalCredentials" => $additionalCredentials));
+		$hookParams = array("user" => $usr, "additionalCredentials" => $additionalCredentials);
+		HookManager::callHook("OnUserLogin", $hookParams);
 		
 		$this->saveUserIdInSession($usr);
 		
@@ -87,7 +99,7 @@ class UserAuthorization extends DbAccessor{
 	/**
 	 * Get User from request data.
 	 *
-	 *  @return User
+	 * @return User
 	 */
 	public function getUserFromRequest(){
 		if(isset($_SESSION[$this->config->sessionVarName]) and is_numeric($_SESSION[$this->config->sessionVarName])){
@@ -157,7 +169,7 @@ class UserAuthorization extends DbAccessor{
 	 * @throws UserDisabledException
 	 */
 	protected function checkIfLoginIsAllowed(User $usr){
-		if($usr->enabled == UserManager::STATE_ENABLE_DISABLED){
+		if($usr->enabled == UserManager::STATE_ENABLED_DISABLED){
 			$this->doLogout();
 			throw new UserDisabledException("Account is disabled");
 		}

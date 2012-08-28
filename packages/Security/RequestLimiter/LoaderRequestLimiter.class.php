@@ -26,8 +26,9 @@ class LoaderRequestLimiter extends Loader{
 	public function hookClearInvalidLoginsLog($params){
 		if($this->config->AuxConfig->loginBruteForceProtectionEnabled){
 			if(isset($_SERVER['REMOTE_ADDR'])){
+				$sql = MySqlDbManager::getQueryObject();
 				$qb = new QueryBuilder();
-				$this->query->exec(
+				$sql->exec(
 						$qb->delete(Tbl::get('TBL_SECURITY_INVALID_LOGINS_LOG', 'RequestLimiter'))
 							->where($qb->expr()->equal(new Field('ip'), $_SERVER['REMOTE_ADDR']))
 							->getSQL()
@@ -39,16 +40,17 @@ class LoaderRequestLimiter extends Loader{
 	public function hookInvalidLoginAttempt($params){
 		if($this->config->AuxConfig->loginBruteForceProtectionEnabled){
 			if(isset($_SERVER['REMOTE_ADDR'])){
+				$sql = MySqlDbManager::getQueryObject();
 				$qb = new QueryBuilder();
 					
-				$this->query->exec(
+				$sql->exec(
 						$qb->select(new Field('count'))
 						->from(Tbl::get('TBL_SECURITY_INVALID_LOGINS_LOG', 'RequestLimiter'))
 						->where($qb->expr()->equal(new Field('ip'), $_SERVER['REMOTE_ADDR']))
 						->getSQL()
 				);
 					
-				$failedAuthCount = $this->query->fetchField('count');
+				$failedAuthCount = $sql->fetchField('count');
 					
 				$newFailedAuthCount = $failedAuthCount + 1;
 					
@@ -56,7 +58,7 @@ class LoaderRequestLimiter extends Loader{
 					Reg::get(ConfigManager::getConfig("Security", "RequestLimiter")->Objects->RequestLimiter)->blockIP();
 		
 					$qb = new QueryBuilder();
-					$this->query->exec(
+					$sql->exec(
 							$qb->delete(Tbl::get('TBL_SECURITY_INVALID_LOGINS_LOG', 'RequestLimiter'))
 							->where($qb->expr()->equal(new Field('ip'), $_SERVER['REMOTE_ADDR']))
 							->getSQL()
@@ -66,7 +68,7 @@ class LoaderRequestLimiter extends Loader{
 				}
 					
 				$qb = new QueryBuilder();
-				$this->query->exec(
+				$sql->exec(
 						$qb->insert(Tbl::get('TBL_SECURITY_INVALID_LOGINS_LOG', 'RequestLimiter'))
 						->values(array('ip' => $_SERVER['REMOTE_ADDR']))
 						->onDuplicateKeyUpdate()

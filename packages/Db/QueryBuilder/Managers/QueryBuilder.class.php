@@ -1203,7 +1203,7 @@ class QueryBuilder
      */
     public function merge(QueryBuilder $qb){
     	$parts = $qb->getSQLParts();
-    	
+    	//print_r($parts);exit;
     	/*'select'  => array(),
         'from'    => array(),
         'join'    => array(),
@@ -1230,16 +1230,16 @@ class QueryBuilder
     		$this->add("set", $set, true);
     	}
     	
-    	foreach($parts['where'] as $where){
-    		$this->add("where", $where, true);
-    	}
+    	$this->andWhere($parts['where']);
     	
     	foreach($parts['groupBy'] as $groupBy){
     		$this->add("groupBy", $groupBy, true);
     	}
     	
-    	foreach($parts['having'] as $having){
-    		$this->add("having", $having, true);
+    	if(isset($parts['having']) and is_array($parts['having'])){
+	    	foreach($parts['having'] as $having){
+	    		$this->add("having", $having, true);
+	    	}
     	}
     	
     	foreach($parts['orderBy'] as $orderBy){

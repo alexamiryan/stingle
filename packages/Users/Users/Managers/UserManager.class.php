@@ -15,11 +15,13 @@ class UserManager extends DbAccessor{
 	const STATE_EMAIL_CONFIRMED = 1;
 	const STATE_EMAIL_UNCONFIRMED = 0;
 	
-	const INIT_ALL = -1;
 	const INIT_NONE = 0;
 	// Init flags needs to be powers of 2 (1, 2, 4, 8, 16, 32, ...)
 	const INIT_PROPERTIES = 1;
 	const INIT_PERMISSIONS = 2;
+	
+	// INIT_ALL Should be next power of 2 minus 1
+	const INIT_ALL = 3;
 	
 	protected $config;
 
@@ -407,14 +409,11 @@ class UserManager extends DbAccessor{
 		$user->email = $data['email'];
 		$user->emailConfirmed = $data['email_confirmed'];
 		
-		if($initObjects !== 0){
-			$isInitAll = ($initObjects == -1 ? true : false);
-			if($isInitAll or ($initObjects & self::INIT_PROPERTIES) != 0){
-				$user->props = $this->getPropertiesObject($user->id, $cacheMinutes);
-			}
-			if($isInitAll or ($initObjects & self::INIT_PERMISSIONS) != 0){
-				$user->perms = $this->getPermissionsObject($user->id, $cacheMinutes);
-			}
+		if($initObjects & self::INIT_PROPERTIES != 0){
+			$user->props = $this->getPropertiesObject($user->id, $cacheMinutes);
+		}
+		if($initObjects & self::INIT_PERMISSIONS != 0){
+			$user->perms = $this->getPermissionsObject($user->id, $cacheMinutes);
 		}
 		
 		return $user;

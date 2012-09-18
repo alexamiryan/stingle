@@ -13,9 +13,7 @@ class LoaderSmarty extends Loader{
 	
 	public function hookSmartyInit(){
 		$siteNavigationConfig = ConfigManager::getConfig("SiteNavigation");
-		$this->smarty->initialize(	Reg::get($siteNavigationConfig->ObjectsIgnored->Nav)->{$siteNavigationConfig->AuxConfig->firstLevelName}, 
-									Reg::get($siteNavigationConfig->ObjectsIgnored->Nav)->{$siteNavigationConfig->AuxConfig->secondLevelName}, 
-									$this->config->AuxConfig);
+		$this->smarty->initialize($this->config->AuxConfig);
 	}
 	
 	public function hookSmartyDisplay(){

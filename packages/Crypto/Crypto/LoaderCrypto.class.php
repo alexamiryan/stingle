@@ -6,6 +6,7 @@ class LoaderCrypto extends Loader{
 		require_once ('Exceptions/CryptoException.class.php');
 		require_once ('Exceptions/NoRandomProviderException.class.php');
 		require_once ('Exceptions/NotSupportedBigMathLibraryException.class.php');
+		require_once ('Helpers/helpers.inc.php');
 	}
 }
 ?>

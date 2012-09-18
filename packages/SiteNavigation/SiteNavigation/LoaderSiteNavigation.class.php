@@ -7,7 +7,7 @@ class LoaderSiteNavigation extends Loader{
 	}
 	
 	protected function customInitBeforeObjects(){
-		$this->controller = new Controller($this->config);
+		$this->controller = new Controller($this->config->AuxConfig);
 	}
 	
 	protected function loadRequestParser(){

@@ -12,7 +12,8 @@ function smarty_modifier_glink($link, $with_gets = false, $exclude = ''){
 	$exclude = explode(",", $exclude);
 	
 	if($with_gets){
-		$link = RewriteURL::ensureSourceLastDelimiter($link)  . get_all_get_params($exclude);
+		RewriteURL::ensureLastSlash($link);
+		$link .= getAllGetParams($exclude);
 	}
 	
 	$link = Reg::get('rewriteURL')->glink($link);

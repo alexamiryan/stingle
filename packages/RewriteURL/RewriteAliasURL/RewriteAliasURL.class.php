@@ -16,7 +16,7 @@ class RewriteAliasURL extends RewriteURL{
 			$uri = rawurldecode($_SERVER['REQUEST_URI']);
 			static::ensureLastSlash($uri);
 			foreach($this->_aliasMap as $urlAlias){
-				$uri = str_replace($urlAlias["alias"], $urlAlias["map"], $uri);
+				$uri = preg_replace("/" . str_replace("/", "\/", $urlAlias["alias"]) . "/i", $urlAlias["map"], $uri, 1);
 			}
 			
 			$_SERVER['REQUEST_ORIGINAL_URI'] = $_SERVER['REQUEST_URI']; 

@@ -35,7 +35,7 @@ class RewriteAliasMap extends DbAccessor {
 		}
 		$query = "SELECT a.*, ah.host_id FROM `".Tbl::get('TBL_ALIAS')."` a
 				  	LEFT JOIN `".Tbl::get('TBL_ALIAS_HOST')."` ah ON  a.id = ah.alias_id
-					WHERE ah.host_id = '$host->id' ORDER BY a.map";
+					WHERE ah.host_id = '$host->id'";
 
 		$this->query->exec($query, $cacheMinutes);
 		return $this->query->fetchRecords();

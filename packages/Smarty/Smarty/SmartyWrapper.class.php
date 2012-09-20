@@ -1,6 +1,9 @@
 <?
 class SmartyWrapper extends Smarty {
 
+	const PRIMARY = 0;
+	const SECONDARY = 1;
+	
 	/**
 	 * Relative path of the module's wrappers
 	 * @var string
@@ -328,33 +331,36 @@ class SmartyWrapper extends Smarty {
 		return $resultingFileName;
 	}
 	
+	
+	public function addCss($fileName, $fromTop = false) {
+		$this->addCssAtPos($fileName, static::PRIMARY, $fromTop);
+	}
+	
+	public function addSecondaryCss($fileName, $fromTop = false) {
+		$this->addCssAtPos($fileName, static::SECONDARY, $fromTop);
+	}
+	
 	/**
 	 * Adds a CSS file to the header section of the page displayed.
 	 * @param $fileName
 	 */
-	public function addCss($fileName) {
+	public function addCssAtPos($fileName, $position = null, $fromTop = false) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("CSS filename is not specified");
 		}
-
-		$this->cssFiles[] = $this->getCssFilePath($fileName);
-	}
-
-	/**
-	 * Removes a CSS file from the header section of the page displayed.
-	 * @param $fileName
-	 */
-	public function removeCss($fileName) {
-		if(empty($fileName)){
-			throw new InvalidArgumentException("CSS filename is not specified");
+		if($position === null){
+			$position = static::PRIMARY;
 		}
-		
-		$key = array_search($this->getCssFilePath($fileName), $this->cssFiles);
-		if($key !== false){
-			unset($this->cssFiles[$key]);
+	
+		if(!isset($this->cssFiles[$position]) or !is_array($this->cssFiles[$position])){
+			$this->cssFiles[$position] = array();
+		}
+	
+		if(!$fromTop){
+			array_push($this->cssFiles[$position], $this->getCssFilePath($fileName));
 		}
 		else{
-			throw new InvalidArgumentException("Can't remove CSS file, because it was not added");
+			array_splice($this->cssFiles[$position], 0, 0, $this->getCssFilePath($fileName));
 		}
 	}
 	
@@ -369,46 +375,39 @@ class SmartyWrapper extends Smarty {
 		return $resultingFileName;
 	}
 	
+	
+	public function addJs($fileName, $fromTop = false) {
+		$this->addJsAtPos($fileName, static::PRIMARY, $fromTop);
+	}
+	
+	public function addSecondaryJs($fileName, $fromTop = false) {
+		$this->addJsAtPos($fileName, static::SECONDARY, $fromTop);
+	}
+	
 	/**
 	 * Adds a JS file to the header section of the page displayed.
 	 * @param $fileName
 	 */
-	public function addJs($fileName) {
+	public function addJsAtPos($fileName, $position = null, $fromTop = false) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
-		array_push($this->jsFiles, $this->getJsFilePath($fileName));
-	}
-	
-	/**
-	 * Adds a JS file to the header section to the top of all JS files.
-	 * @param $fileName
-	 */
-	public function addJsToTop($fileName) {
-		if(empty($fileName)){
-			throw new InvalidArgumentException("JS filename is not specified");
-		}
-		array_splice($this->jsFiles,0, 0, $this->getJsFilePath($fileName));
-	}
-	
-	/**
-	 * Removes a JS file from the header section of the page displayed.
-	 * @param $fileName
-	 */
-	public function removeJs($fileName) {
-		if(empty($fileName)){
-			throw new InvalidArgumentException("JS filename is not specified");
+		if($position === null){
+			$position = static::PRIMARY;
 		}
 		
-		$key = array_search($this->getJsFilePath($fileName), $this->jsFiles);
-		if($key !== false){
-			unset($this->jsFiles[$key]);
+		if(!isset($this->jsFiles[$position]) or !is_array($this->jsFiles[$position])){
+			$this->jsFiles[$position] = array();
+		}
+		
+		if(!$fromTop){
+			array_push($this->jsFiles[$position], $this->getJsFilePath($fileName));
 		}
 		else{
-			throw new InvalidArgumentException("Can't remove JS file, because it was not added");
+			array_splice($this->jsFiles[$position], 0, 0, $this->getJsFilePath($fileName));
 		}
 	}
-
+	
 	/**
 	 * Sets the title of the page to be displayed
 	 * Should be called after invocations of setPageTitlePrefix and setPageTitlePostfix
@@ -516,9 +515,22 @@ class SmartyWrapper extends Smarty {
 	}
 
 	private function defaultAssingns(){
+		
+		ksort($this->jsFiles);
+		$jsFiles = array();
+		foreach($this->jsFiles as $files){
+			$jsFiles = array_merge($jsFiles, $files);
+		}
+		
 		// CSS & JS files
-		$this->assign ( '__cssFiles', $this->cssFiles );
-		$this->assign ( '__jsFiles', $this->jsFiles );
+		$this->assign ( '__jsFiles',  $jsFiles);
+		
+		ksort($this->cssFiles);
+		$cssFiles = array();
+		foreach($this->cssFiles as $files){
+			$cssFiles = array_merge($cssFiles, $files);
+		}
+		$this->assign ( '__cssFiles', $cssFiles );
 		
 		// Other options
 		$this->assign( '__pageTitle', $this->pageTitle );
@@ -590,7 +602,7 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		$this->defaultAssingns();
-
+		
 		// Check if wrapper is set and if yes include it
 		if(!empty($this->wrapper)){
 			$this->assign ( 'modulePageTpl', $this->fileToDisplay);

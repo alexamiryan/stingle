@@ -87,5 +87,11 @@ HookManager::callHook("Controller");
 
 HookManager::callHook("AfterController");
 
-HookManager::callHook("InitEnd");
+HookManager::callHook("BeforeOutput");
+
+HookManager::callHook("Output");
+
+HookManager::callHook("AfterOutput");
+
+// Finish
 ?>

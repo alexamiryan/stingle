@@ -38,6 +38,8 @@ class SmartyWrapper extends Smarty {
 	 * The selected page layout path. One of located in /templates/layouts folder
 	 */
 	private $layoutPath;
+	
+	public $isLayoutSet = false;
 
 	/**
 	 * CSSs that should be added to the displayed page
@@ -214,7 +216,7 @@ class SmartyWrapper extends Smarty {
 		$this->setTemplate($this->templatesConfig->defaultTemplateName);
 		
 		// Set default layout
-		$this->setLayout ( $config->defaultLayout );
+		$this->setLayout ( $config->defaultLayout, true );
 
 		// Add includes/smartyPlugins to plugin dirs
 		$this->addPluginsDir($config->defaultPluginsDir);
@@ -262,6 +264,7 @@ class SmartyWrapper extends Smarty {
 		return $this->template;
 	}
 	
+	
 	/**
 	 * Returns file path from current template 
 	 * otherwise if template is extended from 
@@ -304,7 +307,7 @@ class SmartyWrapper extends Smarty {
 	 *
 	 * @param string $layout selected layout Example: general.tpl, axaj.tpl
 	 */
-	public function setLayout($layout) {
+	public function setLayout($layout, $isSystem = false) {
 		if(empty($layout)){
 			throw new InvalidArgumentException("Layout is not specified");
 		}
@@ -318,6 +321,13 @@ class SmartyWrapper extends Smarty {
 			throw new RuntimeException("Layout $layout doesn't exist");
 		}
 		$this->layoutName = $layout;
+		if(!$isSystem){
+			$this->isLayoutSet = true;
+		}
+	}
+	
+	public function getLayout(){
+		return $this->layoutName;
 	}
 
 	private function getCssFilePath($fileName){

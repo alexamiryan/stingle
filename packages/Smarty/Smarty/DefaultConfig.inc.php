@@ -7,10 +7,9 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 												'defaultLayout' => "clean",
 												'defaultPluginsDir' => __DIR__ . '/Plugins/',
 												
-												'errorsModule' => "error",
-												'errorPage' => "error",
-												'error404Page' => "404",
-												'exceptionPage' => "exception",
+												'errorPage' => "error/error",
+												'error404Page' => "error/404",
+												'exceptionPage' => "error/exception",
 
 												'templatesConfig' => array(
 																			'defaultTemplateName' => "default",
@@ -21,7 +20,7 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 
 						'Objects' => array(	'Smarty' => 'smarty'  ),
 						'Hooks' => array(  	'AfterRequestParser' => 'SmartyInit', 
-											'InitEnd' => 'SmartyDisplay',
+											'Output' => 'SmartyDisplay',
 											'AfterPluginInit' => 'RegisterSmartyPlugins'  )
 				
 					);

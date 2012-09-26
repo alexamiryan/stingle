@@ -8,28 +8,48 @@ class Controller
 	}
 	
 	public function exec(){
-		$nav = Reg::get($this->config->ObjectsIgnored->Nav);
-		
-		$firstLevel = $this->config->AuxConfig->firstLevelName;
-		$secondLevel = $this->config->AuxConfig->secondLevelName;
-		$action = $this->config->AuxConfig->actionName;
-		
-		
-		if(@file_exists("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/config.php")){
-			include ("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/config.php");
+		$nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
+		$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
+		// Starting include path
+		$includePath = $this->config->modulesDir . '/';
+		for($i = 0; $i < count($levels)-1; $i++){
+			$level = $levels[$i];
+			if(isset($nav->$level) and !empty($nav->$level)){
+				// Assembing $includePath to use later
+				$includePath .= $nav->$level . '/';
+				
+				// Include config.php in current includePath if exists
+				if(@file_exists($includePath . "config.php")){
+					include ($includePath . "config.php");
+				}
+				
+				// Include common.php in current includePath if exists
+				if(@file_exists($includePath . "common.php")){
+					include ($includePath . "common.php");
+				}
+				
+				if(is_dir($includePath . $nav->$levels[$i+1]) && is_file($includePath . $nav->$levels[$i+1] . ".php")){
+					throw new RuntimeException("You can't have both folder and file with same name. Path: $includePath, colliding filename: {$nav->$levels[$i+1]}");
+				}
+				
+				// Check if on next level we don't have directory anymore stop here
+				if(!isset($levels[$i+2]) or (isset($levels[$i+1]) and !is_dir($includePath . $nav->$levels[$i+1]))){
+					break;
+				}
+			}
 		}
-
-		if(@file_exists("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/common.php")){
-			include ("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/common.php");
-		}		
-		
-		if(!empty($nav->$action) and @file_exists("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/actions/{$nav->$action}.php")){
-			include ("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/actions/{$nav->$action}.php");
+		// Include action in includePath if exists
+		if(isset($nav->{$this->config->actionName}) and !empty($nav->{$this->config->actionName})){
+			if(@file_exists($includePath . "actions/{$nav->{$this->config->actionName}}.php")){
+				include ($includePath . "actions/{$nav->{$this->config->actionName}}.php");
+			}
 		}
 		
-		if(file_exists("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/{$nav->$secondLevel}.php")){
-			include ("{$this->config->AuxConfig->modulesDir}/{$nav->$firstLevel}/{$nav->$secondLevel}.php");
+		// Include main controller file in includePath if exists
+		if(file_exists($includePath . "{$nav->{$levels[$i+1]}}.php")){
+			include ($includePath . "{$nav->{$levels[$i+1]}}.php");
 		}
+			
 	}
 }
 ?>

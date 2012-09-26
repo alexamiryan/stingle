@@ -30,15 +30,17 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 	if($pager instanceof  Pager){
 		if(isset($baseLink) and !empty($baseLink)){
 			// Remove heading slash if present and ensure last slash
-			$link = RewriteURL::ensureSourceLastDelimiter(ltrim($baseLink, "/"));
+			$link = ltrim($baseLink, "/");
+			RewriteURL::ensureLastSlash($link);
 		}
 		else{
-			$link = RewriteURL::generateCleanBaseLink(
+			/*$link = RewriteURL::generateCleanBaseLink(
 	                                Reg::get('nav')->module,
 	                                Reg::get('nav')->page,
 	                                ConfigManager::getConfig("SiteNavigation")->AuxConfig->firstLevelDefaultValue) . 
-	                                	get_all_get_params(array_merge(array($pager->getUrlParam()), $excludedGetsArray)
-	                              );
+	                                	getAllGetParams()
+	                              );*/
+			$link = getCurrentUrl(array_merge(array($pager->getUrlParam()), $excludedGetsArray));
 		}
 		$urlParam = $pager->getUrlParam();
 		$currentPageNumber = $pager->getCurrentPageNumber();

@@ -61,49 +61,6 @@ function get_age ($birthday){
 }
 
 /**
- * Create random value on give criteria
- *
- * @param int $length
- * @param string $type (mixed, chars, digits)
- * @return string
- */
-function generateRandomString($length, $type = null){
-	if(!Reg::get('packageMgr')->isPluginLoaded('Crypto', 'Crypto')){
-		throw new RuntimeException("Crypto plugin is not loaded!");
-	}
-	
-	if($length === null){
-		$length = 12;
-	}
-	if($type === null){
-		$type = 'mixed';
-	}
-	
-	if(($type != 'mixed') && ($type != 'chars') && ($type != 'digits')) return false;
-
-	$rand_value = '';
-	while(strlen($rand_value) < $length){
-		if($type == 'digits'){
-			$char = Crypto::s_rand(0, 9);
-		}
-		else{
-			$char = chr(Crypto::s_rand(0, 255));
-		}
-		if($type == 'mixed'){
-			if(preg_match('/^[a-z0-9]$/i', $char)) $rand_value .= $char;
-		}
-		elseif($type == 'chars'){
-			if(preg_match('/^[a-z]$/i', $char)) $rand_value .= $char;
-		}
-		elseif($type == 'digits'){
-			if(preg_match('^[0-9]$', $char)) $rand_value .= $char;
-		}
-	}
-
-	return $rand_value;
-}
-
-/**
  * Analog of empty() but taking function return value
  *
  * @param mixed $var
@@ -146,64 +103,6 @@ function valid_email($email){
 		}
 	}
 	return $isValid;
-}
-
-function getCurrentUrl($exclude = array()){
-	$siteNavConfig = ConfigManager::getConfig("SiteNavigation")->AuxConfig;
-	$currentUrl = RewriteURL::generateCleanBaseLink(Reg::get("nav")->module, Reg::get("nav")->page, $siteNavConfig->firstLevelDefaultValue);
-	$currentUrl = RewriteURL::ensureOutputLastDelimiter($currentUrl);
-	$currentUrl .= get_all_get_params($exclude);
-
-	return Reg::get('rewriteURL')->glink($currentUrl);
-}
-
-/**
- * Build the string of GET parameters
- *
- * @param array $exclude_array
- * @return string
- */
-function get_all_get_params(array $exclude_array = array()){
-	$config = ConfigManager::getConfig("RewriteURL")->AuxConfig;
-	$return_string = '';
-
-	foreach($exclude_array as &$exclude){
-		$exclude = trim($exclude);
-	}
-
-	switch($config->source_link_style){
-		case "nice" :
-			$delimiter = '/';
-			if(is_array($_GET) && (sizeof($_GET) > 0)){
-				reset($_GET);
-				while((list($key, $value) = each($_GET)) != false){
-					if($key == RewriteURL::getSystemModuleName() or $key == RewriteURL::getSystemPageName()){
-						continue;
-					}
-					if(!in_array($key, $exclude_array)){
-						$return_string .= $key . ':' . rawurlencode($value) . $delimiter;
-					}
-				}
-			}
-			break;
-		case "default" :
-		default :
-			$delimiter = '&';
-			if(is_array($_GET) && (sizeof($_GET) > 0)){
-				reset($_GET);
-				while((list($key, $value) = each($_GET)) != false){
-					if($key == RewriteURL::getSystemModuleName() or $key == RewriteURL::getSystemPageName()){
-						continue;
-					}
-					if(!in_array($key, $exclude_array)){
-						$return_string .= $key . '=' . rawurlencode($value) . $delimiter;
-					}
-				}
-			}
-			break;
-	}
-
-	return $return_string;
 }
 
 /**

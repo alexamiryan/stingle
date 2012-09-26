@@ -1,7 +1,7 @@
 <?
 class Config{
 	
-	private $config;
+	private $_configToParse;
 	
 	/**
 	 * Config constructor
@@ -10,9 +10,9 @@ class Config{
 	 */
 	public function __construct(array $CONFIG = null){
 		if($CONFIG !== null){
-			$this->config = $CONFIG;
+			$this->_configToParse = $CONFIG;
 			
-			$this->parseConfig($this->config);
+			$this->parseConfig($this->_configToParse);
 		}
 	}
 	
@@ -61,7 +61,7 @@ class Config{
 	public function toArray($recursive = false){
 		$returnArray = array();
 		foreach(get_object_vars($this) as $key=>$value){
-			if($key !== 'config'){
+			if($key !== '_configToParse'){
 				if($recursive === true and is_a($value,"Config")){
 					$returnArray[$key] = $value->toArray(true);
 				}
@@ -88,7 +88,7 @@ class Config{
 				$this->$key = $value;
 			}
 		}
-		unset($this->config);
+		unset($this->_configToParse);
 	}
 }
 ?>

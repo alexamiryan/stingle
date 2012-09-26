@@ -1,5 +1,5 @@
 <?
-class DependencyConfig extends Dependency
+class DependencyConfigDB extends Dependency
 {
 	public function __construct(){
 		$this->addPackage("Db");

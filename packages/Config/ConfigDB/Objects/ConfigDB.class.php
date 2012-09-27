@@ -1,6 +1,7 @@
 <?
 class ConfigDB
 {
+	public $id;
 	public $name;
 	public $value;
 	public $location = array();

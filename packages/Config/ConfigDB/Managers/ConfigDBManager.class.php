@@ -266,6 +266,7 @@ class ConfigDBManager{
 	
 	private static function getConfigDBFromData($row){
 		$configDB = new ConfigDB();
+		$configDB->id = $row["id"];
 		$configDB->name = $row["name"];
 		$configDB->value = $row["value"];
 		$configDB->aliasOf = $row["alias_of"];

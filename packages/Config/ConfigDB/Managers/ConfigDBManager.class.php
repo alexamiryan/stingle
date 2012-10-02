@@ -240,6 +240,109 @@ class ConfigDBManager{
 	}
 	
 	/**
+	 * Get current database config aliases
+	 * @param ConfigDB $configDB
+	 * @throws InvalidArgumentException
+	 * @return Array
+	 */
+	public static function getDBConfigAliases(ConfigDB $configDB){
+		if(empty($configDB)){
+			throw new InvalidArgumentException("ConfigDB object is empty!");
+		}
+		$qb = new QueryBuilder();
+		$qb->select("*")
+			->from(Tbl::get('TBL_CONFIGS'))
+			->where($qb->expr()->equal(new Field("alias_of"), $configDB->id));
+		$sql = MySqlDbManager::getQueryObject();
+		$sql->exec($qb->getSQL());
+		$aliasesArray = array();
+		if($sql->countRecords() > 0){
+			foreach($sql->fetchRecords() as $row){
+					array_push($aliasesArray, static::getConfigDBFromData($row));
+			}
+		}
+		return $aliasesArray;
+		
+	}
+	
+	/**
+	 * Delete current config's all aliases
+	 * @param ConfigDB $configDB
+	 * @throws InvalidArgumentException
+	 */
+	public static function deleteDBConfigAllAliases(ConfigDB $configDB){
+		if(empty($configDB)){
+			throw new InvalidArgumentException("ConfigDB object is empty!");
+		}
+		if(!is_numeric($configDB->id)){
+			throw new InvalidArgumentException("ConfigDB object's  id is not numeric!");
+		}
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get("TBL_CONFIGS"))
+			->where($qb->expr()->equal(new Field('alias_of'), $configDB->id));
+
+		$sql = MySqlDbManager::getQueryObject();
+		
+		$sql->exec($qb->getSQL());
+	}
+	
+	/**
+	 * Add new Alias for current db config
+	 * @param ConfigDB $configDB
+	 * @param Integer $aliasHostLangId new aliases value host lang id
+	 * @throws InvalidArgumentException
+	 */
+	public static function addDBConfigAlias(ConfigDB $configDB, $aliasHostLangId){
+		if(empty($configDB)){
+			throw new InvalidArgumentException("ConfigDB object is empty!");
+		}
+		if(!is_numeric($configDB->id)){
+			throw new InvalidArgumentException("ConfigDB object's  id is not numeric!");
+		}
+		if(!is_numeric($aliasHostLangId)){
+			throw new InvalidArgumentException("ConfigDB object's  id is not numeric!");
+		}
+		$qb = new QueryBuilder();
+		$arrayValues = array(
+								"location" => implode(":", $configDB->location) , 
+								"name" => $configDB->name, 
+								"value" => $configDB->value,
+								"host_lang_id" => $aliasHostLangId,
+								"alias_of" => $configDB->id);
+		
+		$qb->insert(Tbl::get("TBL_CONFIGS"))
+			->values($arrayValues);
+		$sql = MySqlDbManager::getQueryObject();
+		$sql->exec($qb->getSQL());
+	}
+	
+	/**
+	 * Delete current host and Lang id alias value for config DB 
+	 * @param ConfigDB $configDB
+	 * @param unknown_type $aliasHostLangId
+	 * @throws InvalidArgumentException
+	 */
+	public static function deleteDBConfigAlias(ConfigDB $configDB, $aliasHostLangId){
+		if(empty($configDB)){
+			throw new InvalidArgumentException("ConfigDB object is empty!");
+		}
+		if(!is_numeric($configDB->id)){
+			throw new InvalidArgumentException("ConfigDB object's  id is not numeric!");
+		}
+		if(!is_numeric($aliasHostLangId)){
+			throw new InvalidArgumentException("Alias Host Language id is not numeric!");
+		}
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get("TBL_CONFIGS"))
+			->where($qb->expr()->equal(new Field('alias_of'), $configDB->id))
+			->andWhere($qb->expr()->equal(new Field('host_lang_id'), $aliasHostLangId));
+
+		$sql = MySqlDbManager::getQueryObject();
+		
+		$sql->exec($qb->getSQL());
+	}
+	
+	/**
 	 * Translates config DB rows into Config object
 	 * 
 	 * @param array $dbRows
@@ -269,13 +372,22 @@ class ConfigDBManager{
 		$configDB->id = $row["id"];
 		$configDB->name = $row["name"];
 		$configDB->value = $row["value"];
-		$configDB->aliasOf = $row["alias_of"];
 		$configDB->location = explode(":", $row["location"]);
 		$configDB->locationString = $row["location"];
 		if($row["host_lang_id"] !== null){
 			$hostLangPair = HostLanguageManager::getHostLanguagePair($row["host_lang_id"]);
 			$configDB->host = $hostLangPair["host"];
 			$configDB->language = $hostLangPair["language"];
+		}
+		if($row["alias_of"] !== null){
+			try{
+				$dbConfig = static::getDBConfigById($row["alias_of"]);
+			}
+			catch (RuntimeException $e){
+				return $configDB;
+			}
+			$configDB->aliasHost = $dbConfig->host;
+			$configDB->aliasLanguage = $dbConfig->language;
 		}
 		return $configDB;
 	}

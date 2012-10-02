@@ -11,8 +11,8 @@ class ConfigDBManager{
 	public static function initDBConfig(ConfigDBFilter $filter = null, $cacheMinutes = 0){
 		if($filter == null){
 			$filter = new ConfigDBFilter();
+			$filter->setCommon();
 		}
-		$filter->setCommon();
 		
 		$sql = MySqlDbManager::getQueryObject();
 		$sql->exec($filter->getSQL(), $cacheMinutes);

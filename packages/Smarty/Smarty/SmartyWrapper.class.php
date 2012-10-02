@@ -366,11 +366,17 @@ class SmartyWrapper extends Smarty {
 			$this->cssFiles[$position] = array();
 		}
 	
-		if(!$fromTop){
-			array_push($this->cssFiles[$position], $this->getCssFilePath($fileName));
+		$filePath = $this->getCssFilePath($fileName);
+		if(!empty($filePath) and $filePath != '/'){
+			if(!$fromTop){
+				array_push($this->cssFiles[$position], $filePath);
+			}
+			else{
+				array_splice($this->cssFiles[$position], 0, 0, $filePath);
+			}
 		}
 		else{
-			array_splice($this->cssFiles[$position], 0, 0, $this->getCssFilePath($fileName));
+			throw new SmartyException("Can't find CSS file $fileName in current template or ony parent templates");
 		}
 	}
 	
@@ -410,11 +416,17 @@ class SmartyWrapper extends Smarty {
 			$this->jsFiles[$position] = array();
 		}
 		
-		if(!$fromTop){
-			array_push($this->jsFiles[$position], $this->getJsFilePath($fileName));
+		$filePath = $this->getJsFilePath($fileName);
+		if(!empty($filePath) and $filePath != '/'){
+			if(!$fromTop){
+				array_push($this->jsFiles[$position], $filePath);
+			}
+			else{
+				array_splice($this->jsFiles[$position], 0, 0, $filePath);
+			}
 		}
 		else{
-			array_splice($this->jsFiles[$position], 0, 0, $this->getJsFilePath($fileName));
+			throw new SmartyException("Can't find JS file $fileName in current template or ony parent templates");
 		}
 	}
 	

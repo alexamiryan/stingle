@@ -230,7 +230,7 @@ class ConfigDBManager{
 	 * @param ConfigDBFilter $filter
 	 * @param unknown_type $cacheMinutes
 	 */
-	public static function getAndParsDBConfigs(ConfigDBFilter $filter = null, $cacheMinutes = 0){
+	public static function getAndParseDBConfigs(ConfigDBFilter $filter = null, $cacheMinutes = 0){
 		if($filter == null){
 			$filter = new ConfigDBFilter();
 		}

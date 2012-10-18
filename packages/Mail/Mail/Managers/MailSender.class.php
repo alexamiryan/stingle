@@ -14,10 +14,10 @@ class MailSender
 	
 	/**
 	 * 
-	 * @access private
+	 * @access protected
 	 * @var Config
 	 */
-	private $config;
+	protected $config;
 	
 	/**
 	 * Constructor

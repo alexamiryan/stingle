@@ -39,7 +39,7 @@ class SmartyWrapper extends Smarty {
 	 */
 	private $layoutPath;
 	
-	public $isLayoutSet = false;
+	private $isLayoutSet = false;
 
 	/**
 	 * CSSs that should be added to the displayed page
@@ -173,27 +173,11 @@ class SmartyWrapper extends Smarty {
 		if($this->isInitialized){
 			throw new RuntimeException("Smarty is already initilized");
 		}
-		
 		$this->nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
 
 		$this->loadConfig($config);
 
 		$this->registerPlugin('modifier', 'filePath', array(&$this, 'getFilePathFromTemplate'));
-		
-		// Find path that exists for tpls inclusion
-		$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
-		$this->includePath = $this->modulesPath;
-		for($i = 0; $i < count($levels)-1; $i++){
-			$level = $levels[$i];
-			if(isset($this->nav->$level) and !empty($this->nav->$level)){
-				$this->includePath .= $this->nav->$level . '/';
-				if(isset($levels[$i+1]) and !is_dir($this->getFilePathFromTemplate($this->includePath . $this->nav->$levels[$i+1], true))){
-					break;
-				}
-			}
-		}
-		
-		$this->fileToDisplay = $this->includePath . "{$this->nav->{$levels[$i+1]}}.tpl";
 		
 		$this->isInitialized = true;
 	}
@@ -311,6 +295,7 @@ class SmartyWrapper extends Smarty {
 		if(empty($layout)){
 			throw new InvalidArgumentException("Layout is not specified");
 		}
+		
 		if(file_exists($this->getFilePathFromTemplate('layouts/' . $layout . '.tpl', true))){
 			$this->layoutPath = $this->getFilePathFromTemplate('layouts/' . $layout . '.tpl');
 		}
@@ -320,7 +305,9 @@ class SmartyWrapper extends Smarty {
 		else{
 			throw new RuntimeException("Layout $layout doesn't exist");
 		}
+		
 		$this->layoutName = $layout;
+		
 		if(!$isSystem){
 			$this->isLayoutSet = true;
 		}
@@ -328,6 +315,10 @@ class SmartyWrapper extends Smarty {
 	
 	public function getLayout(){
 		return $this->layoutName;
+	}
+	
+	public function isLayoutSet(){
+		return $this->isLayoutSet;
 	}
 
 	private function getCssFilePath($fileName){
@@ -514,11 +505,6 @@ class SmartyWrapper extends Smarty {
 			throw new InvalidArgumentException("Wrapper name is not specified");
 		}
 
-		$wrapperPath = $this->getFilePathFromTemplate($this->includePath . $this->wrappersDir . $wrapperName . ".tpl", true);
-		if($wrapperPath === false){
-			throw new TemplateFileNotFoundException("Wrapper($wrapperName) is not found. All wrappers should be located in module's \"{$this->wrappersDir}\" directory");
-		}
-
 		$this->wrapper = $wrapperName;
 	}
 	
@@ -609,6 +595,21 @@ class SmartyWrapper extends Smarty {
 			HookManager::callHook($hookName);
 		}
 		
+		// Find path that exists for tpls inclusion
+		$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
+		$this->includePath = $this->modulesPath;
+		for($i = 0; $i < count($levels)-1; $i++){
+			$level = $levels[$i];
+			if(isset($this->nav->$level) and !empty($this->nav->$level)){
+				$this->includePath .= $this->nav->$level . '/';
+				if(isset($levels[$i+1]) and !is_dir($this->getFilePathFromTemplate($this->includePath . $this->nav->$levels[$i+1], true))){
+					break;
+				}
+			}
+		}
+		
+		$this->fileToDisplay = $this->includePath . "{$this->nav->{$levels[$i+1]}}.tpl";
+		
 		if(empty($this->overridedFileToDisplay)){
 			$this->fileToDisplay = $this->getFilePathFromTemplate($this->fileToDisplay);
 		}
@@ -627,6 +628,11 @@ class SmartyWrapper extends Smarty {
 		
 		// Check if wrapper is set and if yes include it
 		if(!empty($this->wrapper)){
+			$wrapperPath = $this->getFilePathFromTemplate($this->includePath . $this->wrappersDir . $this->wrapper . ".tpl", true);
+			if($wrapperPath === false){
+				throw new TemplateFileNotFoundException("Wrapper($wrapperName) is not found. All wrappers should be located in module's \"{$this->wrappersDir}\" directory");
+			}
+			
 			$this->assign ( 'modulePageTpl', $this->fileToDisplay);
 			$this->assign ( '__modulePageTpl', $this->getFilePathFromTemplate($this->includePath . $this->wrappersDir . $this->wrapper . ".tpl" ));
 		}

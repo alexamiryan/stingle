@@ -339,7 +339,7 @@ class UserManager extends DbAccessor{
 		$qb->select(new Field('name'))
 			->from(Tbl::get('TBL_PERMISSIONS'))
 			->where($qb->expr()->in(new Field('id'), $union));
-		
+		echo $qb->getSQL();exit;
 		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		$permissionsList = $this->query->fetchFields("name");

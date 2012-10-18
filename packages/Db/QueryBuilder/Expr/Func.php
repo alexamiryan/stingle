@@ -40,7 +40,12 @@ class Func
     {
         $this->_name = $name;
         if($arguments != null){
-       		$this->_arguments = (array) $arguments;
+        	if(!is_array($arguments)){
+        		$this->_arguments = array($arguments);
+        	}
+        	else{
+       			$this->_arguments = $arguments;
+        	}
         }
         $this->_alias = $alias;
     }

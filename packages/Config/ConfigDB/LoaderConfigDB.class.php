@@ -18,8 +18,9 @@ class LoaderConfigDB extends Loader{
 			$hostName = ConfigManager::getConfig("Host","Host")->Objects->Host;
 			$languageName = ConfigManager::getConfig("Language","Language")->ObjectsIgnored->Language;
 			$hostLangId = HostLanguageManager::getHostLanguageId(Reg::get($hostName), Reg::get($languageName));
-			$configDBFilter->setHostLang($hostLangId);
+			$configDBFilter->setCommonOrHostLang($hostLangId);
 		}
+		
 		ConfigDBManager::initDBConfig($configDBFilter);
 	}
 }

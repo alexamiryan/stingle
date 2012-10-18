@@ -6,7 +6,8 @@ class ConfigDB
 	public $value;
 	public $location = array();
 	public $locationString;
-	public $aliasOf;
+	public $aliasHost;
+	public $aliasLanguage;
 	public $host;
 	public $language;
 }

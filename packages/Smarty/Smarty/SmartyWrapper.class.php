@@ -197,6 +197,7 @@ class SmartyWrapper extends Smarty {
 		
 		// Set default template
 		$this->templatesConfig = $config->templatesConfig;
+		$this->templates = $this->templatesConfig->templates;
 		$this->setTemplate($this->templatesConfig->defaultTemplateName);
 		
 		// Set default layout
@@ -236,7 +237,6 @@ class SmartyWrapper extends Smarty {
 			throw new RuntimeException("Given template name $template is unknown");
 		}
 		
-		$this->templates = $this->templatesConfig->templates;
 		$this->template = $template;
 	}
 	

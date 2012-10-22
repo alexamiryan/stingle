@@ -336,6 +336,8 @@ class MailSender
     		$this->_headers[] = array("header"=>"Reply-To", "value"=>$replyTo);
 			$headers .= "Reply-To: $replyTo\r\n";
 		}
+		$headers .= "Return-Path: <{$mail->from}>\r\n";
+		$this->_headers[] = array("header"=>"Return-Path", "value"=>$mail->from);
 		
 		return $headers;
 	}

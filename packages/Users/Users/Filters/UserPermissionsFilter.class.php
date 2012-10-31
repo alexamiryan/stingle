@@ -6,7 +6,6 @@ class UserPermissionsFilter extends MergeableFilter{
 		
 		$this->qb->select(new Field("*", $this->primaryTableAlias))
 			->from($this->primaryTable, $this->primaryTableAlias);
-		
 	}
 	
 	public function setId($id){
@@ -53,6 +52,5 @@ class UserPermissionsFilter extends MergeableFilter{
 		$this->qb->leftJoin(Tbl::get('TBL_GROUPS_PERMISSIONS', 'UserManager'),	'groups_perms',
 				$this->qb->expr()->equal(new Field('id', $this->primaryTableAlias), new Field('permission_id', 'groups_perms')));
 	}
-	
 }
 ?>

@@ -82,7 +82,7 @@ class From
     {
     	$returnString = '';
     	
-    	if($this->_from instanceof QueryBuilder){
+    	if($this->_from instanceof QueryBuilder or $this->_from instanceof Unionx){
     		$returnString = "($this->_from)";
     	}
     	else{

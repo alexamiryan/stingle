@@ -64,7 +64,7 @@ class Join
     {
         $returnString = strtoupper($this->_joinType) . ' JOIN ';
         
-		if($this->_join instanceof QueryBuilder){
+		if($this->_join instanceof QueryBuilder or $this->_join instanceof Unionx){
 			$returnString .= "($this->_join)";
 		}
 		else{

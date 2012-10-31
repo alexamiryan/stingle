@@ -323,26 +323,31 @@ class UserManager extends DbAccessor{
 		$qb1 = new QueryBuilder();
 		$qb2 = new QueryBuilder();
 		
-		$qb1->select(new Field('permission_id'))
+		$qb1->select(array(new Field('permission_id'), new Field('args')))
 			->from(Tbl::get('TBL_USERS_PERMISSIONS'))
 			->where($qb1->expr()->equal(new Field('user_id'), $userId));
 		
-		$qb2->select(new Field('permission_id', 'gp'))
+		$qb2->select(array(new Field('permission_id', 'gp'), new Field('args', 'gp')))
 			->from(Tbl::get('TBL_USERS_GROUPS'), 'ug')
-			->leftJoin(Tbl::get('TBL_GROUPS_PERMISSIONS'), 'gp', $qb2->expr()->equal(new Field('group_id', 'ug'), new Field('group_id', 'gp')))
+			->innerJoin(Tbl::get('TBL_GROUPS_PERMISSIONS'), 'gp', $qb2->expr()->equal(new Field('group_id', 'ug'), new Field('group_id', 'gp')))
 			->where($qb1->expr()->equal(new Field('user_id', 'ug'), $userId));
 		
 		$union = new Unionx();
 		$union->add($qb1);
 		$union->add($qb2);
 		
-		$qb->select(new Field('name'))
-			->from(Tbl::get('TBL_PERMISSIONS'))
-			->where($qb->expr()->in(new Field('id'), $union));
+		$qb->select(array(new Field('*', 'perms'), new Field('args', 'tbl')))
+			->from($union, 'tbl')
+			->leftJoin(Tbl::get('TBL_PERMISSIONS'), 'perms', $qb2->expr()->equal(new Field('permission_id', 'tbl'), new Field('id', 'perms')));
 		
 		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
-		$permissionsList = $this->query->fetchFields("name");
+		$permissionsData = $this->query->fetchRecords();
+		
+		$permissionsList = array();
+		foreach($permissionsData as $row){
+			array_push($permissionsList, UserPermissionsManager::getPermissionsObjectFromData($row));
+		}
 		
 		return new UserPermissions($permissionsList);
 	}

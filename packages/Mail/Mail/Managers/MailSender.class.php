@@ -35,7 +35,7 @@ class MailSender
 	 * @throws MailException
 	 * @throws DKIMConfigException
 	 * @access public
-	 * @return Boolean
+	 * @return bool true if the mail was successfully accepted for delivery, false otherwise.
 	 */
 	public function send(Mail $mail, DKIMConfig $dkimConfig = null){
 		if(empty($mail)){

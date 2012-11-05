@@ -691,10 +691,6 @@ class QueryBuilder
      */
     public function set(Field $key, $value)
     {
-    	if ( !($value instanceof Literal) and !($value instanceof Field) and !($value instanceof Math)) {
-    		$value = $this->expr()->quoteLiteral($value);
-    	}
-    	
         return $this->add('set', new Comparison($key, Comparison::EQ, $value), true);
     }
 

@@ -1,5 +1,10 @@
 <?
 $defaultConfig = array(
-						'Hooks' => array(  'RequestParser' => 'SecureInputData'  )
+						'AuxConfig' => array(
+								'enableInputSecurity' => false
+								),
+						'Hooks' => array(  
+								'RequestParser' => 'SecureInputData'  
+								)
 					  );
 ?>

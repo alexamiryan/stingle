@@ -71,7 +71,7 @@ class UserAuthorization extends DbAccessor{
 			throw new InvalidArgumentException("\$userId have to be non zero integer!");
 		}
 		
-		$usr = $this->um->getUserById($userId);
+		$usr = $this->um->getUserById($userId, UserManager::INIT_ALL, false);
 		
 		$this->checkIfLoginIsAllowed($usr);
 		

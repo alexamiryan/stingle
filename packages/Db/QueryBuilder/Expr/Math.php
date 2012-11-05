@@ -46,14 +46,14 @@ class Math
     public function __toString()
     {
         // Adjusting Left Expression
-        $leftExpr = (string) $this->_leftExpr;
+        $leftExpr = (string) Expr::quoteLiteral($this->_leftExpr);
 
         if ($this->_leftExpr instanceof Math) {
             $leftExpr = '(' . $leftExpr . ')';
         }
 
         // Adjusting Right Expression
-        $rightExpr = (string) $this->_rightExpr;
+        $rightExpr = (string) Expr::quoteLiteral($this->_rightExpr);
 
         if ($this->_rightExpr instanceof Math) {
             $rightExpr = '(' . $rightExpr . ')';

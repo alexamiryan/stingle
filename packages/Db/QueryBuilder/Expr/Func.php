@@ -40,11 +40,11 @@ class Func
     {
         $this->_name = $name;
         if($arguments != null){
-        	if(!is_array($arguments)){
-        		$this->_arguments = array($arguments);
+        	if(is_array($arguments)){
+       			$this->_arguments = $arguments;
         	}
         	else{
-       			$this->_arguments = $arguments;
+        		$this->_arguments = array($arguments);
         	}
         }
         $this->_alias = $alias;
@@ -52,10 +52,14 @@ class Func
 
     public function __toString()
     {
+    	foreach($this->_arguments as &$arg){
+    		$arg = Expr::quoteLiteral($arg);
+    	}
+    	
         $returnStr = $this->_name . '(' . implode(', ', $this->_arguments) . ')';
         
         if($this->_alias != null){
-        	$returnStr .= " as `{$this->_alias}`";
+        	$returnStr .= " as `". $this->_alias ."`";
         }
         
         return $returnStr;

@@ -115,12 +115,12 @@ class UserManager extends DbAccessor{
 	 * @throws UserNotFoundException
 	 * @return User
 	 */
-	public function getUserById($userId, $initObjects = self::INIT_ALL, $cacheMinutes = 0){
+	public function getUserById($userId, $initObjects = self::INIT_ALL, $onlyEnabled = true, $cacheMinutes = 0){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidArgumentException("\$userId have to be non zero integer");
 		}
 		
-		$filter = new UsersFilter();
+		$filter = new UsersFilter($onlyEnabled);
 		$filter->setUserIdEqual($userId);
 		$users = $this->getUsersList($filter, null, $initObjects, $cacheMinutes);
 		if(count($users) !== 1){

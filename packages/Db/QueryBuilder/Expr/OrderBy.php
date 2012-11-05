@@ -42,8 +42,11 @@ class OrderBy
 
     private $_parts = array();
 
-    public function __construct($sort = null, $order = null)
-    {
+    public function __construct($sort = null, $order = null){
+    	if(!empty($order) and $order != self::ASC and $order != self::DESC){
+    		throw new InvalidArgumentException("\$order have to be ASC or DESC");
+    	}
+    	
         if ($sort) {
             $this->add($sort, $order);
         }

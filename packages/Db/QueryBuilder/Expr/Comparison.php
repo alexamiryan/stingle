@@ -52,6 +52,16 @@ class Comparison
 
     public function __toString()
     {
+    	$this->_leftExpr = Expr::quoteLiteral($this->_leftExpr);
+    	$this->_rightExpr = Expr::quoteLiteral($this->_rightExpr);
+    	
+    	if ($this->_leftExpr instanceof Math) {
+    		$this->_leftExpr = '(' . $this->_leftExpr . ')';
+    	}
+    	if ($this->_rightExpr instanceof Math) {
+    		$this->_rightExpr = '(' . $this->_rightExpr . ')';
+    	}
+    	
         return $this->_leftExpr . ' ' . $this->_operator . ' ' . $this->_rightExpr;
     }
 }

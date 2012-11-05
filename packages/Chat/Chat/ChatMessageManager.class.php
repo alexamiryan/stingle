@@ -33,25 +33,24 @@ class ChatMessageManager extends DbAccessor
 		if(empty($chatMessage->receiverUser->userId) or !is_numeric($chatMessage->receiverUser->userId)){
 			throw new InvalidArgumentException("Invalid receiverUser specified!");
 		}
-		
-		$this->query->exec("	INSERT INTO `".Tbl::get('TBL_CHAT_MESSAGES')."`
-										(
-											`sender_user_id`, 
-											`receiver_user_id`, 
-											`message`, 
-											`is_system`) 
-								VALUES	(
-											'{$chatMessage->senderUser->userId}', 
-											'{$chatMessage->receiverUser->userId}', 
-											'{$chatMessage->message}', 
-											'{$chatMessage->is_system}'
-										)");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_CHAT_MESSAGES'))
+			->values(array(
+							"sender_user_id" => $chatMessage->senderUser->userId,
+							"receiver_user_id" => $chatMessage->receiverUser->userId,
+							"message" => $chatMessage->message,
+							"is_system" => $chatMessage->is_system
+			));
+		$this->query->exec($qb->getSQL());
 		
 		return $this->query->getLastInsertId();
 	}
 	
 	public function getLastId(){
-		$lastId = $this->query->exec("SELECT MAX(id) as `lastId` FROM `".Tbl::get('TBL_CHAT_MESSAGES')."`")->fetchField('lastId');
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->max(new Field('id'), 'lastId'))
+			->from(Tbl::get('TBL_CHAT_MESSAGES'));
+		$lastId = $this->query->exec($qb->getSQL())->fetchField('lastId');
 		return (empty($lastId) ? 0 : $lastId);
 	}
 	

@@ -66,19 +66,16 @@ class ChatInvitationManager extends DbAccessor
 		if(empty($invitation->invitedUser->userId) or !is_numeric($invitation->invitedUser->userId)){
 			throw new InvalidArgumentException("Invalid invitedUser specified!");
 		}
-		
-		$this->query->exec("	INSERT INTO `".Tbl::get('TBL_CHAT_INVITATIONS')."`
-										(
-											`sender_user_id`, 
-											`receiver_user_id`, 
-											`invitation_message`,
-											`status`)
-								VALUES	(
-											'{$invitation->inviterUser->userId}', 
-											'{$invitation->invitedUser->userId}', 
-											'{$invitation->invitationMessage}',
-											'{$invitation->status}'
-										)");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_CHAT_INVITATIONS'))
+			->values(array(
+							"sender_user_id" => $invitation->inviterUser->userId, 
+							"receiver_user_id" => $invitation->invitedUser->userId,
+							"invitation_message" => $invitation->invitationMessage,
+							"status" => $invitation->status
+						)
+					);
+		$this->query->exec($qb->getSQL());			
 		
 		return $this->query->getLastInsertId();
 	}
@@ -87,8 +84,10 @@ class ChatInvitationManager extends DbAccessor
 		if(empty($invitation->id) or !is_numeric($invitation->id)){
 			throw new InvalidArgumentException("Invalid invitation ID specified!");
 		}
-		
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."` WHERE `id`='{$invitation->id}'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_CHAT_INVITATIONS'))
+			->where($qb->expr()->equal(new Field("id"), $invitation->id));
+		$this->query->exec($qb->getSQL());
 	}
 	
 	public function updateInvitationStatus($inviterUserId, $invitedUserId, $newStatus){
@@ -104,15 +103,20 @@ class ChatInvitationManager extends DbAccessor
 	}
 	
 	public function clearTimedOutInvitations(){
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."` 
-								WHERE (now() - `date`) >= ".($this->invitationClearTimeout * 60));
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_CHAT_INVITATIONS'))
+			->where($qb->expr()->greaterEqual(	$qb->expr()->diff(new Func('NOW'),  new Field('date')), 
+												$qb->expr()->prod($this->invitationClearTimeout, 60)));
+		$this->query->exec($qb->getSQL());
 		return $this->query->affected();
 	}
 	
 	public function getLastInvitationId(){
-		$lastId = $this->query->exec("SELECT MAX(id) as `lastId` FROM `".Tbl::get('TBL_CHAT_INVITATIONS')."`")->fetchField('lastId');
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->max(new Field('id'), 'lastId'))
+			->from(Tbl::get('TBL_CHAT_INVITATIONS'));
+		$lastId = $this->query->exec($qb->getSQL())->fetchField('lastId');
 		return (empty($lastId) ? 0 : $lastId);
 	}
-	
 }
 ?>

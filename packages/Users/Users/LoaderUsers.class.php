@@ -6,6 +6,10 @@ class LoaderUsers extends Loader{
 		require_once ('User.class.php');
 		require_once ('UsersFilter.class.php');
 		require_once ('RequestLimiterTooManyAuthTriesException.class.php');
+		require_once ('Exceptions/UserException.class.php');
+		require_once ('Exceptions/UserAuthFailedException.class.php');
+		require_once ('Exceptions/UserDisabledException.class.php');
+		require_once ('Exceptions/UserNotFoundException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

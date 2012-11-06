@@ -1,0 +1,3 @@
+<?
+class UserAuthFailedException extends UserException{ }
+?>

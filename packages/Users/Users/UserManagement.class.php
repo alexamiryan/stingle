@@ -1204,6 +1204,23 @@ class UserManagement extends DbAccessor{
 
 		return $users;
 	}
+	
+	/**
+	 * Get User according to filter
+	 *
+	 * @param UsersFilter $filter
+	 * @param @param integer $initObjects For ex. INIT_PROPERTIES | INIT_PERMISSIONS
+	 * @param integer $cacheMinutes
+	 * @throws UserNotFoundException
+	 * @return User
+	 */
+	public function getUser(UsersFilter $filter, $cacheMinutes = 0){
+		$users = $this->getUsersList($filter, null, $cacheMinutes);
+		if(count($users) !== 1){
+			throw new UserNotFoundException("There is no such user or user is not unique.");
+		}
+		return $users[0];
+	}
 
 	/**
 	 * Generate email activation code

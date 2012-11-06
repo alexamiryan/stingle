@@ -62,7 +62,7 @@ class UsersFilter extends Filter {
 			throw new InvalidArgumentException("\$login have to be non empty string");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->equal(new Field('login', $this->primaryTableAlias), $login));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('login', "users"), $login));
 		return $this;
 	}
 	

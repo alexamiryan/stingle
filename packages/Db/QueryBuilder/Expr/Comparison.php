@@ -55,10 +55,10 @@ class Comparison
     	$this->_leftExpr = Expr::quoteLiteral($this->_leftExpr);
     	$this->_rightExpr = Expr::quoteLiteral($this->_rightExpr);
     	
-    	if ($this->_leftExpr instanceof Math) {
+    	if ($this->_leftExpr instanceof Math or $this->_leftExpr instanceof QueryBuilder) {
     		$this->_leftExpr = '(' . $this->_leftExpr . ')';
     	}
-    	if ($this->_rightExpr instanceof Math) {
+    	if ($this->_rightExpr instanceof Math or $this->_rightExpr instanceof QueryBuilder) {
     		$this->_rightExpr = '(' . $this->_rightExpr . ')';
     	}
     	

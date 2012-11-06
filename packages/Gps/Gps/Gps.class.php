@@ -28,10 +28,15 @@ class Gps extends DbAccessor
 		if(empty($node_id) or $node_id<0){
 			$node_id=static::ROOT_NODE;
 		}
-		$this->query->exec("	SELECT `id`,`name` 
-								FROM `".Tbl::get('TBL_TREE')."` 
-								WHERE `parent_id`='$node_id' AND `type_id`<>1 
-								ORDER BY `name`", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(array(new Field('id'), new Field('name')))
+			->from(Tbl::get('TBL_TREE'))
+			->where($qb->expr()->equal(new Field('parent_id'), $node_id))
+			->andWhere($qb->expr()->notEqual(new Field('type_id'), 1))
+			->orderBy(new Field('name'), OrderBy::ASC);
+			
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchRecords();
 		}
@@ -48,9 +53,14 @@ class Gps extends DbAccessor
 		if(empty($node_id) or $node_id<0){
 			$node_id=static::ROOT_NODE;
 		}
-		$this->query->exec("	SELECT count(*) AS `count` 
-								FROM `".Tbl::get('TBL_TREE')."` 
-								WHERE `parent_id`='$node_id' AND `type_id`<>1", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count("*", 'count'))
+			->from(Tbl::get('TBL_TREE'))
+			->where($qb->expr()->equal(new Field('parent_id'), $node_id))
+			->andWhere($qb->expr()->notEqual(new Field('type_id'), 1));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchField('count');
 	}
 	
@@ -61,12 +71,20 @@ class Gps extends DbAccessor
 	 * @return array(id,name,type_id)
 	 */
 	public function getParent($node_id, $cacheMinutes = null){
-		$this->query->exec("	SELECT `id`,`name`,`type_id` 
-								FROM `".Tbl::get('TBL_TREE')."` 
-								WHERE `id` = (	SELECT `parent_id` 
-												FROM `".Tbl::get('TBL_TREE')."` 
-												WHERE `id`='$node_id' AND `type_id`<>1) 
-										AND `type_id`<>1", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$innerQb = new QueryBuilder();
+		
+		$innerQb->select(array(new Field('parent_id')))
+			->from(Tbl::get('TBL_TREE'))
+			->where($qb->expr()->equal(new Field('id'), $node_id))
+			->andWhere($qb->expr()->notEqual(new Field('type_id'), 1));
+		
+		$qb->select(array(new Field('id'), new Field('name'), new Field('type_id')))
+			->from(Tbl::get('TBL_TREE'))
+			->where($qb->expr()->equal(new Field('id'), $innerQb))
+			->andWhere($qb->expr()->notEqual(new Field('type_id'), 1));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchRecord();
 		}
@@ -87,11 +105,19 @@ class Gps extends DbAccessor
 
 		$my_id = $node_id;
 		while ($my_id!=static::ROOT_NODE){
-			$this->query->exec("SELECT `tree`.`id`,`tree`.`parent_id`, `tree`.`name`, `types`.`id` as `type_id`, `types`.`type`
-								FROM `".Tbl::get('TBL_TREE')."` `tree`
-								LEFT JOIN ".Tbl::get('TBL_TYPES')." `types`
-								ON (`tree`.`type_id`=`types`.`id`)
-								WHERE `tree`.`id`='$my_id'", $cacheMinutes);
+			$qb = new QueryBuilder();
+			$qb->select(array(
+					new Field('id', 'tree'), 
+					new Field('parent_id', 'tree'), 
+					new Field('name', 'tree'), 
+					new Field('id', 'types', 'type_id'), 
+					new Field('type', 'types')))
+				->from(Tbl::get('TBL_TREE'), 'tree')
+				->leftJoin(Tbl::get('TBL_TYPES'), 'types', $qb->expr()->equal(new Field('type_id', 'tree'), new Field('id', 'types')))
+				->where($qb->expr()->equal(new Field('id', 'tree'), $my_id));
+			
+			$this->query->exec($qb->getSQL(), $cacheMinutes);
+			
 			if($this->query->countRecords()){
 				$result=$this->query->fetchRecord();
 				$my_id = $result['parent_id'];
@@ -116,11 +142,16 @@ class Gps extends DbAccessor
 		if(empty($node_id) or $node_id<0){
 			$node_id=static::ROOT_NODE;
 		}
-		$this->query->exec("SELECT `types`.`id`, `types`.`type`
-							FROM `".Tbl::get('TBL_TREE')."` AS `tree`
-							LEFT JOIN `".Tbl::get('TBL_TYPES')."` AS `types`
-							ON (`tree`.`type_id`=`types`.`id`)
-							WHERE `parent_id`='$node_id' AND `type_id`<>1 LIMIT 1", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(array(new Field('id', 'types'),	new Field('type', 'types')))
+			->from(Tbl::get('TBL_TREE'), 'tree')
+			->leftJoin(Tbl::get('TBL_TYPES'), 'types', $qb->expr()->equal(new Field('type_id', 'tree'), new Field('id', 'types')))
+			->where($qb->expr()->equal(new Field('parent_id', 'tree'), $node_id))
+			->andWhere($qb->expr()->notEqual(new Field('type_id', 'tree'), 1))
+			->limit(1);
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchRecord();
 		}
@@ -138,13 +169,24 @@ class Gps extends DbAccessor
 			$node_id=static::ROOT_NODE;
 		}
 		$return_array=array();
-		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_TREE')."` WHERE `id`='$node_id'", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_TREE'))
+			->where($qb->expr()->equal(new Field('id'), $node_id));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if(!$this->query->countRecords()){
 			return false;
 		}
 		$node=$this->query->fetchRecord();
 		
-		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_CUST_FIELDS')."` ORDER BY `const_name`", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_CUST_FIELDS'))
+			->orderBy(new Field('const_name'));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if(!$this->query->countRecords()){
 			return $return_array;
 		}
@@ -152,7 +194,12 @@ class Gps extends DbAccessor
 
 		$config_array=array();
 		foreach ($fields as $field){
-			$this->query->exec("SELECT * FROM `".Tbl::get('TBL_CONFIG')."` WHERE `field_id`='{$field['id']}'", $cacheMinutes);
+			$qb = new QueryBuilder();
+			$qb->select(new Field('*'))
+				->from(Tbl::get('TBL_CONFIG'))
+				->where($qb->expr()->equal(new Field('field_id'), $field['id']));
+			
+			$this->query->exec($qb->getSQL(), $cacheMinutes);
 			if($this->query->countRecords()){
 				if(($act_rule=$this->findActualRule($node_id, $node['type_id'], $this->query->fetchRecords())) != false){
 					array_push($config_array, $act_rule);
@@ -175,7 +222,12 @@ class Gps extends DbAccessor
 	 * @return string
 	 */
 	public function getFieldName($field_id, $cacheMinutes = null){
-		$this->query->exec("SELECT `const_name` FROM `".Tbl::get('TBL_CUST_FIELDS')."` WHERE `id`='$field_id'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('const_name'))
+			->from(Tbl::get('TBL_CUST_FIELDS'))
+			->where($qb->expr()->equal(new Field('id'), $field_id));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchField('const_name');
 	}
 	
@@ -186,7 +238,12 @@ class Gps extends DbAccessor
 	 * @return string
 	 */
 	public function getTypeName($type_id, $cacheMinutes = null){
-		$this->query->exec("SELECT `type` FROM `".Tbl::get('TBL_TYPES')."` WHERE `id`='$type_id'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('type'))
+			->from(Tbl::get('TBL_TYPES'))
+			->where($qb->expr()->equal(new Field('id'), $type_id));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchField('type');
 	}
 	
@@ -197,7 +254,12 @@ class Gps extends DbAccessor
 	 * @return string
 	 */
 	public function getTypeId($type, $cacheMinutes = null){
-		$this->query->exec("SELECT `id` FROM `".Tbl::get('TBL_TYPES')."` WHERE `type`='$type'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('id'))
+			->from(Tbl::get('TBL_TYPES'))
+			->where($qb->expr()->equal(new Field('type'), $type));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchField('id');
 	}
 
@@ -214,11 +276,19 @@ class Gps extends DbAccessor
 		$node_tree=array();
 		$my_id=$node_id;
 		while ($my_id!=static::ROOT_NODE){
-			$this->query->exec("SELECT `tree`.`id`,`tree`.`parent_id`, `tree`.`name`, `types`.`id` as `type_id`, `types`.`type`
-								FROM `".Tbl::get('TBL_TREE')."` `tree`
-								LEFT JOIN `".Tbl::get('TBL_TYPES')."` `types`
-								ON (`tree`.`type_id`=`types`.`id`)
-								WHERE `tree`.`id`='$my_id'", $cacheMinutes);
+			$qb = new QueryBuilder();
+			$qb->select(array(
+					new Field('id', 'tree'),
+					new Field('parent_id', 'tree'),
+					new Field('name', 'tree'),
+					new Field('id', 'types', 'type_id'),
+					new Field('type', 'types')
+					))
+				->from(Tbl::get('TBL_TREE'), 'tree')
+				->leftJoin(Tbl::get('TBL_TYPES'), 'types', $qb->expr()->equal(new Field('type_id', 'tree'), new Field('id', 'types')))
+				->where($qb->expr()->equal(new Field('id', 'tree'), $my_id));
+			
+			$this->query->exec($qb->getSQL(), $cacheMinutes);
 			if($this->query->countRecords()){
 				$result=$this->query->fetchRecord();
 				array_push($node_tree, array(	'node_id'=>$result['id'],
@@ -248,9 +318,12 @@ class Gps extends DbAccessor
 			throw new InvalidIntegerArgumentException();
 		}
 		
-		$this->query->exec("SELECT `name`
-							FROM `".Tbl::get('TBL_TREE')."`
-							WHERE `id`='$nodeId'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('name'))
+			->from(Tbl::get('TBL_TREE'))
+			->where($qb->expr()->equal(new Field('id'), $nodeId));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchField("name");
 	}
 	
@@ -266,11 +339,13 @@ class Gps extends DbAccessor
 			throw new InvalidIntegerArgumentException();
 		}
 		
-		$this->query->exec("SELECT types.*
-							FROM `".Tbl::get('TBL_TREE')."` tree
-							LEFT JOIN `".Tbl::get('TBL_TYPES')."` types
-							ON (tree.`type_id`=types.`id`)
-							WHERE tree.`id`='$nodeId'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*', 'types'))
+			->from(Tbl::get('TBL_TREE'), 'tree')
+			->leftJoin(Tbl::get('TBL_TYPES'), 'types', $qb->expr()->equal(new Field('type_id', 'tree'), new Field('id', 'types')))
+			->where($qb->expr()->equal(new Field('id', 'tree'), $nodeId));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchRecord();
 	}
 	
@@ -282,8 +357,13 @@ class Gps extends DbAccessor
 	 * @return string Constant name
 	 */
 	public function getTypeLabel($typeName,$countryId, $cacheMinutes = null){
-		$this->query->exec("SELECT `constant` FROM `".Tbl::get('TBL_LABELS')."`
-							WHERE `country_id`='{$countryId}' AND `type`='{$typeName}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('constant'))
+			->from(Tbl::get('TBL_LABELS'))
+			->where($qb->expr()->equal(new Field('country_id'), $countryId))
+			->andWhere($qb->expr()->equal(new Field('type'), $typeName));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchField('constant');
 		}
@@ -300,19 +380,23 @@ class Gps extends DbAccessor
 	 */
 	public function getNodesByZip($zip, $countryNodeId, $volume = 20, $exactMatch = true, $cacheMinutes = null){
 		$gpsNodes = array();
-		$limitString = "";
+		
+		$qb = new QueryBuilder();
+		$qb->select(array(new Field('gps_id'), new Field('zip')))
+			->from(Tbl::get('TBL_ZIP_CODES'))
+			->where($qb->expr()->equal(new Field('country_id'), $countryNodeId));
+		
 		if($volume != 0){
-			$limitString = "LIMIT $volume";
+			$qb->limit($volume);
 		}
-		if($exactMatch){			
-			$whereClause = "`zip` = '{$zip}'";
+		if($exactMatch){
+			$qb->andWhere($qb->expr()->equal(new Field('zip'), $zip));
 		}
 		else{
-			$whereClause = "`zip` LIKE '{$zip}%'";
+			$qb->andWhere($qb->expr()->like(new Field('zip'), $zip . '%'));
 		}
 		
-		$this->query->exec("SELECT gps_id, zip FROM `".Tbl::get('TBL_ZIP_CODES')."`
-							WHERE `country_id`='{$countryNodeId}' AND $whereClause $limitString", $cacheMinutes);
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->countRecords()){
 			$zipNodes = $this->query->fetchRecords();
 			foreach ($zipNodes as $zipNode) {
@@ -338,8 +422,13 @@ class Gps extends DbAccessor
 		if(!is_numeric($nodeId)){
 			throw new InvalidIntegerArgumentException();
 		}
-		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_TREE')."`
-							WHERE `id`='$nodeId'", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_TREE'))
+			->where($qb->expr()->equal(new Field('id'), $nodeId));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchRecord();
 	}
 	
@@ -353,8 +442,23 @@ class Gps extends DbAccessor
 	 */
 	public function saveField($user_id, $field_id, $value){
 		$value=addslashes($value);
-		$this->query->exec("DELETE FROM ".Tbl::get('TBL_CUST_SAVE')." WHERE `user_id`='$user_id' AND `field_id`='$field_id'");
-		if($this->query->exec("INSERT INTO ".Tbl::get('TBL_CUST_SAVE')." (`user_id`,`field_id`,`text`) VALUES('$user_id','$field_id','$value')")){
+		
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_CUST_SAVE'))
+			->where($qb->expr()->equal(new Field('user_id'), $user_id))
+			->andWhere($qb->expr()->equal(new Field('field_id'), $field_id));
+		
+		$this->query->exec($qb->getSQL());
+		
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_CUST_SAVE'))
+			->values(array(
+				'user_id' => $user_id,
+				'field_id' => $field_id,
+				'text' => $value
+				));
+		
+		if($this->query->exec($qb->getSQL())){
 			return true;
 		}
 		return false;

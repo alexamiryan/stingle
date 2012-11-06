@@ -86,14 +86,7 @@ class Insert
     private function _getValues($values){
     	$returnStr = "";
     	foreach($values as $value){
-    		if($value instanceof Literal){
-    			$returnStr .= $value;
-    		}
-    		else{
-    			$returnStr .= "'$value'";
-    		}
-    		
-    		$returnStr .= ",";
+   			$returnStr .= Expr::quoteLiteral($value) . ",";
     	}
     	
     	return trim($returnStr, ",");

@@ -35,7 +35,12 @@ class Profile extends DbAccessor{
 	 */
 	public function getQuestions($cacheMinutes = 0){
 		$return_array = array();
-		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_PROFILE_KEYS')."` ORDER BY `key`, `sort_id` ASC", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_PROFILE_KEYS'))
+			->orderBy(new Field('key'))
+			->addOrderBy(new Field('sort_id'));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->countRecords()){
 			while(($row = $this->query->fetchRecord()) != false){
 				if(!isset($return_array[$row['key']])){
@@ -56,8 +61,11 @@ class Profile extends DbAccessor{
 		if(!is_string($question) or empty($question)){
 			throw new InvalidArgumentException("\$question have to be string");
 		}
-
-		$this->query->exec("SELECT `value` FROM `".Tbl::get('TBL_PROFILE_KEYS')."` ORDER BY `sort_id` ASC", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('value'))
+			->from(Tbl::get('TBL_PROFILE_KEYS'))
+			->orderBy(new Field('sort_id'));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchFields("value");
 	}
 
@@ -71,7 +79,11 @@ class Profile extends DbAccessor{
 		if(empty($profile_id) or !is_numeric($profile_id)){
 			throw new InvalidArgumentException("\$profile have to be numeric id of the profile");
 		}
-		$this->query->exec("SELECT `key` FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `id` = '$profile_id'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('key'))
+			->from(Tbl::get('TBL_PROFILE_KEYS'))
+			->where($qb->expr()->equal(new Field('id'), $profile_id));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchField("key");
 	}
 
@@ -85,7 +97,11 @@ class Profile extends DbAccessor{
 		if(empty($profile_id) or !is_numeric($profile_id)){
 			throw new InvalidArgumentException("\$profile have to be numeric id of the profile");
 		}
-		$this->query->exec("SELECT `value` FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `id` = '$profile_id'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('value'))
+			->from(Tbl::get('TBL_PROFILE_KEYS'))
+			->where($qb->expr()->equal(new Field('id'), $profile_id));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchField("value");
 	}
 
@@ -107,9 +123,16 @@ class Profile extends DbAccessor{
 
 		$sort_id_counter = 10;
 		foreach($options as $answer){
-			$this->query->exec("INSERT INTO `".Tbl::get('TBL_PROFILE_KEYS')."`
-									(`key`, `value`, `type`, `sort_id`)
-									VALUES ('{$question}','$answer','$type','$sort_id_counter')");
+			$qb = new QueryBuilder();
+			$qb->insert(Tbl::get('TBL_PROFILE_KEYS'))
+				->values(array(
+							"key" => $question, 
+							"value" => $answer, 
+							"type" => $type, 
+							"sort_id" => $sort_id_counter, 
+						)
+					);	
+			$this->query->exec($qb->getSQL());
 			$sort_id_counter += 10;
 		}
 	}
@@ -127,8 +150,11 @@ class Profile extends DbAccessor{
 		if(!is_numeric($new_sort_id)){
 			throw new InvalidArgumentException("\$new_sort_id have to be integer");
 		}
-
-		$this->query->exec("UPDATE `".Tbl::get('TBL_PROFILE_KEYS')."` SET `sort_id`='$new_sort_id' WHERE `id` = '$profile_id'");
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_PROFILE_KEYS'))
+			->set(new Field('sort_id'), $new_sort_id)
+			->where($qb->expr()->equal(new Field('id'), $profile_id));
+		$this->query->exec($qb->getSQL());
 	}
 
 	/**
@@ -145,16 +171,26 @@ class Profile extends DbAccessor{
 		if(empty($answer)){
 			throw new InvalidArgumentException("\$answer must not be a null string");
 		}
-
-		$this->query->exec("SELECT `type` FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `key` = '$question' LIMIT 1");
+		$qb = new QueryBuilder();
+		$qb->select(new Field('type'))
+			->from(Tbl::get('TBL_PROFILE_KEYS'))
+			->where($qb->expr()->equal(new Field('key'), $question))
+			->limit(1);
+		$this->query->exec($qb->getSQL());
 		if(!$this->query->countRecords()){
 			throw new OutOfRangeException("Can't add answer to non existent question");
 		}
 		$type = $this->query->fetchField("type");
-
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_PROFILE_KEYS')."`
-									(`key`, `value`, `type`, `sort_id`)
-									VALUES ('{$question}','$answer','$type','$sort_id')");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_PROFILE_KEYS'))
+			->values(array(
+							"key" => $question, 
+							"value" => $answer, 
+							"type" => $type, 
+							"sort_id" => $sort_id, 
+						)
+					);	
+		$this->query->exec($qb->getSQL());
 	}
 
 	/**
@@ -166,13 +202,14 @@ class Profile extends DbAccessor{
 		if(empty($question)){
 			throw new InvalidArgumentException("\$question have be not null string");
 		}
-
-		$this->query->exec("SELECT `type` FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `key` = '$question'");
-		if(!$this->query->countRecords()){
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_PROFILE_KEYS'))
+			->where($qb->expr()->equal(new Field("key"), $question));	
+		$this->query->exec($qb->getSQL());
+		
+		if($this->query->affected() == 0){
 			throw new OutOfRangeException("Can't delete non existent question");
 		}
-
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `key` = '$question'");
 	}
 
 	/**
@@ -184,8 +221,10 @@ class Profile extends DbAccessor{
 		if(empty($profile_id) or !is_numeric($profile_id)){
 			throw new InvalidArgumentException("\$profile have to be numeric id of the profile");
 		}
-
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_PROFILE_KEYS')."` WHERE `id` = '$profile_id'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_PROFILE_KEYS'))
+			->where($qb->expr()->equal(new Field("id"), $profile_id));	
+		$this->query->exec($qb->getSQL());
 	}
 
 	/**
@@ -209,6 +248,10 @@ class Profile extends DbAccessor{
 	 */
 	public function editOptionById($profile_id, $new_answer, $sort_id = null){
 		$additional_sql = '';
+		
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_PROFILE_KEYS'))
+			->set(new Field('value'), $new_answer);
 
 		if(empty($profile_id) or !is_numeric($profile_id)){
 			throw new InvalidArgumentException("\$profile have to be numeric id of the profile");
@@ -220,12 +263,12 @@ class Profile extends DbAccessor{
 			throw new InvalidArgumentException("\$sort_id have to have numeric value");
 		}
 		else{
+			$qb->set(new Field('sort_id'), $sort_id);
 			$additional_sql .= ", `sort_id`='$sort_id'";
 		}
-
-		$this->query->exec("UPDATE `".Tbl::get('TBL_PROFILE_KEYS')."`
-								SET `value`='$new_answer' $additional_sql
-								WHERE `id` = '$profile_id'");
+		$qb->where($qb->expr()->equal(new Field('id'), $profile_id));
+		
+		$this->query->exec($qb->getSQL());
 	}
 }
 

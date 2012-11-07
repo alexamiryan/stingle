@@ -35,7 +35,11 @@ class UserProfile extends Profile{
 	 *
 	 */
 	private function initUserAnswers($cacheMinutes = 0){
-		$this->query->exec("SELECT `profile_id` FROM `".Tbl::get('TBL_PROFILE_SAVE')."` WHERE `user_id`='{$this->userId}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('profile_id'))
+			->from(Tbl::get('TBL_PROFILE_SAVE'))
+			->where($qb->expr()->equal(new Field('user_id'), $this->userId));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		$this->profileAnswers = $this->query->fetchFields("profile_id");
 	}
 	
@@ -86,11 +90,21 @@ class UserProfile extends Profile{
 	 */
 	public function setAnswersByIds($answers){
 		if(is_array($answers)){
-			$this->query->exec("DELETE FROM `".Tbl::get('TBL_PROFILE_SAVE')."` WHERE `user_id`='{$this->userId}'");
+			$qb = new QueryBuilder();
+			$qb->delete(Tbl::get('TBL_PROFILE_SAVE'))
+				->where($qb->expr()->equal(new Field("user_id"), $this->userId));	
+			$this->query->exec($qb->getSQL());
 			
 			foreach($answers as $answer){
 				if(is_numeric($answer)){
-					$this->query->exec("INSERT INTO `".Tbl::get('TBL_PROFILE_SAVE')."` (`user_id`,`profile_id`) VALUES('{$this->userId}','$answer')");
+					$qb = new QueryBuilder();
+					$qb->insert(Tbl::get('TBL_PROFILE_SAVE'))
+						->values(array(
+							"user_id" => $this->userId, 
+							"profile_id" => $answer 
+						)
+					);	
+					$this->query->exec($qb->getSQL());
 				}
 			}
 			$this->initUserAnswers();

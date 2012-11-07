@@ -10,19 +10,19 @@ class DBLogger extends Logger{
 	
 	public static function logRequest($dbInstanceKey = null){
 		$sql = MySqlDbManager::getQueryObject($dbInstanceKey);
-		
-		$sql->exec("INSERT DELAYED INTO `".Tbl::get("TBL_REQUEST_LOG")."` 
-						(`session_id`, `get`, `post`, `server`, `cookies`, `session`, `response`)
-						VALUES	(
-									'".session_id()."',
-									'".mysql_real_escape_string(serialize($_GET))."',
-									'".mysql_real_escape_string(serialize($_POST))."',
-									'".mysql_real_escape_string(serialize($_SERVER))."',
-									'".mysql_real_escape_string(serialize($_COOKIE))."',
-									'".mysql_real_escape_string(serialize($_SESSION))."',
-									'".mysql_real_escape_string(ob_get_contents())."'
-								)"
-		);
+		$qb = new QueryBuilder();
+		$qb->insertDelayed(Tbl::get('TBL_REQUEST_LOG'))
+			->values(array(
+							"session_id" => session_id(), 
+							"get" => serialize($_GET), 
+							"post" => serialize($_POST), 
+							"server" => serialize($_SERVER), 
+							"cookies" => serialize($_COOKIE), 
+							"session" => serialize($_SESSION), 
+							"response" => ob_get_contents() 
+						)
+					);
+		$sql->exec($qb->getSQL());
 						
 	}
 	
@@ -31,16 +31,16 @@ class DBLogger extends Logger{
 		if(isset($_SERVER['REMOTE_ADDR'])){
 			$remoteIP=$_SERVER['REMOTE_ADDR'];
 		}
-		
-		Reg::get('sql')->exec( "INSERT DELAYED INTO `".Tbl::get("TBL_MIXED_LOG")."` 
-										(`session_id`,`name`,`value`,`ip`)
-										VALUES (
-													'".session_id()."',
-													'".mysql_real_escape_string($name)."',
-													'".mysql_real_escape_string($value)."',
-													'$remoteIP'
-												)"
-		);
+		$qb = new QueryBuilder();
+		$qb->insertDelayed(Tbl::get('TBL_MIXED_LOG'))
+			->values(array(
+							"session_id" => session_id(), 
+							"name" => $name, 
+							"value" => $value, 
+							"ip" => $remoteIP 
+						)
+					);
+		Reg::get('sql')->exec($qb->getSQL());
 	}
 }
 ?>

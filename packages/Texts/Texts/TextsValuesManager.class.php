@@ -35,8 +35,11 @@ class TextsValuesManager extends DbAccessor{
 		if(!is_numeric($textValueId)){
 			throw new InvalidArgumentException("\$textValueId have to be integer");
 		}
-		
-		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_TEXTS_VALUES') ."` WHERE 	`id`  = '$textValueId'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field("*"))
+			->from(Tbl::get('TBL_TEXTS_VALUES'))
+			->where($qb->expr()->equal(new Field('id'), $textValueId));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		if($this->query->countRecords() == 0){
 			throw new RuntimeException("There is no texts value with id $textValueId");
@@ -56,19 +59,26 @@ class TextsValuesManager extends DbAccessor{
 		$text = Reg::get(ConfigManager::getConfig("Texts")->Objects->TextsManager)->getTextByName($textName, $groupName);
 		$hostLangId = HostLanguageManager::getHostLanguageId($host, $lang);
 		
-		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_TEXTS_VALUES') ."`
-								WHERE 	`text_id`  = '{$text->id}' AND 
-										`host_language` = '$hostLangId'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field("*"))
+			->from(Tbl::get('TBL_TEXTS_VALUES'))
+			->where($qb->expr()->equal(new Field('text_id'), $text->id))
+			->andWhere($qb->expr()->equal(new Field('host_language'), $hostLangId));
+			
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		if($this->query->countRecords() == 1){
 			return $this->getTextValueObjectFromData($this->query->fetchRecord());
 		}
 		elseif(Reg::get(ConfigManager::getConfig("Texts")->Objects->TextsAliasManager)->isAliased($text, $hostLangId, $cacheMinutes)){
-			$this->query->exec("SELECT `tv`.*
-									FROM `".Tbl::get('TBL_TEXTS_ALIASES', 'TextsAliasManager')."` `ta`
-										LEFT JOIN `".Tbl::get('TBL_TEXTS_VALUES')."` `tv` ON `tv`.`id` = `ta`.`value_id` 
-			 						WHERE 	`ta`.`host_language` = '$hostLangId' AND 
-			 								`text_id` = '{$text->id}'", $cacheMinutes);
+			$qbAlias = new QueryBuilder();
+			$qbAlias->select(new Field("*", 'tv'))
+					->from(Tbl::get('TBL_TEXTS_ALIASES', 'TextsAliasManager'), 'ta')
+					->leftJoin(Tbl::get('TBL_TEXTS_VALUES'), 'tv', 
+								$qbAlias->expr()->equal(new Field('id', 'tv'), new Field('value_id', 'ta')))
+					->where($qbAlias->expr()->equal(new Field('host_language', 'ta'), $hostLangId))
+					->andWhere($qbAlias->expr()->equal(new Field('text_id'), $text->id));
+			$this->query->exec($qbAlias->getSQL(), $cacheMinutes);
 			return $this->getTextValueObjectFromData($this->query->fetchRecord());
 		}
 		else{
@@ -124,9 +134,16 @@ class TextsValuesManager extends DbAccessor{
 			$hostLanguageId = HostLanguageManager::getHostLanguageId($textValue->host, $textValue->language);
 		}
 		
-		
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_TEXTS_VALUES') . "` (`text_id`, `value`, `host_language`, `display`) 
-								VALUES('{$textValue->text->id}', '{$textValue->value}', '$hostLanguageId', '{$textValue->display}')");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_TEXTS_VALUES'))
+			->values(array(
+							"text_id" 		=> $textValue->text->id,
+							"value"   		=> $textValue->value,
+							"host_language" => $hostLanguageId,
+							"display" 		=> $textValue->display
+			));
+			
+		$this->query->exec($qb->getSQL());
 		return $this->query->affected();
 	}
 	
@@ -157,13 +174,16 @@ class TextsValuesManager extends DbAccessor{
 			}
 			$hostLanguageId = HostLanguageManager::getHostLanguageId($textValue->host, $textValue->language);
 		}
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_TEXTS_VALUES'))
+			->set(new Field('text_id'), 		$textValue->text->id)
+			->set(new Field('value'), 			$textValue->value)
+			->set(new Field('host_language'), 	$hostLanguageId)
+			->set(new Field('display'), 		$textValue->display)
+			->set(new Field('text_id'), $textValue->text->id)
+			->where($qb->expr()->equal(new Field('id'), $textValue->id));
 		
-		$this->query->exec("UPDATE `".Tbl::get('TBL_TEXTS_VALUES') . "` SET 
-								`text_id`='{$textValue->text->id}', 
-								`value`='{$textValue->value}', 
-								`host_language`='$hostLanguageId', 
-								`display`='{$textValue->display}'
-							WHERE `id`='{$textValue->id}'");
+		$this->query->exec($qb->getSQL());
 		return $this->query->affected();
 	}
 	
@@ -174,8 +194,10 @@ class TextsValuesManager extends DbAccessor{
 		if(!is_numeric($textValue->id)){
 			throw new InvalidArgumentException("Text ID have to be integer");
 		}
-		
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_TEXTS_VALUES') . "` WHERE `id`='{$textValue->id}'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_TEXTS_VALUES'))
+			->where($qb->expr()->equal(new Field('id'), $textValue->id));
+		$this->query->exec($qb->getSQL());
 		
 		return $this->query->affected();
 	}

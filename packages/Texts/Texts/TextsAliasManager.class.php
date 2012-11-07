@@ -14,11 +14,14 @@ class TextsAliasManager extends DbAccessor{
 		if(!is_numeric($hostLangId)){
 			throw new InvalidArgumentException("\$hostLangId have to be numeric");
 		}
-		$this->query->exec("SELECT tv.`id`
-								FROM `".Tbl::get('TBL_TEXTS_ALIASES') ."` ta
-									LEFT JOIN `".Tbl::get('TBL_TEXTS_VALUES', 'TextsValuesManager') ."` tv ON ta.`value_id` = tv.`id`
-								WHERE 	ta.`host_language` = '$hostLangId' AND 
-										tv.`text_id` = '{$text->id}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('id', 'tv'))
+			->from(Tbl::get('TBL_TEXTS_ALIASES'), 'ta')
+			->leftJoin(Tbl::get('TBL_TEXTS_VALUES', 'TextsValuesManager'), 'tv',
+					$qb->expr()->equal(new Field('value_id', 'ta'), new Field('id', 'tv')))
+			->where($qb->expr()->equal(new Field('host_language', 'ta'), $hostLangId))
+			->andWhere($qb->expr()->equal(new Field('text_id', 'tv'), $text->id));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->countRecords() == 1){
 			return true;
 		}
@@ -29,8 +32,11 @@ class TextsAliasManager extends DbAccessor{
 		if(!is_numeric($textValue->id)){
 			throw new InvalidArgumentException("TextValue ID have to be numeric");
 		}
-		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_TEXTS_ALIASES') ."`
-								WHERE 	`value_id` = '{$textValue->id}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_TEXTS_ALIASES'))
+			->where($qb->expr()->equal(new Field('value_id'), $textValue->id));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		$arrayToReturn = array();
 		foreach($this->query->fetchRecords() as $data){
@@ -58,9 +64,14 @@ class TextsAliasManager extends DbAccessor{
 			
 			$hostLanguageId = HostLanguageManager::getHostLanguageId($alias->host, $alias->language);
 		}
-		
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_TEXTS_ALIASES') . "` (`value_id`, `host_language`) 
-								VALUES('{$alias->textValue->id}', '$hostLanguageId')");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_TEXTS_ALIASES'))
+			->values(array(
+							"value_id" 		=> $alias->textValue->id, 
+							"host_language" => $hostLanguageId 
+						)
+					);	
+		$this->query->exec($qb->getSQL());
 		return $this->query->affected();
 	}
 	
@@ -71,7 +82,10 @@ class TextsAliasManager extends DbAccessor{
 		if(!is_numeric($alias->id)){
 			throw new InvalidArgumentException("Alias ID have to be integer");
 		}
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_TEXTS_ALIASES') . "` WHERE `id`='{$alias->id}'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_TEXTS_ALIASES'))
+			->where($qb->expr()->equal(new Field("id"), $alias->id));
+		$this->query->exec($qb->getSQL());
 		return $this->query->affected();
 	}
 	
@@ -82,7 +96,10 @@ class TextsAliasManager extends DbAccessor{
 		if(!is_numeric($textValue->id)){
 			throw new InvalidArgumentException("Text Value ID have to be integer");
 		}
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_TEXTS_ALIASES') . "` WHERE `value_id`='{$textValue->id}'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_TEXTS_ALIASES'))
+			->where($qb->expr()->equal(new Field("value_id"), $textValue->id));
+		$this->query->exec($qb->getSQL());
 		return $this->query->affected();
 	}
 	

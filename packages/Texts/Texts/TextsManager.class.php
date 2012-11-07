@@ -16,10 +16,12 @@ class TextsManager extends DbAccessor{
 		}
 		
 		$group = Reg::get(ConfigManager::getConfig("Texts")->Objects->TextsGroupManager)->getGroupByName($groupName, $cacheMinutes);
-		
-		$this->query->exec("SELECT count(*) as `count` 
-								FROM `".Tbl::get('TBL_TEXTS') ."` 
-								WHERE `name`='$textName' AND `group_id`='{$group->id}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count('*', 'count'))
+			->from(Tbl::get('TBL_TEXTS'))
+			->where($qb->expr()->equal(new Field('name'), $textName))
+			->andWhere($qb->expr()->equal(new Field('group_id'), $group->id));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		if($this->query->fetchField("count") == 1){
 			return true;
@@ -45,9 +47,11 @@ class TextsManager extends DbAccessor{
 		if(!is_numeric($textId)){
 			throw new InvalidArgumentException("\$textId have to be integer");
 		}
-		
-		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_TEXTS')  ."` 
-								WHERE `id` = '{$textId}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_TEXTS'))
+			->where($qb->expr()->equal(new Field('id'), $textId));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		if($this->query->countRecords() == 0){
 			throw new RuntimeException("There is no text with id $textId");
@@ -65,9 +69,12 @@ class TextsManager extends DbAccessor{
 		}
 		
 		$group = Reg::get(ConfigManager::getConfig("Texts")->Objects->TextsGroupManager)->getGroupByName($groupName, $cacheMinutes);
-		
-		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_TEXTS')  ."` 
-								WHERE `name` = '{$textName}' AND `group_id`='{$group->id}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field("*"))
+			->from(Tbl::get('TBL_TEXTS'))
+			->where($qb->expr()->equal(new Field('name'), $textName))
+			->andWhere($qb->expr()->equal(new Field('group_id'), $group->id));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		if($this->query->countRecords() == 0){
 			throw new RuntimeException("There is no text with name $textName");
@@ -86,8 +93,14 @@ class TextsManager extends DbAccessor{
 		if(!is_numeric($group->id)){
 			throw new InvalidArgumentException("Group ID have to be integer");
 		}
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_TEXTS') . "` (`group_id`, `name`, `description`) 
-								VALUES('{$group->id}', '{$text->name}', '{$text->description}')");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_TEXTS'))
+			->values(array(
+							'group_id' => $group->id,
+							'name' => $text->name,
+							'description' => $text->description
+			));
+		$this->query->exec($qb->getSQL());
 		return $this->query->affected();
 	}
 	
@@ -98,11 +111,13 @@ class TextsManager extends DbAccessor{
 		if(!is_numeric($text->id)){
 			throw new InvalidArgumentException("Text ID have to be integer");
 		}
-		$this->query->exec("UPDATE `".Tbl::get('TBL_TEXTS') . "` SET 
-								`group_id`='{$text->group->id}', 
-								`name`='{$text->name}', 
-								`description`='{$text->description}', 
-							WHERE `id`='{$text->id}'");
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_TEXTS'))
+			->set('group_id', $text->group->id)
+			->set('name', $text->name)
+			->set('description', $text->description)
+			->where($qb->expr()->equal(new Field('id'), $text->id));
+		$this->query->exec($qb->getSQL());
 		return $this->query->affected();
 	}
 	
@@ -113,8 +128,10 @@ class TextsManager extends DbAccessor{
 		if(!is_numeric($text->id)){
 			throw new InvalidArgumentException("Text ID have to be integer");
 		}
-		
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_TEXTS') . "` WHERE `id`='{$text->id}'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_TEXTS'))
+			->where($qb->expr()->equal(new Field('id'), $text->id));
+		$this->query->exec($qb->getSQL());
 		
 		return $this->query->affected();
 	}

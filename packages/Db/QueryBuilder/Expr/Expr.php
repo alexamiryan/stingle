@@ -514,14 +514,14 @@ class Expr
      * @return string
      */
     public static function quoteLiteral($literal){
-    	if ($literal instanceof Literal or $literal instanceof Field or $literal instanceof QueryBuilder or $literal instanceof Func) {
+    	if (($literal instanceof Literal) or ($literal instanceof Field) or ($literal instanceof QueryBuilder) or ($literal instanceof Func) or ($literal instanceof Math)) {
     		return $literal;
     	}
     	else{
 	        if (is_numeric($literal) && !is_string($literal)) {
 	            return (string) $literal;
 	        } 
-	        elseif(is_string($literal) or is_null($literal)) {
+	        else {
 	            return "'" . mysql_real_escape_string($literal) . "'";
 	        }
     	}

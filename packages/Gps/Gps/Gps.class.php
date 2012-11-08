@@ -71,14 +71,14 @@ class Gps extends DbAccessor
 	 * @return array(id,name,type_id)
 	 */
 	public function getParent($node_id, $cacheMinutes = null){
-		$qb = new QueryBuilder();
 		$innerQb = new QueryBuilder();
 		
 		$innerQb->select(array(new Field('parent_id')))
 			->from(Tbl::get('TBL_TREE'))
-			->where($qb->expr()->equal(new Field('id'), $node_id))
-			->andWhere($qb->expr()->notEqual(new Field('type_id'), 1));
+			->where($innerQb->expr()->equal(new Field('id'), $node_id))
+			->andWhere($innerQb->expr()->notEqual(new Field('type_id'), 1));
 		
+		$qb = new QueryBuilder();
 		$qb->select(array(new Field('id'), new Field('name'), new Field('type_id')))
 			->from(Tbl::get('TBL_TREE'))
 			->where($qb->expr()->equal(new Field('id'), $innerQb))

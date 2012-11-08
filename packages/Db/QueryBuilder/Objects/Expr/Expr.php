@@ -514,7 +514,7 @@ class Expr
      * @return string
      */
     public static function quoteLiteral($literal){
-    	if (($literal instanceof Literal) or ($literal instanceof Field) or ($literal instanceof QueryBuilder) or ($literal instanceof Func) or ($literal instanceof Math)) {
+    	if ($literal instanceof QBpart) {
     		return $literal;
     	}
     	else{

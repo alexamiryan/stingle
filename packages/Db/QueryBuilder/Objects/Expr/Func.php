@@ -20,7 +20,7 @@
  */
 
 /**
- * Expression class for SQL math statements
+ * Expression class for generating SQL functions
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,35 +30,38 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class Math
+class Func extends QBpart
 {
-    private $_leftExpr;
-    private $_operator;
-    private $_rightExpr;
+    private $_name;
+    private $_arguments = array();
+    private $_alias;
 
-    public function __construct($leftExpr, $operator, $rightExpr)
+    public function __construct($name, $arguments = null, $alias = null)
     {
-        $this->_leftExpr  = $leftExpr;
-        $this->_operator  = $operator;
-        $this->_rightExpr = $rightExpr;
+        $this->_name = $name;
+        if($arguments != null){
+        	if(is_array($arguments)){
+       			$this->_arguments = $arguments;
+        	}
+        	else{
+        		$this->_arguments = array($arguments);
+        	}
+        }
+        $this->_alias = $alias;
     }
 
     public function __toString()
     {
-        // Adjusting Left Expression
-        $leftExpr = (string) Expr::quoteLiteral($this->_leftExpr);
-
-        if ($this->_leftExpr instanceof Math) {
-            $leftExpr = '(' . $leftExpr . ')';
+    	foreach($this->_arguments as &$arg){
+    		$arg = Expr::quoteLiteral($arg);
+    	}
+    	
+        $returnStr = $this->_name . '(' . implode(', ', $this->_arguments) . ')';
+        
+        if($this->_alias != null){
+        	$returnStr .= " as `". $this->_alias ."`";
         }
-
-        // Adjusting Right Expression
-        $rightExpr = (string) Expr::quoteLiteral($this->_rightExpr);
-
-        if ($this->_rightExpr instanceof Math) {
-            $rightExpr = '(' . $rightExpr . ')';
-        }
-
-        return $leftExpr . ' ' . $this->_operator . ' ' . $rightExpr;
+        
+        return $returnStr;
     }
 }

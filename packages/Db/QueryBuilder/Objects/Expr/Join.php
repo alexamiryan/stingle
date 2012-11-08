@@ -30,68 +30,51 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class From
+class Join extends QBpart
 {
-    /**
-     * @var string
-     */
-    private $_from;
+    const INNER_JOIN = 'INNER';
+    const LEFT_JOIN  = 'LEFT';
+    const RIGHT_JOIN  = 'RIGHT';
+    const OUTER_JOIN  = 'OUTER';
 
-    /**
-     * @var string
-     */
+    const ON   = 'ON';
+    const WITH = 'WITH';
+
+    private $_joinType;
+    private $_join;
     private $_alias;
-
-    /**
-     * @var string
-     */
+    private $_condition;
     private $_indexBy;
 
-    /**
-     * @param string $from      The class name.
-     * @param string $alias     The alias of the class.
-     * @param string $indexBy   The index for the from.
-     */
-    public function __construct($from, $alias, $indexBy = null)
+    public function __construct($joinType, $join, $alias = null, $condition = null, $indexBy = null)
     {
-        $this->_from    = $from;
-        $this->_alias   = $alias;
-        $this->_indexBy = $indexBy;
+        $this->_joinType       = $joinType;
+        $this->_join           = $join;
+        $this->_alias          = $alias;
+        $this->_condition      = $condition;
+        $this->_indexBy        = $indexBy;
     }
 
-    /**
-     * @return string
-     */
-    public function getFrom()
-    {
-        return $this->_from;
-    }
-
-    /**
-     * @return string
-     */
     public function getAlias()
     {
-        return $this->_alias;
+    	return $this->_alias;
     }
-
-    /**
-     * @return string
-     */
+    
     public function __toString()
     {
-    	$returnString = '';
-    	
-    	if($this->_from instanceof QueryBuilder or $this->_from instanceof Unionx){
-    		$returnString = "($this->_from)";
-    	}
-    	else{
-    		$returnString = "`$this->_from`";
-    	}
-    	
-        $returnString .= ($this->_alias ? " as `$this->_alias` " : '').
-                ($this->_indexBy ? ' USE INDEX (' . $this->_indexBy . ')' : '');
+        $returnString = strtoupper($this->_joinType) . ' JOIN ';
         
-        return $returnString;
+		if($this->_join instanceof QueryBuilder or $this->_join instanceof Unionx){
+			$returnString .= "($this->_join)";
+		}
+		else{
+			$returnString .= "`$this->_join`";
+		}
+		
+		$returnString .= ($this->_alias ? ' as `' . $this->_alias . '`' : '')
+             	. ($this->_condition ? ' ON (' . $this->_condition . ')' : '')
+             	. ($this->_indexBy ? ' INDEX BY ' . $this->_indexBy : '');
+		
+		return $returnString;
     }
 }

@@ -20,7 +20,7 @@
  */
 
 /**
- * Expression class for building SQL Order By parts
+ * Expression class for SQL comparison expressions
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,43 +30,38 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class OrderBy
+class Comparison extends QBpart
 {
-	const ASC = 'ASC';
-	const DESC = 'DESC';
-	
-    protected $_preSeparator = '';
-    protected $_separator = ', ';
-    protected $_postSeparator = '';
-    protected $_allowedClasses = array();
+    const EQ  = '=';
+    const NEQ = '<>';
+    const LT  = '<';
+    const LTE = '<=';
+    const GT  = '>';
+    const GTE = '>=';
 
-    private $_parts = array();
+    private $_leftExpr;
+    private $_operator;
+    private $_rightExpr;
 
-    public function __construct($sort = null, $order = null){
-    	if(!empty($order) and $order != self::ASC and $order != self::DESC){
-    		throw new InvalidArgumentException("\$order have to be ASC or DESC");
+    public function __construct($leftExpr, $operator, $rightExpr)
+    {
+        $this->_leftExpr  = $leftExpr;
+        $this->_operator  = $operator;
+        $this->_rightExpr = $rightExpr;
+    }
+
+    public function __toString()
+    {
+    	$this->_leftExpr = Expr::quoteLiteral($this->_leftExpr);
+    	$this->_rightExpr = Expr::quoteLiteral($this->_rightExpr);
+    	
+    	if ($this->_leftExpr instanceof Math or $this->_leftExpr instanceof QueryBuilder) {
+    		$this->_leftExpr = '(' . $this->_leftExpr . ')';
+    	}
+    	if ($this->_rightExpr instanceof Math or $this->_rightExpr instanceof QueryBuilder) {
+    		$this->_rightExpr = '(' . $this->_rightExpr . ')';
     	}
     	
-        if ($sort) {
-            $this->add($sort, $order);
-        }
-    }
-
-    public function add($sort, $order = null)
-    {
-    	if(!$sort instanceof Func){
-        	$order = ! $order ? 'ASC' : $order;
-    	}
-        $this->_parts[] = $sort . ' '. $order;
-    }
-
-    public function count()
-    {
-        return count($this->_parts);
-    }
-
-    public function __tostring()
-    {
-        return $this->_preSeparator . implode($this->_separator, $this->_parts) . $this->_postSeparator;
+        return $this->_leftExpr . ' ' . $this->_operator . ' ' . $this->_rightExpr;
     }
 }

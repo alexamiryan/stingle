@@ -20,7 +20,7 @@
  */
 
 /**
- * Expression class for SQL comparison expressions
+ * Expression class for SQL from
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,38 +30,68 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class Comparison
+class From extends QBpart
 {
-    const EQ  = '=';
-    const NEQ = '<>';
-    const LT  = '<';
-    const LTE = '<=';
-    const GT  = '>';
-    const GTE = '>=';
+    /**
+     * @var string
+     */
+    private $_from;
 
-    private $_leftExpr;
-    private $_operator;
-    private $_rightExpr;
+    /**
+     * @var string
+     */
+    private $_alias;
 
-    public function __construct($leftExpr, $operator, $rightExpr)
+    /**
+     * @var string
+     */
+    private $_indexBy;
+
+    /**
+     * @param string $from      The class name.
+     * @param string $alias     The alias of the class.
+     * @param string $indexBy   The index for the from.
+     */
+    public function __construct($from, $alias, $indexBy = null)
     {
-        $this->_leftExpr  = $leftExpr;
-        $this->_operator  = $operator;
-        $this->_rightExpr = $rightExpr;
+        $this->_from    = $from;
+        $this->_alias   = $alias;
+        $this->_indexBy = $indexBy;
     }
 
+    /**
+     * @return string
+     */
+    public function getFrom()
+    {
+        return $this->_from;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAlias()
+    {
+        return $this->_alias;
+    }
+
+    /**
+     * @return string
+     */
     public function __toString()
     {
-    	$this->_leftExpr = Expr::quoteLiteral($this->_leftExpr);
-    	$this->_rightExpr = Expr::quoteLiteral($this->_rightExpr);
+    	$returnString = '';
     	
-    	if ($this->_leftExpr instanceof Math or $this->_leftExpr instanceof QueryBuilder) {
-    		$this->_leftExpr = '(' . $this->_leftExpr . ')';
+    	if($this->_from instanceof QueryBuilder or $this->_from instanceof Unionx){
+    		$returnString = "($this->_from)";
     	}
-    	if ($this->_rightExpr instanceof Math or $this->_rightExpr instanceof QueryBuilder) {
-    		$this->_rightExpr = '(' . $this->_rightExpr . ')';
+    	else{
+    		$returnString = "`$this->_from`";
     	}
     	
-        return $this->_leftExpr . ' ' . $this->_operator . ' ' . $this->_rightExpr;
+        $returnString .= ($this->_alias ? " as `$this->_alias` " : '').
+                ($this->_indexBy ? ' USE INDEX (' . $this->_indexBy . ')' : '');
+        
+        return $returnString;
     }
 }

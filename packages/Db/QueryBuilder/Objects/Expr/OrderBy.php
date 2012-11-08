@@ -20,7 +20,7 @@
  */
 
 /**
- * Abstract base Expr class for building SQL parts
+ * Expression class for building SQL Order By parts
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,62 +30,43 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-abstract class Base
+class OrderBy extends QBpart
 {
-    protected $_preSeparator = '(';
+	const ASC = 'ASC';
+	const DESC = 'DESC';
+	
+    protected $_preSeparator = '';
     protected $_separator = ', ';
-    protected $_postSeparator = ')';
+    protected $_postSeparator = '';
     protected $_allowedClasses = array();
 
-    protected $_parts = array();
+    private $_parts = array();
 
-    public function __construct($args = array())
-    {
-        $this->addMultiple($args);
-    }
-
-    public function addMultiple($args = array())
-    {
-        foreach ((array) $args as $arg) {
-            $this->add($arg);
+    public function __construct($sort = null, $order = null){
+    	if(!empty($order) and $order != self::ASC and $order != self::DESC){
+    		throw new InvalidArgumentException("\$order have to be ASC or DESC");
+    	}
+    	
+        if ($sort) {
+            $this->add($sort, $order);
         }
-
-        return $this;
     }
 
-    public function add($arg)
+    public function add($sort, $order = null)
     {
-        if ( $arg !== null || ($arg instanceof self && $arg->count() > 0) ) {
-            // If we decide to keep Base instances, we can use this check
-            if ( ! is_string($arg)) {
-                $class = get_class($arg);
-
-                if ( ! in_array($class, $this->_allowedClasses)) {
-                    throw new \InvalidArgumentException("Expression of type '$class' not allowed in this context (".get_class($this).").");
-                }
-            }
-
-            $this->_parts[] = $arg;
-        }
-
-        return $this;
+    	if(!$sort instanceof Func){
+        	$order = ! $order ? 'ASC' : $order;
+    	}
+        $this->_parts[] = $sort . ' '. $order;
     }
 
-    public function getParts(){
-    	return $this->_parts;
-    }
-    
     public function count()
     {
         return count($this->_parts);
     }
 
-    public function __toString()
+    public function __tostring()
     {
-        if ($this->count() == 1) {
-            return (string) $this->_parts[0];
-        }
-
         return $this->_preSeparator . implode($this->_separator, $this->_parts) . $this->_postSeparator;
     }
 }

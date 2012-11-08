@@ -28,7 +28,7 @@
  * @author  Alex Amiryan <alex@amiryan.org>
  * @author  Aram Gevorgyan <aram@web-emedianet.com>
  */
-class Insert
+class Insert extends QBpart
 {
     const TYPE_NORMAL = 0;
     const TYPE_LOW_PRIORITY = 1;

@@ -472,7 +472,14 @@ class Gps extends DbAccessor
 	 * @return string
 	 */
 	public function getField($user_id, $field_id, $cacheMinutes = null){
-		$this->query->exec("SELECT `text` FROM `".Tbl::get('TBL_CUST_SAVE')."` WHERE `user_id`='$user_id' AND `field_id`='$field_id'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('text'))
+			->from(Tbl::get('TBL_CUST_SAVE'))
+			->where($qb->expr()->equal(new Field('user_id'), $user_id))
+			->andWhere($qb->expr()->equal(new Field('field_id'), $field_id));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
+		
 		return $this->query->fetchField('text');
 	}
 	
@@ -483,7 +490,12 @@ class Gps extends DbAccessor
 	 * @return array
 	 */
 	public function getUserFields($user_id){
-		$this->query->exec("SELECT `field_id`, `text` FROM `".Tbl::get('TBL_CUST_SAVE')."` WHERE `user_id`='$user_id'");
+		$qb = new QueryBuilder();
+		$qb->select(array(new Field('field_id'), new Field('text')))
+			->from(Tbl::get('TBL_CUST_SAVE'))
+			->where($qb->expr()->equal(new Field('user_id'), $user_id));
+		
+		$this->query->exec($qb->getSQL());
 		return $this->query->fetchRecords();
 	}
 	
@@ -494,20 +506,22 @@ class Gps extends DbAccessor
 	 * @return int
 	 */
 	public function getIdByName($node_name, $type_id = 0, $do_like = false, $cacheMinutes = null){
-		$sql_query = "SELECT `id` FROM `".Tbl::get('TBL_TREE')."` WHERE ";
+		$qb = new QueryBuilder();
+		$qb->select(new Field('id'))
+			->from(Tbl::get('TBL_TREE'));
 		
 		if($do_like){
-			$sql_query .= "`name` LIKE '$node_name'";
+			$qb->andWhere($qb->expr()->like(new Field('name'), $node_name));
 		}
 		else{
-			$sql_query .= "`name`='$node_name'";
+			$qb->andWhere($qb->expr()->equal(new Field('name'), $node_name));
 		}
 		
 		if($type_id){
-			$sql_query .= " and `type_id`='$type_id'";
+			$qb->andWhere($qb->expr()->like(new Field('type_id'), $type_id));
 		}
 		
-		$this->query->exec($sql_query, $cacheMinutes);
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchField('id');
 	}
 	
@@ -521,21 +535,22 @@ class Gps extends DbAccessor
 	 * @return array nodes
 	 */
 	public function getNodesByName($node_name, $type_id, $do_like = false, $cacheMinutes = null){
-
-		$sql_query = "SELECT * FROM `".Tbl::get('TBL_TREE')."` WHERE ";
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_TREE'));
 		
 		if($do_like){
-			$sql_query .= "`name` LIKE '$node_name'";
+			$qb->andWhere($qb->expr()->like(new Field('name'), $node_name));
 		}
 		else{
-			$sql_query .= "`name`='$node_name'";
+			$qb->andWhere($qb->expr()->equal(new Field('name'), $node_name));
 		}
 		
 		if($type_id){
-			$sql_query .= " and `type_id`='$type_id'";
+			$qb->andWhere($qb->expr()->like(new Field('type_id'), $type_id));
 		}
 		
-		$this->query->exec($sql_query, $cacheMinutes);
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchRecords();
 	}
 
@@ -547,7 +562,7 @@ class Gps extends DbAccessor
 	 * @param string $order
 	 *
 	 */
-	public function getTypes($where = null, $order = "`id` ASC", $cacheMinutes = null){
+	/*public function getTypes($where = null, $order = "`id` ASC", $cacheMinutes = null){
 		if(!empty($where)){
 			$where = " WHERE $where";
 		}
@@ -557,24 +572,27 @@ class Gps extends DbAccessor
 							ORDER BY $order", $cacheMinutes);
 							
 		return $this->query->fetchRecords();
-	}
+	}*/
 	/**
 	 * Get country by iso code. 
 	 * @param string iso code, three or two digits
 	 * @return array
 	 */
 	public function getCountryByCode($isoCode, $cacheMinutes = null){
-		$query  = "SELECT * FROM `".Tbl::get('TBL_COUNTRY_ISO')."` WHERE ";
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_COUNTRY_ISO'));
+		
 		if(strlen($isoCode) == 2){
-			$query .=  "`iso2` = '".strtoupper($isoCode)."'";
+			$qb->andWhere($qb->expr()->equal(new Field('iso2'), strtoupper($isoCode)));
 		}
 		elseif (strlen($isoCode) == 3){
-			$query .=  "`iso3` = '".strtoupper($isoCode)."'";			
+			$qb->andWhere($qb->expr()->equal(new Field('iso3'), strtoupper($isoCode)));
 		}
 		else{
 			throw new InvalidIntegerArgumentException("isoCode should be two or three chars length");
 		}
-		$this->query->exec($query, $cacheMinutes);
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchRecord();
 	}
 	
@@ -592,15 +610,18 @@ class Gps extends DbAccessor
 			return false;
 		}
 		
-		$sql_query = "SELECT * FROM `".Tbl::get('TBL_TREE')."` WHERE 1";
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_TREE'))
+			->where($qb->expr()->equal(new Field('lat'), $latitude))
+			->andWhere($qb->expr()->equal(new Field('lng'), $longitude));
 		
 		if($type_id !== null){
-			$sql_query .= " AND `type_id`='$type_id'";
+			$qb->andWhere($qb->expr()->equal(new Field('type_id'), $type_id));
 		}
 		
-		$exact_lat_lon = " AND `lat` = '".$latitude."' AND `lng` = '".$longitude."'";
 		
-		$this->query->exec($sql_query . $exact_lat_lon, $cacheMinutes);		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);		
 		if($this->query->countRecords()){
 			return $this->query->fetchRecord();
 		}
@@ -619,10 +640,13 @@ class Gps extends DbAccessor
 			$lng_min = $longitude - (1/2)/$pow;
 			$lng_max = $longitude + (1/2)/$pow;			
 			
-			$this->query->exec("SELECT * FROM `wgps_tree` 
-								WHERE  	lat BETWEEN ".$lat_min." AND ".$lat_max."
-										AND 
-										`lng` BETWEEN ".$lng_min." AND ".$lng_max ."");
+			$qb = new QueryBuilder();
+			$qb->select(new Field('*'))
+				->from(Tbl::get('TBL_TREE'))
+				->where($qb->expr()->between(new Field('lat'), $lat_min, $lat_max))
+				->andWhere($qb->expr()->between(new Field('lng'), $lng_min, $lng_max));
+			
+			$this->query->exec($qb->getSQL());
 			if($this->query->countRecords()){
 				return $this->query->fetchRecord();
 			}
@@ -656,7 +680,12 @@ class Gps extends DbAccessor
 			}
 		}
 		while ($my_id!=static::ROOT_NODE){
-			$this->query->exec("SELECT `parent_id` FROM `".Tbl::get('TBL_TREE')."` WHERE `id`='$my_id'", $cacheMinutes);
+			$qb = new QueryBuilder();
+			$qb->select(new Field('parent_id'))
+				->from(Tbl::get('TBL_TREE'))
+				->where($qb->expr()->equal(new Field('id'), $my_id));
+			
+			$this->query->exec($qb->getSQL(), $cacheMinutes);
 			$par_id=$this->query->fetchField('parent_id');
 			foreach ($parents as $parent){
 				if($par_id==$parent['node_id']){

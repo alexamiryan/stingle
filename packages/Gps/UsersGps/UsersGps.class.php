@@ -4,11 +4,22 @@ class UsersGps extends Gps
 	const TBL_USERS_GPS = 'users_gps';
 
 	public function fillUsersGps($userId, $leafId){
-		$this->query->exec("delete from `".Tbl::get('TBL_USERS_GPS')."` where `user_id`='$userId'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_USERS_GPS'))
+			->where($qb->expr()->equal(new Field('user_id'), $userId));
+		
+		$this->query->exec($qb->getSQL());
 			
 		$gpsTree = $this->getNodeTree($leafId);
 		foreach($gpsTree as $treeNode){
-			$this->query->exec("INSERT INTO `".Tbl::get('TBL_USERS_GPS')."` (`user_id`,`node_id`) VALUES('$userId','{$treeNode["node_id"]}')");
+			$qb = new QueryBuilder();
+			$qb->insert(Tbl::get('TBL_USERS_GPS'))
+				->values(array(
+						'user_id' => $userId,
+						'node_id' => $treeNode["node_id"]
+						));
+			
+			$this->query->exec($qb->getSQL());
 		}
 	}
 }

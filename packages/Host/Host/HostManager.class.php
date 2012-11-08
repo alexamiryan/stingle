@@ -3,7 +3,13 @@ class HostManager{
 	
 	public static function getHostByName($hostName, $cacheMinutes = null){
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS', 'Host')  ."` WHERE `host` = '{$hostName}'", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_HOSTS', 'Host'))
+			->where($qb->expr()->equal(new Field('host'), $hostName));
+		
+		$sql->exec($qb->getSQL(), $cacheMinutes);
 		if($sql->countRecords()){
 			$data = $sql->fetchRecord();
 			$host = new Host();
@@ -16,7 +22,12 @@ class HostManager{
 			$parentHostName = array_pop($explodedArray);
 			$wildcardHostName = "*.". $parentHostName;
 			
-			$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS', 'Host')  ."` WHERE `host` = '{$wildcardHostName}'", $cacheMinutes);
+			$qb = new QueryBuilder();
+			$qb->select(new Field('*'))
+				->from(Tbl::get('TBL_HOSTS', 'Host'))
+				->where($qb->expr()->equal(new Field('host'), $wildcardHostName));
+			
+			$sql->exec($qb->getSQL(), $cacheMinutes);
 			if($sql->countRecords()){
 				$data = $sql->fetchRecord();
 				$data['host'] = $originalHostName;
@@ -37,7 +48,11 @@ class HostManager{
 	public static function getAllHosts($cacheMinutes = null){
 		$hosts = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS', 'Host')."`", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))->from(Tbl::get('TBL_HOSTS', 'Host'));
+		
+		$sql->exec($qb->getSQL(), $cacheMinutes);
 		while(($host_data = $sql->fetchRecord()) != false){
 			$h = new Host();
 			Host::setData($host_data, $h);

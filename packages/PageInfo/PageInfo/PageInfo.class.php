@@ -66,18 +66,35 @@ class PageInfo extends DbAccessor
 	}
 	
 	protected static function queryString($lang_id=null, $host_id=null, $module=null, $page=null){
-		$lang_where = "lang_id ". ($lang_id === null ? "IS NULL " : "=".$lang_id);
-		$host_where = "host_id ". ($host_id === null ? "IS NULL " : "=".$host_id);
-		$module_where = "module ". ($module === null ? "IS NULL " : "='".$module."'");
-		$page_where = "page ". ($page === null ? "IS NULL " : "='".$page."'");
+		$qb = new QueryBuilder();
+		$qb->select(new Field('title'), new Field('meta_keywords'), new Field('meta_description'))
+			->from(Tbl::get('TBL_PAGE_INFO'));
+		if($lang_id === null){
+			$qb->andWhere($qb->expr()->isNull(new Field('lang_id')));
+		}
+		else{
+			$qb->andWhere($qb->expr()->equal(new Field('lang_id'), $lang_id));
+		}	
+		if($host_id === null){
+			$qb->andWhere($qb->expr()->isNull(new Field('host_id')));
+		}
+		else{
+			$qb->andWhere($qb->expr()->equal(new Field('host_id'), $host_id));
+		}
+		if($module === null){
+			$qb->andWhere($qb->expr()->isNull(new Field('module')));
+		}
+		else{
+			$qb->andWhere($qb->expr()->equal(new Field('module'), $module));
+		}
+		if($page === null){
+			$qb->andWhere($qb->expr()->isNull(new Field('page')));
+		}
+		else{
+			$qb->andWhere($qb->expr()->equal(new Field('page'), $page));
+		}	
 		
-		$query = "SELECT `title`,	`meta_keywords`, `meta_description` FROM `".Tbl::get('TBL_PAGE_INFO')."` 
-					WHERE  ".$lang_where."
-					AND ".$host_where."
-					AND ".$module_where."
-					AND ".$page_where;
-		
-		return $query;
+		return $qb->getSQL();
 	}
 }
 ?>

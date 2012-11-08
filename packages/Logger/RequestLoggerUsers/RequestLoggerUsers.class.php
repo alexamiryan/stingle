@@ -12,22 +12,21 @@ class RequestLoggerUsers extends DBLogger {
 			$userId = $userObj->id;
 			$userObjectSerialized = "'". mysql_real_escape_string(serialize($userObj)) . "'";
 		}
-
-		$sql->exec("INSERT DELAYED INTO `".Tbl::get("TBL_REQUEST_LOG")."` 
-						(`user_id`, `user_obj`,`session_id`, `get`, `post`, `server`, `cookies`, `session`, `response`)
-						VALUES	(
-									$userId,
-									$userObjectSerialized,
-									'".session_id()."',
-									'".mysql_real_escape_string(serialize($_GET))."',
-									'".mysql_real_escape_string(serialize($_POST))."',
-									'".mysql_real_escape_string(serialize($_SERVER))."',
-									'".mysql_real_escape_string(serialize($_COOKIE))."',
-									'".mysql_real_escape_string(serialize($_SESSION))."',
-									'".mysql_real_escape_string(ob_get_contents())."'
-								)"
-		);
-						
+		$qb = new QueryBuilder();
+		$qb->insertDelayed(Tbl::get('TBL_REQUEST_LOG'))
+			->values(array(
+							"user_id" => $userId, 
+							"user_obj" => $userObjectSerialized, 
+							"session_id" => session_id(), 
+							"get" => serialize($_GET), 
+							"post" => serialize($_POST), 
+							"server" => serialize($_SERVER), 
+							"cookies" => serialize($_COOKIE), 
+							"session" => serialize($_SESSION), 
+							"response" => ob_get_contents() 
+						)
+					);
+		$sql->exec($qb->getSQL());
 	} 
 }
 ?>

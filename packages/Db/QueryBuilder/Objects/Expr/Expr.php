@@ -408,7 +408,7 @@ class Expr
         	$y = array($y->getSQL());
         }*/
         
-        return new Func($x . ' NOT IN', (array) $y);
+        return new Func($x . ' NOT IN',  $y);
     }
 
     /**

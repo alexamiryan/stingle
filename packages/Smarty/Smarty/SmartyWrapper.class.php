@@ -201,7 +201,9 @@ class SmartyWrapper extends Smarty {
 		$this->setTemplate($this->templatesConfig->defaultTemplateName);
 		
 		// Set default layout
-		$this->setLayout ( $config->defaultLayout, true );
+		$this->setLayout ( $config->defaultLayout);
+		// Reset isLayoutSet
+		$this->isLayoutSet = false;
 
 		// Add includes/smartyPlugins to plugin dirs
 		$this->addPluginsDir($config->defaultPluginsDir);
@@ -291,9 +293,13 @@ class SmartyWrapper extends Smarty {
 	 *
 	 * @param string $layout selected layout Example: general.tpl, axaj.tpl
 	 */
-	public function setLayout($layout, $isSystem = false) {
+	public function setLayout($layout, $override = false) {
 		if(empty($layout)){
 			throw new InvalidArgumentException("Layout is not specified");
+		}
+		
+		if($this->isLayoutSet == true and $override == false){
+			return;
 		}
 		
 		if(file_exists($this->getFilePathFromTemplate('layouts/' . $layout . '.tpl', true))){
@@ -308,19 +314,13 @@ class SmartyWrapper extends Smarty {
 		
 		$this->layoutName = $layout;
 		
-		if(!$isSystem){
-			$this->isLayoutSet = true;
-		}
+		$this->isLayoutSet = true;
 	}
 	
 	public function getLayout(){
 		return $this->layoutName;
 	}
 	
-	public function isLayoutSet(){
-		return $this->isLayoutSet;
-	}
-
 	private function getCssFilePath($fileName){
 		$resultingFileName = $fileName;
 		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
@@ -576,23 +576,23 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		// Call template init hook if there is any
-		$hookFunctionName = 'initTemplate_' . $this->template;
-		if(function_exists($hookFunctionName)){
-			$hookName = 'initTemplate_' . $this->template;
-			$templateHook = new Hook($hookName, $hookFunctionName);
-			HookManager::registerHook($templateHook);
+		$currentTemplate = $this->template;
+		while(true){
+			$hookName = 'initTemplate_' . $currentTemplate;
+			if(function_exists($hookName)){
+				// Do not continue if function returned true
+				if(call_user_func($hookName) === true){
+					break;
+				}
+			}
 				
-			HookManager::callHook($hookName);
-		}
-		
-		// Call layout init hook if there is any
-		$hookFunctionName = 'initLayout_' . $this->layoutName;
-		if(function_exists($hookFunctionName)){
-			$hookName = 'hookInitLayout_' . $this->layoutName;
-			$layoutHook = new Hook($hookName, $hookFunctionName);
-			HookManager::registerHook($layoutHook);
-			
-			HookManager::callHook($hookName);
+			// Check if current templete has parent and call panret's init function too
+			if(isset($this->templates->$currentTemplate) and !empty($this->templates->$currentTemplate)){
+				$currentTemplate = $this->templates->$currentTemplate;
+			}
+			else{
+				break;
+			}
 		}
 		
 		// Find path that exists for tpls inclusion

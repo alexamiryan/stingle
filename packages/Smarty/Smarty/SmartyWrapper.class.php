@@ -157,10 +157,8 @@ class SmartyWrapper extends Smarty {
 	 */
 	private $templatesConfig;
 	
+	public $incsPath = 'tpl/incs/';
 	public $modulesPath = 'tpl/modules/';
-	public $chunksPath = 'tpl/incs/chunks/';
-	public $snippetsPath = 'tpl/incs/snippets/';
-	
 	
 	public function isInitialized(){
 		if($this->isInitialized){
@@ -285,6 +283,73 @@ class SmartyWrapper extends Smarty {
 				return false;
 			}
 		}
+	}
+	
+	
+	/**
+	 * Find file that suits best for our needs.
+	 * First tries to find it in the closest module, going up by the tree, 
+	 * then tries to find in template using optional alternate path if given
+	 * 
+	 *  @param string $fileName
+	 *  @param string $alternatePath
+	 *  @return string
+	 */
+	public function findFile($fileName, $alternatePath = ""){
+		$templatePathPrefix = $this->template_dir . $this->defaultRelativeTemplatesPath;
+		$currentTemplate = $this->template;
+		
+		// while loop for iterating through templates hierarchy
+		while(true){
+			$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
+			
+			$modulesPath = $this->modulesPath;
+			// Go up
+			for($i = count($levels)-1; $i >= 1 ; $i--){
+				if(isset($this->nav->{$levels[$i]}) and !empty($this->nav->{$levels[$i]})){
+					$modulesPath = $this->modulesPath;
+					// Build module path for current nav level
+					for($j=0; $j<$i; $j++){
+						$modulesPath .= $this->nav->{$levels[$j]} . '/';
+					}
+					
+					// Check if there is file in this level
+					if(file_exists($templatePathPrefix . $currentTemplate .'/'. $modulesPath . $fileName)){
+						return $templatePathPrefix . $currentTemplate .'/'. $modulesPath . $fileName;
+					}
+				}
+			}
+			// Look in template in general
+			if(file_exists($templatePathPrefix . $currentTemplate .'/'. $alternatePath . $fileName)){
+				return $templatePathPrefix . $currentTemplate .'/'. $alternatePath . $fileName;
+			}
+			
+			// If there is parent template let's look there too
+			if(isset($this->templates->$currentTemplate) and !empty($this->templates->$currentTemplate)){
+				$currentTemplate = $this->templates->$currentTemplate;
+			}
+			else{
+				// No parent template left, good bye
+				break;
+			}
+		}
+		throw new RuntimeException("Unable to find given filename ($fileName) in all available lookup locations!");
+	}
+	
+	public function getChunkPath($fileName){
+		return $this->findFile("chunks/" . $fileName, $this->incsPath);
+	}
+	
+	/**
+	 * @param string $fileName
+	 * @param array $params
+	 * @return string
+	 */
+	public function getChunk($fileName, $params = array()){
+		foreach ($params as $key=>$value){
+			$this->assign($key, $value);
+		}
+		return $this->fetch($this->getChunkPath($fileName));
 	}
 
 	/**
@@ -550,8 +615,6 @@ class SmartyWrapper extends Smarty {
 		// Template Paths
 		$this->assign ( '__ViewDirPath', $this->template_dir );
 		$this->assign ( '__ModulesPath', $this->modulesPath );
-		$this->assign ( '__ChunksPath', $this->chunksPath );
-		$this->assign ( '__SnippetsPath', $this->snippetsPath );
 	}
 	
 	public function fetch($template, $cache_id = null, $compile_id = null, $parent = null, $display = false){
@@ -608,6 +671,8 @@ class SmartyWrapper extends Smarty {
 			}
 		}
 		
+		$foundLevelsCount = $i;
+
 		$this->fileToDisplay = $this->includePath . "{$this->nav->{$levels[$i+1]}}.tpl";
 		
 		if(empty($this->overridedFileToDisplay)){
@@ -618,7 +683,8 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		// Check if page exists and if not show 404 error page
-		if(empty($this->fileToDisplay)){
+		$requiredLevelsCount = $this->nav->existentLevelsCount - 2;
+		if(empty($this->fileToDisplay) or $foundLevelsCount < $requiredLevelsCount){
 			header("HTTP/1.0 404 Not Found");
 			$this->fileToDisplay = $this->getFilePathFromTemplate($this->modulesPath . $this->error404Page . ".tpl");
 			$this->removeWrapper();

@@ -53,6 +53,8 @@ class RequestParser
 			$nav->{$this->config->actionName} = $_GET[$this->config->actionName];
 		}
 		
+		$nav->existentLevelsCount = $existentLevelsCount;
+		
 		return $nav;
 	}
 	

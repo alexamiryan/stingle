@@ -2,16 +2,33 @@
 class Controller
 {
 	private $config;
+	private $controllersPath = null;
 	
 	public function __construct(Config $config){
 		$this->config = $config;
 	}
 	
+	public function setControllersPath($path){
+		if(empty($path)){
+			throw new InvalidArgumentException("\$path have to be non empty string");
+		}
+		if(!file_exists($this->config->controllersDir . '/' . $path)){
+			throw new InvalidArgumentException("There is no controllers folder with name $path");
+		}
+		
+		$this->controllersPath = $path;
+	}
+	
 	public function exec(){
 		$nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
 		$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
+		
+		if($this->controllersPath == null){
+			$this->controllersPath = $this->config->defaultControllerPath;
+		}
+		
 		// Starting include path
-		$includePath = $this->config->modulesDir . '/';
+		$includePath = $this->config->controllersDir . '/' . $this->controllersPath . '/';
 		for($i = 0; $i < count($levels)-1; $i++){
 			$level = $levels[$i];
 			if(isset($nav->$level) and !empty($nav->$level)){
@@ -38,18 +55,21 @@ class Controller
 				}
 			}
 		}
-		// Include action in includePath if exists
-		if(isset($nav->{$this->config->actionName}) and !empty($nav->{$this->config->actionName})){
-			if(@file_exists($includePath . "actions/{$nav->{$this->config->actionName}}.php")){
-				include ($includePath . "actions/{$nav->{$this->config->actionName}}.php");
-			}
-		}
 		
-		// Include main controller file in includePath if exists
-		if(file_exists($includePath . "{$nav->{$levels[$i+1]}}.php")){
-			include ($includePath . "{$nav->{$levels[$i+1]}}.php");
-		}
+		$requiredLevelsCount = $nav->existentLevelsCount - 2;
+		if($i >= $requiredLevelsCount){
+			// Include action in includePath if exists
+			if(isset($nav->{$this->config->actionName}) and !empty($nav->{$this->config->actionName})){
+				if(@file_exists($includePath . "actions/{$nav->{$this->config->actionName}}.php")){
+					include ($includePath . "actions/{$nav->{$this->config->actionName}}.php");
+				}
+			}
 			
+			// Include main controller file in includePath if exists
+			if(file_exists($includePath . "{$nav->{$levels[$i+1]}}.php")){
+				include ($includePath . "{$nav->{$levels[$i+1]}}.php");
+			}
+		}			
 	}
 }
 ?>

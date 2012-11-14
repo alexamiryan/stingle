@@ -6,8 +6,9 @@ class LoaderSiteNavigation extends Loader{
 		require_once ('Controller.class.php');
 	}
 	
-	protected function customInitBeforeObjects(){
+	protected function loadController(){
 		$this->controller = new Controller($this->config->AuxConfig);
+		$this->register($this->controller);
 	}
 	
 	protected function loadRequestParser(){

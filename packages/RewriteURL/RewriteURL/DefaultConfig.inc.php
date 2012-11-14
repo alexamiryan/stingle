@@ -6,7 +6,9 @@ $defaultConfig = array(
 												'levels' => array(
 															'module',
 															'page',
-															'subpage')
+															'subpage',
+															'puk',
+															'micropage')
 								),
 						'Objects' => array(	'rewriteURL' => 'rewriteURL'  ),
 						'Hooks' => array(  'BeforeRequestParserStep2' => 'ParseURL'  )

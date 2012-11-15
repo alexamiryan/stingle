@@ -157,8 +157,7 @@ class SmartyWrapper extends Smarty {
 	 */
 	private $templatesConfig;
 	
-	public $incsPath = 'tpl/incs/';
-	public $modulesPath = 'tpl/modules/';
+	public $pagesPath = 'pages/';
 	
 	public function isInitialized(){
 		if($this->isInitialized){
@@ -176,6 +175,7 @@ class SmartyWrapper extends Smarty {
 		$this->loadConfig($config);
 
 		$this->registerPlugin('modifier', 'filePath', array(&$this, 'getFilePathFromTemplate'));
+		$this->registerPlugin('modifier', 'findFile', array(&$this, 'findFilePath'));
 		
 		$this->isInitialized = true;
 	}
@@ -289,13 +289,14 @@ class SmartyWrapper extends Smarty {
 	/**
 	 * Find file that suits best for our needs.
 	 * First tries to find it in the closest module, going up by the tree, 
-	 * then tries to find in template using optional alternate path if given
+	 * then tries to find in template's global path using optional alternate path if given.
+	 * If not suceeded repeats same search in parent template if there is any.
 	 * 
 	 *  @param string $fileName
 	 *  @param string $alternatePath
 	 *  @return string
 	 */
-	public function findFile($fileName, $alternatePath = ""){
+	public function findFilePath($fileName, $alternatePath = ""){
 		$templatePathPrefix = $this->template_dir . $this->defaultRelativeTemplatesPath;
 		$currentTemplate = $this->template;
 		
@@ -303,19 +304,19 @@ class SmartyWrapper extends Smarty {
 		while(true){
 			$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
 			
-			$modulesPath = $this->modulesPath;
+			$pagesPath = $this->pagesPath;
 			// Go up
 			for($i = count($levels)-1; $i >= 1 ; $i--){
 				if(isset($this->nav->{$levels[$i]}) and !empty($this->nav->{$levels[$i]})){
-					$modulesPath = $this->modulesPath;
+					$pagesPath = $this->pagesPath;
 					// Build module path for current nav level
 					for($j=0; $j<$i; $j++){
-						$modulesPath .= $this->nav->{$levels[$j]} . '/';
+						$pagesPath .= $this->nav->{$levels[$j]} . '/';
 					}
 					
 					// Check if there is file in this level
-					if(file_exists($templatePathPrefix . $currentTemplate .'/'. $modulesPath . $fileName)){
-						return $templatePathPrefix . $currentTemplate .'/'. $modulesPath . $fileName;
+					if(file_exists($templatePathPrefix . $currentTemplate .'/'. $pagesPath . $fileName)){
+						return $templatePathPrefix . $currentTemplate .'/'. $pagesPath . $fileName;
 					}
 				}
 			}
@@ -337,7 +338,7 @@ class SmartyWrapper extends Smarty {
 	}
 	
 	public function getChunkPath($fileName){
-		return $this->findFile("chunks/" . $fileName, $this->incsPath);
+		return $this->findFilePath("chunks/" . $fileName);
 	}
 	
 	/**
@@ -389,7 +390,7 @@ class SmartyWrapper extends Smarty {
 	private function getCssFilePath($fileName){
 		$resultingFileName = $fileName;
 		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
-			$resultingFileName = SITE_PATH . $this->getFilePathFromTemplate('css/' . $fileName, true);
+			$resultingFileName = SITE_PATH . $this->findFilePath('css/' . $fileName);
 			if($resultingFileName === false){
 				throw new TemplateFileNotFoundException("CSS file '$fileName' not found.");
 			}
@@ -398,19 +399,19 @@ class SmartyWrapper extends Smarty {
 	}
 	
 	
-	public function addCss($fileName, $fromTop = false) {
-		$this->addCssAtPos($fileName, static::PRIMARY, $fromTop);
+	public function addPrimaryCss($fileName, $fromTop = false) {
+		$this->addPrimaryCssAtPos($fileName, static::PRIMARY, $fromTop);
 	}
 	
-	public function addSecondaryCss($fileName, $fromTop = false) {
-		$this->addCssAtPos($fileName, static::SECONDARY, $fromTop);
+	public function addCss($fileName, $fromTop = false) {
+		$this->addPrimaryCssAtPos($fileName, static::SECONDARY, $fromTop);
 	}
 	
 	/**
 	 * Adds a CSS file to the header section of the page displayed.
 	 * @param $fileName
 	 */
-	public function addCssAtPos($fileName, $position = null, $fromTop = false) {
+	public function addPrimaryCssAtPos($fileName, $position = null, $fromTop = false) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("CSS filename is not specified");
 		}
@@ -439,7 +440,7 @@ class SmartyWrapper extends Smarty {
 	private function getJsFilePath($fileName){
 		$resultingFileName = $fileName;
 		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
-			$resultingFileName = SITE_PATH . $this->getFilePathFromTemplate('js/' . $fileName, true);
+			$resultingFileName = SITE_PATH . $this->findFilePath('js/' . $fileName);
 			if($resultingFileName === false){
 				throw new TemplateFileNotFoundException("JS file '$fileName' not found.");
 			}
@@ -448,11 +449,11 @@ class SmartyWrapper extends Smarty {
 	}
 	
 	
-	public function addJs($fileName, $fromTop = false) {
+	public function addPrimaryJs($fileName, $fromTop = false) {
 		$this->addJsAtPos($fileName, static::PRIMARY, $fromTop);
 	}
 	
-	public function addSecondaryJs($fileName, $fromTop = false) {
+	public function addJs($fileName, $fromTop = false) {
 		$this->addJsAtPos($fileName, static::SECONDARY, $fromTop);
 	}
 	
@@ -551,7 +552,7 @@ class SmartyWrapper extends Smarty {
 			throw new InvalidArgumentException("Path is not specified");
 		}
 		
-		$result = $this->getFilePathFromTemplate($this->modulesPath . $path . ".tpl");
+		$result = $this->getFilePathFromTemplate($this->pagesPath . $path . ".tpl");
 		
 		if($result === false){
 			throw new RuntimeException("Specified path is invalid");
@@ -614,7 +615,7 @@ class SmartyWrapper extends Smarty {
 		
 		// Template Paths
 		$this->assign ( '__ViewDirPath', $this->template_dir );
-		$this->assign ( '__ModulesPath', $this->modulesPath );
+		$this->assign ( '__PagesPath', $this->pagesPath );
 	}
 	
 	public function fetch($template, $cache_id = null, $compile_id = null, $parent = null, $display = false){
@@ -660,7 +661,7 @@ class SmartyWrapper extends Smarty {
 		
 		// Find path that exists for tpls inclusion
 		$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
-		$this->includePath = $this->modulesPath;
+		$this->includePath = $this->pagesPath;
 		for($i = 0; $i < count($levels)-1; $i++){
 			$level = $levels[$i];
 			if(isset($this->nav->$level) and !empty($this->nav->$level)){
@@ -686,12 +687,17 @@ class SmartyWrapper extends Smarty {
 		$requiredLevelsCount = $this->nav->existentLevelsCount - 2;
 		if(empty($this->fileToDisplay) or $foundLevelsCount < $requiredLevelsCount){
 			header("HTTP/1.0 404 Not Found");
-			$this->fileToDisplay = $this->getFilePathFromTemplate($this->modulesPath . $this->error404Page . ".tpl");
+			$this->fileToDisplay = $this->getFilePathFromTemplate($this->pagesPath . $this->error404Page . ".tpl");
+			
+			if(empty($this->fileToDisplay)){
+				$this->fileToDisplay = 'system/common/404.tpl';
+			}
+			$this->setPageTitle("404 Not Found");
+			
 			$this->removeWrapper();
 		}
 		
 		$this->defaultAssingns();
-		
 		// Check if wrapper is set and if yes include it
 		if(!empty($this->wrapper)){
 			$wrapperPath = $this->getFilePathFromTemplate($this->includePath . $this->wrappersDir . $this->wrapper . ".tpl", true);

@@ -21,7 +21,9 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 						'Objects' => array(	'Smarty' => 'smarty'  ),
 						'Hooks' => array(  	'AfterRequestParser' => 'SmartyInit', 
 											'Output' => 'SmartyDisplay',
-											'AfterPluginInit' => 'RegisterSmartyPlugins'  )
+											'AfterPluginInit' => 'CollectSmartyPluginsDir',
+											'AfterPackagesLoad' => 'RegisterSmartyPlugins',
+								  )
 				
 					);
 ?>

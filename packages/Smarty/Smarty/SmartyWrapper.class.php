@@ -45,13 +45,13 @@ class SmartyWrapper extends Smarty {
 	 * CSSs that should be added to the displayed page
 	 * @var array
 	 */
-	private $cssFiles = array ();
+	protected $cssFiles = array ();
 
 	/**
 	 * JSs that should be added to the displayed page
 	 * @var array
 	 */
-	private $jsFiles = array ();
+	protected $jsFiles = array ();
 
 	/**
 	 * Title of the page to be displayed
@@ -289,14 +289,14 @@ class SmartyWrapper extends Smarty {
 	/**
 	 * Find file that suits best for our needs.
 	 * First tries to find it in the closest module, going up by the tree, 
-	 * then tries to find in template's global path using optional alternate path if given.
+	 * then tries to find in template's global path and finally using optional alternate path if given.
 	 * If not suceeded repeats same search in parent template if there is any.
 	 * 
 	 *  @param string $fileName
 	 *  @param string $alternatePath
 	 *  @return string
 	 */
-	public function findFilePath($fileName, $alternatePath = ""){
+	public function findFilePath($fileName, $alternatePath = null){
 		$templatePathPrefix = $this->template_dir . $this->defaultRelativeTemplatesPath;
 		$currentTemplate = $this->template;
 		
@@ -321,7 +321,12 @@ class SmartyWrapper extends Smarty {
 				}
 			}
 			// Look in template in general
-			if(file_exists($templatePathPrefix . $currentTemplate .'/'. $alternatePath . $fileName)){
+			if(file_exists($templatePathPrefix . $currentTemplate .'/'. $fileName)){
+				return $templatePathPrefix . $currentTemplate .'/'. $fileName;
+			}
+			
+			// Look in optional alternate lookup location
+			if(!empty($alternatePath) and file_exists($templatePathPrefix . $currentTemplate .'/'. $alternatePath . $fileName)){
 				return $templatePathPrefix . $currentTemplate .'/'. $alternatePath . $fileName;
 			}
 			
@@ -425,11 +430,11 @@ class SmartyWrapper extends Smarty {
 	
 		$filePath = $this->getCssFilePath($fileName);
 		if(!empty($filePath) and $filePath != '/'){
-			if(!$fromTop){
-				array_push($this->cssFiles[$position], $filePath);
+			if($fromTop){
+				array_splice($this->cssFiles[$position], 0, 0, $filePath);
 			}
 			else{
-				array_splice($this->cssFiles[$position], 0, 0, $filePath);
+				array_push($this->cssFiles[$position], $filePath);
 			}
 		}
 		else{
@@ -475,11 +480,11 @@ class SmartyWrapper extends Smarty {
 		
 		$filePath = $this->getJsFilePath($fileName);
 		if(!empty($filePath) and $filePath != '/'){
-			if(!$fromTop){
-				array_push($this->jsFiles[$position], $filePath);
+			if($fromTop){
+				array_splice($this->jsFiles[$position], 0, 0, $filePath);
 			}
 			else{
-				array_splice($this->jsFiles[$position], 0, 0, $filePath);
+				array_push($this->jsFiles[$position], $filePath);
 			}
 		}
 		else{

@@ -1,6 +1,24 @@
 <?
 class HostManager{
 	
+	public static function addHost(Host $host){
+		if(empty($host->host)){
+			throw new InvalidArgumentException("Host name is empty!");
+		}
+		$values = array( "host" => $host->host);
+		if(!empty($host->subdomain)){
+			$values["subdomain"] = $host->subdomain;
+		}
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_HOSTS', 'Host'))
+			->values($values);
+		$sql = MySqlDbManager::getQueryObject();
+
+		$sql->exec($qb->getSQL());
+		
+		$host->id = $sql->getLastInsertId();
+	}
+	
 	public static function getHostByName($hostName, $cacheMinutes = null){
 		$sql = MySqlDbManager::getQueryObject();
 		

@@ -62,6 +62,16 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 				}
 			}
 			
+			if($pageNumStart > 1){
+				$pagerFirstPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $pager->getUrlParam() . ':1');
+				$smarty->assign('pagerFirstPageLink', $pagerFirstPageLink);
+			}
+			
+			if($pageNumEnd < $pagesCount){
+				$pagerLastPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $pager->getUrlParam() . ':' .$pagesCount);
+				$smarty->assign('pagerLastPageLink', $pagerLastPageLink);
+			}
+			
 			if($currentPageNumber > 1){
 				$prevPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $pager->getUrlParam() . ':' . ($currentPageNumber - 1));
 				$smarty->assign('pagerPreviousPageLink', $prevPageLink);

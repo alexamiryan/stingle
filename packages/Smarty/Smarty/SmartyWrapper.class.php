@@ -638,7 +638,7 @@ class SmartyWrapper extends Smarty {
 	 * @param string $tpl
 	 * @return SmartyWrapper
 	 */
-	public function output(){
+	public function output($return = false){
 		// Do not display anything if output is disabled
 		if($this->isOutputDisabled){
 			return;
@@ -718,7 +718,12 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		// Finally display
-		parent::display ( $this->layoutPath );
+		if($return){
+			return parent::fetch($this->fileToDisplay);
+		}
+		else{
+			parent::display ( $this->layoutPath );
+		}
 	}
 }
 ?>

@@ -1,23 +1,20 @@
 <?
 class SmartyWrapper extends Smarty {
 
+	const PRIMARY = 0;
+	const SECONDARY = 1;
+	
 	/**
 	 * Relative path of the module's wrappers
 	 * @var string
 	 */
 	protected $wrappersDir = 'wrappers/';
 
-	/**
-	 * Module which gone be displayed
-	 * @var string
-	 */
-	private $module;
-
-	/**
-	 * Page which gone be displayed
-	 * @var string
-	 */
-	private $page;
+	
+	private $nav;
+	private $includePath;
+	private $fileToDisplay;
+	private $overridedFileToDisplay;
 	
 	/**
 	 * Template which will be used
@@ -30,7 +27,7 @@ class SmartyWrapper extends Smarty {
 	 * Template name from which extends current template
 	 * @var string
 	 */
-	private $templateExtends;
+	private $templates;
 	
 	/**
 	 * The selected page layout name. One of located in /templates/layouts folder
@@ -41,18 +38,20 @@ class SmartyWrapper extends Smarty {
 	 * The selected page layout path. One of located in /templates/layouts folder
 	 */
 	private $layoutPath;
+	
+	private $isLayoutSet = false;
 
 	/**
 	 * CSSs that should be added to the displayed page
 	 * @var array
 	 */
-	private $cssFiles = array ();
+	protected $cssFiles = array ();
 
 	/**
 	 * JSs that should be added to the displayed page
 	 * @var array
 	 */
-	private $jsFiles = array ();
+	protected $jsFiles = array ();
 
 	/**
 	 * Title of the page to be displayed
@@ -158,12 +157,8 @@ class SmartyWrapper extends Smarty {
 	 */
 	private $templatesConfig;
 	
-	public $modulesPath = 'tpl/modules/';
-	public $chunksPath = 'tpl/incs/chunks/';
-	public $snippetsPath = 'tpl/incs/snippets/';
+	public $pagesPath = 'pages/';
 	
-	
-
 	public function isInitialized(){
 		if($this->isInitialized){
 			return true;
@@ -171,20 +166,16 @@ class SmartyWrapper extends Smarty {
 		return false;
 	}
 	
-	public function initialize($module, $page, $config){
-		if(empty($module) or empty($page)){
-			throw new InvalidArgumentException("One or both of the arguments are empty");
-		}
+	public function initialize($config){
 		if($this->isInitialized){
 			throw new RuntimeException("Smarty is already initilized");
 		}
-
-		$this->module = $module;
-		$this->page = $page;
+		$this->nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
 
 		$this->loadConfig($config);
 
 		$this->registerPlugin('modifier', 'filePath', array(&$this, 'getFilePathFromTemplate'));
+		$this->registerPlugin('modifier', 'findFile', array(&$this, 'findFilePath'));
 		
 		$this->isInitialized = true;
 	}
@@ -204,16 +195,18 @@ class SmartyWrapper extends Smarty {
 		
 		// Set default template
 		$this->templatesConfig = $config->templatesConfig;
+		$this->templates = $this->templatesConfig->templates;
 		$this->setTemplate($this->templatesConfig->defaultTemplateName);
 		
 		// Set default layout
-		$this->setLayout ( $config->defaultLayout );
+		$this->setLayout ( $config->defaultLayout);
+		// Reset isLayoutSet
+		$this->isLayoutSet = false;
 
 		// Add includes/smartyPlugins to plugin dirs
 		$this->addPluginsDir($config->defaultPluginsDir);
 		
 		// Set error pages paths
-		$this->errorsModule = $config->errorsModule;
 		$this->error404Page = $config->error404Page;
 	}
 
@@ -244,7 +237,6 @@ class SmartyWrapper extends Smarty {
 			throw new RuntimeException("Given template name $template is unknown");
 		}
 		
-		$this->templateExtends = $this->templatesConfig->templates->$template;
 		$this->template = $template;
 	}
 	
@@ -255,6 +247,7 @@ class SmartyWrapper extends Smarty {
 	public function getTemplate(){
 		return $this->template;
 	}
+	
 	
 	/**
 	 * Returns file path from current template 
@@ -278,15 +271,91 @@ class SmartyWrapper extends Smarty {
 			$returnTemplatePathPrefix = $this->defaultRelativeTemplatesPath;
 		}
 
-		if(file_exists($templatePathPrefix . $this->template . '/' . $filename)){
-			return $returnTemplatePathPrefix . $this->template . '/' . $filename;
+		$currentTemplate = $this->template;
+		while(true){
+			if(file_exists($templatePathPrefix . $currentTemplate . '/' . $filename)){
+				return $returnTemplatePathPrefix . $currentTemplate . '/' . $filename;
+			}
+			elseif(isset($this->templates->$currentTemplate) and !empty($this->templates->$currentTemplate)){
+				$currentTemplate = $this->templates->$currentTemplate;
+			}
+			else{
+				return false;
+			}
 		}
-		elseif($this->templateExtends != "" and file_exists($templatePathPrefix .$this->templateExtends . '/' . $filename)){
-			return $returnTemplatePathPrefix .$this->templateExtends . '/' . $filename;
+	}
+	
+	
+	/**
+	 * Find file that suits best for our needs.
+	 * First tries to find it in the closest module, going up by the tree, 
+	 * then tries to find in template's global path and finally using optional alternate path if given.
+	 * If not suceeded repeats same search in parent template if there is any.
+	 * 
+	 *  @param string $fileName
+	 *  @param string $alternatePath
+	 *  @return string
+	 */
+	public function findFilePath($fileName, $alternatePath = null){
+		$templatePathPrefix = $this->template_dir . $this->defaultRelativeTemplatesPath;
+		$currentTemplate = $this->template;
+		
+		// while loop for iterating through templates hierarchy
+		while(true){
+			$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
+			
+			$pagesPath = $this->pagesPath;
+			// Go up
+			for($i = count($levels)-1; $i >= 1 ; $i--){
+				if(isset($this->nav->{$levels[$i]}) and !empty($this->nav->{$levels[$i]})){
+					$pagesPath = $this->pagesPath;
+					// Build module path for current nav level
+					for($j=0; $j<$i; $j++){
+						$pagesPath .= $this->nav->{$levels[$j]} . '/';
+					}
+					
+					// Check if there is file in this level
+					if(file_exists($templatePathPrefix . $currentTemplate .'/'. $pagesPath . $fileName)){
+						return $templatePathPrefix . $currentTemplate .'/'. $pagesPath . $fileName;
+					}
+				}
+			}
+			// Look in template in general
+			if(file_exists($templatePathPrefix . $currentTemplate .'/'. $fileName)){
+				return $templatePathPrefix . $currentTemplate .'/'. $fileName;
+			}
+			
+			// Look in optional alternate lookup location
+			if(!empty($alternatePath) and file_exists($templatePathPrefix . $currentTemplate .'/'. $alternatePath . $fileName)){
+				return $templatePathPrefix . $currentTemplate .'/'. $alternatePath . $fileName;
+			}
+			
+			// If there is parent template let's look there too
+			if(isset($this->templates->$currentTemplate) and !empty($this->templates->$currentTemplate)){
+				$currentTemplate = $this->templates->$currentTemplate;
+			}
+			else{
+				// No parent template left, good bye
+				break;
+			}
 		}
-		else{
-			return false;
+		throw new RuntimeException("Unable to find given filename ($fileName) in all available lookup locations!");
+	}
+	
+	public function getChunkPath($fileName){
+		return $this->findFilePath("chunks/" . $fileName);
+	}
+	
+	/**
+	 * @param string $fileName
+	 * @param array $params
+	 * @return string
+	 */
+	public function getChunk($fileName, $params = array()){
+		foreach ($params as $key=>$value){
+			$this->assign($key, $value);
 		}
+		return $this->fetch($this->getChunkPath($fileName));
 	}
 
 	/**
@@ -295,10 +364,15 @@ class SmartyWrapper extends Smarty {
 	 *
 	 * @param string $layout selected layout Example: general.tpl, axaj.tpl
 	 */
-	public function setLayout($layout) {
+	public function setLayout($layout, $override = false) {
 		if(empty($layout)){
 			throw new InvalidArgumentException("Layout is not specified");
 		}
+		
+		if($this->isLayoutSet == true and $override == false){
+			return;
+		}
+		
 		if(file_exists($this->getFilePathFromTemplate('layouts/' . $layout . '.tpl', true))){
 			$this->layoutPath = $this->getFilePathFromTemplate('layouts/' . $layout . '.tpl');
 		}
@@ -308,13 +382,20 @@ class SmartyWrapper extends Smarty {
 		else{
 			throw new RuntimeException("Layout $layout doesn't exist");
 		}
+		
 		$this->layoutName = $layout;
+		
+		$this->isLayoutSet = true;
 	}
-
+	
+	public function getLayout(){
+		return $this->layoutName;
+	}
+	
 	private function getCssFilePath($fileName){
 		$resultingFileName = $fileName;
 		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
-			$resultingFileName = SITE_PATH . $this->getFilePathFromTemplate('css/' . $fileName, true);
+			$resultingFileName = SITE_PATH . $this->findFilePath('css/' . $fileName);
 			if($resultingFileName === false){
 				throw new TemplateFileNotFoundException("CSS file '$fileName' not found.");
 			}
@@ -322,40 +403,61 @@ class SmartyWrapper extends Smarty {
 		return $resultingFileName;
 	}
 	
+	
+	public function addPrimaryCss($fileName, $fromTop = false) {
+		$this->addPrimaryCssAtPos($fileName, static::PRIMARY, $fromTop);
+	}
+	
+	public function addCss($fileName, $fromTop = false) {
+		$this->addPrimaryCssAtPos($fileName, static::SECONDARY, $fromTop);
+	}
+	
 	/**
 	 * Adds a CSS file to the header section of the page displayed.
 	 * @param $fileName
 	 */
-	public function addCss($fileName) {
+	public function addPrimaryCssAtPos($fileName, $position = null, $fromTop = false) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("CSS filename is not specified");
 		}
-
-		$this->cssFiles[] = $this->getCssFilePath($fileName);
-	}
-
-	/**
-	 * Removes a CSS file from the header section of the page displayed.
-	 * @param $fileName
-	 */
-	public function removeCss($fileName) {
-		if(empty($fileName)){
-			throw new InvalidArgumentException("CSS filename is not specified");
+		if($position === null){
+			$position = static::PRIMARY;
 		}
-		
-		$key = array_search($this->getCssFilePath($fileName), $this->cssFiles);
-		if($key !== false){
-			unset($this->cssFiles[$key]);
+	
+		if(!isset($this->cssFiles[$position]) or !is_array($this->cssFiles[$position])){
+			$this->cssFiles[$position] = array();
+		}
+	
+		$filePath = $this->getCssFilePath($fileName);
+		if(!empty($filePath) and $filePath != '/'){
+			if($fromTop){
+				array_splice($this->cssFiles[$position], 0, 0, $filePath);
+			}
+			else{
+				array_push($this->cssFiles[$position], $filePath);
+			}
 		}
 		else{
-			throw new InvalidArgumentException("Can't remove CSS file, because it was not added");
+			throw new SmartyException("Can't find CSS file $fileName in current template or ony parent templates");
 		}
+	}
+	
+	/**
+	 * Get correct path of CSS file
+	 * @param unknown_type $fileName 
+	 * @throws InvalidArgumentException
+	 */
+	public function getCss($fileName){
+		if(empty($fileName)){
+			throw new InvalidArgumentException("JS filename is not specified");
+		}
+		return $this->getCssFilePath($fileName);
 	}
 	
 	private function getJsFilePath($fileName){
 		$resultingFileName = $fileName;
 		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
-			$resultingFileName = SITE_PATH . $this->getFilePathFromTemplate('js/' . $fileName, true);
+			$resultingFileName = SITE_PATH . $this->findFilePath('js/' . $fileName);
 			if($resultingFileName === false){
 				throw new TemplateFileNotFoundException("JS file '$fileName' not found.");
 			}
@@ -363,46 +465,56 @@ class SmartyWrapper extends Smarty {
 		return $resultingFileName;
 	}
 	
+	
+	public function addPrimaryJs($fileName, $fromTop = false) {
+		$this->addJsAtPos($fileName, static::PRIMARY, $fromTop);
+	}
+	
+	public function addJs($fileName, $fromTop = false) {
+		$this->addJsAtPos($fileName, static::SECONDARY, $fromTop);
+	}
+	
 	/**
 	 * Adds a JS file to the header section of the page displayed.
 	 * @param $fileName
 	 */
-	public function addJs($fileName) {
+	public function addJsAtPos($fileName, $position = null, $fromTop = false) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
-		array_push($this->jsFiles, $this->getJsFilePath($fileName));
-	}
-	
-	/**
-	 * Adds a JS file to the header section to the top of all JS files.
-	 * @param $fileName
-	 */
-	public function addJsToTop($fileName) {
-		if(empty($fileName)){
-			throw new InvalidArgumentException("JS filename is not specified");
-		}
-		array_splice($this->jsFiles,0, 0, $this->getJsFilePath($fileName));
-	}
-	
-	/**
-	 * Removes a JS file from the header section of the page displayed.
-	 * @param $fileName
-	 */
-	public function removeJs($fileName) {
-		if(empty($fileName)){
-			throw new InvalidArgumentException("JS filename is not specified");
+		if($position === null){
+			$position = static::PRIMARY;
 		}
 		
-		$key = array_search($this->getJsFilePath($fileName), $this->jsFiles);
-		if($key !== false){
-			unset($this->jsFiles[$key]);
+		if(!isset($this->jsFiles[$position]) or !is_array($this->jsFiles[$position])){
+			$this->jsFiles[$position] = array();
+		}
+		
+		$filePath = $this->getJsFilePath($fileName);
+		if(!empty($filePath) and $filePath != '/'){
+			if($fromTop){
+				array_splice($this->jsFiles[$position], 0, 0, $filePath);
+			}
+			else{
+				array_push($this->jsFiles[$position], $filePath);
+			}
 		}
 		else{
-			throw new InvalidArgumentException("Can't remove JS file, because it was not added");
+			throw new SmartyException("Can't find JS file $fileName in current template or ony parent templates");
 		}
 	}
-
+	/**
+	 * Get js file correct path
+	 * @param string $fileName
+	 * @throws InvalidArgumentException
+	 */
+	public function getJs($fileName){
+		if(empty($fileName)){
+			throw new InvalidArgumentException("JS filename is not specified");
+		}
+		return $this->getJsFilePath($fileName);
+	}
+	
 	/**
 	 * Sets the title of the page to be displayed
 	 * Should be called after invocations of setPageTitlePrefix and setPageTitlePostfix
@@ -460,21 +572,21 @@ class SmartyWrapper extends Smarty {
 	}
 
 	/**
-	 * Set alternate page tpl name
-	 * @param $pageTplName string
+	 * Set alternate path to display
+	 * @param $path string (example: 'my_profile/edit/biography')
 	 */
-	public function setPageTpl($pageTplName){
-		if(empty($pageTplName)){
-			throw new InvalidArgumentException("Page filename is not specified");
+	public function setPath($path){
+		if(empty($path)){
+			throw new InvalidArgumentException("Path is not specified");
 		}
 		
-		$result = $this->getFilePathFromTemplate($this->modulesPath . $this->module . "/" . $pageTplName . ".tpl");
+		$result = $this->getFilePathFromTemplate($this->pagesPath . $path . ".tpl");
 		
 		if($result === false){
-			throw new RuntimeException("Specified page is not found in current module");
+			throw new RuntimeException("Specified path is invalid");
 		}
 
-		$this->page = $pageTplName;
+		$this->overridedFileToDisplay = $result;
 	}
 
 	/**
@@ -485,11 +597,6 @@ class SmartyWrapper extends Smarty {
 	public function setWrapper($wrapperName){
 		if(empty($wrapperName)){
 			throw new InvalidArgumentException("Wrapper name is not specified");
-		}
-
-		$wrapperPath = $this->getFilePathFromTemplate($this->modulesPath . $this->module . '/' . $this->wrappersDir . $wrapperName . ".tpl", true);
-		if($wrapperPath === false){
-			throw new TemplateFileNotFoundException("Wrapper($wrapperName) is not found. All wrappers should be located in module's \"{$this->wrappersDir}\" directory");
 		}
 
 		$this->wrapper = $wrapperName;
@@ -510,9 +617,22 @@ class SmartyWrapper extends Smarty {
 	}
 
 	private function defaultAssingns(){
+		
+		ksort($this->jsFiles);
+		$jsFiles = array();
+		foreach($this->jsFiles as $files){
+			$jsFiles = array_merge($jsFiles, $files);
+		}
+		
 		// CSS & JS files
-		$this->assign ( '__cssFiles', $this->cssFiles );
-		$this->assign ( '__jsFiles', $this->jsFiles );
+		$this->assign ( '__jsFiles',  $jsFiles);
+		
+		ksort($this->cssFiles);
+		$cssFiles = array();
+		foreach($this->cssFiles as $files){
+			$cssFiles = array_merge($cssFiles, $files);
+		}
+		$this->assign ( '__cssFiles', $cssFiles );
 		
 		// Other options
 		$this->assign( '__pageTitle', $this->pageTitle );
@@ -523,9 +643,7 @@ class SmartyWrapper extends Smarty {
 		
 		// Template Paths
 		$this->assign ( '__ViewDirPath', $this->template_dir );
-		$this->assign ( '__ModulesPath', $this->modulesPath );
-		$this->assign ( '__ChunksPath', $this->chunksPath );
-		$this->assign ( '__SnippetsPath', $this->snippetsPath );
+		$this->assign ( '__PagesPath', $this->pagesPath );
 	}
 	
 	public function fetch($template, $cache_id = null, $compile_id = null, $parent = null, $display = false){
@@ -543,43 +661,92 @@ class SmartyWrapper extends Smarty {
 	 * @param string $tpl
 	 * @return SmartyWrapper
 	 */
-	public function output(){
+	public function output($return = false){
 		// Do not display anything if output is disabled
 		if($this->isOutputDisabled){
 			return;
 		}
 		
-		// Call layout init hook if there is any
-		$hookFunctionName = 'initLayout_' . $this->layoutName;
-		if(function_exists($hookFunctionName)){
-			$hookName = 'hookInitLayout_' . $this->layoutName;
-			$layoutHook = new Hook($hookName, $hookFunctionName);
-			HookManager::registerHook($layoutHook);
-			
-			HookManager::callHook($hookName);
+		// Call template init hook if there is any
+		$currentTemplate = $this->template;
+		while(true){
+			$hookName = 'initTemplate_' . $currentTemplate;
+			if(function_exists($hookName)){
+				// Do not continue if function returned true
+				if(call_user_func($hookName) === true){
+					break;
+				}
+			}
+				
+			// Check if current templete has parent and call panret's init function too
+			if(isset($this->templates->$currentTemplate) and !empty($this->templates->$currentTemplate)){
+				$currentTemplate = $this->templates->$currentTemplate;
+			}
+			else{
+				break;
+			}
+		}
+		
+		// Find path that exists for tpls inclusion
+		$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
+		$this->includePath = $this->pagesPath;
+		for($i = 0; $i < count($levels)-1; $i++){
+			$level = $levels[$i];
+			if(isset($this->nav->$level) and !empty($this->nav->$level)){
+				$this->includePath .= $this->nav->$level . '/';
+				if(isset($levels[$i+1]) and !is_dir($this->getFilePathFromTemplate($this->includePath . $this->nav->$levels[$i+1], true))){
+					break;
+				}
+			}
+		}
+		
+		$foundLevelsCount = $i;
+
+		$this->fileToDisplay = $this->includePath . "{$this->nav->{$levels[$i+1]}}.tpl";
+		
+		if(empty($this->overridedFileToDisplay)){
+			$this->fileToDisplay = $this->getFilePathFromTemplate($this->fileToDisplay);
+		}
+		else{
+			$this->fileToDisplay = $this->overridedFileToDisplay;
 		}
 		
 		// Check if page exists and if not show 404 error page
-		if(!file_exists($this->getFilePathFromTemplate("{$this->modulesPath}{$this->module}/{$this->page}.tpl", true))){
+		$requiredLevelsCount = $this->nav->existentLevelsCount - 2;
+		if(empty($this->fileToDisplay) or $foundLevelsCount < $requiredLevelsCount){
 			header("HTTP/1.0 404 Not Found");
-			$this->module = $this->errorsModule;
-			$this->page = $this->error404Page;
+			$this->fileToDisplay = $this->getFilePathFromTemplate($this->pagesPath . $this->error404Page . ".tpl");
+			
+			if(empty($this->fileToDisplay)){
+				$this->fileToDisplay = 'system/common/404.tpl';
+			}
+			$this->setPageTitle("404 Not Found");
+			
 			$this->removeWrapper();
 		}
 		
 		$this->defaultAssingns();
-
 		// Check if wrapper is set and if yes include it
 		if(!empty($this->wrapper)){
-			$this->assign ( 'modulePageTpl', $this->getFilePathFromTemplate($this->modulesPath . $this->module . "/" . $this->page . ".tpl" ));
-			$this->assign ( '__modulePageTpl', $this->getFilePathFromTemplate($this->modulesPath . $this->module . "/" . $this->wrappersDir . $this->wrapper . ".tpl" ));
+			$wrapperPath = $this->getFilePathFromTemplate($this->includePath . $this->wrappersDir . $this->wrapper . ".tpl", true);
+			if($wrapperPath === false){
+				throw new TemplateFileNotFoundException("Wrapper($wrapperName) is not found. All wrappers should be located in module's \"{$this->wrappersDir}\" directory");
+			}
+			
+			$this->assign ( 'modulePageTpl', $this->fileToDisplay);
+			$this->assign ( '__modulePageTpl', $this->getFilePathFromTemplate($this->includePath . $this->wrappersDir . $this->wrapper . ".tpl" ));
 		}
 		else{
-			$this->assign ( '__modulePageTpl', $this->getFilePathFromTemplate($this->modulesPath . $this->module . "/" . $this->page . ".tpl" ));
+			$this->assign ( '__modulePageTpl', $this->fileToDisplay);
 		}
 		
 		// Finally display
-		parent::display ( $this->layoutPath );
+		if($return){
+			return parent::fetch($this->fileToDisplay);
+		}
+		else{
+			parent::display ( $this->layoutPath );
+		}
 	}
 }
 ?>

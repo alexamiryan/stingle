@@ -447,7 +447,7 @@ class SmartyWrapper extends Smarty {
 	 * @param unknown_type $fileName 
 	 * @throws InvalidArgumentException
 	 */
-	public function getCss($fileName){
+	public function getCssPath($fileName){
 		if(empty($fileName)){
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
@@ -509,7 +509,7 @@ class SmartyWrapper extends Smarty {
 	 * @param string $fileName
 	 * @throws InvalidArgumentException
 	 */
-	public function getJs($fileName){
+	public function getJsPath($fileName){
 		if(empty($fileName)){
 			throw new InvalidArgumentException("JS filename is not specified");
 		}

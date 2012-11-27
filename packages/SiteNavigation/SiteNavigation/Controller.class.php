@@ -27,8 +27,19 @@ class Controller
 			$this->controllersPath = $this->config->defaultControllerPath;
 		}
 		
-		// Starting include path
+		// Base include path in choosed controllers group
 		$includePath = $this->config->controllersDir . '/' . $this->controllersPath . '/';
+		
+		// Include config.php in initial includePath if exists
+		if(@file_exists($includePath . "config.php")){
+			include ($includePath . "config.php");
+		}
+		
+		// Include common.php in initial includePath if exists
+		if(@file_exists($includePath . "common.php")){
+			include ($includePath . "common.php");
+		}
+		
 		for($i = 0; $i < count($levels)-1; $i++){
 			$level = $levels[$i];
 			if(isset($nav->$level) and !empty($nav->$level)){

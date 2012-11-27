@@ -68,9 +68,6 @@ class Expr
      */
     public function equal($x, $y)
     {
-    	if ( !($y instanceof Literal) and !($y instanceof Field)) {
-    		$y = $this->quoteLiteral($y);
-    	}
         return new Comparison($x, Comparison::EQ, $y);
     }
 
@@ -89,9 +86,6 @@ class Expr
      */
     public function notEqual($x, $y)
     {
-    	if ( !($y instanceof Literal) and !($y instanceof Field)) {
-    		$y = $this->quoteLiteral($y);
-    	}
         return new Comparison($x, Comparison::NEQ, $y);
     }
 
@@ -219,7 +213,12 @@ class Expr
      */
     public function countDistinct($x, $alias = null)
     {
-        $returnStr = 'COUNT(DISTINCT ' . implode(', ', func_get_args()) . ')';
+    	$params = func_get_args();
+    	foreach($params as &$param){
+    		$param = Expr::quoteLiteral($param);
+    	}
+    	
+        $returnStr = 'COUNT(DISTINCT ' . implode(', ', $params) . ')';
         
         if($alias != null){
         	$returnStr .= "as `$alias`";
@@ -387,19 +386,12 @@ class Expr
      */
     public function in($x, $y)
     {
-        if (is_array($y)) {
-            foreach ($y as &$literal) {
-                if ( !($literal instanceof Literal) and !($y instanceof Field)) {
-                    $literal = $this->quoteLiteral($literal);
-                }
-            }
-        }
-        elseif($y instanceof QueryBuilder){
+        /*if($y instanceof QueryBuilder){
         	$y = array($y->getSQL());
         }
         elseif($y instanceof Unionx){
         	$y = array($y);
-        }
+        }*/
         return new Func($x . ' IN', $y);
     }
 
@@ -412,18 +404,11 @@ class Expr
      */
     public function notIn($x, $y)
     {
-        if (is_array($y)) {
-            foreach ($y as &$literal) {
-                if ( !($literal instanceof Literal) and !($y instanceof Field)) {
-                    $literal = $this->quoteLiteral($literal);
-                }
-            }
-        }
-        elseif($y instanceof QueryBuilder){
+        /*if($y instanceof QueryBuilder){
         	$y = array($y->getSQL());
-        }
+        }*/
         
-        return new Func($x . ' NOT IN', (array) $y);
+        return new Func($x . ' NOT IN',  $y);
     }
 
     /**
@@ -457,10 +442,6 @@ class Expr
      */
     public function like($x, $y)
     {
-    	if ( !($y instanceof Literal) and !($y instanceof Field)) {
-    		$y = $this->quoteLiteral($y);
-    	}
-    	
         return new Comparison($x, 'LIKE', $y);
     }
 
@@ -532,13 +513,18 @@ class Expr
      * @param mixed $literal The literal value.
      * @return string
      */
-    public function quoteLiteral($literal)
-    {
-        if (is_numeric($literal) && !is_string($literal)) {
-            return (string) $literal;
-        } else {
-            return "'" . $literal . "'";
-        }
+    public static function quoteLiteral($literal){
+    	if (($literal instanceof QBpart) or ($literal instanceof QueryBuilder)) {
+    		return $literal;
+    	}
+    	else{
+	        if (is_numeric($literal) && !is_string($literal)) {
+	            return (string) $literal;
+	        } 
+	        else {
+	            return "'" . mysql_real_escape_string($literal) . "'";
+	        }
+    	}
     }
 
     /**
@@ -551,7 +537,7 @@ class Expr
      */
     public function between($val, $x, $y)
     {
-        return $val . ' BETWEEN ' . $x . ' AND ' . $y;
+        return Expr::quoteLiteral($val) . ' BETWEEN ' . Expr::quoteLiteral($x) . ' AND ' . Expr::quoteLiteral($y);
     }
 
     /**

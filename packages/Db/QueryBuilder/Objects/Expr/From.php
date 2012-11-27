@@ -20,7 +20,7 @@
  */
 
 /**
- * Expression class for building SQL Group By parts
+ * Expression class for SQL from
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,8 +30,68 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class GroupBy extends Base
+class From extends QBpart
 {
-    protected $_preSeparator = '';
-    protected $_postSeparator = '';
+    /**
+     * @var string
+     */
+    private $_from;
+
+    /**
+     * @var string
+     */
+    private $_alias;
+
+    /**
+     * @var string
+     */
+    private $_indexBy;
+
+    /**
+     * @param string $from      The class name.
+     * @param string $alias     The alias of the class.
+     * @param string $indexBy   The index for the from.
+     */
+    public function __construct($from, $alias, $indexBy = null)
+    {
+        $this->_from    = $from;
+        $this->_alias   = $alias;
+        $this->_indexBy = $indexBy;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFrom()
+    {
+        return $this->_from;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAlias()
+    {
+        return $this->_alias;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+    	$returnString = '';
+    	
+    	if($this->_from instanceof QueryBuilder or $this->_from instanceof Unionx){
+    		$returnString = "($this->_from)";
+    	}
+    	else{
+    		$returnString = "`$this->_from`";
+    	}
+    	
+        $returnString .= ($this->_alias ? " as `$this->_alias` " : '').
+                ($this->_indexBy ? ' USE INDEX (' . $this->_indexBy . ')' : '');
+        
+        return $returnString;
+    }
 }

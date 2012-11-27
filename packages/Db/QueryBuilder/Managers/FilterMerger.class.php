@@ -24,7 +24,14 @@ class FilterMerger{
 		}
 		
 		$this->mainFilter->getQb()->join($filter->getPrimaryTable(), $filter->getPrimaryTableAlias(), $joinType, new Comparison($leftField, $comparisionType, $rightField));
-		$filter->setQb($this->mainFilter->getQb());
+		
+		$parts = $filter->getQb()->getSQLParts();
+		
+		foreach($parts['join'] as $join){
+			$this->mainFilter->getQb()->add("join", $join, true);
+		}
+		
+		$this->mainFilter->getQb()->andWhere($parts['where']);
 	}
 }
 ?>

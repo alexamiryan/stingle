@@ -20,9 +20,42 @@ class GeoIP extends DbAccessor
 				if(!preg_match("/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/",$ip)){
 					throw new InvalidArgumentException('IP is in wrong format');
 				}
-				$this->query->exec("SELECT `country`, `region`, `city`, `latitude`,	`longitude` FROM ".Tbl::get('TBL_BLOCKS')."
-									LEFT JOIN ".Tbl::get('TBL_LOCATIONS')." USING (`locId`)
-									WHERE index_geo = INET_ATON('".$ip."')-(INET_ATON('".$ip."')%65536) AND INET_ATON('".$ip."') BETWEEN `startIpNum` AND `endIpNum`", $cacheMinutes);
+				
+				$qb = new QueryBuilder();
+				$qb->select(array(
+							new Field('country', 'loc'),
+							new Field('region', 'loc'),
+							new Field('city', 'loc'),
+							new Field('latitude', 'loc'),
+							new Field('longitude', 'loc')
+						))
+						->from(Tbl::get('TBL_BLOCKS'), 'blocks')
+						->leftJoin(
+								Tbl::get('TBL_LOCATIONS'), 
+								'loc', 
+								$qb->expr()->equal(new Field('locId', 'blocks'), new Field('locId', 'loc'))
+						)
+						->where(
+								$qb->expr()->equal(
+									new Field('index_geo', 'blocks'), 
+									$qb->expr()->diff(
+										new Func('INET_ATON', $ip), 
+										new Math(
+												new Func('INET_ATON', $ip), '%', 65536
+										)
+									)
+								)
+						)
+						->andWhere(
+								$qb->expr()->between(
+										new Func('INET_ATON', $ip), 
+										new Field('startIpNum'), 
+										new Field('endIpNum')
+								)
+						);
+						
+				
+				$this->query->exec($qb->getSQL(), $cacheMinutes);
 				if($this->query->countRecords()){
 					$row = $this->query->fetchRecord();
 					$location = new GeoLocation();
@@ -61,8 +94,12 @@ class GeoIP extends DbAccessor
 	 * @param int $cacheMinutes
 	 */
 	public function isValidCountryCode($countryCode = null, $cacheMinutes = null){
-		$this->query->exec("SELECT count(*) as `count` FROM ".Tbl::get('TBL_LOCATIONS')."
-								WHERE `country`='$countryCode'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count("*", "count"))
+			->from(Tbl::get('TBL_LOCATIONS'))
+			->where($qb->expr(new Field('country'), $countryCode));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		$count = $this->query->fetchField('count');
 		if($count > 0){
 			return true;

@@ -503,6 +503,7 @@ class SmartyWrapper extends Smarty {
 			throw new SmartyException("Can't find JS file $fileName in current template or ony parent templates");
 		}
 	}
+
 	/**
 	 * Get js file correct path
 	 * @param string $fileName

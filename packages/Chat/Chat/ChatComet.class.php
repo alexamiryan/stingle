@@ -143,8 +143,9 @@ class ChatComet extends CometChunk{
 	
 				// Init variables
 				$interlocutorId = $chatSession->interlocutorUser->userId;
-				$interlocutorExtra = Reg::get('userMgr')->getUserExtra($interlocutorId, array('online'));
-				$interlocutorOnlineStatus = $interlocutorExtra['online'];
+				$um = Reg::get(ConfigManager::getConfig("Users", "Users")->Objects->UserManager);
+				$interlocutorUser = Reg::get('userMgr')->getUserById($interlocutorId, UserManager::INIT_PROPERTIES);
+				$interlocutorOnlineStatus = $interlocutorUser->props->online;
 	
 				// Check if interlocutor is offline
 				if($chatSession->closed == ChatSessionManager::CLOSED_STATUS_NO and $interlocutorOnlineStatus == DatingClubUserManager::STATE_ONLINE_OFFLINE){

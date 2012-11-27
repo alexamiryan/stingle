@@ -30,15 +30,17 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 	if($pager instanceof  Pager){
 		if(isset($baseLink) and !empty($baseLink)){
 			// Remove heading slash if present and ensure last slash
-			$link = RewriteURL::ensureSourceLastDelimiter(ltrim($baseLink, "/"));
+			$link = ltrim($baseLink, "/");
+			RewriteURL::ensureLastSlash($link);
 		}
 		else{
-			$link = RewriteURL::generateCleanBaseLink(
+			/*$link = RewriteURL::generateCleanBaseLink(
 	                                Reg::get('nav')->module,
 	                                Reg::get('nav')->page,
 	                                ConfigManager::getConfig("SiteNavigation")->AuxConfig->firstLevelDefaultValue) . 
-	                                	get_all_get_params(array_merge(array($pager->getUrlParam()), $excludedGetsArray)
-	                              );
+	                                	getAllGetParams()
+	                              );*/
+			$link = getCurrentUrl(array_merge(array($pager->getUrlParam()), $excludedGetsArray));
 		}
 		$urlParam = $pager->getUrlParam();
 		$currentPageNumber = $pager->getCurrentPageNumber();
@@ -58,6 +60,16 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 				if($pageNumStart < 1){
 					$pageNumStart = 1;
 				}
+			}
+			
+			if($pageNumStart > 1){
+				$pagerFirstPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $pager->getUrlParam() . ':1');
+				$smarty->assign('pagerFirstPageLink', $pagerFirstPageLink);
+			}
+			
+			if($pageNumEnd < $pagesCount){
+				$pagerLastPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $pager->getUrlParam() . ':' .$pagesCount);
+				$smarty->assign('pagerLastPageLink', $pagerLastPageLink);
 			}
 			
 			if($currentPageNumber > 1){
@@ -88,14 +100,14 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 			$smarty->assign("pagerNumbersArray", $pagerNumbersArray);
 		}
 		
-		if(isset($tplSnippetFile)){
-			$pagerSnippetFileName = $tplSnippetFile;
+		if(isset($tplChunkFile)){
+			$pagerChunkFileName = $tplChunkFile;
 		}
 		else{
-			$pagerSnippetFileName = ConfigManager::getConfig("Pager","Pager")->AuxConfig->pagerSnippetFileName;
+			$pagerChunkFileName = ConfigManager::getConfig("Pager","Pager")->AuxConfig->pagerChunkFileName;
 		}
 		
-		return $smarty->fetch(Reg::get('smarty')->getFilePathFromTemplate(Reg::get('smarty')->snippetsPath . $pagerSnippetFileName));
+		return $smarty->fetch($smarty->getChunkPath($pagerChunkFileName));
 	}
 }
 ?>

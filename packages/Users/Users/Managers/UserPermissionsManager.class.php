@@ -12,33 +12,45 @@ class UserPermissionsManager extends DbAccessor{
 		$perms = array();
 		if($this->query->countRecords()){
 			foreach($this->query->fetchRecords() as $row){
-				array_push($perms, $this->getPermissionsObjectFromData($row));
+				array_push($perms, static::getPermissionsObjectFromData($row));
 			}
 		}
 		
 		return $perms;
 	}
 	
-	public function addPermissionToUser(Permission $perm, User $user){
+	public function addPermissionToUser(Permission $perm, User $user, $args = null){
 		$qb = new QueryBuilder();
 		
-		$qb->insert(Tbl::get('TBL_USERS_PERMISSIONS', 'UserManager'))
-			->values(array(
+		$values = array(
 				'user_id' => $user->id,
 				'permission_id' => $perm->id
-		));
+		);
+		
+		if($args !== null){
+			$values['args'] = serialize($args);
+		}
+		
+		$qb->insert(Tbl::get('TBL_USERS_PERMISSIONS', 'UserManager'))
+			->values($values);
 		
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
-	public function addPermissionToGroup(Permission $perm, Group $group){
+	public function addPermissionToGroup(Permission $perm, Group $group, $args = null){
 		$qb = new QueryBuilder();
 		
-		$qb->insert(Tbl::get('TBL_GROUPS_PERMISSIONS', 'UserManager'))
-			->values(array(
+		$values = array(
 				'group_id' => $group->id,
 				'permission_id' => $perm->id
-		));
+		);
+		
+		if($args !== null){
+			$values['args'] = serialize($args);
+		}
+		
+		$qb->insert(Tbl::get('TBL_GROUPS_PERMISSIONS', 'UserManager'))
+			->values($values);
 		
 		return $this->query->exec($qb->getSQL())->affected();
 	}
@@ -63,12 +75,21 @@ class UserPermissionsManager extends DbAccessor{
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
-	protected function getPermissionsObjectFromData($data){
+	public static function getPermissionsObjectFromData($data){
 		$perm = new Permission();
 		
 		$perm->id = $data['id'];
 		$perm->name = $data['name'];
 		$perm->description = $data['description'];
+		
+		if(isset($data['args'])){
+			try{
+				$perm->args = unserialize($data['args']);
+			}
+			catch(ErrorException $e){
+				$perm->args = null;
+			}
+		}
 		
 		return $perm;
 	}

@@ -71,7 +71,7 @@ class UserAuthorization extends DbAccessor{
 			throw new InvalidArgumentException("\$userId have to be non zero integer!");
 		}
 		
-		$usr = $this->um->getUserById($userId);
+		$usr = $this->um->getUserById($userId, UserManager::INIT_ALL, false);
 		
 		$this->checkIfLoginIsAllowed($usr);
 		
@@ -135,7 +135,7 @@ class UserAuthorization extends DbAccessor{
 	 */
 	public static function getUserPasswordHash($password, $salt){
 		$config = ConfigManager::getConfig("Users", "Users")->AuxConfig;
-		return Crypto::byte2hex(Crypto::pbkdf2("SHA512", $password, $config->siteSalt . $salt, $config->pbdkf2IterationCount, 512));
+		return Crypto::byte2hex(Crypto::pbkdf2("SHA512", $password, $config->siteSalt . $salt, $config->pbdkf2IterationCount, 64));
 	}
 	
 	/**

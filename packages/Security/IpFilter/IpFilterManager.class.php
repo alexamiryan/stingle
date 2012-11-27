@@ -17,14 +17,20 @@ class IpFilterManager extends DbAccessor {
 		if(!preg_match('/^(([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]).){3}([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/',$ip)){
 			throw new InvalidArgumentException("Invalid IP specified for blacklisting");
 		}
-		$this->query->exec("SELECT count(*) as `count` FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_IPS', 'IpFilter')."`
-								WHERE `ip`='$ip'");
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count('*', 'count'))
+			->from(Tbl::get('TBL_SECURITY_BLACKLISTED_IPS', 'IpFilter'))
+			->where($qb->expr()->equal(new Field('ip'), $ip));
+			
+		$this->query->exec($qb->getSQL());
 		if($this->query->fetchField('count') != 0){
 			throw new RuntimeException("Sorry, this IP already blacklisted!");
 		}
 		
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_SECURITY_BLACKLISTED_IPS', 'IpFilter')."` 
-								(`ip`) VALUES ('$ip') ");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_SECURITY_BLACKLISTED_IPS', 'IpFilter'))
+			->values(array( "ip" => $ip	));	
+		$this->query->exec($qb->getSQL());
 	}
 	
 	/**
@@ -34,8 +40,10 @@ class IpFilterManager extends DbAccessor {
 	 * @throws RuntimeException
 	 */
 	public function removeFromBlackListIP($ip){
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_IPS', 'IpFilter')."` 
-								WHERE `ip` = '$ip'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_SECURITY_BLACKLISTED_IPS', 'IpFilter'))
+			->where($qb->expr()->equal(new Field("ip"), $ip));
+		$this->query->exec($qb->getSQL());
 		
 		if($this->query->affected() == 0){
 			throw new RuntimeException("Given IP $ip is not blacklisted!");
@@ -53,15 +61,18 @@ class IpFilterManager extends DbAccessor {
 		if(!preg_match('/^(([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]).){3}([1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/',$ip)){
 			throw new InvalidArgumentException("Invalid IP specified for whitelisting");
 		}
-		
-		$this->query->exec("SELECT count(*) as `count` FROM `".Tbl::get('TBL_SECURITY_WHITELISTED_IPS', 'IpFilter')."`
-								WHERE `ip`='$ip'");
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count('*', 'count'))
+			->from(Tbl::get('TBL_SECURITY_WHITELISTED_IPS', 'IpFilter'))
+			->where($qb->expr()->equal(new Field('ip'), $ip));
+		$this->query->exec($qb->getSQL());
 		if($this->query->fetchField('count') != 0){
 			throw new RuntimeException("Sorry, this IP already whitelisted!");
 		}
-		
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_SECURITY_WHITELISTED_IPS', 'IpFilter')."` 
-								(`ip`) VALUES ('$ip') ");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_SECURITY_WHITELISTED_IPS', 'IpFilter'))
+			->values(array( "ip" => $ip	));	
+		$this->query->exec($qb->getSQL());
 	}
 	
 	/**
@@ -71,8 +82,10 @@ class IpFilterManager extends DbAccessor {
 	 * @throws RuntimeException
 	 */
 	public function removeFromWhiteListIP($ip){
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_SECURITY_WHITELISTED_IPS', 'IpFilter')."` 
-								WHERE `ip` = '$ip'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_SECURITY_WHITELISTED_IPS', 'IpFilter'))
+			->where($qb->expr()->equal(new Field("ip"), $ip));
+		$this->query->exec($qb->getSQL());
 		
 		if($this->query->affected() == 0){
 			throw new RuntimeException("Given IP $ip is not whitelisted!");
@@ -90,15 +103,19 @@ class IpFilterManager extends DbAccessor {
 		if(!Reg::get(ConfigManager::getConfig('GeoIP', 'GeoIP')->Objects->GeoIP)->isValidCountryCode($countryCode)){
 			throw new InvalidArgumentException("Invalid country code specified for blacklisting");
 		}
-		
-		$this->query->exec("SELECT count(*) as `count` FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES', 'IpFilter')."`
-								WHERE `country`='$countryCode'");
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count('*', 'count'))
+			->from(Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES', 'IpFilter'))
+			->where($qb->expr()->equal(new Field('country'), $countryCode));
+			
+		$this->query->exec($qb->getSQL());
 		if($this->query->fetchField('count') != 0){
 			throw new RuntimeException("Sorry, this country already blacklisted!");
 		}
-		
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES', 'IpFilter')."` 
-								(`country`) VALUES ('$countryCode') ");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES', 'IpFilter'))
+			->values(array( "country" => $countryCode ));	
+		$this->query->exec($qb->getSQL());
 	}
 	
 	/**
@@ -108,8 +125,10 @@ class IpFilterManager extends DbAccessor {
 	 * @throws RuntimeException
 	 */
 	public function removeFromBlackListCountry($countryCode){
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES', 'IpFilter')."` 
-								WHERE `country` = '$countryCode'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES', 'IpFilter'))
+			->where($qb->expr()->equal(new Field("country"), $countryCode));
+		$this->query->exec($qb->getSQL());
 		
 		if($this->query->affected() == 0){
 			throw new RuntimeException("Given country $countryCode is not blacklisted!");
@@ -122,7 +141,10 @@ class IpFilterManager extends DbAccessor {
 	 * @return array
 	 */
 	public function getBlacklistedIps(){
-		$this->query->exec("SELECT `ip` FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_IPS', 'IpFilter')."`");
+		$qb = new QueryBuilder();
+		$qb->select(new Field('ip'))
+			->from(Tbl::get('TBL_SECURITY_BLACKLISTED_IPS', 'IpFilter'));
+		$this->query->exec($qb->getSQL());
 		
 		return $this->query->fetchFields('ip');
 	}
@@ -133,7 +155,10 @@ class IpFilterManager extends DbAccessor {
 	 * @return array
 	 */
 	public function getWhitelistedIps(){
-		$this->query->exec("SELECT `ip` FROM `".Tbl::get('TBL_SECURITY_WHITELISTED_IPS', 'IpFilter')."`");
+		$qb = new QueryBuilder();
+		$qb->select(new Field('ip'))
+			->from(Tbl::get('TBL_SECURITY_WHITELISTED_IPS', 'IpFilter'));
+		$this->query->exec($qb->getSQL());
 		
 		return $this->query->fetchFields('ip');
 	}
@@ -144,7 +169,10 @@ class IpFilterManager extends DbAccessor {
 	 * @return array
 	 */
 	public function getBlacklistedCountries(){
-		$this->query->exec("SELECT `country` FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES', 'IpFilter')."`");
+		$qb = new QueryBuilder();
+		$qb->select(new Field('country'))
+			->from(Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES', 'IpFilter'));
+		$this->query->exec($qb->getSQL());
 		
 		return $this->query->fetchFields('country');
 	}

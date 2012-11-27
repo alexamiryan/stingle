@@ -20,7 +20,7 @@
  */
 
 /**
- * Expression class for SQL from
+ * Expression class for generating SQL functions
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,68 +30,38 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class From
+class Func extends QBpart
 {
-    /**
-     * @var string
-     */
-    private $_from;
-
-    /**
-     * @var string
-     */
+    private $_name;
+    private $_arguments = array();
     private $_alias;
 
-    /**
-     * @var string
-     */
-    private $_indexBy;
-
-    /**
-     * @param string $from      The class name.
-     * @param string $alias     The alias of the class.
-     * @param string $indexBy   The index for the from.
-     */
-    public function __construct($from, $alias, $indexBy = null)
+    public function __construct($name, $arguments = null, $alias = null)
     {
-        $this->_from    = $from;
-        $this->_alias   = $alias;
-        $this->_indexBy = $indexBy;
+        $this->_name = $name;
+        if($arguments != null){
+        	if(is_array($arguments)){
+       			$this->_arguments = $arguments;
+        	}
+        	else{
+        		$this->_arguments = array($arguments);
+        	}
+        }
+        $this->_alias = $alias;
     }
 
-    /**
-     * @return string
-     */
-    public function getFrom()
-    {
-        return $this->_from;
-    }
-
-    /**
-     * @return string
-     */
-    public function getAlias()
-    {
-        return $this->_alias;
-    }
-
-    /**
-     * @return string
-     */
     public function __toString()
     {
-    	$returnString = '';
-    	
-    	if($this->_from instanceof QueryBuilder){
-    		$returnString = "($this->_from)";
-    	}
-    	else{
-    		$returnString = "`$this->_from`";
+    	foreach($this->_arguments as &$arg){
+    		$arg = Expr::quoteLiteral($arg);
     	}
     	
-        $returnString .= ($this->_alias ? " as `$this->_alias` " : '').
-                ($this->_indexBy ? ' USE INDEX (' . $this->_indexBy . ')' : '');
+        $returnStr = $this->_name . '(' . implode(', ', $this->_arguments) . ')';
         
-        return $returnString;
+        if($this->_alias != null){
+        	$returnStr .= " as `". $this->_alias ."`";
+        }
+        
+        return $returnStr;
     }
 }

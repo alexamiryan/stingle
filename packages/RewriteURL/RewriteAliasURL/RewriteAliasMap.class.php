@@ -33,11 +33,14 @@ class RewriteAliasMap extends DbAccessor {
 		if($host === null){
 			$host = $this->host;
 		}
-		$query = "SELECT a.*, ah.host_id FROM `".Tbl::get('TBL_ALIAS')."` a
-				  	LEFT JOIN `".Tbl::get('TBL_ALIAS_HOST')."` ah ON  a.id = ah.alias_id
-					WHERE ah.host_id = '$host->id' ORDER BY a.map";
-
-		$this->query->exec($query, $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*', 'a'), new Field('host_id', 'ah'))
+			->from(Tbl::get('TBL_ALIAS'), 'a')
+			->leftJoin(Tbl::get('TBL_ALIAS_HOST'), 'ah', 
+						$qb->expr()->equal(new Field('id', 'a'), new Field('alias_id', 'ah')))
+			->where($qb->expr()->equal(new Field('host_id', 'ah'), $host->id));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchRecords();
 	}
 	/**
@@ -54,10 +57,18 @@ class RewriteAliasMap extends DbAccessor {
 		if(empty($alias) or empty($map)){
 			throw new InvalidArgumentException("\$alias, \$map and \$host have to be non empty string");
 		}
-
-		$this->query->exec("UPDATE `".Tbl::get('TBL_ALIAS')."` SET alias='$alias', map = '$map' WHERE id='$id'");
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_ALIAS'))
+			->set(new Field('alias'), $alias)
+			->set(new Field('map'), $map)
+			->where($qb->expr()->equal(new Field('id'), $id));	
+		$this->query->exec($qb->getSQL());
 		if($host !== null){
-			$this->query->exec("UPDATE `".Tbl::get('TBL_ALIAS_HOST')."` SET host_id='{$host->id}'  WHERE alias_id='$id'");
+			$qb = new QueryBuilder();
+			$qb->update(Tbl::get('TBL_ALIAS_HOST'))
+			->set(new Field('host_id'), $host->id)
+			->where($qb->expr()->equal(new Field('alias_id'), $id));
+			$this->query->exec($qb->getSQL());
 		}
 	}
 
@@ -75,8 +86,11 @@ class RewriteAliasMap extends DbAccessor {
 		if(empty($map)){
 			throw new InvalidArgumentException("\$map have to be non empty string");
 		}
-
-		$this->query->exec("UPDATE `".Tbl::get('TBL_ALIAS')."` SET map='$map' WHERE id='$id'");
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_ALIAS'))
+			->set(new Field('map'), $map)
+			->where($qb->expr()->equal(new Field('id'), $id));	
+		$this->query->exec($qb->getSQL());
 	}
 
 	/**
@@ -97,10 +111,23 @@ class RewriteAliasMap extends DbAccessor {
 		if(empty($host)){
 			throw new InvalidArgumentException("\$host have to be non empty");
 		}
-
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_ALIAS')."` (`alias`, `map`) VALUES ('$alias', '$map')");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_ALIAS'))
+			->values(array(
+							"alias" => $alias, 
+							"map" => $map
+						)
+					);	
+		$this->query->exec($qb->getSQL());
 		$inser_id = $this->query->getLastInsertId();
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_ALIAS_HOST')."` (`host_id`, `alias_id`) VALUES ('$host->id', '$inser_id')");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_ALIAS_HOST'))
+			->values(array(
+							"host_id" => $host->id, 
+							"alias_id" => $inser_id
+						)
+					);
+		$this->query->exec($qb->getSQL());
 	}
 
 	/**
@@ -113,8 +140,10 @@ class RewriteAliasMap extends DbAccessor {
 		if(empty($id) or !is_numeric($id)){
 			throw new InvalidArgumentException("\$id have to be non zero integer");
 		}
-
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_ALIAS')."` WHERE `id` = '$id'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_ALIAS'))
+			->where($qb->expr()->equal(new Field("id"), $id));	
+		$this->query->exec($qb->getSQL());
 	}
 	/**
 	 * Returns host extenstions for witch alias(es) exists in DB
@@ -123,6 +152,8 @@ class RewriteAliasMap extends DbAccessor {
 	 */
 	public function getKnownAliasHosts($cacheMinutes = null){
 		$hosts = array();
+		$qb = new QueryBuilder();
+		//TODO: add in quieryBuilder function selectDistinct
 		$query = "SELECT DISTINCT host_id FROM `".Tbl::get('TBL_ALIAS_HOST')."`";
 		$this->query->exec($query, $cacheMinutes);
 		while (($host_id = $this->query->fetchField("host_id")) != false) {
@@ -133,7 +164,11 @@ class RewriteAliasMap extends DbAccessor {
 	}
 	
 	public function getAliasHost($id, $cacheMinutes = null){
-		$this->query->exec("SELECT `host_id` FROM `".Tbl::get('TBL_ALIAS_HOST')."` WHERE `alias_id`={$id}", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('host_id'))
+			->from(Tbl::get('TBL_ALIAS_HOST'))
+			->where($qb->expr()->equal(new Field('alias_id'), $id));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return new Host($this->query->fetchField("host_id"));
 	}
 }

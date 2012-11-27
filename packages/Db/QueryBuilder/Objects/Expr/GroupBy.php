@@ -20,7 +20,7 @@
  */
 
 /**
- * Expression class for SQL math statements
+ * Expression class for building SQL Group By parts
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,35 +30,9 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class Math
+class GroupBy extends Base
 {
-    private $_leftExpr;
-    private $_operator;
-    private $_rightExpr;
-
-    public function __construct($leftExpr, $operator, $rightExpr)
-    {
-        $this->_leftExpr  = $leftExpr;
-        $this->_operator  = $operator;
-        $this->_rightExpr = $rightExpr;
-    }
-
-    public function __toString()
-    {
-        // Adjusting Left Expression
-        $leftExpr = (string) $this->_leftExpr;
-
-        if ($this->_leftExpr instanceof Math) {
-            $leftExpr = '(' . $leftExpr . ')';
-        }
-
-        // Adjusting Right Expression
-        $rightExpr = (string) $this->_rightExpr;
-
-        if ($this->_rightExpr instanceof Math) {
-            $rightExpr = '(' . $rightExpr . ')';
-        }
-
-        return $leftExpr . ' ' . $this->_operator . ' ' . $rightExpr;
-    }
+    protected $_preSeparator = '';
+    protected $_postSeparator = '';
+    protected $_allowedClasses = array('Field');
 }

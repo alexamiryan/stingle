@@ -20,7 +20,7 @@
  */
 
 /**
- * Expression class for SQL from
+ * Expression class for SQL comparison expressions
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,51 +30,38 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class Join
+class Comparison extends QBpart
 {
-    const INNER_JOIN = 'INNER';
-    const LEFT_JOIN  = 'LEFT';
-    const RIGHT_JOIN  = 'RIGHT';
-    const OUTER_JOIN  = 'OUTER';
+    const EQ  = '=';
+    const NEQ = '<>';
+    const LT  = '<';
+    const LTE = '<=';
+    const GT  = '>';
+    const GTE = '>=';
 
-    const ON   = 'ON';
-    const WITH = 'WITH';
+    private $_leftExpr;
+    private $_operator;
+    private $_rightExpr;
 
-    private $_joinType;
-    private $_join;
-    private $_alias;
-    private $_condition;
-    private $_indexBy;
-
-    public function __construct($joinType, $join, $alias = null, $condition = null, $indexBy = null)
+    public function __construct($leftExpr, $operator, $rightExpr)
     {
-        $this->_joinType       = $joinType;
-        $this->_join           = $join;
-        $this->_alias          = $alias;
-        $this->_condition      = $condition;
-        $this->_indexBy        = $indexBy;
+        $this->_leftExpr  = $leftExpr;
+        $this->_operator  = $operator;
+        $this->_rightExpr = $rightExpr;
     }
 
-    public function getAlias()
-    {
-    	return $this->_alias;
-    }
-    
     public function __toString()
     {
-        $returnString = strtoupper($this->_joinType) . ' JOIN ';
-        
-		if($this->_join instanceof QueryBuilder){
-			$returnString .= "($this->_join)";
-		}
-		else{
-			$returnString .= "`$this->_join`";
-		}
-		
-		$returnString .= ($this->_alias ? ' as `' . $this->_alias . '`' : '')
-             	. ($this->_condition ? ' ON (' . $this->_condition . ')' : '')
-             	. ($this->_indexBy ? ' INDEX BY ' . $this->_indexBy : '');
-		
-		return $returnString;
+    	$this->_leftExpr = Expr::quoteLiteral($this->_leftExpr);
+    	$this->_rightExpr = Expr::quoteLiteral($this->_rightExpr);
+    	
+    	if ($this->_leftExpr instanceof Math or $this->_leftExpr instanceof QueryBuilder) {
+    		$this->_leftExpr = '(' . $this->_leftExpr . ')';
+    	}
+    	if ($this->_rightExpr instanceof Math or $this->_rightExpr instanceof QueryBuilder) {
+    		$this->_rightExpr = '(' . $this->_rightExpr . ')';
+    	}
+    	
+        return $this->_leftExpr . ' ' . $this->_operator . ' ' . $this->_rightExpr;
     }
 }

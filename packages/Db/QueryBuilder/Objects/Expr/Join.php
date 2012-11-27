@@ -20,7 +20,7 @@
  */
 
 /**
- * Expression class for SQL comparison expressions
+ * Expression class for SQL from
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,28 +30,51 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class Comparison
+class Join extends QBpart
 {
-    const EQ  = '=';
-    const NEQ = '<>';
-    const LT  = '<';
-    const LTE = '<=';
-    const GT  = '>';
-    const GTE = '>=';
+    const INNER_JOIN = 'INNER';
+    const LEFT_JOIN  = 'LEFT';
+    const RIGHT_JOIN  = 'RIGHT';
+    const OUTER_JOIN  = 'OUTER';
 
-    private $_leftExpr;
-    private $_operator;
-    private $_rightExpr;
+    const ON   = 'ON';
+    const WITH = 'WITH';
 
-    public function __construct($leftExpr, $operator, $rightExpr)
+    private $_joinType;
+    private $_join;
+    private $_alias;
+    private $_condition;
+    private $_indexBy;
+
+    public function __construct($joinType, $join, $alias = null, $condition = null, $indexBy = null)
     {
-        $this->_leftExpr  = $leftExpr;
-        $this->_operator  = $operator;
-        $this->_rightExpr = $rightExpr;
+        $this->_joinType       = $joinType;
+        $this->_join           = $join;
+        $this->_alias          = $alias;
+        $this->_condition      = $condition;
+        $this->_indexBy        = $indexBy;
     }
 
+    public function getAlias()
+    {
+    	return $this->_alias;
+    }
+    
     public function __toString()
     {
-        return $this->_leftExpr . ' ' . $this->_operator . ' ' . $this->_rightExpr;
+        $returnString = strtoupper($this->_joinType) . ' JOIN ';
+        
+		if($this->_join instanceof QueryBuilder or $this->_join instanceof Unionx){
+			$returnString .= "($this->_join)";
+		}
+		else{
+			$returnString .= "`$this->_join`";
+		}
+		
+		$returnString .= ($this->_alias ? ' as `' . $this->_alias . '`' : '')
+             	. ($this->_condition ? ' ON (' . $this->_condition . ')' : '')
+             	. ($this->_indexBy ? ' INDEX BY ' . $this->_indexBy : '');
+		
+		return $returnString;
     }
 }

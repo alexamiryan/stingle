@@ -1,5 +1,7 @@
 <?
 class LoaderSmarty extends Loader{
+	private $pluginsDirs = array();
+	
 	protected function includes(){
 		require_once ('Core/Smarty.class.php');
 		require_once ('SmartyWrapper.class.php');
@@ -7,35 +9,39 @@ class LoaderSmarty extends Loader{
 	}
 	
 	protected function loadSmarty(){
-		$this->smarty = new SmartyWrapper();
-		$this->register($this->smarty);
+		$this->register(new SmartyWrapper());
 	}
 	
 	public function hookSmartyInit(){
 		$siteNavigationConfig = ConfigManager::getConfig("SiteNavigation");
-		$this->smarty->initialize(	Reg::get($siteNavigationConfig->ObjectsIgnored->Nav)->{$siteNavigationConfig->AuxConfig->firstLevelName}, 
-									Reg::get($siteNavigationConfig->ObjectsIgnored->Nav)->{$siteNavigationConfig->AuxConfig->secondLevelName}, 
-									$this->config->AuxConfig);
+		Reg::get($this->config->Objects->Smarty)->initialize($this->config->AuxConfig);
 	}
 	
 	public function hookSmartyDisplay(){
-		$this->smarty->output();
+		Reg::get($this->config->Objects->Smarty)->output();
 	}
 	
-	public function hookRegisterSmartyPlugins(Array $params){
+	public function hookCollectSmartyPluginsDir(Array $params){
 		extract($params);
-		
+	
 		if(	is_dir(STINGLE_PATH . "packages/{$packageName}/") and is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}")){
 			if(is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/SmartyPlugins")){
-				$this->smarty->addPluginsDir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/SmartyPlugins");
+				array_push($this->pluginsDirs, STINGLE_PATH . "packages/{$packageName}/{$pluginName}/SmartyPlugins");
 			}
 		}
-		
+	
 		if(is_dir(SITE_PACKAGES_PATH . "{$packageName}/") and is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}")){
 			if(is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/SmartyPlugins")){
-				$this->smarty->addPluginsDir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/SmartyPlugins");
+				array_push($this->pluginsDirs, SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/SmartyPlugins");
 			}
 		}
+	}
+	
+	public function hookRegisterSmartyPlugins(){
+		foreach($this->pluginsDirs as $dir){
+			Reg::get($this->config->Objects->Smarty)->addPluginsDir($dir);
+		}
+
 	}
 }
 ?>

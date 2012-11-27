@@ -15,11 +15,13 @@ class UserManager extends DbAccessor{
 	const STATE_EMAIL_CONFIRMED = 1;
 	const STATE_EMAIL_UNCONFIRMED = 0;
 	
-	const INIT_ALL = -1;
 	const INIT_NONE = 0;
 	// Init flags needs to be powers of 2 (1, 2, 4, 8, 16, 32, ...)
 	const INIT_PROPERTIES = 1;
 	const INIT_PERMISSIONS = 2;
+	
+	// INIT_ALL Should be next power of 2 minus 1
+	const INIT_ALL = 3;
 	
 	protected $config;
 
@@ -113,12 +115,12 @@ class UserManager extends DbAccessor{
 	 * @throws UserNotFoundException
 	 * @return User
 	 */
-	public function getUserById($userId, $initObjects = self::INIT_ALL, $cacheMinutes = 0){
+	public function getUserById($userId, $initObjects = self::INIT_ALL, $onlyEnabled = true, $cacheMinutes = 0){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidArgumentException("\$userId have to be non zero integer");
 		}
 		
-		$filter = new UsersFilter();
+		$filter = new UsersFilter($onlyEnabled);
 		$filter->setUserIdEqual($userId);
 		$users = $this->getUsersList($filter, null, $initObjects, $cacheMinutes);
 		if(count($users) !== 1){
@@ -136,12 +138,12 @@ class UserManager extends DbAccessor{
 	 * @throws UserNotFoundException
 	 * @return integer
 	 */
-	public function getIdByLogin($login, $cacheMinutes = 0){
+	public function getIdByLogin($login, $onlyEnabled = true, $cacheMinutes = 0){
 		if(empty($login)){
 			throw new InvalidArgumentException("\$login have to be non empty string");
 		}
 	
-		$filter = new UsersFilter();
+		$filter = new UsersFilter($onlyEnabled);
 		$filter->setLogin($login);
 		$users = $this->getUsersList($filter, null, static::INIT_NONE, $cacheMinutes);
 		if(count($users) !== 1){
@@ -158,12 +160,12 @@ class UserManager extends DbAccessor{
 	 * @throws InvalidArgumentException
 	 * @return boolean
 	 */
-	public function isUserExists($login, $cacheMinutes = 0){
+	public function isUserExists($login, $onlyEnabled = true, $cacheMinutes = 0){
 		if(empty($login)){
 			throw new InvalidArgumentException("\$login have to be non empty string");
 		}
 	
-		$filter = new UsersFilter();
+		$filter = new UsersFilter($onlyEnabled);
 		$filter->setLogin($login);
 		$usersCount = $this->getUsersListCount($filter, $cacheMinutes);
 		if($usersCount > 0){
@@ -321,26 +323,31 @@ class UserManager extends DbAccessor{
 		$qb1 = new QueryBuilder();
 		$qb2 = new QueryBuilder();
 		
-		$qb1->select(new Field('permission_id'))
+		$qb1->select(array(new Field('permission_id'), new Field('args')))
 			->from(Tbl::get('TBL_USERS_PERMISSIONS'))
 			->where($qb1->expr()->equal(new Field('user_id'), $userId));
 		
-		$qb2->select(new Field('permission_id', 'gp'))
+		$qb2->select(array(new Field('permission_id', 'gp'), new Field('args', 'gp')))
 			->from(Tbl::get('TBL_USERS_GROUPS'), 'ug')
-			->leftJoin(Tbl::get('TBL_GROUPS_PERMISSIONS'), 'gp', $qb2->expr()->equal(new Field('group_id', 'ug'), new Field('group_id', 'gp')))
+			->innerJoin(Tbl::get('TBL_GROUPS_PERMISSIONS'), 'gp', $qb2->expr()->equal(new Field('group_id', 'ug'), new Field('group_id', 'gp')))
 			->where($qb1->expr()->equal(new Field('user_id', 'ug'), $userId));
 		
 		$union = new Unionx();
 		$union->add($qb1);
 		$union->add($qb2);
 		
-		$qb->select(new Field('name'))
-			->from(Tbl::get('TBL_PERMISSIONS'))
-			->where($qb->expr()->in(new Field('id'), $union));
+		$qb->select(array(new Field('*', 'perms'), new Field('args', 'tbl')))
+			->from($union, 'tbl')
+			->leftJoin(Tbl::get('TBL_PERMISSIONS'), 'perms', $qb2->expr()->equal(new Field('permission_id', 'tbl'), new Field('id', 'perms')));
 		
 		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
-		$permissionsList = $this->query->fetchFields("name");
+		$permissionsData = $this->query->fetchRecords();
+		
+		$permissionsList = array();
+		foreach($permissionsData as $row){
+			array_push($permissionsList, UserPermissionsManager::getPermissionsObjectFromData($row));
+		}
 		
 		return new UserPermissions($permissionsList);
 	}
@@ -407,14 +414,11 @@ class UserManager extends DbAccessor{
 		$user->email = $data['email'];
 		$user->emailConfirmed = $data['email_confirmed'];
 		
-		if($initObjects !== 0){
-			$isInitAll = ($initObjects == -1 ? true : false);
-			if($isInitAll or ($initObjects & self::INIT_PROPERTIES) != 0){
-				$user->props = $this->getPropertiesObject($user->id, $cacheMinutes);
-			}
-			if($isInitAll or ($initObjects & self::INIT_PERMISSIONS) != 0){
-				$user->perms = $this->getPermissionsObject($user->id, $cacheMinutes);
-			}
+		if($initObjects & self::INIT_PROPERTIES != 0){
+			$user->props = $this->getPropertiesObject($user->id, $cacheMinutes);
+		}
+		if($initObjects & self::INIT_PERMISSIONS != 0){
+			$user->perms = $this->getPermissionsObject($user->id, $cacheMinutes);
 		}
 		
 		return $user;

@@ -80,4 +80,18 @@ HookManager::callHook("BeforeRequestParserStep2");
 HookManager::callHook("RequestParser");
 
 HookManager::callHook("AfterRequestParser");
+
+HookManager::callHook("BeforeController");
+
+HookManager::callHook("Controller");
+
+HookManager::callHook("AfterController");
+
+HookManager::callHook("BeforeOutput");
+
+HookManager::callHook("Output");
+
+HookManager::callHook("AfterOutput");
+
+// Finish
 ?>

@@ -41,9 +41,11 @@ class IpFilter extends DbAccessor {
 	 * @return boolean
 	 */
 	private function isWhitelistedIP($cacheMinutes = null){
-		$this->query->exec("SELECT count(*) as `count` 
-								FROM `".Tbl::get('TBL_SECURITY_WHITELISTED_IPS')."`
-								WHERE `ip` = '{$this->remoteIp}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count('*', 'count'))
+			->from(Tbl::get('TBL_SECURITY_WHITELISTED_IPS'))
+			->where($qb->expr()->equal(new Field('ip'), $this->remoteIp));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		$count = $this->query->fetchField('count');
 		
@@ -59,9 +61,12 @@ class IpFilter extends DbAccessor {
 	 * @return boolean
 	 */
 	private function isBlockedByIP($cacheMinutes = null){
-		$this->query->exec("SELECT count(*) as `count` 
-								FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_IPS')."`
-								WHERE `ip` = '{$this->remoteIp}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count('*', 'count'))
+			->from(Tbl::get('TBL_SECURITY_BLACKLISTED_IPS'))
+			->where($qb->expr()->equal(new Field('ip'), $this->remoteIp));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		$count = $this->query->fetchField('count');
 		
@@ -87,10 +92,11 @@ class IpFilter extends DbAccessor {
 		if(empty($countryCode)){
 			return false;
 		}	
-		
-		$this->query->exec("SELECT count(*) as `count` 
-								FROM `".Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES')."` 
-								WHERE `country` = '$countryCode'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count('*', 'count'))
+			->from(Tbl::get('TBL_SECURITY_BLACKLISTED_COUNTRIES'))
+			->where($qb->expr()->equal(new Field('country'), $countryCode));
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		$count = $this->query->fetchField('count');
 		

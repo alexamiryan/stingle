@@ -15,10 +15,16 @@ class PageInfoManager extends PageInfo
 	public static function getLanguageHosts(Language $lang){
 		$hosts = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT h.* FROM `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` pi 
-					LEFT JOIN `".Host::TBL_HOSTS."` h ON h.id = pi.host_id 
-					WHERE pi.lang_id='{$lang->id}' AND pi.host_id IS NOT NULL
-					GROUP BY h.id");	
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*', 'h'))
+			->from(Tbl::get('TBL_PAGE_INFO', 'PageInfo'), 'pi')
+			->leftJoin(Tbl::get('TBL_HOSTS', 'Host'), 'h', 
+						$qb->expr()->equal(new Field('id', 'h'), new Field('host_id', 'pi')))
+			->where($qb->expr()->equal(new Field('lang_id', 'pi'), $lang->id))
+			->andWhere($qb->expr()->isNotNull(new Field('host_id', 'pi')))
+			->groupBy(new Field('id', 'h'));
+			
+		$sql->exec($qb->getSQL());	
 		$hosts_data = $sql->fetchRecords();
 		foreach ($hosts_data as $host_data){
 			$host = new Host();
@@ -31,9 +37,15 @@ class PageInfoManager extends PageInfo
 	public static function getModules(Language $lang, Host $host){
 		$modules = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT pi.module FROM `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` pi 
-					WHERE pi.lang_id='$lang->id' AND pi.host_id ='$host->id' AND pi.module IS NOT NULL
-					GROUP BY pi.module");
+		$qb = new QueryBuilder();
+		$qb->select(new Field('module', 'pi'))
+			->from(Tbl::get('TBL_PAGE_INFO', 'PageInfo'), 'pi')
+			->where($qb->expr()->equal(new Field('lang_id', 'pi'), $lang->id))
+			->andWhere($qb->expr()->equal(new Field('host_id', 'pi'), $host->id))
+			->andWhere($qb->expr()->isNotNull(new Field('module', 'pi')))
+			->groupBy(new Field('module', 'pi'));
+			
+		$sql->exec($qb->getSQL());	
 		if($sql->countRecords()){	
 			$modules = $sql->fetchRecords();
 		}
@@ -43,9 +55,16 @@ class PageInfoManager extends PageInfo
 	public static function getModulePages(Language $lang, Host $host, $module){
 		$pages = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT pi.page FROM `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` pi 
-					WHERE pi.lang_id='{$lang->id}' AND pi.host_id ='$host->id' AND pi.module='$module' AND pi.page IS NOT NULL
-					GROUP BY pi.page");	
+		$qb = new QueryBuilder();
+		$qb->select(new Field('page', 'pi'))
+			->from(Tbl::get('TBL_PAGE_INFO', 'PageInfo'), 'pi')
+			->where($qb->expr()->equal(new Field('lang_id', 'pi'), $lang->id))
+			->andWhere($qb->expr()->equal(new Field('host_id', 'pi'), $host->id))
+			->andWhere($qb->expr()->equal(new Field('module', 'pi'), $module))
+			->andWhere($qb->expr()->isNotNull(new Field('page', 'pi')))
+			->groupBy(new Field('page', 'pi'));
+			
+		$sql->exec($qb->getSQL());	
 		if($sql->countRecords()){	
 			$pages = $sql->fetchRecords();
 		}
@@ -93,19 +112,37 @@ class PageInfoManager extends PageInfo
 	 * @return bool
 	 */
 	private static function exists($lang_id=null, $host_id=null, $module=null, $page=null){
-		
-		$lang_where = "lang_id ". ($lang_id === null ? "IS NULL " : "=".$lang_id);
-		$host_where = "host_id ". ($host_id === null ? "IS NULL " : "=".$host_id);
-		$module_where = "module ". ($module === null ? "IS NULL " : "='".$module."'");
-		$page_where = "page ". ($page === null ? "IS NULL " : "='".$page."'");
-
 		$sql = MySqlDbManager::getQueryObject();
-		$query = "SELECT id FROM `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` 
-		WHERE  ".$lang_where."
-		AND ".$host_where."
-		AND ".$module_where."
-		AND ".$page_where;
-		$sql->exec($query);
+		$qb = new QueryBuilder();
+
+		$qb->select(new Field('id'))
+			->from(Tbl::get('TBL_PAGE_INFO', 'PageInfo'));
+		if($lang_id === null){
+			$qb->andWhere($qb->expr()->isNull(new Field('lang_id')));
+		}
+		else{
+			$qb->andWhere($qb->expr()->equal(new Field('lang_id'), $lang_id));
+		}	
+		if($host_id === null){
+			$qb->andWhere($qb->expr()->isNull(new Field('host_id')));
+		}
+		else{
+			$qb->andWhere($qb->expr()->equal(new Field('host_id'), $host_id));
+		}
+		if($module === null){
+			$qb->andWhere($qb->expr()->isNull(new Field('module')));
+		}
+		else{
+			$qb->andWhere($qb->expr()->equal(new Field('module'), $module));
+		}
+		if($page === null){
+			$qb->andWhere($qb->expr()->isNull(new Field('page')));
+		}
+		else{
+			$qb->andWhere($qb->expr()->equal(new Field('page'), $page));
+		}	
+
+		$sql->exec($qb->getSQL());
 		if($sql->countRecords()){
 			return  $sql->fetchField("id");
 		}
@@ -123,21 +160,30 @@ class PageInfoManager extends PageInfo
 	 * @return string
 	 */
 	private static function insertQueryString(array $pageInfo, $langId=null, $hostId=null, $module=null, $page=null){
-		$langId  = ($langId === null? 'NULL' : $langId);
-		$hostId  = ($hostId === null? 'NULL' : $hostId);
-		$module = ($module === null? 'NULL' : "'".$module."'");
-		$page  	= ($page === null? 'NULL' : "'".$page."'");
-				
-		$query = "INSERT INTO `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` (`lang_id`, `host_id`, `module`, `page`, `title`, `meta_keywords`, `meta_description`) 
-				VALUES ($langId, $hostId, $module, $page, '".mysql_real_escape_string($pageInfo['title'])."', '".mysql_real_escape_string($pageInfo['keywords'])."', '".mysql_real_escape_string($pageInfo['description'])."')";
-		return $query;
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_PAGE_INFO', 'PageInfo'))
+			->values(array(
+						"lang_id" 			=> ($langId === null? new Literal('NULL') : $langId), 
+						"host_id" 			=> ($hostId === null? new Literal('NULL') : $hostId), 
+						"module"  			=> ($module === null? new Literal('NULL') : $module), 
+						"page" 	  			=> ($page 	=== null? new Literal('NULL') : $page), 
+						"title"   			=> $pageInfo['title'], 
+						"meta_keywords" 	=> $pageInfo['keywords'], 
+						"meta_description" 	=> $pageInfo['description']
+						)
+					);	
+		return $qb->getSQL();
 	}
 	
 	private static function updateQueryString(array $pageInfo, $id){
-		$query = "UPDATE `".Tbl::get('TBL_PAGE_INFO', 'PageInfo')."` 
-		SET `title`='".mysql_real_escape_string($pageInfo['title'])."',  `meta_keywords` ='".mysql_real_escape_string($pageInfo['keywords'])."',  `meta_description`='".mysql_real_escape_string($pageInfo['description'])."'
-		WHERE id=".$id;
-		return $query;		
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_PAGE_INFO', 'PageInfo'))
+			->set(new Field('title'), $pageInfo['title'])
+			->set(new Field('meta_keywords'), $pageInfo['keywords'])
+			->set(new Field('meta_description'), $pageInfo['description'])
+			->where($qb->expr()->equal(new Field('id'), $id));
+			
+		return $qb->getSQL();		
 	}
 }
 ?>

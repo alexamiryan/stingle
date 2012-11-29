@@ -35,6 +35,11 @@ class Controller
 			include ($includePath . "config.php");
 		}
 		
+		// Include helpers.php in initial includePath if exists
+		if(@file_exists($includePath . "helpers.php")){
+			include ($includePath . "helpers.php");
+		}
+		
 		// Include common.php in initial includePath if exists
 		if(@file_exists($includePath . "common.php")){
 			include ($includePath . "common.php");
@@ -49,6 +54,11 @@ class Controller
 				// Include config.php in current includePath if exists
 				if(@file_exists($includePath . "config.php")){
 					include ($includePath . "config.php");
+				}
+				
+				// Include helpers.php in current includePath if exists
+				if(@file_exists($includePath . "helpers.php")){
+					include ($includePath . "helpers.php");
 				}
 				
 				// Include common.php in current includePath if exists

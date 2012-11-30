@@ -120,7 +120,7 @@ class HostLanguageManager extends LanguageManager {
 	 * @param Host $host
 	 * @return array set of Language objects
 	 */
-	public static function getHostLanguages(Host $host, $cacheMinutes = null){
+	public static function getHostLanguages(Host $host, MysqlPager $pager = null, $cacheMinutes = null){
 		$sql = MySqlDbManager::getQueryObject();
 		$languages = array();
 		
@@ -130,7 +130,12 @@ class HostLanguageManager extends LanguageManager {
 			->leftJoin(Tbl::get("TBL_LANGUAGES", "Language"), 'l', $qb->expr()->equal(new Field('lang_id', 'hl'), new Field('id', 'l')))
 			->where($qb->expr()->equal(new Field('host_id', 'hl'), $host->id));
 		
-		$sql->exec($qb->getSQL(), $cacheMinutes);
+		if($pager !== null){
+			$sql = $pager->executePagedSQL($qb->getSQL(), $cacheMinutes);
+		}
+		else{
+			$sql->exec($qb->getSQL(), $cacheMinutes);
+		}
 		$langs_data = $sql->fetchRecords();
 		foreach ($langs_data as $lang_data){
 			$lang = new Language();

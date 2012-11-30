@@ -5,6 +5,8 @@
  * @param $id
  * @param $visualPagesCount
  * @param $exclude
+ * @param $additionalParams
+ * @param $linkClass
  * @return string
  */
 function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
@@ -42,7 +44,13 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 	                              );*/
 			$link = getCurrentUrl(array_merge(array($pager->getUrlParam()), $excludedGetsArray));
 		}
-		$urlParam = $pager->getUrlParam();
+		if(isset($additionalParams) and !empty($additionalParams)){
+			RewriteURL::ensureLastSlash($additionalParams);
+			$urlParam = $additionalParams . $pager->getUrlParam();
+		}
+		else{
+			$urlParam = $pager->getUrlParam();
+		}
 		$currentPageNumber = $pager->getCurrentPageNumber();
 		$pagesCount = $pager->getTotalPagesCount();
 		
@@ -63,17 +71,17 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 			}
 			
 			if($pageNumStart > 1){
-				$pagerFirstPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $pager->getUrlParam() . ':1');
+				$pagerFirstPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $urlParam . ':1');
 				$smarty->assign('pagerFirstPageLink', $pagerFirstPageLink);
 			}
 			
 			if($pageNumEnd < $pagesCount){
-				$pagerLastPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $pager->getUrlParam() . ':' .$pagesCount);
+				$pagerLastPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $urlParam . ':' .$pagesCount);
 				$smarty->assign('pagerLastPageLink', $pagerLastPageLink);
 			}
 			
 			if($currentPageNumber > 1){
-				$prevPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $pager->getUrlParam() . ':' . ($currentPageNumber - 1));
+				$prevPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $urlParam . ':' . ($currentPageNumber - 1));
 				$smarty->assign('pagerPreviousPageLink', $prevPageLink);
 			}
 			
@@ -83,14 +91,18 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 				if($pgNum == $currentPageNumber){
 					$isCurrent = true;
 				}
-				$pageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $pager->getUrlParam() . ':' . $pgNum);
+				$pageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $urlParam . ':' . $pgNum);
 				
 				array_push($pagerNumbersArray, array("pageNum" => $pgNum, "pageLink" => $pageLink, "isCurrent" => $isCurrent));
 			}
 			
 			if($currentPageNumber < $pagesCount){
-				$nextPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $pager->getUrlParam() . ':' . ($currentPageNumber + 1));
+				$nextPageLink = Reg::get(ConfigManager::getConfig("RewriteURL")->Objects->rewriteURL)->glink($link . $urlParam . ':' . ($currentPageNumber + 1));
 				$smarty->assign('pagerNextPageLink', $nextPageLink);
+			}
+			
+			if(isset($linkClass) and !empty($linkClass)){
+				$smarty->assign("linkClass", $linkClass);
 			}
 			
 			$smarty->assign("pagerPageNumStart", $pageNumStart);

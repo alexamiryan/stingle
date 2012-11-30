@@ -447,7 +447,7 @@ class SmartyWrapper extends Smarty {
 	 * @param unknown_type $fileName 
 	 * @throws InvalidArgumentException
 	 */
-	public function getCss($fileName){
+	public function getCssPath($fileName){
 		if(empty($fileName)){
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
@@ -509,7 +509,7 @@ class SmartyWrapper extends Smarty {
 	 * @param string $fileName
 	 * @throws InvalidArgumentException
 	 */
-	public function getJs($fileName){
+	public function getJsPath($fileName){
 		if(empty($fileName)){
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
@@ -715,15 +715,20 @@ class SmartyWrapper extends Smarty {
 		// Check if page exists and if not show 404 error page
 		$requiredLevelsCount = $this->nav->existentLevelsCount - 2;
 		if(empty($this->fileToDisplay) or $foundLevelsCount < $requiredLevelsCount){
-			header("HTTP/1.0 404 Not Found");
-			$this->fileToDisplay = $this->getFilePathFromTemplate($this->pagesPath . $this->error404Page . ".tpl");
-			
-			if(empty($this->fileToDisplay)){
-				$this->fileToDisplay = 'system/common/404.tpl';
+			if($return == false){
+				header("HTTP/1.0 404 Not Found");
+				$this->fileToDisplay = $this->getFilePathFromTemplate($this->pagesPath . $this->error404Page . ".tpl");
+				
+				if(empty($this->fileToDisplay)){
+					$this->fileToDisplay = 'system/common/404.tpl';
+				}
+				$this->setPageTitle("404 Not Found");
+				
+				$this->removeWrapper();
 			}
-			$this->setPageTitle("404 Not Found");
-			
-			$this->removeWrapper();
+			else{
+				throw new TemplateFileNotFoundException("Can't find template at {$this->fileToDisplay}");
+			}
 		}
 		
 		$this->defaultAssingns();

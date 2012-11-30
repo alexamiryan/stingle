@@ -81,6 +81,37 @@ class HostLanguageManager extends LanguageManager {
 	public function Languages(){
 		return $this->hostLangs;
 	}
+	
+	/**
+	 * Add new language to the Host.
+	 * Returns hostLanguageId.
+	 *
+	 * @param Host $host
+	 * @param Language $language
+	 *
+	 * @access public
+	 * @return integer
+	 */
+	public function addHostLanguage(Host $host, Language $language){
+		if(empty($language->id) or empty($host->id)){
+			throw new EmptyArgumentException();
+		}
+		$dafault = 0;
+		if(self::getHostDefaultLanguage($host) === false){
+			$dafault = 1;
+		}
+	
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get("TBL_HOST_LANGUAGE"))
+		->values(array(
+				'host_id' => $host->id,
+				'lang_id' => $language->id,
+				'default' => $dafault
+		));
+	
+		$this->query->exec($qb->getSQL());	
+		return $this->query->getLastInsertId();
+	}
 
 
 	/**

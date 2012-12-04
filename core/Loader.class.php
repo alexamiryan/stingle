@@ -174,7 +174,24 @@ abstract class Loader {
 						throw new RuntimeException("Hook $hookMethod is already registered.");
 					}
 					if(method_exists($this, $hookMethodName)){
-						HookManager::registerHook($hook);
+						// Check if there is hook registered on $hookName with same method name and replace it
+						$isReplacedHook = false;
+						
+						if(HookManager::isAnyHooksRegistered($hookName)){
+							$registeredHooks = HookManager::getRegisteredHooks($hookName);
+							foreach($registeredHooks as $registeredHook){
+								if($registeredHook->getMethod() == $hookMethodName){
+									HookManager::replaceHook($registeredHook, $hook);
+									$isReplacedHook = true;
+									break;
+								}
+							}
+						}
+						
+						if(!$isReplacedHook){
+							// Register hook if it is not replaced
+							HookManager::registerHook($hook);
+						}
 					}
 					else{
 						throw new RuntimeException("Hook method of plugin {$this->pluginName} in package {$this->packageName} for hook $hookName -> $hookMethodName doesn't exists!");

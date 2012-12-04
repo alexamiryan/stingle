@@ -668,6 +668,11 @@ class SmartyWrapper extends Smarty {
 			return;
 		}
 		
+		$navConfig = ConfigManager::getConfig("SiteNavigation")->AuxConfig;
+		if(isset($this->nav->{$navConfig->actionName}) and !empty($this->nav->{$navConfig->actionName})){
+			return;
+		}
+		
 		// Call template init hook if there is any
 		$currentTemplate = $this->template;
 		while(true){

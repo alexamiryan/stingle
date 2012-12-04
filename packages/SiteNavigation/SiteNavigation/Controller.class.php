@@ -84,10 +84,11 @@ class Controller
 				if(@file_exists($includePath . "actions/{$nav->{$this->config->actionName}}.php")){
 					include ($includePath . "actions/{$nav->{$this->config->actionName}}.php");
 				}
-			}
-			
-			// Include main controller file in includePath if exists
-			if(file_exists($includePath . "{$nav->{$levels[$i+1]}}.php")){
+				else{
+					throw new FileNotFoundException("Unable to find action: $nav->{$this->config->actionName}");
+				}
+			}// Include main controller file in includePath if exists
+			elseif(file_exists($includePath . "{$nav->{$levels[$i+1]}}.php")){
 				include ($includePath . "{$nav->{$levels[$i+1]}}.php");
 			}
 		}			

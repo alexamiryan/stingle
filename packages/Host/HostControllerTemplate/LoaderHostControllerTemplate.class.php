@@ -10,7 +10,7 @@ class LoaderHostControllerTemplate extends Loader{
 	
 	public function hookSetTemplateByHost(){
 		$controller = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->Objects->Controller);
-		$smarty = Reg::get(ConfigManager::getConfig("Smarty", "Smarty")->Objects->Smarty);
+		$smarty = Reg::get(ConfigManager::getConfig("Output", "Smarty")->Objects->Smarty);
 		$host = Reg::get(ConfigManager::getConfig("Host","Host")->Objects->Host);
 		
 		$result = HostControllerTemplate::getControllerTemplateByHost($host);

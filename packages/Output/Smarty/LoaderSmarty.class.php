@@ -17,7 +17,7 @@ class LoaderSmarty extends Loader{
 		Reg::get($this->config->Objects->Smarty)->initialize($this->config->AuxConfig);
 	}
 	
-	public function hookSmartyDisplay(){
+	public function hookMainOutput(){
 		Reg::get($this->config->Objects->Smarty)->output();
 	}
 	

@@ -103,7 +103,7 @@ class HostLanguageManager extends LanguageManager {
 	
 		$qb = new QueryBuilder();
 		$qb->insert(Tbl::get("TBL_HOST_LANGUAGE"))
-		->values(array(
+			->values(array(
 				'host_id' => $host->id,
 				'lang_id' => $language->id,
 				'default' => $dafault
@@ -269,6 +269,27 @@ class HostLanguageManager extends LanguageManager {
 			$pairs[$row["host_lang_id"]]=array("host"=>$host,"language"=>$language);
 		}		
 		return $pairs;
+	}
+	
+	public static function setHostsDefaultLanguage(Host $host, Language $language){
+		$pairs = array();
+		$sql = MySqlDbManager::getQueryObject();
+		
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_HOST_LANGUAGE'))
+			->set(new Field("default"), 0)
+			->where($qb->expr()->equal(new Field('host_id'), $host->id));
+		
+		$sql->exec($qb->getSQL());
+		
+		
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_HOST_LANGUAGE'))
+			->set(new Field("default"), 1)
+			->where($qb->expr()->equal(new Field('host_id'), $host->id))
+			->andWhere($qb->expr()->equal(new Field('lang_id'), $language->id));
+		
+		$sql->exec($qb->getSQL());
 	}
 }
 ?>

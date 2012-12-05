@@ -85,7 +85,7 @@ class Controller
 					include ($includePath . "actions/{$nav->{$this->config->actionName}}.php");
 				}
 				else{
-					throw new FileNotFoundException("Unable to find action: $nav->{$this->config->actionName}");
+					throw new FileNotFoundException("Unable to find action: {$nav->{$this->config->actionName}}");
 				}
 			}// Include main controller file in includePath if exists
 			elseif(file_exists($includePath . "{$nav->{$levels[$i+1]}}.php")){

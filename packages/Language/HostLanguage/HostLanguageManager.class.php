@@ -96,9 +96,9 @@ class HostLanguageManager extends LanguageManager {
 		if(empty($language->id) or empty($host->id)){
 			throw new EmptyArgumentException();
 		}
-		$dafault = 0;
+		$default = 0;
 		if(self::getHostDefaultLanguage($host) === false){
-			$dafault = 1;
+			$default = 1;
 		}
 	
 		$qb = new QueryBuilder();
@@ -106,7 +106,7 @@ class HostLanguageManager extends LanguageManager {
 			->values(array(
 				'host_id' => $host->id,
 				'lang_id' => $language->id,
-				'default' => $dafault
+				'default' => $default
 		));
 	
 		$this->query->exec($qb->getSQL());	
@@ -272,7 +272,6 @@ class HostLanguageManager extends LanguageManager {
 	}
 	
 	public static function setHostsDefaultLanguage(Host $host, Language $language){
-		$pairs = array();
 		$sql = MySqlDbManager::getQueryObject();
 		
 		$qb = new QueryBuilder();
@@ -289,6 +288,17 @@ class HostLanguageManager extends LanguageManager {
 			->where($qb->expr()->equal(new Field('host_id'), $host->id))
 			->andWhere($qb->expr()->equal(new Field('lang_id'), $language->id));
 		
+		$sql->exec($qb->getSQL());
+	}
+	
+	public static function deleteHostsLanguage(Host $host, Language $language){
+		$sql = MySqlDbManager::getQueryObject();
+	
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_HOST_LANGUAGE'))
+			->where($qb->expr()->equal(new Field('host_id'), $host->id))
+			->andWhere($qb->expr()->equal(new Field('lang_id'), $language->id));
+	
 		$sql->exec($qb->getSQL());
 	}
 }

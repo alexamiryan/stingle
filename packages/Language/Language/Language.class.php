@@ -66,13 +66,20 @@ class Language extends DbAccessor{
 		throw new InvalidArgumentException("There is no language with such short name (".$shortName.")");	
 	}
 	
-	public static function getAllLanguages($cacheMinutes = null){
+	public static function getAllLanguages(MysqlPager $pager = null, $cacheMinutes = null){
 		$languages = array();
 		$sql = MySqlDbManager::getQueryObject();
 		$qb = new QueryBuilder();
 		$qb->select(new Field('*'))
 			->from(Tbl::get('TBL_LANGUAGES'));
-		$sql->exec($qb->getSQL(), $cacheMinutes);
+			
+		if($pager !== null){
+			$sql = $pager->executePagedSQL($qb->getSQL(), $cacheMinutes);
+		}
+		else{
+			$sql->exec($qb->getSQL(), $cacheMinutes);
+		}	
+		
 		while(($lang_data = $sql->fetchRecord()) != false){
 			$l = new Language();
 			static::setData($lang_data, $l);

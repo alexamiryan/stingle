@@ -58,6 +58,30 @@ class LanguageManager extends DbAccessor {
 
 		return $this->query->getLastInsertId();
 	}
+	
+	/**
+	 * Update given Language
+	 * @param Language $language
+	 * @throws EmptyArgumentException
+	 * @throws InvalidArgumentException
+	 */
+	public function updateLanguage(Language $language){
+		if(empty($language->shortName) or empty($language->longName)){
+			throw new EmptyArgumentException();
+		}
+		if(!is_numeric($language->id)){
+			throw new InvalidArgumentException("Language id is not numeric.");
+		}
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get("TBL_LANGUAGES", "Language"))
+			->set(new Field('name'), 		$language->shortName)
+			->set(new Field('description'), $language->longName)
+			->where($qb->expr()->equal(new Field('id'), $language->id));
+		
+		$this->query->exec($qb->getSQL());
+
+		return $this->query->affected();
+	}
 
 	/**
 	 * Deletes language by given ID or name

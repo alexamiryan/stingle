@@ -178,6 +178,14 @@ class UsersFilter extends MergeableFilter{
 		$this->setOrder(new Field('creation_date', 'users'), MySqlDatabase::ORDER_DESC);
 	}
 	
+	public function setOrderIdDesc(){
+		$this->setOrder(new Field('id', 'users'), MySqlDatabase::ORDER_DESC);
+	}
+	
+	public function setOrderIdAsc(){
+		$this->setOrder(new Field('id', 'users'), MySqlDatabase::ORDER_ASC);
+	}
+	
 	public function setEmailConfirmationStatus($status = UserManager::STATE_EMAIL_CONFIRMED){
 		if(!is_numeric($status)){
 			throw new InvalidIntegerArgumentException("\$status have to be integer");

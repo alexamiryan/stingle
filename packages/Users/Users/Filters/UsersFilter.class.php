@@ -134,6 +134,20 @@ class UsersFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setCreationDate($time, $isDateTime = true){
+		if(empty($time)){
+			throw new InvalidArgumentException("\$time have to be non empty string");
+		}
+	
+		if($isDateTime){
+			$this->qb->andWhere($this->qb->expr()->equal(new Field('creation_date', $this->primaryTableAlias), $time));
+		}
+		else{
+			$this->qb->andWhere($this->qb->expr()->equal(new Func('DATE', new Field('creation_date', $this->primaryTableAlias)), $time));
+		}
+		return $this;
+	}
+	
 	public function setCreationDateGreater($time){
 		if(empty($time)){
 			throw new InvalidArgumentException("\$time have to be non empty string");

@@ -134,53 +134,48 @@ class UsersFilter extends MergeableFilter{
 		return $this;
 	}
 	
-	public function setCreationDate($time, $isDateTime = true){
-		if(empty($time)){
-			throw new InvalidArgumentException("\$time have to be non empty string");
+	public function setCreationDate($date){
+		if(empty($date)){
+			throw new InvalidArgumentException("\$date have to be non empty string");
 		}
 	
-		if($isDateTime){
-			$this->qb->andWhere($this->qb->expr()->equal(new Field('creation_date', $this->primaryTableAlias), $time));
-		}
-		else{
-			$this->qb->andWhere($this->qb->expr()->equal(new Func('DATE', new Field('creation_date', $this->primaryTableAlias)), $time));
-		}
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('creation_date', $this->primaryTableAlias), $date));
 		return $this;
 	}
 	
-	public function setCreationDateGreater($time){
-		if(empty($time)){
-			throw new InvalidArgumentException("\$time have to be non empty string");
+	public function setCreationDateGreater($date){
+		if(empty($date)){
+			throw new InvalidArgumentException("\$date have to be non empty string");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->greater(new Field('creation_date', $this->primaryTableAlias), $time));
+		$this->qb->andWhere($this->qb->expr()->greater(new Field('creation_date', $this->primaryTableAlias), $date));
 		return $this;
 	}
 	
-	public function setCreationDateLess($time){
-		if(empty($time)){
-			throw new InvalidArgumentException("\$time have to be non empty string");
+	public function setCreationDateLess($date){
+		if(empty($date)){
+			throw new InvalidArgumentException("\$date have to be non empty string");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->less(new Field('creation_date', $this->primaryTableAlias), $time));
+		$this->qb->andWhere($this->qb->expr()->less(new Field('creation_date', $this->primaryTableAlias), $date));
 		return $this;
 	}
 	
-	public function setCreationDateGreaterEqual($time){
-		if(empty($time)){
-			throw new InvalidArgumentException("\$time have to be non empty string");
+	public function setCreationDateGreaterEqual($date){
+		if(empty($date)){
+			throw new InvalidArgumentException("\$date have to be non empty string");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->greaterEqual(new Field('creation_date', $this->primaryTableAlias), $time));
+		$this->qb->andWhere($this->qb->expr()->greaterEqual(new Field('creation_date', $this->primaryTableAlias), $date));
 		return $this;
 	}
 	
-	public function setCreationDateLessEqual($time){
-		if(empty($time)){
-			throw new InvalidArgumentException("\$time have to be non empty string");
+	public function setCreationDateLessEqual($date){
+		if(empty($date)){
+			throw new InvalidArgumentException("\$date have to be non empty string");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->lessEqual(new Field('creation_date', $this->primaryTableAlias), $time));
+		$this->qb->andWhere($this->qb->expr()->lessEqual(new Field('creation_date', $this->primaryTableAlias), $date));
 		return $this;
 	}
 	

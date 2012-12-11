@@ -6,6 +6,7 @@ class User{
 	public $password;
 	public $salt;
 	public $creationDate;
+	public $creationTime;
 	public $enabled = 1;
 	public $email;
 	public $emailConfirmed = 0;

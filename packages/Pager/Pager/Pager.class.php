@@ -1,5 +1,5 @@
 <?
-abstract class Pager{
+abstract class Pager extends Model{
 	
 	/**
 	 * ID of this Pager object

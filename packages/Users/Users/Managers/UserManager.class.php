@@ -188,13 +188,15 @@ class UserManager extends DbAccessor{
 		
 		$qb->insert(Tbl::get('TBL_USERS'))
 			->values(array(
+					'enabled' => $user->enabled,
+					'creation_date' => new Func("NOW"),
+					'creation_time' => new Func("NOW"),
 					'login' => $user->login,
 					'password' => $user->password,
 					'salt' => $user->salt,
-					'enabled' => $user->enabled,
+					'last_login_ip' => $user->lastLoginIP,
 					'email' => $user->email,
-					'email_confirmed' => $user->emailConfirmed,
-					'last_login_ip' => $user->lastLoginIP
+					'email_confirmed' => $user->emailConfirmed
 					));
 		
 		$newUserId = $this->query->exec($qb->getSQL())->getLastInsertId();
@@ -406,6 +408,7 @@ class UserManager extends DbAccessor{
 		$user->id = $data['id'];
 		$user->enabled = $data['enabled'];
 		$user->creationDate = $data['creation_date'];
+		$user->creationTime = $data['creation_time'];
 		$user->login = $data['login'];
 		$user->password = $data['password'];
 		$user->salt = $data['salt'];

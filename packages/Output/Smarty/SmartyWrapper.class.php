@@ -732,7 +732,7 @@ class SmartyWrapper extends Smarty {
 				$this->removeWrapper();
 			}
 			else{
-				throw new TemplateFileNotFoundException("Can't find template at {$this->fileToDisplay}");
+				throw new TemplateFileNotFoundException("Can't find matching template to display");
 			}
 		}
 		

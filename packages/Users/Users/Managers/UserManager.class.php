@@ -231,8 +231,6 @@ class UserManager extends DbAccessor{
 		
 		$qb->update(Tbl::get('TBL_USERS'))
 			->set(new Field('login'), $user->login)
-			->set(new Field('password'), $user->password)
-			->set(new Field('salt'), $user->salt)
 			->set(new Field('creation_date'), $user->creationDate)
 			->set(new Field('enabled'), $user->enabled)
 			->set(new Field('email'), $user->email)

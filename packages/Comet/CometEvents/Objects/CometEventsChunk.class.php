@@ -43,22 +43,37 @@ class CometEventsChunk extends CometChunk{
 	}
 	
 	public function run(){
-		if(isset($this->params['lastId']) and isset($this->params['userId'])){
+		if(isset($this->params['lastId'])){
 			$userIdsToMonitor = array();
+			$eventTypesToMonitor = array();
 			foreach($this->getEventHandlers() as $handlerName => $handler){
 				if(is_a($handler, "CometBroadcastEventHandler") and $handler->isBroadcast == true){
 					$userIdsToMonitor = array_merge($userIdsToMonitor, $handler->getUsersListToListenTo());
+					$eventTypesToMonitor = array_merge($eventTypesToMonitor, $handler->getEventTypesToListenTo());
 				}
 			}
 			
-			$filter = new CometEventsFilter();
-			$filter->setUserId($this->params['userId']);
-			$filter->setIdGreater($this->params['lastId']);
-			$this->newEvents = $this->cometEvents->getEvents($filter);
+			// Events for myself
+			if(isset($this->params['userId']) and !empty($this->params['userId'])){
+				$filter = new CometEventsFilter();
+				$filter->setUserId($this->params['userId']);
+				$filter->setIdGreater($this->params['lastId']);
+				$this->newEvents = $this->cometEvents->getEvents($filter);
+			}
 			
+			// Broadcast events from selected users
 			if(count($userIdsToMonitor)){
 				$filter = new CometEventsFilter();
 				$filter->setSelfUserIdIn($userIdsToMonitor);
+				$filter->setUserIdNull();
+				$filter->setIdGreater($this->params['lastId']);
+				$this->newEvents = array_merge($this->newEvents, $this->cometEvents->getEvents($filter));
+			}
+			
+			// Broadcast events by event types
+			if(count($eventTypesToMonitor)){
+				$filter = new CometEventsFilter();
+				$filter->setNameIn($eventTypesToMonitor);
 				$filter->setUserIdNull();
 				$filter->setIdGreater($this->params['lastId']);
 				$this->newEvents = array_merge($this->newEvents, $this->cometEvents->getEvents($filter));

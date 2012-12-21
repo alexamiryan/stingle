@@ -40,14 +40,21 @@ abstract class CometEventHandler{
 	}
 	
 	/**
-	 * @param array $params Receives linear array of single event data
+	 * Receives linear array of single event data
+	 * 
+	 * @param array $params 
 	 */
 	public function isAnyData($params){
 		return true;
 	}
 	
 	/**
-	 * @param array $params Receives 2 dimensional array of all event datas that corresponds to given handler
+	 * Receives 2 dimensional array of all event datas that corresponds to given handler.
+	 * Data is passed when making addEvent. Because several events can occur simultaniusly
+	 * for performance we process them in one call. We collect all datas into two dimensional array
+	 * from each event and pass it here.
+	 * 
+	 * @param array $params 
 	 */
 	abstract public function getDataArray($params);
 }

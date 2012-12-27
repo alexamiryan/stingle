@@ -57,5 +57,32 @@ class CometEventsFilter extends Filter {
 		$this->qb->andWhere($this->qb->expr()->isNull(new Field("user_id", "comet")));
 		return $this;
 	}
+	
+	public function setName($name){
+		if(empty($name)){
+			throw new InvalidIntegerArgumentException("\$name have to be non empty string.");
+		}
+		
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("name", "comet"), $name));
+		return $this;
+	}
+	
+	public function setNameLike($name){
+		if(empty($name)){
+			throw new InvalidIntegerArgumentException("\$name have to be non empty string.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->like(new Field("name", "comet"), $name . "%"));
+		return $this;
+	}
+	
+	public function setNameIn(array $names){
+		if(empty($names) or !is_array($names)){
+			throw new InvalidIntegerArgumentException("\$names have to be non empty array.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field("name", "comet"), $names));
+		return $this;
+	}
 }
 ?>

@@ -115,12 +115,12 @@ class UserManager extends DbAccessor{
 	 * @throws UserNotFoundException
 	 * @return User
 	 */
-	public function getUserById($userId, $initObjects = self::INIT_ALL, $onlyEnabled = true, $cacheMinutes = 0){
+	public function getUserById($userId, $initObjects = self::INIT_ALL, $cacheMinutes = 0){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidArgumentException("\$userId have to be non zero integer");
 		}
 		
-		$filter = new UsersFilter($onlyEnabled);
+		$filter = new UsersFilter();
 		$filter->setUserIdEqual($userId);
 		$users = $this->getUsersList($filter, null, $initObjects, $cacheMinutes);
 		if(count($users) !== 1){
@@ -138,12 +138,12 @@ class UserManager extends DbAccessor{
 	 * @throws UserNotFoundException
 	 * @return integer
 	 */
-	public function getIdByLogin($login, $onlyEnabled = true, $cacheMinutes = 0){
+	public function getIdByLogin($login, $cacheMinutes = 0){
 		if(empty($login)){
 			throw new InvalidArgumentException("\$login have to be non empty string");
 		}
 	
-		$filter = new UsersFilter($onlyEnabled);
+		$filter = new UsersFilter();
 		$filter->setLogin($login);
 		$users = $this->getUsersList($filter, null, static::INIT_NONE, $cacheMinutes);
 		if(count($users) !== 1){
@@ -160,12 +160,12 @@ class UserManager extends DbAccessor{
 	 * @throws InvalidArgumentException
 	 * @return boolean
 	 */
-	public function isUserExists($login, $onlyEnabled = true, $cacheMinutes = 0){
+	public function isUserExists($login, $cacheMinutes = 0){
 		if(empty($login)){
 			throw new InvalidArgumentException("\$login have to be non empty string");
 		}
 	
-		$filter = new UsersFilter($onlyEnabled);
+		$filter = new UsersFilter();
 		$filter->setLogin($login);
 		$usersCount = $this->getUsersListCount($filter, $cacheMinutes);
 		if($usersCount > 0){
@@ -231,8 +231,6 @@ class UserManager extends DbAccessor{
 		
 		$qb->update(Tbl::get('TBL_USERS'))
 			->set(new Field('login'), $user->login)
-			->set(new Field('password'), $user->password)
-			->set(new Field('salt'), $user->salt)
 			->set(new Field('creation_date'), $user->creationDate)
 			->set(new Field('enabled'), $user->enabled)
 			->set(new Field('email'), $user->email)

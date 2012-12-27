@@ -83,6 +83,46 @@ class UserProfile extends Profile{
 		return $questions;
 	}
 	
+	public function getAnswersByQuestion($question, $onlySelected = true, $cacheMinutes = 0){
+		$cuteAnswers = array();
+		$extendedAnswers = $this->getAnswers($onlySelected, $cacheMinutes);
+		foreach($extendedAnswers as $questionType => $answer) {
+			if($question == $questionType && !empty($answer['answers'])){
+				$cuteAnswers[$question] = $answer['answers'];
+			}
+		}
+		return $cuteAnswers;
+	}
+	
+	public function deleteAnswers($profileId){
+		if(empty($profileId)){
+			throw new InvalidArgumentException("Given Profile Id is empty");
+		}
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_PROFILE_SAVE'))
+			->where($qb->expr()->equal(new Field('user_id'), $this->userId));
+
+		if(is_array($profileId)){
+			$qb->andWhere($qb->expr()->in(new Field('profile_id'), $profileId));
+		}
+		else{
+			$qb->andWhere($qb->expr()->equal(new Field('profile_id'), $profileId));
+		}	
+			
+		$this->query->exec($qb->getSQL());
+	}
+	
+	public function addAnswer($profileId){
+		if(empty($profileId)){
+			throw new InvalidArgumentException("Given Profile Id is empty");
+		}
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_PROFILE_SAVE'))
+			->values(array("user_id" => $this->userId, "profile_id" => $profileId));
+		
+		$this->query->exec($qb->getSQL());
+	}
+	
 	/**
 	 * Set user answers by their ids
 	 *
@@ -117,7 +157,6 @@ class UserProfile extends Profile{
 	public function getOnlyAnswers($cacheMinutes = 0) {
 		$cuteAnswers = array();
 		$extendedAnswers = $this->getAnswers(true, $cacheMinutes);
-		
 		foreach($extendedAnswers as $question => $answer) {
 			$cuteAnswers[$question] = $answer['answers'];
 		}

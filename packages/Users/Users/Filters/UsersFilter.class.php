@@ -1,15 +1,11 @@
 <?
 class UsersFilter extends MergeableFilter{
 	
-	public function __construct($onlyEnabledUsers = true){
+	public function __construct(){
 		parent::__construct(Tbl::get('TBL_USERS', 'UserManager'), "users", "id");
 		
 		$this->qb->select(new Field("*", $this->primaryTableAlias))
 			->from($this->primaryTable, $this->primaryTableAlias);
-		
-		if ($onlyEnabledUsers){
-			$this->setEnabledStatus(UserManager::STATE_ENABLED_ENABLED);
-		}
 	}
 	
 	public function setUserIdEqual($userId){

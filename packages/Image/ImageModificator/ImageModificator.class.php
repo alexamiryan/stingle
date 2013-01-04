@@ -23,16 +23,26 @@ class ImageModificator extends DbAccessor
 	 * @throws ImageModificatorException
 	 * @throws InvalidArgumentException
 	 */
-	public function modify(Image $image, $modelName){
+	public function modify(Image $image, $modelName, Config $customActionsConfig = null){
 		if(empty($image->fileName)){
 			throw new ImageModificatorException("Image is not initialized!");
 		}
 		
-		if(!isset($this->config->imageModels->$modelName)){
-			throw new InvalidArgumentException("There is no such image model with name $modelName");
+		$config = null;
+		if($customActionsConfig != null){
+			$config = $customActionsConfig;
+		}
+		else{
+			if(!isset($this->config->imageModels->$modelName)){
+				throw new InvalidArgumentException("There is no such image model with name $modelName");
+			}
+			
+			$config = $this->config->imageModels->$modelName->actions;
 		}
 		
-		foreach($this->config->imageModels->$modelName->actions as $actionName => $actionConfig){
+		
+		
+		foreach($config as $actionName => $actionConfig){
 			switch ($actionName){
 				case self::ACTION_CROP:
 					$this->cropImage($image, $modelName, $actionConfig);

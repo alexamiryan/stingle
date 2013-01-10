@@ -60,5 +60,13 @@ class UserPhotosFilter extends Filter {
 	public function setOrderDefaultDesc(){
 		$this->setOrder(new Field("default", "up"), MySqlDatabase::ORDER_DESC);
 	}
+	
+	public function setOrderIdAsc(){
+		$this->setOrder(new Field("id", "up"), MySqlDatabase::ORDER_ASC);
+	}
+	
+	public function setOrderIdDesc(){
+		$this->setOrder(new Field("id", "up"), MySqlDatabase::ORDER_DESC);
+	}
 }
 ?>

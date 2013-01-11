@@ -53,19 +53,19 @@ class Image extends Model
 	 *
 	 * @param string $filename
 	 */
-	private function createImageRes($filename){
-		if(($info=@getimagesize($filename)) == false or !in_array($info[2], array(IMAGETYPE_JPEG, IMAGETYPE_GIF, IMAGETYPE_PNG))){
+	private function createImageRes($filePath){
+		if(($info=@getimagesize($filePath)) == false or !in_array($info[2], array(IMAGETYPE_JPEG, IMAGETYPE_GIF, IMAGETYPE_PNG))){
 			throw new RuntimeException("Given file is not a image!");
 		}
 		switch ($info[2]){
 			case IMAGETYPE_JPEG:
-				$imageRes=@imagecreatefromjpeg($filename);
+				$imageRes=@imagecreatefromjpeg($filePath);
 				break;
 			case IMAGETYPE_GIF:
-				$imageRes=@imagecreatefromgif($filename);
+				$imageRes=@imagecreatefromgif($filePath);
 				break;
 			case IMAGETYPE_PNG:
-				$imageRes=@imagecreatefrompng($filename);
+				$imageRes=@imagecreatefrompng($filePath);
 				break;
 		}
 		if(!is_resource($imageRes)){
@@ -85,6 +85,10 @@ class Image extends Model
 	 * Only one of the width or height can be 0
 	 */
 	public function resize($width=0, $height=0, $preserve_aspect_ratio=true){
+		if(!self::checkMemAvailbleForResize($width, $height)){
+			throw new RuntimeException("Memory is not enough for resize operation!");
+		}
+		
 		if($preserve_aspect_ratio){
 			$mode=0;
 
@@ -295,8 +299,12 @@ class Image extends Model
 			throw new InvalidArgumentException("Some of the parameters are not numeric!");
 		}
 		
+		if(!self::checkMemAvailbleForResize($width, $height)){
+			throw new RuntimeException("Memory is not enough for crop operation!");
+		}
+		
 		$cropped_image = imagecreatetruecolor($width, $height);
-		if(!imagecopy($cropped_image, $this->imageRes, 0, 0, $x, $y, $width, $height)){
+		if(!imagecopyresampled($cropped_image, $this->imageRes, 0, 0, $x, $y, $width, $height, $width, $height)){
 			throw new RuntimeException("Unable to crop!");
 		}
 		
@@ -389,6 +397,24 @@ class Image extends Model
 		$tmp = $this->info[0];
 		$this->info[0] = $this->info[1];
 		$this->info[1] = $tmp;
+	}
+	
+	public static function checkMemAvailbleForResize($width, $height, $returnRequiredMem = false, $gdBloat = 1.68) {
+	    $maxMem = ((int) ini_get('memory_limit') * 1024) * 1024;
+	    
+	    $GDBytes = ceil((($width * $height) * 3) * $gdBloat);
+	    
+	    $totalMemRequired = $GDBytes + memory_get_usage();
+	    
+	    if ($returnRequiredMem){
+	    	return $GDBytes;
+	    }
+	    
+	    if ($totalMemRequired > $maxMem){
+	    	return false;
+	    }
+	    
+	    return true;
 	}
 }
 ?>

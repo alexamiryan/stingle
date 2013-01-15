@@ -6,6 +6,7 @@ class ImageUploader
 	const IMAGE_TYPE_GIF 	= 'gif';
 	
 	const EXCEPTION_IMAGE_IS_SMALL = 1;
+	const EXCEPTION_IMAGE_IS_BIG = 2;
 	
 	/**
 	 * Upload Image from POST
@@ -37,6 +38,13 @@ class ImageUploader
 
 	    if (!in_array($file["type"], $imageUploaderConfig->acceptedMimeTypes->toArray())){
 	    	throw new ImageException("Unsupported file uploaded!");
+	    }
+	    
+	    // Check if we have enough memory to open this file as image
+	    $info = getimagesize($file['tmp_name']);
+	    
+	    if($info != false && !Image::checkMemAvailbleForResize($info[0], $info[1])){
+	    	throw new ImageUploaderException("Not enough memory to open image", static::EXCEPTION_IMAGE_IS_BIG);
 	    }
 	    
 	    // Check if we are able to create image resource from this file.

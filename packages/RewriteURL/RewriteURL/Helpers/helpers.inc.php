@@ -14,7 +14,7 @@ function getCurrentUrl($exclude = array()){
 
 	$currentUrl = implode("/", $levelUrlParts);
 
-	RewriteURL::ensureLastSlash($currentUrl);
+	$currentUrl = Reg::get('rewriteURL')->glink($currentUrl);
 
 	$currentUrl .= getAllGetParams($exclude);
 

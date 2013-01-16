@@ -4,7 +4,9 @@ class UserPhoto
 	public $id;
 	public $fileName;
 	public $userId;
+	public $user;
 	public $default;
-	public $approved;
+	public $status;
+	public $modificationDate;
 }
 ?>

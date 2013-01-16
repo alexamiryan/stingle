@@ -40,8 +40,6 @@ class ImageModificator extends DbAccessor
 			$config = $this->config->imageModels->$modelName->actions;
 		}
 		
-		
-		
 		foreach($config as $actionName => $actionConfig){
 			switch ($actionName){
 				case self::ACTION_CROP:

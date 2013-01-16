@@ -72,7 +72,7 @@ class ChatComet extends CometChunk{
 		
 		// New Invitations by Last Id
 		$invitationFilter = new ChatInvitationsFilter();
-		$invitationFilter->setEitherUserId(Reg::get('usr')->getId());
+		$invitationFilter->setEitherUserId(Reg::get('usr')->id);
 		$invitationFilter->setIdGreater($this->lastInvId);
 		$invitations = Reg::get('chatInvMgr')->getInvitations($invitationFilter);
 	
@@ -81,7 +81,7 @@ class ChatComet extends CometChunk{
 	
 		$needToWait = false;
 		foreach($invitations as $invitation){
-			if($invitation->inviterUser->userId == Reg::get('usr')->getId()){
+			if($invitation->inviterUser->userId == Reg::get('usr')->id){
 				if($invitation->status == ChatInvitationManager::STATUS_DECLINED){
 					$this->addMessage(sprintf(CHAT_INVITATION_REJECT, $invitation->invitedUser->userName));
 				}
@@ -106,14 +106,14 @@ class ChatComet extends CometChunk{
 	
 		// Open Invitations for UI Sync
 		$openInvitationFilter = new ChatInvitationsFilter();
-		$openInvitationFilter->setEitherUserId(Reg::get('usr')->getId());
+		$openInvitationFilter->setEitherUserId(Reg::get('usr')->id);
 		$openInvitationFilter->setInvitationStatus(ChatInvitationManager::STATUS_NEW);
 		$openInvitations = Reg::get('chatInvMgr')->getInvitations($openInvitationFilter);
 	
 		$this->openMyInvitations = array();
 		$this->openInvitationsToMe = array();
 		foreach($openInvitations as $invitation){
-			if($invitation->inviterUser->userId == Reg::get('usr')->getId()){
+			if($invitation->inviterUser->userId == Reg::get('usr')->id){
 				array_push($this->openMyInvitations, $invitation);
 			}
 			else{
@@ -124,14 +124,14 @@ class ChatComet extends CometChunk{
 		// Chat Sessions
 	
 		$sessionFilter = new ChatSessionFilter();
-		$sessionFilter->setEitherUserId(Reg::get('usr')->getId());
-		$chatSessions = Reg::get('chatSessMgr')->getChatSessions($sessionFilter, Reg::get('usr')->getId());
+		$sessionFilter->setEitherUserId(Reg::get('usr')->id);
+		$chatSessions = Reg::get('chatSessMgr')->getChatSessions($sessionFilter, Reg::get('usr')->id);
 	
 		$this->openSessions = array();
 		$interlocutorIds = ChatSessionManager::getInterlocutorsFromSessions($chatSessions);
 		if(!empty($interlocutorIds)){
 			$messageFilter = new ChatMessageFilter();
-			$messageFilter->setAllMessagesWithInterlocutors(Reg::get('usr')->getId(), $interlocutorIds);
+			$messageFilter->setAllMessagesWithInterlocutors(Reg::get('usr')->id, $interlocutorIds);
 			$messageFilter->setOrderDatetimeAsc();
 			$messageFilter->setMessageIdGreater($this->lastId);
 				
@@ -143,11 +143,12 @@ class ChatComet extends CometChunk{
 	
 				// Init variables
 				$interlocutorId = $chatSession->interlocutorUser->userId;
-				$interlocutorExtra = Reg::get('um')->getUserExtra($interlocutorId, array('online'));
-				$interlocutorOnlineStatus = $interlocutorExtra['online'];
+				$um = Reg::get(ConfigManager::getConfig("Users", "Users")->Objects->UserManager);
+				$interlocutorUser = Reg::get('userMgr')->getUserById($interlocutorId, UserManager::INIT_PROPERTIES);
+				$interlocutorOnlineStatus = $interlocutorUser->props->online;
 	
 				// Check if interlocutor is offline
-				if($chatSession->closed == ChatSessionManager::CLOSED_STATUS_NO and $interlocutorOnlineStatus == DatingClubUserManagement::STATE_ONLINE_OFFLINE){
+				if($chatSession->closed == ChatSessionManager::CLOSED_STATUS_NO and $interlocutorOnlineStatus == DatingClubUserManager::STATE_ONLINE_OFFLINE){
 					Reg::get('chatSessMgr')->closeSession($chatSession, $chatSession->interlocutorUser, ChatSessionManager::CLOSED_REASON_OFFLINE);
 					$this->addChatSession($chatSession);
 					$this->addMessage(sprintf(CHAT_INTER_GONE_OFFLINE, $chatSession->interlocutorUser->userName));
@@ -156,7 +157,7 @@ class ChatComet extends CometChunk{
 				// Check maybe interlocuter closed the chat
 				if($chatSession->closed == ChatSessionManager::CLOSED_STATUS_YES){
 					// Chat closed not by me
-					if($chatSession->closedBy != Reg::get('usr')->getId()){
+					if($chatSession->closedBy != Reg::get('usr')->id){
 						if($chatSession->closedReason == ChatSessionManager::CLOSED_REASON_CLOSE){
 							$this->addMessage(sprintf(CHAT_INTER_CLOSED_CHAT, $chatSession->interlocutorUser->userName));
 						}
@@ -186,7 +187,7 @@ class ChatComet extends CometChunk{
 						if(ChatPayment::isTimeToPay($chatSession->chatterUser, $chatSession->interlocutorUser)){
 							if(pay($interlocutorId, DatingClubPayment::ACTION_CHAT, null, false)){
 								ChatPayment::madePayment($chatSession->chatterUser, $chatSession->interlocutorUser);
-								$this->setMoney(Reg::get('usr')->money);
+								$this->setMoney(Reg::get('usr')->props->money);
 							}
 							else{
 								// If user have no money close all sessions and give appropriate message.

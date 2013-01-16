@@ -1,0 +1,3 @@
+<?
+class NotSupportedBigMathLibraryException extends CryptoException{ }
+?>

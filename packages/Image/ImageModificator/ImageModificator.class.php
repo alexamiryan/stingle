@@ -23,16 +23,26 @@ class ImageModificator extends DbAccessor
 	 * @throws ImageModificatorException
 	 * @throws InvalidArgumentException
 	 */
-	public function modify(Image $image, $modelName){
+	public function modify(Image $image, $modelName, Config $customActionsConfig = null){
 		if(empty($image->fileName)){
 			throw new ImageModificatorException("Image is not initialized!");
 		}
 		
-		if(!isset($this->config->imageModels->$modelName)){
-			throw new InvalidArgumentException("There is no such image model with name $modelName");
+		$config = null;
+		if($customActionsConfig != null){
+			$config = $customActionsConfig;
+		}
+		else{
+			if(!isset($this->config->imageModels->$modelName)){
+				throw new InvalidArgumentException("There is no such image model with name $modelName");
+			}
+			
+			$config = $this->config->imageModels->$modelName->actions;
 		}
 		
-		foreach($this->config->imageModels->$modelName->actions as $actionName => $actionConfig){
+		
+		
+		foreach($config as $actionName => $actionConfig){
 			switch ($actionName){
 				case self::ACTION_CROP:
 					$this->cropImage($image, $modelName, $actionConfig);
@@ -56,8 +66,17 @@ class ImageModificator extends DbAccessor
 	 * @throws ImageModificatorException
 	 */
 	protected function cropImage(Image $image, $modelName, Config $cropConfig){
-		$this->query->exec("SELECT `x`, `y`, `width`, `height` FROM `".Tbl::get("TBL_CROP_SETTINGS")."` 
-								WHERE `model_name` = '$modelName' and `filename` = '".$image->fileName."'");
+		$qb = new QueryBuilder();
+		$qb->select(array(
+				new Field('x'), 
+				new Field('y'), 
+				new Field('width'), 
+				new Field('height')))
+			->from(Tbl::get('TBL_CROP_SETTINGS'))
+			->where($qb->expr()->equal(new Field('model_name'), $modelName))
+			->andWhere($qb->expr()->equal(new Field('filename'), $image->fileName));
+		
+		$this->query->exec($qb->getSQL());
 		
 		if($this->query->countRecords() == 1){
 			$cropSettings = new Config($this->query->fetchRecord());
@@ -86,14 +105,23 @@ class ImageModificator extends DbAccessor
 	 * @return Config|false
 	 */
 	public function getCropSettings(Image $image, $modelName){
-			$this->query->exec("SELECT `x`, `y`, `width`, `height` FROM `".Tbl::get("TBL_CROP_SETTINGS")."` 
-									WHERE `model_name` = '$modelName' and `filename` = '".$image->fileName."'");
-			
-			if($this->query->countRecords() == 1){
-				return new Config($this->query->fetchRecord());
-			}
-			
-			return false;
+		$qb = new QueryBuilder();
+		$qb->select(array(
+				new Field('x'),
+				new Field('y'),
+				new Field('width'),
+				new Field('height')))
+			->from(Tbl::get('TBL_CROP_SETTINGS'))
+			->where($qb->expr()->equal(new Field('model_name'), $modelName))
+			->andWhere($qb->expr()->equal(new Field('filename'), $image->fileName));
+		
+		$this->query->exec($qb->getSQL());
+		
+		if($this->query->countRecords() == 1){
+			return new Config($this->query->fetchRecord());
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -129,10 +157,23 @@ class ImageModificator extends DbAccessor
 		}
 		
 		
-		$this->query->exec("INSERT INTO `".Tbl::get("TBL_CROP_SETTINGS")."`
-								(`model_name`, `filename`, `x`, `y`, `width`, `height`)
-								VALUES ('$modelName', '{$image->fileName}', '{$cropSettings->x}', '{$cropSettings->y}', '{$cropSettings->width}', '{$cropSettings->height}')
-							ON DUPLICATE KEY UPDATE `x`='{$cropSettings->x}', `y`='{$cropSettings->y}', `width`='{$cropSettings->width}', `height`='{$cropSettings->height}'");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get("TBL_CROP_SETTINGS"))
+			->values(array(
+					'model_name' => $modelName,
+					'filename' => $image->fileName,
+					'x' => $cropSettings->x,
+					'y' => $cropSettings->y,
+					'width' => $cropSettings->width,
+					'height' => $cropSettings->height
+					))
+			->onDuplicateKeyUpdate()
+			->set(new Field('x'), $cropSettings->x)
+			->set(new Field('y'), $cropSettings->y)
+			->set(new Field('width'), $cropSettings->width)
+			->set(new Field('height'), $cropSettings->height);
+		
+		$this->query->exec($qb->getSQL());
 	}
 	
 	/**
@@ -146,8 +187,11 @@ class ImageModificator extends DbAccessor
 			throw new InvalidArgumentException("\$fileName have to be non empty string");
 		}
 		
-		$this->query->exec("DELETE FROM `".Tbl::get("TBL_CROP_SETTINGS")."` 
-								WHERE `filename` = '$fileName'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get("TBL_CROP_SETTINGS"))
+			->where($qb->expr()->equal(new Field('filename'), $fileName));
+		
+		$this->query->exec($qb->getSQL());
 	}
 	
 	/**

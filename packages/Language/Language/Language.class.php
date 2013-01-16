@@ -12,7 +12,11 @@ class Language extends DbAccessor{
 			if(!is_numeric($lang_id)){
 				throw new InvalidIntegerArgumentException("lang_id argument should be an integer.");
 			}
-			$this->query->exec("SELECT * FROM `". Tbl::get('TBL_LANGUAGES') ."` WHERE `id` = '{$lang_id}'", $cacheMinutes);
+			$qb = new QueryBuilder();
+			$qb->select(new Field('*'))
+				->from(Tbl::get('TBL_LANGUAGES'))
+				->where($qb->expr()->equal(new Field('id'), $lang_id));
+			$this->query->exec($qb->getSQL(), $cacheMinutes);
 			if($this->query->countRecords()){
 				$data = $this->query->fetchRecord();
 				static::setData($data, $this);
@@ -48,7 +52,11 @@ class Language extends DbAccessor{
 			throw new EmptyArgumentException("Empty shortName argument.");
 		}
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT * FROM `".Tbl::get('TBL_LANGUAGES') ."` WHERE `name` = '{$shortName}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_LANGUAGES'))
+			->where($qb->expr()->equal(new Field('name'), $shortName));
+		$sql->exec($qb->getSQL(), $cacheMinutes);
 		if($sql->countRecords()){
 			$l = new Language();
 			$data = $sql->fetchRecord();
@@ -58,10 +66,20 @@ class Language extends DbAccessor{
 		throw new InvalidArgumentException("There is no language with such short name (".$shortName.")");	
 	}
 	
-	public static function getAllLanguages($cacheMinutes = null){
+	public static function getAllLanguages(MysqlPager $pager = null, $cacheMinutes = null){
 		$languages = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT * FROM `".Tbl::get('TBL_LANGUAGES') ."`", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_LANGUAGES'));
+			
+		if($pager !== null){
+			$sql = $pager->executePagedSQL($qb->getSQL(), $cacheMinutes);
+		}
+		else{
+			$sql->exec($qb->getSQL(), $cacheMinutes);
+		}	
+		
 		while(($lang_data = $sql->fetchRecord()) != false){
 			$l = new Language();
 			static::setData($lang_data, $l);

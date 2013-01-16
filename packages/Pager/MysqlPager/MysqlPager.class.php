@@ -2,6 +2,7 @@
 class MysqlPager extends Pager{
 
 	private $query;
+	private $forcedAlgorithm = null;
 	
 	const METHOD_REPLACE = 1;
 	const METHOD_CALC_ROWS = 2;
@@ -18,6 +19,13 @@ class MysqlPager extends Pager{
 		$this->query = MySqlDbManager::getQueryObject();
 	}
 
+	public function setAlgorithm($algorithm){
+		if(!in_array($algorithm, $this->getConstsArray("METHOD"))){
+			throw new InvalidArgumentException("Invalid algorithm specified.");
+		}
+		$this->forcedAlgorithm = $algorithm;
+	}
+	
 	/**
 	 * Atlers query. It inserts "COUNT(*) as `count`" after
 	 * first SELECT statement preserving SELECT's special keywords.
@@ -128,12 +136,18 @@ class MysqlPager extends Pager{
 			throw new InvalidArgumentException("\$query have to be non empty string");
 		}
 		
-		if($alterMethod === null){
-			$alterMethod = static::METHOD_REPLACE;
-		}
 		
-		if(preg_match("/GROUP\\s+?BY/is", $query)){
-			$alterMethod = static::METHOD_CALC_ROWS;
+		if($this->forcedAlgorithm === null){
+			if($alterMethod === null){
+				$alterMethod = static::METHOD_REPLACE;
+			}
+			
+			if(preg_match("/GROUP\\s+?BY/is", $query)){
+				$alterMethod = static::METHOD_CALC_ROWS;
+			}
+		}
+		else{
+			$alterMethod = $this->forcedAlgorithm;
 		}
 		
 		$queryWithResult = null;

@@ -39,10 +39,14 @@ class HostLanguageManager extends LanguageManager {
 	 * @param string $language language short name
 	 */
 	public function languageExists($language, $cacheMinutes = null){
-		$this->query->exec("SELECT l.`id` FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` l
-							LEFT JOIN `".Tbl::get('TBL_HOST_LANGUAGE') ."` hl ON hl.lang_id = l.id
-							WHERE hl.host_id=".$this->host->id."
-							AND l.`name`='$language'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('id', 'l'))
+			->from(Tbl::get("TBL_LANGUAGES", "Language"), 'l')
+			->leftJoin(Tbl::get('TBL_HOST_LANGUAGE'), 'hl', $qb->expr()->equal(new Field('lang_id', 'hl'), new Field('id', 'l')))
+			->where($qb->expr()->equal(new Field('host_id', 'hl'), $this->host->id))
+			->andWhere($qb->expr()->equal(new Field('name', 'l'), $language));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->countRecords()){
 			return true;
 		}
@@ -57,9 +61,14 @@ class HostLanguageManager extends LanguageManager {
 	 * @return Language
 	 */
 	public function getDefaultLanguage($cacheMinutes = null){
-		$this->query->exec("SELECT l.* FROM `".Tbl::get('TBL_HOST_LANGUAGE')."` hl
-					LEFT JOIN `".Tbl::get("TBL_LANGUAGES", "Language") ."` l ON hl.lang_id=l.id
-					WHERE hl.host_id=".$this->host->id." AND hl.default=1", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*', 'l'))
+			->from(Tbl::get("TBL_HOST_LANGUAGE"), 'hl')
+			->leftJoin(Tbl::get("TBL_LANGUAGES", "Language"), 'l', $qb->expr()->equal(new Field('lang_id', 'hl'), new Field('id', 'l')))
+			->where($qb->expr()->equal(new Field('host_id', 'hl'), $this->host->id))
+			->andWhere($qb->expr()->equal(new Field('default', 'hl'), 1));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->countRecords()){
 			$lang_data = $this->query->fetchRecord();
 			$l = new Language();
@@ -72,6 +81,37 @@ class HostLanguageManager extends LanguageManager {
 	public function Languages(){
 		return $this->hostLangs;
 	}
+	
+	/**
+	 * Add new language to the Host.
+	 * Returns hostLanguageId.
+	 *
+	 * @param Host $host
+	 * @param Language $language
+	 *
+	 * @access public
+	 * @return integer
+	 */
+	public function addHostLanguage(Host $host, Language $language){
+		if(empty($language->id) or empty($host->id)){
+			throw new EmptyArgumentException();
+		}
+		$default = 0;
+		if(self::getHostDefaultLanguage($host) === false){
+			$default = 1;
+		}
+	
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get("TBL_HOST_LANGUAGE"))
+			->values(array(
+				'host_id' => $host->id,
+				'lang_id' => $language->id,
+				'default' => $default
+		));
+	
+		$this->query->exec($qb->getSQL());	
+		return $this->query->getLastInsertId();
+	}
 
 
 	/**
@@ -80,12 +120,22 @@ class HostLanguageManager extends LanguageManager {
 	 * @param Host $host
 	 * @return array set of Language objects
 	 */
-	public static function getHostLanguages(Host $host, $cacheMinutes = null){
+	public static function getHostLanguages(Host $host, MysqlPager $pager = null, $cacheMinutes = null){
 		$sql = MySqlDbManager::getQueryObject();
 		$languages = array();
-		$sql->exec("SELECT l.* FROM `".Tbl::get('TBL_HOST_LANGUAGE')."` hl
-					LEFT JOIN `".Tbl::get("TBL_LANGUAGES", "Language") ."` l ON hl.lang_id=l.id
-					WHERE hl.host_id=".$host->id."", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*', 'l'))
+			->from(Tbl::get("TBL_HOST_LANGUAGE"), 'hl')
+			->leftJoin(Tbl::get("TBL_LANGUAGES", "Language"), 'l', $qb->expr()->equal(new Field('lang_id', 'hl'), new Field('id', 'l')))
+			->where($qb->expr()->equal(new Field('host_id', 'hl'), $host->id));
+		
+		if($pager !== null){
+			$sql = $pager->executePagedSQL($qb->getSQL(), $cacheMinutes);
+		}
+		else{
+			$sql->exec($qb->getSQL(), $cacheMinutes);
+		}
 		$langs_data = $sql->fetchRecords();
 		foreach ($langs_data as $lang_data){
 			$lang = new Language();
@@ -103,9 +153,15 @@ class HostLanguageManager extends LanguageManager {
 	 */
 	public static function getHostDefaultLanguage(Host $host, $cacheMinutes = null){
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT l.* FROM `".Tbl::get('TBL_HOST_LANGUAGE')."` hl
-					LEFT JOIN `".Tbl::get("TBL_LANGUAGES", "Language") ."` l ON hl.lang_id=l.id
-					WHERE hl.host_id='{$host->id}' and hl.default=1", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*', 'l'))
+			->from(Tbl::get("TBL_HOST_LANGUAGE"), 'hl')
+			->leftJoin(Tbl::get("TBL_LANGUAGES", "Language"), 'l', $qb->expr()->equal(new Field('lang_id', 'hl'), new Field('id', 'l')))
+			->where($qb->expr()->equal(new Field('host_id', 'hl'), $host->id))
+			->andWhere($qb->expr()->equal(new Field('default', 'hl'), 1));
+		
+		$sql->exec($qb->getSQL(), $cacheMinutes);
 		if($sql->countRecords()){
 			$data = $sql->fetchRecord();
 			$lang = new Language();
@@ -124,9 +180,14 @@ class HostLanguageManager extends LanguageManager {
 	public static function getLanguageHosts(Language $lang, $cacheMinutes = null){
 		$hosts = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT h.* FROM `".Tbl::get('TBL_HOST_LANGUAGE')."` hl
-					LEFT JOIN `".Tbl::get("TBL_HOSTS", "Host")."` h ON hl.host_id=h.id
-					WHERE hl.lang_id=".$lang->id."", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*', 'h'))
+			->from(Tbl::get("TBL_HOST_LANGUAGE"), 'hl')
+			->leftJoin(Tbl::get("TBL_HOSTS", "Host"), 'h', $qb->expr()->equal(new Field('host_id', 'hl'), new Field('id', 'h')))
+			->where($qb->expr()->equal(new Field('lang_id', 'hl'), $lang->id));
+		
+		$sql->exec($qb->getSQL(), $cacheMinutes);
 		$hosts_data = $sql->fetchRecords();
 		foreach ($hosts_data as $host_data){
 			$host = new Host();
@@ -146,7 +207,13 @@ class HostLanguageManager extends LanguageManager {
 			throw new InvalidArgumentException("host_languge id should be an integer");
 		}
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT host_id, lang_id FROM ".Tbl::get('TBL_HOST_LANGUAGE') ." WHERE id='$host_language_id'", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(array(new Field('host_id'), new Field('lang_id')))
+			->from(Tbl::get('TBL_HOST_LANGUAGE'))
+			->where($qb->expr()->equal(new Field('id'), $host_language_id));
+		
+		$sql->exec($qb->getSQL(), $cacheMinutes);
 		if($sql->countRecords()){
 			$res = $sql->fetchRecord();
 			$host = new Host($res['host_id']);		
@@ -158,7 +225,14 @@ class HostLanguageManager extends LanguageManager {
 	
 	private static function _getHostLanguageId($hostId, $languageId, $cacheMinutes = null){
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT id FROM ".Tbl::get('TBL_HOST_LANGUAGE') ." WHERE host_id=".$hostId." AND lang_id=".$languageId, $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('id'))
+			->from(Tbl::get('TBL_HOST_LANGUAGE'))
+			->where($qb->expr()->equal(new Field('host_id'), $hostId))
+			->andWhere($qb->expr()->equal(new Field('lang_id'), $languageId));
+		
+		$sql->exec($qb->getSQL(), $cacheMinutes);
 		if($sql->countRecords()){
 			return $sql->fetchField("id");
 		}
@@ -176,9 +250,14 @@ class HostLanguageManager extends LanguageManager {
 	public static function getAllPairs($cacheMinutes = null){
 		$pairs = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT *, hl.id host_lang_id FROM ".Tbl::get('TBL_HOST_LANGUAGE') ." hl
-					LEFT JOIN `".Tbl::get("TBL_LANGUAGES", "Language") ."` l ON hl.lang_id=l.id
-					LEFT JOIN `".Tbl::get("TBL_HOSTS", "Host")."` h ON hl.host_id=h.id", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(array(new Field('*'), new Field('id', 'hl', 'host_lang_id')))
+			->from(Tbl::get('TBL_HOST_LANGUAGE'), 'hl')
+			->leftJoin(Tbl::get("TBL_LANGUAGES", "Language"), 'l', $qb->expr()->equal(new Field('lang_id', 'hl'), new Field('id', 'l')))
+			->leftJoin(Tbl::get("TBL_HOSTS", "Host"), 'h', $qb->expr()->equal(new Field('host_id', 'hl'), new Field('id', 'h')));
+		
+		$sql->exec($qb->getSQL(), $cacheMinutes);
 
 		while (($row = $sql->fetchRecord()) != false) {			
 			$host = new Host();
@@ -190,6 +269,37 @@ class HostLanguageManager extends LanguageManager {
 			$pairs[$row["host_lang_id"]]=array("host"=>$host,"language"=>$language);
 		}		
 		return $pairs;
+	}
+	
+	public static function setHostsDefaultLanguage(Host $host, Language $language){
+		$sql = MySqlDbManager::getQueryObject();
+		
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_HOST_LANGUAGE'))
+			->set(new Field("default"), 0)
+			->where($qb->expr()->equal(new Field('host_id'), $host->id));
+		
+		$sql->exec($qb->getSQL());
+		
+		
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_HOST_LANGUAGE'))
+			->set(new Field("default"), 1)
+			->where($qb->expr()->equal(new Field('host_id'), $host->id))
+			->andWhere($qb->expr()->equal(new Field('lang_id'), $language->id));
+		
+		$sql->exec($qb->getSQL());
+	}
+	
+	public static function deleteHostsLanguage(Host $host, Language $language){
+		$sql = MySqlDbManager::getQueryObject();
+	
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_HOST_LANGUAGE'))
+			->where($qb->expr()->equal(new Field('host_id'), $host->id))
+			->andWhere($qb->expr()->equal(new Field('lang_id'), $language->id));
+	
+		$sql->exec($qb->getSQL());
 	}
 }
 ?>

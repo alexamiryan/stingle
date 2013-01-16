@@ -1,20 +1,27 @@
 <?
 class AES256
 {
-	public static function encrypt($string, $key = null){
+	public static function encrypt($string, $key = null, $salt = null, $iv = null){
+		$config = ConfigManager::getConfig('Crypto','AES256')->AuxConfig;
 		if($key === null){
-			$key = ConfigManager::getConfig('Crypto','AES256')->AuxConfig->key;
+			$key = $config->key;
+		}
+		if($salt === null){
+			$salt = $config->salt;
+		}
+		if($iv === null){
+			$iv = $config->iv;
 		}
 		
-		$td = mcrypt_module_open('rijndael-256', '', MCRYPT_MODE_CBC, '');
-
-		// Create the IV and determine the keysize length
-		$iv = ConfigManager::getConfig('Crypto','AES256')->AuxConfig->iv;
+		$td = mcrypt_module_open('rijndael-128', '', MCRYPT_MODE_CBC, '');
 
 		$ks = mcrypt_enc_get_key_size($td);
+		$bs = mcrypt_enc_get_block_size($td);
+		
+		$iv = substr(hash("sha256", $iv), 0, $bs);
 		
 		// Create key
-		$key = substr(md5($key), 0, $ks);
+		$key = Crypto::pbkdf2("sha512", $key, $salt, $config->pbkdfRounds, $ks);
 
 		// Intialize encryption
 		mcrypt_generic_init($td, $key, $iv);
@@ -29,20 +36,27 @@ class AES256
 		return $encryptedString;
 	}
 	
-	public static function decrypt($string, $key = null){
+	public static function decrypt($string, $key = null, $salt = null, $iv = null){
+		$config = ConfigManager::getConfig('Crypto','AES256')->AuxConfig;
 		if($key === null){
-			$key = ConfigManager::getConfig('Crypto','AES256')->AuxConfig->key;
+			$key = $config->key;
+		}
+		if($salt === null){
+			$salt = $config->salt;
+		}
+		if($iv === null){
+			$iv = $config->iv;
 		}
 		
-		$td = mcrypt_module_open('rijndael-256', '', MCRYPT_MODE_CBC, '');
+		$td = mcrypt_module_open('rijndael-128', '', MCRYPT_MODE_CBC, '');
 		
-		// Create the IV and determine the keysize length
-		$iv = ConfigManager::getConfig('Crypto','AES256')->AuxConfig->iv;
-
 		$ks = mcrypt_enc_get_key_size($td);
+		$bs = mcrypt_enc_get_block_size($td);
+		
+		$iv = substr(hash("sha256", $iv), 0, $bs);
 		
 		// Create key
-		$key = substr(md5($key), 0, $ks);
+		$key = Crypto::pbkdf2("sha512", $key, $salt, $config->pbkdfRounds, $ks);
 		
 		// Initialize encryption module for decryption
 		mcrypt_generic_init($td, $key, $iv);

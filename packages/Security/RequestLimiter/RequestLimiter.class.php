@@ -3,6 +3,7 @@ class RequestLimiter extends DbAccessor {
 	
 	const TBL_SECURITY_FLOODER_IPS 	= "security_flooder_ips";
 	const TBL_SECURITY_REQUESTS_LOG 	= "security_requests_log";
+	const TBL_SECURITY_INVALID_LOGINS_LOG 	= 'security_invalid_logins_log';
 	
 	private $config;
 	
@@ -23,10 +24,12 @@ class RequestLimiter extends DbAccessor {
 			if($ip === null){
 				$ip = $_SERVER['REMOTE_ADDR'];
 			}
-			
-			$this->query->exec("SELECT COUNT(*) as `count` 
-									FROM `".Tbl::get("TBL_SECURITY_FLOODER_IPS")."`
-									WHERE `ip`='$ip'");
+			$qb = new QueryBuilder();
+			$qb->select($qb->expr()->count(new Field('*'), 'count'))
+				->from(Tbl::get("TBL_SECURITY_FLOODER_IPS"))
+				->where($qb->expr()->equal(new Field('ip'), $ip));
+				
+			$this->query->exec($qb->getSQL());
 			
 			$count = $this->query->fetchField("count");
 			
@@ -50,11 +53,16 @@ class RequestLimiter extends DbAccessor {
 		$tablesToLock = array(Tbl::get('TBL_SECURITY_REQUESTS_LOG'),Tbl::get('TBL_SECURITY_FLOODER_IPS'));
 		
 		MySqlDbManager::getDbObject()->lockTables($tablesToLock, "w");
-		
-		$this->query->exec("INSERT IGNORE INTO `".Tbl::get('TBL_SECURITY_FLOODER_IPS')."` (`ip`) 
-							SELECT `ip` 
-								FROM `".Tbl::get('TBL_SECURITY_REQUESTS_LOG')."` 
-								WHERE `count` >= " . $this->config->requestsLimit);
+		$qb = new QueryBuilder();
+		$qbSelect = new QueryBuilder();
+		$qbSelect->select(new Field('ip'))
+				->from(Tbl::get('TBL_SECURITY_REQUESTS_LOG'))
+				->where($qbSelect->expr()->greaterEqual(new Field('count'),  $this->config->requestsLimit));
+		$qb->insertIgnore(Tbl::get('TBL_SECURITY_FLOODER_IPS'))
+					->fields('ip')
+					->values($qbSelect);
+					
+		$this->query->exec($qb->getSQL());
 		
 		$this->query->exec("TRUNCATE TABLE `".Tbl::get('TBL_SECURITY_REQUESTS_LOG')."`");
 		
@@ -72,10 +80,12 @@ class RequestLimiter extends DbAccessor {
 		if($ip === null){
 			$ip = $_SERVER['REMOTE_ADDR'];
 		}
-		
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_SECURITY_REQUESTS_LOG')."` (`ip`) 
-								VALUES ('$ip')
-								ON DUPLICATE KEY UPDATE `count` = `count` + 1");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_SECURITY_REQUESTS_LOG'))
+			->values(array('ip' => $ip))
+			->onDuplicateKeyUpdate()
+			->set(new Field('count'), $qb->expr()->sum(new Field('count'), 1));
+		$this->query->exec($qb->getSQL());
 	}
 	
 	/**
@@ -86,8 +96,10 @@ class RequestLimiter extends DbAccessor {
 		if($ip === null){
 			$ip = $_SERVER['REMOTE_ADDR'];
 		}
-		
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_SECURITY_FLOODER_IPS')."` (`ip`) VALUES('$ip')");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_SECURITY_FLOODER_IPS'))
+			->values(array('ip' => $ip));
+		$this->query->exec($qb->getSQL());
 	}
 	
 	/**
@@ -98,8 +110,10 @@ class RequestLimiter extends DbAccessor {
 		if($ip === null){
 			$ip = $_SERVER['REMOTE_ADDR'];
 		}
-		
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_SECURITY_FLOODER_IPS')."` WHERE `ip` = '$ip'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_SECURITY_FLOODER_IPS'))
+			->where($qb->expr()->equal(new Field("ip"), $ip));	
+		$this->query->exec($qb->getSQL());
 	}
 }
 ?>

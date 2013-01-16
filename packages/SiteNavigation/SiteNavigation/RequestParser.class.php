@@ -1,65 +1,65 @@
 <?
 class RequestParser
 {
-	private $firstLevelName;
-	private $secondLevelName;
-	private $firstLevelDefaultValue;
-	private $secondLevelDefaultValue;
-	private $actionName;
-	private $validationRegExp;
-	
-	private $firstLevel;
-	private $secondLevel;
-	private $action;
+	private $config;
 	
 	public function __construct(Config $config){
-		$this->firstLevelName = $config->firstLevelName;
-		$this->secondLevelName = $config->secondLevelName;
-		
-		$this->firstLevelDefaultValue = $config->firstLevelDefaultValue;
-		$this->secondLevelDefaultValue = $config->secondLevelDefaultValue;
-		
-		$this->actionName = $config->actionName;
-
-		$this->validationRegExp = $config->validationRegExp;
+		$this->config = $config;
 	}
 	
 	public function parse(){
 		$nav = new Nav();
-		if(array_key_exists($this->firstLevelName, $_GET))	$nav->{$this->firstLevelName} = $_GET[$this->firstLevelName];
-		if(array_key_exists($this->secondLevelName, $_GET))	$nav->{$this->secondLevelName} = $_GET[$this->secondLevelName];
-		if(array_key_exists($this->actionName, $_GET))	$nav->{$this->actionName} = $_GET[$this->actionName];
-
-		if(empty($nav->{$this->firstLevelName})){
-			$nav->{$this->firstLevelName} = $this->firstLevelDefaultValue;
-			$nav->{$this->secondLevelName} = $this->secondLevelDefaultValue;
+		$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
+		
+		// Count how much levels exists in $_GET
+		$existentLevelsCount = 0;
+		foreach($levels as $level){
+			// If level exists in $_GET
+			if(isset($_GET[$level]) and !empty($_GET[$level])){
+				// Validate level
+				if(preg_match($this->config->validationRegExp, $_GET[$level])){
+					if($_GET[$level] == 'actions'){
+						throw new RuntimeException("You can't have level with name actions!");
+					}
+					// This one is ok
+					$nav->$level = $_GET[$level];
+					$existentLevelsCount++;
+				}
+				else{
+					// If regexp didn't passed we just discard it and stop
+					$_GET[$level] = null;
+					break;
+				}
+			}
+			else{
+				break;
+			}
 		}
 		
-		if(!preg_match($this->validationRegExp, $nav->{$this->firstLevelName})){
-			$nav->{$this->firstLevelName} = $this->firstLevelDefaultValue;
+		// If no levels specified in $_GET we just take default first level value 
+		if($existentLevelsCount == 0){
+			$nav->$levels[0] = $this->config->firstLevelDefaultValue;
+			$existentLevelsCount++;
 		}
 		
-		if(!preg_match($this->validationRegExp, $nav->{$this->secondLevelName})){
-			$nav->{$this->secondLevelName} = $nav->{$this->firstLevelName};
+		// If we haven't gone to the end duplicate last level
+		if($existentLevelsCount < count($levels)){
+			$lastLevelValue = $nav->{$levels[$existentLevelsCount-1]};
+			$nav->{$levels[$existentLevelsCount]} = $lastLevelValue;
 		}
 		
-		if(!preg_match($this->validationRegExp, $nav->{$this->actionName})){
-			$nav->{$this->actionName} = '';
+		// Get action if exists
+		if(isset($_GET[$this->config->actionName]) and preg_match($this->config->validationRegExp, $_GET[$this->config->actionName])){
+			$nav->{$this->config->actionName} = $_GET[$this->config->actionName];
 		}
 		
-		if(empty($nav->{$this->secondLevelName})){
-			$nav->{$this->secondLevelName} = $nav->{$this->firstLevelName};
-		}
-
+		$nav->existentLevelsCount = $existentLevelsCount;
+		
 		return $nav;
 	}
 	
 	public function setFirstLevelDefaultValue($value){
 		$this->firstLevelDefaultValue = $value;
-	}
-	
-	public function setSecondLevelDefaultValue($value){
-		$this->secondLevelDefaultValue = $value;
 	}
 }
 ?>

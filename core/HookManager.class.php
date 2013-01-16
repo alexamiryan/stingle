@@ -26,6 +26,22 @@ class HookManager{
 	}
 	
 	/**
+	 * Replace existing hook.
+	 *
+	 * @param Hook $hook
+	 */
+	public static function replaceHook(Hook $existingHook, Hook $newHook){
+		if(isset(static::$hooks[$existingHook->getName()])){
+			foreach (static::$hooks[$existingHook->getName()] as $key => $hook){
+				if($hook === $existingHook){
+					static::$hooks[$existingHook->getName()][$key] = $newHook;
+					break;
+				}
+			}
+		}
+	}
+	
+	/**
 	 * Call registered hook. More than one hook could be registered on one hook name. 
 	 * If hook(s) return something then you will get array with hooks with new 'return' 
 	 * key of returned value.

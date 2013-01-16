@@ -46,14 +46,25 @@ class OneTimeCodes extends DbAccessor {
 		if(strlen($encryptedString) > static::CODE_MAX_LENGTH){
 			throw new RuntimeException("Resulting code is longer than allowed " . static::CODE_MAX_LENGTH . " characters!");
 		}
-		
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_ONE_TIME_CODES')."` 
-									(`code`, `multi`, `usage_limit`, `not_cleanable`, `valid_until`) 
-									VALUES(	'$encryptedString', 
-											'".($config->multiUse ? '1' : '0')."',
-											".($config->usageLimit ? "'{$config->usageLimit}'" : "NULL" ).",
-											'".($config->notCleanable ? '1' : '0')."',
-											".($config->validityTime ? "FROM_UNIXTIME(UNIX_TIMESTAMP(NOW()) + {$config->validityTime})" : 'NULL').")");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_ONE_TIME_CODES'))
+			->values(array(
+							"code" => $encryptedString, 
+							"multi" => ($config->multiUse ? 1 : 0), 
+							"usage_limit" => ($config->usageLimit ? $config->usageLimit : new Literal("NULL") ), 
+							"not_cleanable" => ($config->notCleanable ? 1 : 0), 
+							"valid_until" => ($config->validityTime ? 
+															new Func('FROM_UNIXTIME', 
+															$qb->expr()->sum(
+																new Func(
+																	'UNIX_TIMESTAMP', 
+																	new Func('NOW')
+																), $config->validityTime)
+															) : new Literal("NULL"))
+						)
+					);
+						
+		$this->query->exec($qb->getSQL());
 		
 		return $encryptedString;
 	}
@@ -69,8 +80,16 @@ class OneTimeCodes extends DbAccessor {
 		if(empty($code)){
 			throw new InvalidArgumentException("Empty \$code supplied for validation!");
 		}
+		$qb = new QueryBuilder();
+		$orX = new Orx();
+		$orX->add($qb->expr()->isNull(new Field('valid_until')));
+		$orX->add($qb->expr()->greaterEqual(new Field('valid_until'), new Func('NOW')));
 		
-		$this->query->exec("SELECT * FROM `".Tbl::get('TBL_ONE_TIME_CODES')."` WHERE `code`='$code' and (`valid_until` IS NULL OR `valid_until`>=NOW())");
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_ONE_TIME_CODES'))
+			->where($qb->expr()->equal(new Field('code'), $code))
+			->andWhere($orX);	
+		$this->query->exec($qb->getSQL());
 		
 		if($this->query->countRecords() == 0){
 			return false;
@@ -92,17 +111,26 @@ class OneTimeCodes extends DbAccessor {
 		
 		if($dbRow['multi'] == '1'){
 			if($dbRow['usage_limit'] > 0){
+				$qb = new QueryBuilder();
 				if($dbRow['usage_count'] < $dbRow['usage_limit']){
-					$this->query->exec("UPDATE `".Tbl::get('TBL_ONE_TIME_CODES')."` SET `usage_count`=`usage_count`+1 WHERE `id`='{$dbRow['id']}'");
+					$qb->update(Tbl::get('TBL_ONE_TIME_CODES'))
+							->set(new Field('usage_count'), $qb->expr()->sum(new Field('usage_count'), 1))
+							->where($qb->expr()->equal(new Field('id'), $dbRow['id']));	
+					$this->query->exec($qb->getSQL());
 				}
 				else{
-					$this->query->exec("DELETE FROM `".Tbl::get('TBL_ONE_TIME_CODES')."` WHERE `id`='{$dbRow['id']}'");
+					$qb->delete(Tbl::get('TBL_ONE_TIME_CODES'))
+						->where($qb->expr()->equal(new Field("id"), $dbRow['id']));	
+					$this->query->exec($qb->getSQL());
 					return false;
 				}
 			}
 		}
 		else{
-			$this->query->exec("DELETE FROM `".Tbl::get('TBL_ONE_TIME_CODES')."` WHERE `id`='{$dbRow['id']}'");
+			$qb = new QueryBuilder();
+			$qb->delete(Tbl::get('TBL_ONE_TIME_CODES'))
+				->where($qb->expr()->equal(new Field("id"), $dbRow['id']));	
+			$this->query->exec($qb->getSQL());
 		}
 		
 		return true;
@@ -112,8 +140,10 @@ class OneTimeCodes extends DbAccessor {
 		if(empty($code)){
 			throw new InvalidArgumentException("Empty \$code supplied for revokation!");
 		}
-		
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_ONE_TIME_CODES')."` WHERE `code`='$code'");
+		$qb = new QueryBuilder();
+			$qb->delete(Tbl::get('TBL_ONE_TIME_CODES'))
+				->where($qb->expr()->equal(new Field("code"), $code));	
+		$this->query->exec($qb->getSQL());
 		
 		return ($this->query->affected() > 0 ? true : false);
 	}
@@ -144,18 +174,34 @@ class OneTimeCodes extends DbAccessor {
 	 */
 	public function cleanUp(){
 		$time = 60*60*24*$this->config->cleanUpTimeOut;
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_ONE_TIME_CODES')."` 
-								WHERE 	
-										(
-											UNIX_TIMESTAMP(`issue_date`) < UNIX_TIMESTAMP(NOW()) - $time AND
-											`not_cleanable` = 0 AND 
-											`valid_until` IS NULL
-										) 
-										OR 
-										(
-											`valid_until` IS NOT NULL AND 
-											`valid_until` < NOW()
-										)");
+		$qb = new QueryBuilder();
+		$orX = new Orx();
+		$andX1 = new Andx();
+		$andX2 = new Andx();
+		$andX1->add($qb->expr()->less(new Func(
+												'UNIX_TIMESTAMP', 
+												new Field('issue_date')
+										), 
+										$qb->expr()->diff( 
+													new Func(
+														'UNIX_TIMESTAMP', 
+														new Func('NOW')
+													),
+										$time)
+									 )
+					);
+		$andX1->add($qb->expr()->equal(new Field('not_cleanable'), 0));
+		$andX1->add($qb->expr()->isNull(new Field('valid_until')));
+		
+		$andX2->add($qb->expr()->isNotNull(new Field('valid_until')));
+		$andX2->add($qb->expr()->less(new Field('valid_until'), new Func('NOW')));
+		
+		$orX->add($andX1);
+		$orX->add($andX2);
+		
+		$qb->delete(Tbl::get('TBL_ONE_TIME_CODES'))->where($orX);
+			
+		$this->query->exec($qb->getSQL());
 		
 		return $this->query->affected();
 	}

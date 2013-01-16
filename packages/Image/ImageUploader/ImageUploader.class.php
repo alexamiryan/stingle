@@ -127,7 +127,7 @@ class ImageUploader
 	 * @return string
 	 */
 	private static function generateUniqueFileName(){
-		return md5(uniqid(rand(), true));
+		return Crypto::secureRandom(256);
 	}
 	
 	/**

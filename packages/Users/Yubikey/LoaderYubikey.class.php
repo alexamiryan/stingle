@@ -1,24 +1,31 @@
 <?
 class LoaderYubikey extends Loader{
 	protected function includes(){
-		require_once ('Yubikey.class.php');
-		require_once ('YubikeyUserAuthorization.class.php');
+		require_once ('Managers/Yubikey.class.php');
+		require_once ('Managers/YubikeyUserAuthorization.class.php');
 		require_once ('Exceptions/YubikeyException.class.php');
+		require_once ('Exceptions/YubikeyRequiredException.class.php');
+		require_once ('Exceptions/InvalidYubikeyException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
 		Tbl::registerTableNames('YubikeyUserAuthorization');
 	}
 	
-	protected function loadYubikeyUserAuthorization(){
-		$usersConfig = ConfigManager::getConfig("Users","Users");
+	protected function hookYubicoAuth($params){
+		$yubikeyUserAuthorization = new YubikeyUserAuthorization($this->config->AuxConfig);
 		
-		$resultingConfig = ConfigManager::mergeConfigs($usersConfig->AuxConfig, $this->config->AuxConfig);
-		
-		$yubikeyUserAuthorization = new YubikeyUserAuthorization(	Reg::get($usersConfig->Objects->UserManagement),
-																	$resultingConfig);
-		
-		$this->register($yubikeyUserAuthorization);
+		if(isset($params['user'])and is_a($params['user'], "User")){
+			$yubikeyOTP = "";
+			if(isset($params['additionalCredentials']) and isset($params['additionalCredentials']['yubikeyOTP'])){
+				$yubikeyOTP = $params['additionalCredentials']['yubikeyOTP'];
+			}
+			
+			$yubikeyUserAuthorization->auth($params['user'], $yubikeyOTP);
+		}
+		else{
+			throw new RuntimeException("No user provided for Yubikey Authorization");
+		}
 	}
 }
 ?>

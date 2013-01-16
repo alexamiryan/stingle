@@ -18,7 +18,7 @@ class LoaderPageInfo extends Loader{
 	}
 	
 	public function hookSetPageInfo(){
-		$smartyConfig = ConfigManager::getConfig("Smarty");
+		$smartyConfig = ConfigManager::getConfig("Output", "Smarty");
 		$siteNavConfig = ConfigManager::getConfig("SiteNavigation");
 		
 		$module = Reg::get($siteNavConfig->ObjectsIgnored->Nav)->module;

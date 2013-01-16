@@ -47,10 +47,40 @@ class LanguageManager extends DbAccessor {
 			throw new EmptyArgumentException();
 		}
 
-		$this->query->exec("INSERT INTO `".Tbl::get("TBL_LANGUAGES", "Language") ."` (`name`, `description`)
-							VALUES ('$language->shortName', '$language->longName')");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get("TBL_LANGUAGES", "Language"))
+			->values(array(
+					'name' => $language->shortName,
+					'description' => $language->longName
+					));
+		
+		$this->query->exec($qb->getSQL());
 
 		return $this->query->getLastInsertId();
+	}
+	
+	/**
+	 * Update given Language
+	 * @param Language $language
+	 * @throws EmptyArgumentException
+	 * @throws InvalidArgumentException
+	 */
+	public function updateLanguage(Language $language){
+		if(empty($language->shortName) or empty($language->longName)){
+			throw new EmptyArgumentException();
+		}
+		if(!is_numeric($language->id)){
+			throw new InvalidArgumentException("Language id is not numeric.");
+		}
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get("TBL_LANGUAGES", "Language"))
+			->set(new Field('name'), 		$language->shortName)
+			->set(new Field('description'), $language->longName)
+			->where($qb->expr()->equal(new Field('id'), $language->id));
+		
+		$this->query->exec($qb->getSQL());
+
+		return $this->query->affected();
 	}
 
 	/**
@@ -63,7 +93,10 @@ class LanguageManager extends DbAccessor {
 	 * @return boolean
 	 */
 	public function deleteLanguage(Language $language){
-		$this->query->exec("DELETE FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` WHERE `id`='{$language->id}'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get("TBL_LANGUAGES", "Language"))
+			->where($qb->expr()->equal(new Field('id'), $language->id));
+		$this->query->exec($qb->getSQL());
 	}
 
 	public function getLanguage(){
@@ -98,7 +131,12 @@ class LanguageManager extends DbAccessor {
 	 * @return boolean
 	 */
 	public function languageExists($language_short_name, $cacheMinutes = null){
-		$this->query->exec("SELECT COUNT(*) as `cnt` FROM `".Tbl::get("TBL_LANGUAGES", "Language") ."` WHERE `name`='$language_short_name'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count("*", 'cnt'))
+			->from(Tbl::get("TBL_LANGUAGES", "Language"))
+			->where($qb->expr()->equal(new Field('name'), $language_short_name));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->fetchField('cnt') > 0){
 			return true;
 		}
@@ -138,12 +176,8 @@ class LanguageManager extends DbAccessor {
 			$language = $this->language;
 		}
 		
-		$types_query = "";
-		if(is_array($types)){
-			$types_query = " AND lc.`type` IN (" . implode(",", $types) . ")";
-		}
-		elseif( !is_null($types) ){
-			throw new RuntimeException("types should be an array");
+		if($types != null and !is_array($types)){
+			throw new RuntimeException("\$types should be an array");
 		}
 
 		if($existing_only === true){
@@ -157,33 +191,65 @@ class LanguageManager extends DbAccessor {
 			return array();
 		}
 
-		$query = "SELECT lc.`id`, lc.`key`, lc.`type`,
-						 cv.`value`, cv.`lang_id`
-					FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` lc
-					JOIN `".Tbl::get("TBL_VALUES", "Constant")."` cv
-					USING (`id`)
-					WHERE cv.`lang_id`='$language->id'
-					$types_query";
-
+		$qb = new QueryBuilder();
+		$qb->select(array(
+				new Field('id', 'lc'),
+				new Field('key', 'lc'),
+				new Field('type', 'lc'),
+				new Field('value', 'cv'),
+				new Field('lang_id', 'cv')
+				))
+			->from(Tbl::get("TBL_CONSTANTS", "Constant"), 'lc')
+			->leftJoin(Tbl::get("TBL_VALUES", "Constant"), 'cv', $qb->expr()->equal(new Field('id', 'lc'), new Field('id', 'cv')))
+			->where($qb->expr()->equal(new Field('lang_id', 'cv'), $language->id));
+		
+		if(is_array($types) and !empty($types)){
+			$qb->andWhere($qb->expr()->in(new Field('type', 'lc'), $types));
+		}
+		
 		if(!$existing_only){
-			$query .= " UNION ( SELECT lc.`id`, lc.`key`, lc.`type`,
-									 cv.value, cv.lang_id
-						FROM `lm_constants` lc
-						LEFT JOIN `lm_values` ncv
-						ON (
-							lc.`id` = ncv.`id`
-							AND ncv.`lang_id`='$language->id'
-						)
-						LEFT JOIN `lm_values` cv
-						ON (lc.`id` = cv.`id`)
-						WHERE ncv.`id` IS NULL
-						$types_query
-						GROUP BY lc.`id`
-						HAVING cv.`lang_id` = MIN(cv.`lang_id`) )";
+			$qb1 = new QueryBuilder();
+			
+			$qb1->select(array(
+					new Field('id', 'lc'),
+					new Field('key', 'lc'),
+					new Field('type', 'lc'),
+					new Field('value', 'cv'),
+					new Field('lang_id', 'cv')
+				))
+				->from(Tbl::get("TBL_CONSTANTS", "Constant"), 'lc');
+			
+			$joinAnd = new Andx();
+			$joinAnd->add($qb->expr()->equal(new Field('id', 'lc'), new Field('id', 'ncv')));
+			$joinAnd->add($qb->expr()->equal(new Field('lang_id', 'ncv'), $language->id));
+			
+			$qb1->leftJoin(Tbl::get("TBL_VALUES", "Constant"), 'ncv', $joinAnd)
+				->leftJoin(Tbl::get("TBL_VALUES", "Constant"), 'cv', $qb->expr()->equal(new Field('id', 'lc'), new Field('id', 'cv')))
+				->where($qb->expr()->isNull(new Field('id', 'ncv')));
+			
+			if(is_array($types) and !empty($types)){
+				$qb1->andWhere($qb->expr()->in(new Field('type', 'lc'), $types));
+			}
+			
+			$qb1->groupBy(new Field('id', 'lc'))
+				->having($qb->expr()->equal(new Field('lang_id', 'cv'), $qb->expr()->min(new Field('lang_id', 'cv'))));
+			
+			$qbUnion = new QueryBuilder();
+			
+			$union = new Unionx();
+			$union->add($qb);
+			$union->add($qb1);
+			
+			$qbUnion->select(new Field("*"))
+				->from($union, 'tbl');
+			
+			$qb = $qbUnion;
 		}
 
-		$query .= " ORDER BY `id` DESC";
-
+		$qb->orderBy(new Field('id'), OrderBy::DESC);
+		
+		$query = $qb->getSQL();
+		
 		if($pager !== null){
 			return $pager->getRecords($query, $cacheMinutes);
 		}
@@ -228,12 +294,14 @@ class LanguageManager extends DbAccessor {
 			$language = $this->language;
 		}
 		
-		$this->query->exec("SELECT cv.`value`
-							FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` lc
-							JOIN `".Tbl::get("TBL_VALUES", "Constant") ."` cv
-							USING (`id`)
-							WHERE lc.`key`='$key'
-							AND cv.`lang_id`='{$language->id}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('value', 'cv'))
+			->from(Tbl::get("TBL_CONSTANTS", "Constant"), 'lc')
+			->leftJoin(Tbl::get("TBL_VALUES", "Constant"), 'cv', $qb->expr()->equal(new Field('id', 'lc'), new Field('id', 'cv')))
+			->where($qb->expr()->equal(new Field('key', 'lc'), $key))
+			->andWhere($qb->expr()->equal(new Field('lang_id', 'cv'), $language->id));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 
 		if($this->query->countRecords()){
 			return $this->query->fetchField('value');
@@ -282,7 +350,12 @@ class LanguageManager extends DbAccessor {
 			throw new InvalidArgumentException("Specified key does not exist.");
 		}
 
-		$this->query->exec("SELECT `id` FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key`='$key'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select(new Field('id'))
+			->from(Tbl::get("TBL_CONSTANTS", "Constant"))
+			->where($qb->expr()->equal(new Field('key'), $key));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchField("id");
 	}
 
@@ -295,7 +368,12 @@ class LanguageManager extends DbAccessor {
 	 * @return boolean
 	 */
 	public function keyExists($key, $cacheMinutes = null){
-		$this->query->exec("SELECT COUNT(`id`) as cnt FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key`='$key'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count(new Field('id'), 'cnt'))
+			->from(Tbl::get("TBL_CONSTANTS", "Constant"))
+			->where($qb->expr()->equal(new Field('key'), $key));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->fetchField("cnt")){
 			return true;
 		}
@@ -314,10 +392,13 @@ class LanguageManager extends DbAccessor {
 	 * @return boolean
 	 */
 	public function valueExists($id, Language $language, $cacheMinutes = null){
-		$this->query->exec("SELECT COUNT(*) AS value_exists
-							FROM `".Tbl::get("TBL_VALUES", "Constant")."`
-							WHERE `id`='$id'
-							AND `lang_id`='{$language->id}'", $cacheMinutes);
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count('*', 'value'))
+			->from(Tbl::get("TBL_VALUES", "Constant"))
+			->where($qb->expr()->equal(new Field('id'), $id))
+			->andWhere($qb->expr()->equal(new Field('lang_id'), $language->id));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 
 		if($this->query->fetchField('value_exists')){
 			return true;
@@ -354,7 +435,14 @@ class LanguageManager extends DbAccessor {
 	 * @return integer Key ID
 	 */
 	protected function createKey($key, $type){
-		$this->query->exec("INSERT INTO `".Tbl::get("TBL_CONSTANTS", "Constant")."` (`key`, `type`) VALUES ('$key', '$type')");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get("TBL_CONSTANTS", "Constant"))
+			->values(array(
+					'key' => $key,
+					'type' => $type
+					));
+		
+		$this->query->exec($qb->getSQL());
 		return $this->query->getLastInsertId();
 	}
 
@@ -371,9 +459,17 @@ class LanguageManager extends DbAccessor {
 	 * @return boolean
 	 */
 	protected function createValue($key, $value, Language $language){
-		$this->query->exec("INSERT INTO `".Tbl::get("TBL_VALUES", "Constant")."` (`id`, `lang_id`, `value`)
-							SELECT
-							(SELECT `id` FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key` = '$key') as `id`,'{$language->id}','$value'");
+		$qb = new QueryBuilder();
+		$qb->select(new Field('id'), Expr::quoteLiteral($language->id), Expr::quoteLiteral($value))
+			->from(Tbl::get("TBL_CONSTANTS", "Constant"))
+			->where($qb->expr()->equal(new Field('key'), $key));
+		
+		$insertQb = new QueryBuilder();
+		$insertQb->insert(Tbl::get("TBL_VALUES", "Constant"))
+			->fields(array('id', 'lang_id', 'value'))
+			->values($qb);
+		
+		$this->query->exec($insertQb->getSQL());
 	}
 
 	/**
@@ -385,7 +481,11 @@ class LanguageManager extends DbAccessor {
 	 * @return void
 	 */
 	protected function removeKey($key){
-		$this->query->exec("DELETE FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key`='$key'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get("TBL_CONSTANTS", "Constant"))
+			->where($qb->expr()->equal(new Field('key'), $key));
+		
+		$this->query->exec($qb->getSQL());
 	}
 
 	/**
@@ -397,9 +497,13 @@ class LanguageManager extends DbAccessor {
 		if(!$this->keyExists($key)){
 			throw new InvalidArgumentException("Passed key doesn't exist");
 		}
-		$this->query->exec("SELECT `type`
-							FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."`
-							WHERE `key`='$key'", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('type'))
+			->from(Tbl::get("TBL_CONSTANTS", "Constant"))
+			->where($qb->expr()->equal(new Field('key'), $key));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		return $this->query->fetchField("type");
 	}
 
@@ -455,7 +559,6 @@ class LanguageManager extends DbAccessor {
 	 * @return boolean True if successed.
 	 */
 	protected function updateValuesRow($existing_key, Language $existing_language, $new_value = null, Language $new_language = null){
-
 		if(empty($existing_key)){
 			throw new InvalidArgumentException("\$existing_key have to be non empty string.");
 		}
@@ -464,20 +567,25 @@ class LanguageManager extends DbAccessor {
 			return true;
 		}
 		
-		$query = "UPDATE `".Tbl::get("TBL_VALUES", "Constant")."` SET";
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get("TBL_VALUES", "Constant"));
+		
 		if($new_value !== null){
-			$query .= " `value`='$new_value',";
+			$qb->set(new Field('value'), $new_value);
 		}
 		if($new_language !== null){
-			$query .= " `lang_id`='{$new_language->id}',";
+			$qb->set(new Field('lang_id'), $new_language->id);
 		}
-		// Removing last comma
-		$query = substr($query, 0, -1);
-		$query .= " WHERE `id`=(SELECT `id` FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."` WHERE `key`='$existing_key')
-					AND `lang_id`='{$existing_language->id}'";
 
-		$this->query->exec($query);
+		$innerSelect = new QueryBuilder();
+		$innerSelect->select(new Field('id'))
+			->from(Tbl::get("TBL_CONSTANTS", "Constant"))
+			->where($qb->expr()->equal(new Field('key'), $existing_key));
 		
+		$qb->where($qb->expr()->equal(new Field('id'), $innerSelect))
+			->andWhere($qb->expr()->equal(new Field('lang_id'), $existing_language->id));
+		
+		$this->query->exec($qb->getSQL());
 		return true;
 	}
 
@@ -504,19 +612,20 @@ class LanguageManager extends DbAccessor {
 			return true;
 		}
 
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get("TBL_CONSTANTS", "Constant"));
+		
+		
 		$query = "UPDATE `".Tbl::get("TBL_CONSTANTS", "Constant")."` SET";
 		if($new_key !== null){
-			$query .= " `key`='$new_key',";
+			$qb->set(new Field('key'), $new_key);
 		}
 		if($new_type !== null){
-			$query .= " `type`='$new_type',";
+			$qb->set(new Field('type'), $new_type);
 		}
-		// Removing last comma
-		$query = substr($query, 0, -1);
-		$query .= " WHERE `key`='$existing_key'";
+		$qb->where($qb->expr()->equal(new Field('key'), $existing_key));
 
-		$this->query->exec($query);
-		
+		$this->query->exec($qb->getSQL());
 		return true;
 	}
 
@@ -570,48 +679,65 @@ class LanguageManager extends DbAccessor {
 		}
 		return true;
 	}
-
 	/**
-	 * Remove constant passing ID or Key for current constant.
-	 * If language is set then only value with current language
-	 * will be deleted.
+	 * Remove constant passing Key for current constant.
 	 *
 	 * @param string $key
-	 * @param Language $language
 	 * 
 	 * @access public
 	 * @return boolean True if rows affected
 	 */
-	public function removeConstant($key, Language $language = null){
-
+	public function removeConstant($key){
 		if(empty($key)){
 			throw new InvalidArgumentException("\$key have to be non empty string.");
 		}
 
-		$tables = " `".Tbl::get("TBL_CONSTANTS", "Constant")."` lc
-					JOIN `".Tbl::get("TBL_VALUES", "Constant")."` cv
-					USING (`id`)";
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get("TBL_CONSTANTS", "Constant"))
+			->where($qb->expr()->equal(new Field('key'), $key));
 		
-		$where_clause = " WHERE `key`='$key'";
-
-
-		if($language !== null){
-			$this->query->exec("SELECT count(`id`) AS `cnt` FROM $tables $where_clause");
-
-			if($this->query->fetchField("cnt") > 1){
-				$this->query->exec("DELETE FROM cv
-									USING $tables $where_clause
-									AND cv.`lang_id`='{$language->id}'");
-			}
-			else{
-				$this->query->exec("DELETE FROM `".Tbl::get("TBL_CONSTANTS", "Constant")."`	$where_clause");
-			}
-		}
-		else{
-			$this->query->exec("DELETE FROM	`".Tbl::get("TBL_CONSTANTS", "Constant")."`	$where_clause");
-		}
-
+		$this->query->exec($qb->getSQL());
+		
 		return ($this->query->affected() > 0 ? true : false);
+	}
+	
+	/**
+	 * Removes constant value. If it was last value for given 
+	 * constant it will delete constant itself
+	 * 
+	 * @param strung $key
+	 * @param Language $language
+	 * @throws InvalidArgumentException
+	 * @return boolean
+	 */
+	public function removeConstantValue($key, Language $language){
+		if(empty($key)){
+			throw new InvalidArgumentException("\$key have to be non empty string.");
+		}
+	
+		$constantId = $this->getKeyId($key);
+		
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get("TBL_VALUES", "Constant"))
+			->where($qb->expr()->equal(new Field('id'), $constantId))
+			->andWhere($qb->expr()->equal(new Field('lang_id'), $language->id));
+	
+		$this->query->exec($qb->getSQL());
+		
+		$deletedCount = $this->query->affected();
+		
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count("*", 'count'))
+			->from(Tbl::get("TBL_VALUES", "Constant"))
+			->where($qb->expr()->equal(new Field('id'), $constantId)); 
+		
+		$valuesCount = $this->query->exec($qb->getSQL())->fetchField('count');
+		
+		if($valuesCount == 0){
+			$this->removeConstant($key);
+		}
+	
+		return ($deletedCount > 0 ? true : false);
 	}
 
 	/**

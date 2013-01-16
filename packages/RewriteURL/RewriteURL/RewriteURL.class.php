@@ -1,261 +1,85 @@
 <?
 class RewriteURL{
-	public $basename;
-
-	protected $slashes;
 	protected $config;
-	protected $parts;
-	protected $subfolders = array();
-
-	protected static $module_name = "module";
-	protected static $page_name = "page";
 
 	public function __construct(Config $config){
 		$this->config = $config;
 	}
 
 	/**
-	 * Parse URL.
-	 *
+	 * Parse URL
 	 */
-	public function parseURL($setParams = true){
-		if($this->config->enable_url_rewrite == "OFF") return;
-		/* grab URL query string */
+	public function parseURL(){
+		if(!$this->config->enableUrlRewrite){
+			return;
+		}
+		$this->config->sitePath = "/";
+		
+		// grab URL query string
 		$uri = $_SERVER['REQUEST_URI'];
-		/* slicing query string */
-		$temp = array_slice(explode('/', $uri), 1);
-		foreach($this->subfolders as $subfolder){
-			$key = array_search($subfolder, $temp);
-			unset($temp[$key]);
+		$sitePath = $this->config->sitePath;
+		
+		// Strip first slash from uri
+		if(substr($uri, 0, 1) == '/'){
+			$uri = substr($uri, 1);
 		}
-		$this->parts = $temp;
-		if($setParams === true){
-			$this->setParams();
+		
+		// Strip first slash from sitePath
+		if(substr($sitePath, 0, 1) == '/'){
+			$sitePath = substr($sitePath, 1);
 		}
-	}
-
-	/**
-	 * Sets params for executing corresponding controler.
-	 * Add params to global $_GET array
-	 * By internal agreement first parameter is 'module' and second is 'page'
-	 *
-	 */
-	protected function setParams(){
-		$module_flag = false;
-		$page_flag = 1;
-		reset($this->parts);
-		if(strpos(current($this->parts), ":") === false){
-			$_GET[static::getSystemModuleName()] = current($this->parts);
-			$_REQUEST[static::getSystemModuleName()] = current($this->parts);
-			$module_flag = true;
+		
+		// Strip sitePath from uri if exists
+		if(strpos($uri, $sitePath) == 0){
+			$uri = str_replace($sitePath, "", $uri);
 		}
-		if($module_flag){ // Check is module have been setted in request string
-			next($this->parts);
-			if(current($this->parts) and strpos(current($this->parts), ":") === false){ //Check is second parameter present and is it a page name
-				$_GET[static::getSystemPageName()] = current($this->parts);
-				$_REQUEST[static::getSystemPageName()] = current($this->parts);
-				$page_flag = 2;
-			}
-			$params = array_slice($this->parts, $page_flag); //Remove module and page parameters from $this->parts
-		}
-		else{
-			$params = $this->parts;
-		}
-
-		foreach($params as $param){ // Parse all other parameters as key:value
-			if(empty($param)){
-				continue;
-			}
-			if(!empty($param)){
-				$arr = explode(":", $param);;
-				if(count($arr) == 2){
-					list($k, $v) = $arr; 
+		
+		// Start parsing uri parts
+		$levels = $this->config->levels->toArray();
+		$explodedUri = explode("/", $uri);
+		
+		$parsingGetParams = false;
+		for($i = 0; $i < count($explodedUri); $i++){
+			if(!empty($explodedUri[$i])){
+				// Still parsing levels
+				if(!$parsingGetParams){
+					// If there is no colon in uri part it means that it is level name
+					if(strpos($explodedUri[$i], ":") === false and isset($levels[$i])){
+						$_GET[$levels[$i]] = $explodedUri[$i];
+					}
+					else{
+						// If there is a colon this means we finished parsing 
+						// levels and it's time for GET params
+						$parsingGetParams = true;
+					}
+				}
 				
-					if(!empty($k)){ // To work correct on url with "/" in the end and without it.
-						$_GET[$k] = $v;
-						$_REQUEST[$k] = $v;
+				// Parsing GET params, finished levels
+				if($parsingGetParams){
+					// For uri part to be GET param there will be two strings devided by colon
+					$getParam = explode(":", $explodedUri[$i]);
+					if(count($getParam) == 2){
+						$_GET[$getParam[0]] = $getParam[1];
 					}
 				}
 			}
 		}
 	}
 
-	public function setSystemNames($module_name, $page_name){
-		if(empty($module_name)){
-			throw new InvalidArgumentException("\$module_name have to be non empty string");
-		}
-		if(empty($page_name)){
-			throw new InvalidArgumentException("\$page_name have to be non empty string");
-		}
-		static::$module_name = $module_name;
-		static::$page_name = $page_name;
-	}
-
-	/**
-	 * Add subfolders witch should be ignored
-	 *
-	 * @param array $folders
-	 */
-	public function setSubfolders($folders){
-		$this->subfolders = array_merge($this->subfolders, $folders);
-	}
-
-	/**
-	 * Return array of sliced query string
-	 *
-	 * @return array
-	 */
-	public function getParts(){
-		return $this->parts;
-	}
-
-	/**
-	 * Alter given link in default format to nice format
-	 * @param string $strUrl
-	 * @return string
-	 */
-	public static function alterLinkToNice($strUrl){
-		// convert normal URL query string to clean URL
-		$url = parse_url($strUrl);
-		$strUrl = '';
-		$vars = array();
-		parse_str($url['query'], $vars);
-		while((list($k, $v) = each($vars)) != false){
-			if(in_array($k, array(static::getSystemModuleName(), static::getSystemPageName()))){
-				$strUrl .= $v . "/";
-			}
-			else{
-				$strUrl .= $k . ":" . $v . "/";
-			}
-		}
-
-		return $this->config->site_path . $strUrl;
-	}
-
-	/**
-	 * Alter link given in nice format to default format
-	 * @param $strUrl
-	 * @return unknown_type
-	 */
-	public static function alterLinkToDefault($strUrl){
-		$module_flag = false;
-		$page_flag = 1;
-
-		$config = ConfigManager::getConfig("RewriteURL")->AuxConfig;
-		$return_string = $config->site_path . $config->handler_script . "?";
-
-		$parts = explode("/", $strUrl);
-		reset($parts);
-
-		if(strpos(current($parts), ":") === false){
-			$return_string .= static::getSystemModuleName() . "=" . current($parts);
-			$module_flag = true;
-		}
-		if($module_flag){ // Check is module have been setted in request string
-			next($parts);
-			if(strpos(current($parts), ":") === false){
-				$return_string .= "&" . static::getSystemPageName() . "=" . current($parts);
-				$page_flag = 2;
-			}
-			$params = array_slice($parts, $page_flag);
-		}
-		else{
-			$params = $parts;
-		}
-
-		foreach($params as $param){
-			list($k, $v) = explode(":", $param);
-			if(!empty($k) and !empty($v)){
-				$return_string .= "&" . $k . "=" . $v;
-			}
-		}
-
-		return $return_string;
-	}
-
-	public static function ensureSourceLastDelimiter($strUrl){
-		$config = ConfigManager::getConfig('RewriteURL', 'RewriteURL')->AuxConfig;
-		if($config->source_link_style == 'nice'){
-			$delimiter = '/';
-		}
-		elseif($config->source_link_style == 'default'){
-			$delimiter = '&';
-		}
-		if(!preg_match('/\\' . $delimiter . '$/', $strUrl)){
-			$strUrl .= $delimiter;
-		}
-		return $strUrl;
-	}
-
-	public static function ensureOutputLastDelimiter($strUrl){
-		$config = ConfigManager::getConfig('RewriteURL', 'RewriteURL')->AuxConfig;
-		if($config->output_link_style == 'nice'){
-			$delimiter = '/';
-		}
-		elseif($config->output_link_style == 'default'){
-			$delimiter = '&';
-		}
-		if(!preg_match('/\\' . $delimiter . '$/', $strUrl)){
-			$strUrl .= $delimiter;
-		}
-		$strUrl = preg_replace("/(\\$delimiter){2,}$/", $delimiter, $strUrl);
-		
-		return $strUrl;
-	}
-
-	public static function generateCleanBaseLink($module, $page, $default_module){
-		$config = ConfigManager::getConfig('RewriteURL', 'RewriteURL')->AuxConfig;
-		if($module == $page){
-			if($module != $default_module){
-				if($config->source_link_style == 'nice'){
-					return "$module/";
-				}
-				elseif($config->source_link_style == 'default'){
-					return RewriteURL::getSystemModuleName() . "=" . $module . "&";
-				}
-			}
-		}
-		else{
-			if($config->source_link_style == 'nice'){
-				return "$module/$page/";
-			}
-			elseif($config->source_link_style == 'default'){
-				return RewriteURL::getSystemModuleName() . "=" . $module . "&" . RewriteURL::getSystemPageName() . "=" . $page . "&";
-			}
-
-		}
-		return '';
-	}
-
 	public function glink($strUrl){
-		if($this->config->source_link_style == 'nice'){
-			if($this->config->output_link_style == 'nice'){
-				$strUrl = $this->config->site_path . $strUrl;
-			}
-			elseif($this->config->output_link_style == 'default'){
-				$strUrl = static::alterLinkToDefault($strUrl);
-			}
+		if($strUrl != '/'){
+			$strUrl = $this->config->sitePath . $strUrl;
 		}
-		elseif($this->config->source_link_style == 'default'){
-			$strUrl = $this->config->handler_script . "?" . $strUrl;
-			if($this->config->output_link_style == 'nice'){
-				$strUrl = static::alterLinkToNice($strUrl);
-			}
-			if($this->config->output_link_style == 'default'){
-				$strUrl = $this->config->site_path . $strUrl;
-			}
-		}
-		$strUrl = static::ensureOutputLastDelimiter($strUrl);
+		
+		self::ensureLastSlash($strUrl);
 		return $strUrl;
 	}
-
-	public static function getSystemModuleName(){
-		return static::$module_name;
+	
+	public static function ensureLastSlash(&$strUrl){
+		if(substr($strUrl, strlen($strUrl) - 1) != '/'){
+			$strUrl .= '/';
+		}
 	}
-
-	public static function getSystemPageName(){
-		return static::$page_name;
-	}
-
+	
 }
 ?>

@@ -33,7 +33,7 @@ class OTCConfig extends Config {
 	public $notCleanable = false;
 
 	/**
-	 * Time in seconds of code validity.
+	 * Time in seconds starting from now of code validity.
 	 * Default is unlimited
 	 * @var integer|null
 	 */

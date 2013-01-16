@@ -74,9 +74,20 @@ class ConversationAttachmentManager extends DbAccessor{
 			->set(new Field('message_id'), $message->id)
 			->where($qb->expr()->equal(new Field('id'), $attachmentId));
 	
-		$convMgr->setMessageHasAttachment($message);
-		
-		return $this->query->exec($qb->getSQL())->affected();
+		MySqlDbManager::getDbObject()->startTransaction();
+		try{
+			$convMgr->setMessageHasAttachment($message);
+			
+			$affected = $this->query->exec($qb->getSQL())->affected();
+			
+			if(!MySqlDbManager::getDbObject()->commit()){
+				MySqlDbManager::getDbObject()->rollBack();
+			}
+		}
+		catch(Exception $e){
+			MySqlDbManager::getDbObject()->rollBack();
+			throw $e;
+		}
 	}
 	
 	/**

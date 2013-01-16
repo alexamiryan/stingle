@@ -1,11 +1,11 @@
 <?
-class ConversationFilter extends Filter {
+class ConversationFilter extends MergeableFilter{
 	
-	public function __construct($headersOnly = true){
-		parent::__construct();
+	public function __construct(){
+		parent::__construct(Tbl::get('TBL_CONVERSATIONS', 'ConversationManager'), "conv", "user_id");
 		
-		$this->qb->select(new Field("*"))
-			->from(Tbl::get('TBL_CONVERSATIONS', 'ConversationManager'), "conv");
+		$this->qb->select(new Field("*", $this->primaryTableAlias))
+			->from($this->primaryTable, $this->primaryTableAlias);
 	}
 	
 	public function setId($id){
@@ -13,7 +13,7 @@ class ConversationFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$id have to be non zero integer.");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("id", "conv"), $id));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("id", $this->primaryTableAlias), $id));
 		return $this;
 	}
 	
@@ -22,7 +22,7 @@ class ConversationFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$uuid have to be non zero integer.");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("uuid", "conv"), $uuid));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("uuid", $this->primaryTableAlias), $uuid));
 		return $this;
 	}
 	
@@ -31,7 +31,7 @@ class ConversationFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$userId have to be non zero integer.");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("user_id", "conv"), $userId));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("user_id", $this->primaryTableAlias), $userId));
 		return $this;
 	}
 	
@@ -40,7 +40,7 @@ class ConversationFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$interlocutorId have to be non zero integer.");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("interlocutor_id", "conv"), $interlocutorId));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("interlocutor_id", $this->primaryTableAlias), $interlocutorId));
 		return $this;
 	}
 	
@@ -49,7 +49,7 @@ class ConversationFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$status have to be integer.");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("read", "conv"), $status));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("read", $this->primaryTableAlias), $status));
 		return $this;
 	}
 	
@@ -58,7 +58,7 @@ class ConversationFilter extends Filter {
 			throw new InvalidIntegerArgumentException("\$status have to be integer.");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("trashed", "conv"), $status));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("trashed", $this->primaryTableAlias), $status));
 		return $this;
 	}
 	
@@ -69,5 +69,6 @@ class ConversationFilter extends Filter {
 	public function setOrderLastMsgDateDesc(){
 		$this->setOrder(new Field('last_msg_date', 'conv'), MySqlDatabase::ORDER_DESC);
 	}
+	
 }
 ?>

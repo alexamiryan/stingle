@@ -2,11 +2,11 @@
 class DependencyPageInfo extends Dependency
 {
 	public function __construct(){
-		$this->addPackage("Db");
-		$this->addPackage("Host");
-		$this->addPackage("Smarty");
-		$this->addPackage("SiteNavigation");
-		$this->addPackage("Language", "HostLanguage");
+		$this->addPlugin("Db");
+		$this->addPlugin("Host");
+		$this->addPlugin("Output", "Smarty");
+		$this->addPlugin("SiteNavigation");
+		$this->addPlugin("Language", "HostLanguage");
 	}
 }
 ?>

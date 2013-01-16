@@ -1,3 +1,3 @@
 <?
-class YubikeyException extends RuntimeException{}
+class YubikeyException extends UserAuthFailedException{}
 ?>

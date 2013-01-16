@@ -1,10 +1,15 @@
 <?
 $defaultConfig = array(	
-						'AuxConfig' => array(	'handler_script' => "index.php",
-												'enable_url_rewrite' => 'ON',
-												'source_link_style' => 'nice',
-												'output_link_style' => 'nice',
-												'site_path' => '/'),
+						'AuxConfig' => array(	
+												'enableUrlRewrite' => true,
+												'sitePath' => '/',
+												'levels' => array(
+															'module',
+															'page',
+															'subpage',
+															'puk',
+															'micropage')
+								),
 						'Objects' => array(	'rewriteURL' => 'rewriteURL'  ),
 						'Hooks' => array(  'BeforeRequestParserStep2' => 'ParseURL'  )
 					);

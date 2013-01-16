@@ -7,7 +7,8 @@ class Conversation{
 	public $interlocutorId;
 	public $interlocutor;
 	public $lastMsgDate;
-	public $read = 0;
+	public $read = 1;
+	public $unreadCount = 0;
 	public $trashed = 0;
 	public $fetchFrom = null;
 	public $hasAttachment = 0;

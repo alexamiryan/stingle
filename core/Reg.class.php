@@ -16,9 +16,6 @@ class Reg
 		if(empty($key)){
 			throw new InvalidArgumentException("\$key have to be non empty string.");
 		}
-		if($value === ''){
-			throw new InvalidArgumentException("\$value have to be non empty mixed variable.");
-		}
 		if(!$override and isset(static::$reg[$key])){
 			throw new RuntimeException("Key $key is already registered in registry.");
 		}
@@ -30,7 +27,7 @@ class Reg
 	 * 
 	 * @param string $key
 	 * @param bool $throwException
-	 * @return PackageManager|MysqlQuery|UserManagement|LanguageManager|Nav|SmartyWrapper|FormKey
+	 * @return PackageManager|MysqlQuery|MySqlDatabase|UserManager|User|LanguageManager|Nav|SmartyWrapper|FormKey
 	 */
 	public static function get($key){
 		if(!static::isRegistered($key)){

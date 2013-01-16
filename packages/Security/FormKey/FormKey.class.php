@@ -14,13 +14,6 @@ class FormKey {
 		}
     }  
 
-    private function genKey(){
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $uniqueid = uniqid(mt_rand(), true);  
-
-        return md5($ip . $uniqueid);
-    }
-
     private function cleanupOldKeys(){
     	foreach($this->issuedKeys as $position => $keyArray){
     		if(time()-$keyArray[1] > $this->keyTimeout){
@@ -30,7 +23,7 @@ class FormKey {
     }
 
     public function getKey(){
-       	$newKey = $this->genKey();
+       	$newKey = Crypto::secureRandom(256);
        	array_push($this->issuedKeys, array($newKey, time()));  
         
         return $newKey;  

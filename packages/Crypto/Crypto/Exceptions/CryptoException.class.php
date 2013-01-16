@@ -1,0 +1,3 @@
+<?
+class CryptoException extends RuntimeException{ }
+?>

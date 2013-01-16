@@ -6,7 +6,7 @@ class JSON
 	 * @param array $array
 	 */
 	public static function jsonOutput($array){
-		$smartyConfig = ConfigManager::getConfig("Smarty");
+		$smartyConfig = ConfigManager::getConfig("Output", "Smarty");
 		
 		Reg::get($smartyConfig->Objects->Smarty)->disableOutput();
 		

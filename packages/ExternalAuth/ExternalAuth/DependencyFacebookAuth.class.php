@@ -2,8 +2,8 @@
 class DependencyExternalkAuth extends Dependency
 {
 	public function __construct(){
-		$this->addPackage("Db");
-		$this->addPackage("User");
+		$this->addPlugin("Db");
+		$this->addPlugin("User");
 	}
 }
 ?>

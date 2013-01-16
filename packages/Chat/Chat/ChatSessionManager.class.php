@@ -137,15 +137,13 @@ class ChatSessionManager extends DbAccessor
 		if(empty($invitedUserId) or !is_numeric($invitedUserId)){
 			throw new InvalidArgumentException("Invalid invitedUser specified!");
 		}
-		
-		$this->query->exec("	INSERT IGNORE INTO `".Tbl::get('TBL_CHAT_SESSIONS')."`
-										(
-											`inviter_user_id`, 
-											`invited_user_id`)
-								VALUES	(
-											'$inviterUserId', 
-											'$invitedUserId'
-										)");
+		$qb = new QueryBuilder();
+		$qb->insertIgnore(Tbl::get('TBL_CHAT_SESSIONS'))
+			->values(array(
+							'inviter_user_id' => $inviterUserId,
+							'invited_user_id' => $invitedUserId
+			));
+		$this->query->exec($qb->getSQL());
 		
 		return $this->query->getLastInsertId();
 	}
@@ -154,31 +152,42 @@ class ChatSessionManager extends DbAccessor
 		if(empty($sessionId) or !is_numeric($sessionId)){
 			throw new InvalidArgumentException("Invalid session ID specified!");
 		}
-		
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` WHERE `id`='{$sessionId}'");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_CHAT_SESSIONS'))
+			->where($qb->expr()->equal(new Field('id'), $sessionId));
+		$this->query->exec($qb->getSQL());
 	}
 	
 	public function closeSession(ChatSession $session, ChatUser $closerUser, $reason = null){
 		$updateReason = "";
-		if($reason !== null){
-			$updateReason = ", `closed_reason`='$reason'";
-			$session->closedReason = $reason;
-		}
 		
-		$this->query->exec("UPDATE `".Tbl::get('TBL_CHAT_SESSIONS')."` 
-								SET 	`closed` = '".static::CLOSED_STATUS_YES."', 
-									 	`closed_date` = NOW(), 
-										`closed_by` = '{$closerUser->userId}'$updateReason 
-								WHERE `id`='{$session->id}'");
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_CHAT_SESSIONS'))
+			->set(new Field('closed'), static::CLOSED_STATUS_YES)
+			->set(new Field('closed_date'), new Func('NOW'))
+			->set(new Field('closed_by'), $closerUser->userId)
+			->where($qb->expr()->equal(new Field('id'), $session->id));
+		if($reason !== null){
+			$qb->set(new Field('closed_reason'), $reason);
+			$session->closedReason = $reason;
+		}	
+		$this->query->exec($qb->getSQL());
 		
 		$session->closed = static::CLOSED_STATUS_YES;
 		$session->closedBy = $closerUser->userId;
 	}
 	
 	public function clearTimedOutSessions(){
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_CHAT_SESSIONS')."` 
-								WHERE 	`closed` = 1 AND
-										(now() - `closed_date`) >= ".($this->sessionClearTimeout * 60));
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_CHAT_SESSIONS'))
+			->where($qb->expr()->equal(new Field('closed'), 1))
+			->andWhere(
+						$qb->expr()->greaterEqual(
+								$qb->expr()->diff(new Func('NOW'), new Field('closed_date')),
+								$qb->expr()->prod($this->sessionClearTimeout, 60)
+						 ));
+						 
+		$this->query->exec($qb->getSQL());
 		return $this->query->affected();
 	}
 }

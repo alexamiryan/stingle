@@ -1,5 +1,5 @@
 <?
 $defaultConfig = array(	
-						'Hooks' => array(	'InitEnd' => 'LogRequest' )
+						'Hooks' => array(	'AfterOutput' => 'LogRequest' )
 					);
 ?>

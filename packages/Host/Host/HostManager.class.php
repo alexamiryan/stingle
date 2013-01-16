@@ -1,9 +1,76 @@
 <?
 class HostManager{
 	
+	public static function updateHost(Host $host){
+		if(empty($host->id)){
+			throw new InvalidArgumentException("HostId is empty!");
+		}
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_HOSTS', 'Host'))
+			->set(new Field('host'), $host->host)
+			->set(new Field('subdomain'), $host->subdomain)
+			->where($qb->expr()->equal(new Field('id'), $host->id));
+
+		$sql = MySqlDbManager::getQueryObject();
+		$sql->exec($qb->getSQL());	
+	}
+	
+	public static function deleteHost(Host $host){
+		if(empty($host->id)){
+			throw new InvalidArgumentException("HostId is empty!");
+		}
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_HOSTS', 'Host'))
+			->where($qb->expr()->equal(new Field('id'), $host->id));
+		
+		$sql = MySqlDbManager::getQueryObject();
+		$sql->exec($qb->getSQL());
+	}
+	
+	public static function getHostById($hostId, $cacheMinutes = null){
+		$sql = MySqlDbManager::getQueryObject();
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_HOSTS', 'Host'))
+			->where($qb->expr()->equal(new Field('id'), $hostId));
+
+		$sql->exec($qb->getSQL(), $cacheMinutes);
+		if($sql->countRecords()){
+			$data = $sql->fetchRecord();
+			$host = new Host();
+			Host::setData($data, $host);
+			return $host;
+		}
+		throw new RuntimeException("There is no such host by id(".$hostId.")");
+	}
+	
+	public static function addHost(Host $host){
+		if(empty($host->host)){
+			throw new InvalidArgumentException("Host name is empty!");
+		}
+		$values = array( "host" => $host->host);
+		if(!empty($host->subdomain)){
+			$values["subdomain"] = $host->subdomain;
+		}
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_HOSTS', 'Host'))
+			->values($values);
+		$sql = MySqlDbManager::getQueryObject();
+
+		$sql->exec($qb->getSQL());
+		
+		$host->id = $sql->getLastInsertId();
+	}
+	
 	public static function getHostByName($hostName, $cacheMinutes = null){
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS', 'Host')  ."` WHERE `host` = '{$hostName}'", $cacheMinutes);
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_HOSTS', 'Host'))
+			->where($qb->expr()->equal(new Field('host'), $hostName));
+		
+		$sql->exec($qb->getSQL(), $cacheMinutes);
 		if($sql->countRecords()){
 			$data = $sql->fetchRecord();
 			$host = new Host();
@@ -16,7 +83,12 @@ class HostManager{
 			$parentHostName = array_pop($explodedArray);
 			$wildcardHostName = "*.". $parentHostName;
 			
-			$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS', 'Host')  ."` WHERE `host` = '{$wildcardHostName}'", $cacheMinutes);
+			$qb = new QueryBuilder();
+			$qb->select(new Field('*'))
+				->from(Tbl::get('TBL_HOSTS', 'Host'))
+				->where($qb->expr()->equal(new Field('host'), $wildcardHostName));
+			
+			$sql->exec($qb->getSQL(), $cacheMinutes);
 			if($sql->countRecords()){
 				$data = $sql->fetchRecord();
 				$data['host'] = $originalHostName;
@@ -34,10 +106,21 @@ class HostManager{
 	 * Get all hosts
 	 *@return array Set of Host objects
 	 */
-	public static function getAllHosts($cacheMinutes = null){
+	public static function getAllHosts(MysqlPager $pager = null, $cacheMinutes = null){
 		$hosts = array();
 		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS', 'Host')."`", $cacheMinutes);
+		
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))->from(Tbl::get('TBL_HOSTS', 'Host'));
+		
+		if($pager !== null){
+			$sql = $pager->executePagedSQL($qb->getSQL(), $cacheMinutes);
+		}
+		else{
+			$sql->exec($qb->getSQL(), $cacheMinutes);
+		}
+		
 		while(($host_data = $sql->fetchRecord()) != false){
 			$h = new Host();
 			Host::setData($host_data, $h);

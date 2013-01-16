@@ -15,7 +15,13 @@ class Host{
 				throw new InvalidIntegerArgumentException("host_id argument should be an integer.");
 			}
 			$sql = MySqlDbManager::getQueryObject($dbInstanceKey);
-			$sql->exec("SELECT * FROM `".Tbl::get('TBL_HOSTS') ."` WHERE `id` = '{$host_id}'", $cacheMinutes);
+			
+			$qb = new QueryBuilder();
+			$qb->select(new Field('*'))
+				->from(Tbl::get('TBL_HOSTS'))
+				->where($qb->expr()->equal(new Field('id'), $host_id));
+			
+			$sql->exec($qb->getSQL(), $cacheMinutes);
 			if($sql->countRecords()){
 				$res = $sql->fetchRecord();
 				static::setData($res, $this);

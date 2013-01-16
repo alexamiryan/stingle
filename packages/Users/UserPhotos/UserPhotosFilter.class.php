@@ -26,12 +26,12 @@ class UserPhotosFilter extends Filter {
 		return $this;
 	}
 	
-	public function setApprovedStatus($status){
-		if(!is_numeric($status)){
-			throw new InvalidIntegerArgumentException("\$state have to be integer");
+	public function setStatus($status){
+		if(!in_array($status, UserPhotoManager::getConstsArray("MODERATION_STATUS"))){
+			throw new InvalidIntegerArgumentException("Invalid \$status given");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("approved", "up"), $status));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("status", "up"), $status));
 		return $this;
 	}
 	

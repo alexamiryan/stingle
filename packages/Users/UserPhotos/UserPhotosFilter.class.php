@@ -26,12 +26,12 @@ class UserPhotosFilter extends Filter {
 		return $this;
 	}
 	
-	public function setApprovedStatus($status){
-		if(!is_numeric($status)){
-			throw new InvalidIntegerArgumentException("\$state have to be integer");
+	public function setStatus($status){
+		if(!in_array($status, UserPhotoManager::getConstsArray("MODERATION_STATUS"))){
+			throw new InvalidIntegerArgumentException("Invalid \$status given");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("approved", "up"), $status));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("status", "up"), $status));
 		return $this;
 	}
 	
@@ -59,6 +59,14 @@ class UserPhotosFilter extends Filter {
 	
 	public function setOrderDefaultDesc(){
 		$this->setOrder(new Field("default", "up"), MySqlDatabase::ORDER_DESC);
+	}
+	
+	public function setOrderIdAsc(){
+		$this->setOrder(new Field("id", "up"), MySqlDatabase::ORDER_ASC);
+	}
+	
+	public function setOrderIdDesc(){
+		$this->setOrder(new Field("id", "up"), MySqlDatabase::ORDER_DESC);
 	}
 }
 ?>

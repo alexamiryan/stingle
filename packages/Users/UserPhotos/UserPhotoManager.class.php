@@ -28,6 +28,7 @@ class UserPhotoManager extends DbAccessor
 		if(isset($this->config->maxPhotosCount) and $this->config->maxPhotosCount > 0){
 			$filter = new UserPhotosFilter();
 			$filter->setUserId($userId);
+			$filter->setStatusNotEqual(UserPhotoManager::MODERATION_STATUS_DECLINED);
 				
 			$userPhotos = $this->getPhotos($filter);
 			if(count($userPhotos) >= $this->config->maxPhotosCount){
@@ -44,9 +45,12 @@ class UserPhotoManager extends DbAccessor
 			$image = ImageUploader::upload($file);
 		}
 		
-		$this->query->exec("INSERT INTO `".Tbl::get('TBL_USERS_PHOTOS')."` 
-													(`user_id`, `filename`) 
-													VALUES ('$userId', '".$image->fileName."')");
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_USERS_PHOTOS'))
+			->values(array("user_id" => $userId, "filename" => $image->fileName));
+		
+		$this->query->exec($qb->getSQL());
+		
 		$photoId = $this->query->getLastInsertId();
 		
 		return $photoId;
@@ -69,7 +73,7 @@ class UserPhotoManager extends DbAccessor
 			
 			$filter = new UserPhotosFilter();
 			$filter->setUserId($userId);
-			$filter->setStatus(static::MODERATION_STATUS_APPROVED);
+			$filter->setStatusEqual(static::MODERATION_STATUS_APPROVED);
 			
 			$userPhotos = $this->getPhotos($filter);
 			
@@ -83,7 +87,7 @@ class UserPhotoManager extends DbAccessor
 	public function isUserHasDefaultPhoto($userId){
 		$filter = new UserPhotosFilter();
 		$filter->setUserId($userId);
-		$filter->setStatus(static::MODERATION_STATUS_APPROVED);
+		$filter->setStatusEqual(static::MODERATION_STATUS_APPROVED);
 		$filter->setDefaultStatus(static::STATUS_DEFAULT_YES);
 		
 		return (count($this->getPhotos($filter)) != 0);
@@ -92,7 +96,7 @@ class UserPhotoManager extends DbAccessor
 	public function isUserHasPhoto($userId){
 		$filter = new UserPhotosFilter();
 		$filter->setUserId($userId);
-		$filter->setStatus(static::MODERATION_STATUS_APPROVED);
+		$filter->setStatusEqual(static::MODERATION_STATUS_APPROVED);
 		
 		return (count($this->getPhotos($filter)) != 0);
 	}
@@ -118,13 +122,21 @@ class UserPhotoManager extends DbAccessor
 			throw new UserPhotosException("Unapproved photo can't be set as default.", static::EXCEPTION_UNAPROVED_TO_DEFAULT);
 		}
 		
-		$this->query->exec("UPDATE `".Tbl::get('TBL_USERS_PHOTOS')."` 
-								SET `default` = '".static::STATUS_DEFAULT_NO."'
-								WHERE `user_id` = '{$photo->userId}' and `default` = '".static::STATUS_DEFAULT_YES."'");
-		
-		$this->query->exec("UPDATE `".Tbl::get('TBL_USERS_PHOTOS')."` 
-								SET `default` = '".static::STATUS_DEFAULT_YES."'
-								WHERE `id` = '{$photo->id}' LIMIT 1");
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_USERS_PHOTOS'))
+			->set(new Field('default'), static::STATUS_DEFAULT_NO)
+			->where($qb->expr()->equal(new Field('user_id'), $photo->userId))
+			->andWhere($qb->expr()->equal(new Field('default'), static::STATUS_DEFAULT_YES));
+
+		$this->query->exec($qb->getSQL());
+
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_USERS_PHOTOS'))
+			->set(new Field('default'), static::STATUS_DEFAULT_YES)
+			->where($qb->expr()->equal(new Field('id'), $photo->id))
+			->limit(1);
+
+		$this->query->exec($qb->getSQL());	
 	}
 	
 	public function deletePhoto(UserPhoto $photo, $uploadDir = null){
@@ -148,8 +160,12 @@ class UserPhotoManager extends DbAccessor
 				deleteCropSettings($photo->fileName);
 		}
 		
-		$this->query->exec("DELETE FROM `".Tbl::get('TBL_USERS_PHOTOS')."` 
-								WHERE `id` = '{$photo->id}' LIMIT 1");
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_USERS_PHOTOS'))
+			->where($qb->expr()->equal(new Field('id'), $photo->id))
+			->limit(1);
+		
+		$this->query->exec($qb->getSQL());
 		
 		$this->correctDefaultPhoto($photo->userId);
 	}
@@ -168,6 +184,8 @@ class UserPhotoManager extends DbAccessor
 			->set(new Field('modification_date'), new Func('NOW'))
 			->where($qb->expr()->equal(new Field('id'), $photo->id))
 			->limit(1);
+
+		$this->query->exec($qb->getSQL());	
 		
 		$this->correctDefaultPhoto($photo->userId);
 	}

@@ -26,12 +26,21 @@ class UserPhotosFilter extends Filter {
 		return $this;
 	}
 	
-	public function setStatus($status){
+	public function setStatusEqual($status){
 		if(!in_array($status, UserPhotoManager::getConstsArray("MODERATION_STATUS"))){
 			throw new InvalidIntegerArgumentException("Invalid \$status given");
 		}
 		
 		$this->qb->andWhere($this->qb->expr()->equal(new Field("status", "up"), $status));
+		return $this;
+	}
+	
+	public function setStatusNotEqual($status){
+		if(!in_array($status, UserPhotoManager::getConstsArray("MODERATION_STATUS"))){
+			throw new InvalidIntegerArgumentException("Invalid \$status given");
+		}
+		
+		$this->qb->andWhere($this->qb->expr()->notEqual(new Field("status", "up"), $status));
 		return $this;
 	}
 	

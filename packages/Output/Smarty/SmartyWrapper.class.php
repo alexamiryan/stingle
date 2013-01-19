@@ -11,7 +11,6 @@ class SmartyWrapper extends Smarty {
 	protected $wrappersDir = 'wrappers/';
 
 	
-	private $nav;
 	private $includePath;
 	private $fileToDisplay;
 	private $overridedFileToDisplay;
@@ -170,7 +169,6 @@ class SmartyWrapper extends Smarty {
 		if($this->isInitialized){
 			throw new RuntimeException("Smarty is already initilized");
 		}
-		$this->nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
 
 		$this->loadConfig($config);
 
@@ -299,6 +297,7 @@ class SmartyWrapper extends Smarty {
 	public function findFilePath($fileName, $alternatePath = null){
 		$templatePathPrefix = $this->template_dir . $this->defaultRelativeTemplatesPath;
 		$currentTemplate = $this->template;
+		$nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
 		
 		// while loop for iterating through templates hierarchy
 		while(true){
@@ -307,11 +306,11 @@ class SmartyWrapper extends Smarty {
 			$pagesPath = $this->pagesPath;
 			// Go up
 			for($i = count($levels)-1; $i >= 1 ; $i--){
-				if(isset($this->nav->{$levels[$i]}) and !empty($this->nav->{$levels[$i]})){
+				if(isset($nav->{$levels[$i]}) and !empty($nav->{$levels[$i]})){
 					$pagesPath = $this->pagesPath;
 					// Build module path for current nav level
 					for($j=0; $j<$i; $j++){
-						$pagesPath .= $this->nav->{$levels[$j]} . '/';
+						$pagesPath .= $nav->{$levels[$j]} . '/';
 					}
 					
 					// Check if there is file in this level
@@ -669,7 +668,9 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		$navConfig = ConfigManager::getConfig("SiteNavigation")->AuxConfig;
-		if(isset($this->nav->{$navConfig->actionName}) and !empty($this->nav->{$navConfig->actionName})){
+		$nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
+		
+		if(isset($nav->{$navConfig->actionName}) and !empty($nav->{$navConfig->actionName})){
 			return;
 		}
 		
@@ -698,9 +699,9 @@ class SmartyWrapper extends Smarty {
 		$this->includePath = $this->pagesPath;
 		for($i = 0; $i < count($levels)-1; $i++){
 			$level = $levels[$i];
-			if(isset($this->nav->$level) and !empty($this->nav->$level)){
-				$this->includePath .= $this->nav->$level . '/';
-				if(isset($levels[$i+1]) and !is_dir($this->getFilePathFromTemplate($this->includePath . $this->nav->$levels[$i+1], true))){
+			if(isset($nav->$level) and !empty($nav->$level)){
+				$this->includePath .= $nav->$level . '/';
+				if(isset($levels[$i+1]) and !is_dir($this->getFilePathFromTemplate($this->includePath . $nav->$levels[$i+1], true))){
 					break;
 				}
 			}
@@ -708,7 +709,7 @@ class SmartyWrapper extends Smarty {
 		
 		$foundLevelsCount = $i;
 
-		$this->fileToDisplay = $this->includePath . "{$this->nav->{$levels[$i+1]}}.tpl";
+		$this->fileToDisplay = $this->includePath . "{$nav->{$levels[$i+1]}}.tpl";
 		
 		if(empty($this->overridedFileToDisplay)){
 			$this->fileToDisplay = $this->getFilePathFromTemplate($this->fileToDisplay);
@@ -718,7 +719,7 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		// Check if page exists and if not show 404 error page
-		$requiredLevelsCount = $this->nav->existentLevelsCount - 2;
+		$requiredLevelsCount = $nav->existentLevelsCount - 2;
 		if(empty($this->fileToDisplay) or $foundLevelsCount < $requiredLevelsCount){
 			if($return == false){
 				header("HTTP/1.0 404 Not Found");

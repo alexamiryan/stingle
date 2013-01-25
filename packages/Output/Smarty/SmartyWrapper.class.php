@@ -455,7 +455,7 @@ class SmartyWrapper extends Smarty {
 	
 	private function getJsFilePath($fileName){
 		$resultingFileName = $fileName;
-		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
+		if((strpos($fileName, "https://") === false and strpos($fileName, "http://") === false) and substr($fileName,0,1) != "/"){
 			$resultingFileName = SITE_PATH . $this->findFilePath('js/' . $fileName);
 			if($resultingFileName === false){
 				throw new TemplateFileNotFoundException("JS file '$fileName' not found.");

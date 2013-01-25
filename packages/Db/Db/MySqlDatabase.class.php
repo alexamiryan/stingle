@@ -7,7 +7,7 @@
  * @subpackage MySQL
  */
 
-class MySqlDatabase
+class MySqlDatabase extends Model
 {
 
 	const JOIN_STANDART = "JOIN";

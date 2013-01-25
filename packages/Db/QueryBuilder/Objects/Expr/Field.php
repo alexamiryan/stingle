@@ -16,7 +16,7 @@ class Field extends Base{
 	
 	public function __toString(){
 		$field = $this->_field;
-		if($this->_field != "*"){
+		if($this->_field != "*" and !is_a($this->_field, 'QBPart') and !is_a($this->_field, 'QueryBuilder')){
 			$field = "`$this->_field`";
 		}
 		

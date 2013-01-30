@@ -5,6 +5,7 @@ class LoaderSiteNavigation extends Loader{
 		require_once ('Nav.class.php');
 		require_once ('RequestParser.class.php');
 		require_once ('Controller.class.php');
+		require_once ('Helpers/helpers.php');
 	}
 	
 	protected function loadController(){

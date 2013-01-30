@@ -658,6 +658,82 @@ class Gps extends DbAccessor
 		//////////////////////////////////////////////////////
 		return null;		
 	}
+	
+	/**
+	 * Function returns array of nodes by given node's latitude and longitude. 
+	 * $distance is a max distance from center point to get nodes.
+	 * $bounding_distance is a measurement if the square in which we seek for the nodes. 
+	 * This is done for performance for not to calculate distances for all nodes in DB.
+	 * 
+	 * @param array $node array("lat" => integer, "lng" => integer, optional("id" => nodId))
+	 * @param Integer $distance
+	 * @param Integer $bounding_distance
+	 * @throws InvalidIntegerArgumentException
+	 * @return Array|boolean
+	 */
+	public function getNearestNodes($node, $distance = 10, $bounding_distance = 3){
+		if(empty($node)){
+			throw new InvalidIntegerArgumentException("Node is mepty");
+		}
+		$lat = $node["lat"];
+		$long = $node["lng"];
+		$qb = new QueryBuilder();
+		$qb->select('*', 
+					new Field(
+						$qb->expr()->prod(
+							$qb->expr()->prod(
+								$qb->expr()->quot( 
+									$qb->expr()->prod(
+										new Func(
+											'ACOS',
+											$qb->expr()->sum(
+												$qb->expr()->prod(
+													new Func('SIN', $qb->expr()->quot( $qb->expr()->prod($lat, new Func('PI')), 180)),
+													new Func('SIN', $qb->expr()->quot( $qb->expr()->prod(new Field('lat'), new Func('PI')), 180))
+												),
+												$qb->expr()->prod(
+													$qb->expr()->prod(
+														new Func('COS', $qb->expr()->quot( $qb->expr()->prod($lat, new Func('PI')), 180)),
+														new Func('COS', $qb->expr()->quot( $qb->expr()->prod(new Field('lat'), new Func('PI')), 180))
+													),
+													new Func('COS', $qb->expr()->quot( $qb->expr()->prod($qb->expr()->diff($long, new Field('lng')), new Func('PI')), 180))
+												)
+											)
+										),
+										180
+									),
+									new Func('PI')
+								),
+								60
+							),
+							1.1515
+						),
+						null,
+						'distance'
+					)
+				)
+			->from(Tbl::get('TBL_TREE'), 'tree')
+			->leftJoin(Tbl::get('TBL_ZIP_CODES'), 'zips', $qb->expr()->equal(new Field('gps_id', 'zips'), new Field('id', 'tree')))
+			->where($qb->expr()->between(new Field('lat'), 
+											$qb->expr()->diff($lat, $bounding_distance), 
+											$qb->expr()->sum($lat, $bounding_distance)))
+			->andWhere($qb->expr()->between(new Field('lng'), 
+											$qb->expr()->diff($long, $bounding_distance), 
+											$qb->expr()->sum($long, $bounding_distance)))
+			->andWhere($qb->expr()->in(new Field('type_id'), array(30,35,40)))
+			->having($qb->expr()->less(new Field('distance'), $distance))
+			->orderBy(new Field('distance'), "ASC");
+
+		if(!empty($node["id"])){
+			$qb->andWhere($qb->expr()->notEqual(new Field('id'), $node["id"]));
+		}	
+		
+		$this->query->exec($qb->getSQL());
+		if($this->query->countRecords() > 0){
+			return $this->query->fetchRecords();
+		}
+		return false;
+	}
 
 	///////////END OF PUBLIC PART///////////
 

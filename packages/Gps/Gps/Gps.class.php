@@ -734,6 +734,23 @@ class Gps extends DbAccessor
 		}
 		return false;
 	}
+	
+	public function getNodeByGpsId($gpsId){
+		if(empty($gpsId)){
+			throw new InvalidArgumentException("gpsId is empty");
+		}
+		$qb = new QueryBuilder();
+		$qb->select('*')
+			->from(Tbl::get('TBL_TREE'), 'tree')
+			->leftJoin(Tbl::get('TBL_ZIP_CODES'), 'zips', $qb->expr()->equal(new Field('gps_id', 'zips'), new Field('id', 'tree')))
+			->where($qb->expr()->equal(new Field('id'), $gpsId));
+		
+		$this->query->exec($qb->getSQL());
+		if($this->query->countRecords() > 0){
+			return $this->query->fetchRecord();
+		}
+		return false;
+	}
 
 	///////////END OF PUBLIC PART///////////
 

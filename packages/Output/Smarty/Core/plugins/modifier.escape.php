@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * 
@@ -111,4 +111,3 @@ function smarty_modifier_escape($string, $esc_type = 'html', $char_set = SMARTY_
     } 
 } 
 
-?>

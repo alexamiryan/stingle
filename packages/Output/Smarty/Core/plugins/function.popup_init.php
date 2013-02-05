@@ -1,4 +1,4 @@
-<?
+<?php
 /**
   * Smarty plugin
   *
@@ -36,4 +36,3 @@ function smarty_function_popup_init($params, $template)
     }
 }
 
-?>

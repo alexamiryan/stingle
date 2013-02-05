@@ -2,19 +2,19 @@
 class LoaderChat extends Loader{
 	
 	protected function includes(){
-		require_once ('ChatInvitation.class.php');
-		require_once ('ChatInvitationManager.class.php');
-		require_once ('ChatInvitationsFilter.class.php');
-		require_once ('ChatMessage.class.php');
-		require_once ('ChatMessageFilter.class.php');
-		require_once ('ChatMessageManager.class.php');
-		require_once ('ChatSession.class.php');
-		require_once ('ChatSessionFilter.class.php');
-		require_once ('ChatSessionManager.class.php');
-		require_once ('ChatUser.class.php');
-		require_once ('ChatInvitationException.class.php');
-		require_once ('ChatSessionException.class.php');
-		require_once ('ChatComet.class.php');
+		require_once ('Objects/ChatInvitation.class.php');
+		require_once ('Managers/ChatInvitationManager.class.php');
+		require_once ('Filters/ChatInvitationsFilter.class.php');
+		require_once ('Objects/ChatMessage.class.php');
+		require_once ('Filters/ChatMessageFilter.class.php');
+		require_once ('Managers/ChatMessageManager.class.php');
+		require_once ('Objects/ChatSession.class.php');
+		require_once ('Filters/ChatSessionFilter.class.php');
+		require_once ('Managers/ChatSessionManager.class.php');
+		require_once ('Objects/ChatUser.class.php');
+		require_once ('Exceptions/ChatInvitationException.class.php');
+		require_once ('Exceptions/ChatSessionException.class.php');
+		require_once ('Objects/ChatComet.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

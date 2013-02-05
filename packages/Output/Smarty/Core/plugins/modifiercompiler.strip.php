@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -30,4 +30,3 @@ function smarty_modifiercompiler_strip($params, $compiler)
     return "preg_replace('!\s+!', {$params[1]},{$params[0]})";
 } 
 
-?>

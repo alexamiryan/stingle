@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * 
@@ -153,4 +153,3 @@ function smarty_function_mailto($params, $template)
     } 
 } 
 
-?>

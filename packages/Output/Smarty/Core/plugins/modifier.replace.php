@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * @package Smarty
@@ -48,4 +48,3 @@ function smarty_modifier_replace($string, $search, $replace)
     } 
 } 
 
-?>

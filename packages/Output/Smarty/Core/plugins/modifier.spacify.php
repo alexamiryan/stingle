@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * @package Smarty
@@ -34,4 +34,3 @@ function smarty_modifier_spacify($string, $spacify_char = ' ')
     } 
 } 
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * 
@@ -174,4 +174,3 @@ function smarty_function_html_table_cycle($name, $var, $no)
     return ($ret) ? ' ' . $ret : '';
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -102,5 +102,3 @@ function smarty_function_cycle($params, $template)
     
     return $retval;
 }
-
-?>

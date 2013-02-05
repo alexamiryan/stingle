@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty shared plugin
  *
@@ -40,4 +40,3 @@ function smarty_make_timestamp($string)
     }
 }
 
-?>

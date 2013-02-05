@@ -1,15 +1,15 @@
 <?php
 class LoaderTexts extends Loader{
 	protected function includes(){
-		require_once ('TextsGroup.class.php');
-		require_once ('Text.class.php');
-		require_once ('TextValue.class.php');
-		require_once ('TextAlias.class.php');
-		require_once ('TextsGroupManager.class.php');
-		require_once ('TextsManager.class.php');
-		require_once ('TextsValuesManager.class.php');
-		require_once ('TextsValuesFilter.class.php');
-		require_once ('TextsAliasManager.class.php');
+		require_once ('Objects/TextsGroup.class.php');
+		require_once ('Objects/Text.class.php');
+		require_once ('Objects/TextValue.class.php');
+		require_once ('Objects/TextAlias.class.php');
+		require_once ('Managers/TextsGroupManager.class.php');
+		require_once ('Managers/TextsManager.class.php');
+		require_once ('Managers/TextsValuesManager.class.php');
+		require_once ('Filters/TextsValuesFilter.class.php');
+		require_once ('Managers/TextsAliasManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

@@ -1,9 +1,9 @@
 <?php
 class LoaderIpFilter extends Loader{
 	protected function includes(){
-		require_once ('IPBlockedException.class.php');
-		require_once ('IpFilter.class.php');
-		require_once ('IpFilterManager.class.php');
+		require_once ('Exceptions/IPBlockedException.class.php');
+		require_once ('Managers/IpFilter.class.php');
+		require_once ('Managers/IpFilterManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

@@ -1,4 +1,4 @@
-<?
+<?php
 class UserPermissionsFilter extends MergeableFilter{
 	
 	public function __construct(){
@@ -53,4 +53,3 @@ class UserPermissionsFilter extends MergeableFilter{
 				$this->qb->expr()->equal(new Field('id', $this->primaryTableAlias), new Field('permission_id', 'groups_perms')));
 	}
 }
-?>

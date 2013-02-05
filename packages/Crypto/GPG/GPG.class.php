@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Wrapper for GPG functionality
  *
@@ -175,4 +175,3 @@ class GPG
 		return $result;
 	}
 }
-?>

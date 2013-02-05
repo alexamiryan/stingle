@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderSecurity extends Loader{
 	protected function includes(){
 		require_once ('SecurityException.class.php');
@@ -12,4 +12,3 @@ class LoaderSecurity extends Loader{
 		}
 	}
 }
-?>

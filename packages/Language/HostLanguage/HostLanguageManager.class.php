@@ -1,4 +1,4 @@
-<?
+<?php
 class HostLanguageManager extends LanguageManager {
 
 	protected $host;//Host Object
@@ -302,4 +302,3 @@ class HostLanguageManager extends LanguageManager {
 		$sql->exec($qb->getSQL());
 	}
 }
-?>

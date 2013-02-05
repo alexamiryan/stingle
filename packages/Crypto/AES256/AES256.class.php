@@ -1,4 +1,4 @@
-<?
+<?php
 class AES256
 {
 	public static function encrypt($string, $key = null, $salt = null, $iv = null){
@@ -72,4 +72,3 @@ class AES256
 		return $decryptedString;
 	} 
 }
-?>

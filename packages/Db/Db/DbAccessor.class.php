@@ -1,4 +1,4 @@
-<?
+<?php
 abstract class DbAccessor extends Model{
 	
 	/**
@@ -67,4 +67,3 @@ abstract class DbAccessor extends Model{
 		return $this->query->getLogging();
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class ConversationManager extends DbAccessor{
 	
 	const TBL_CONVERSATIONS 			= "conversations";
@@ -775,4 +775,3 @@ class ConversationManager extends DbAccessor{
 		return $message;
 	}
 }
-?>

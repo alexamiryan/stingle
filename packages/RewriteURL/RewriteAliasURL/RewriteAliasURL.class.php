@@ -1,4 +1,4 @@
-<?
+<?php
 class RewriteAliasURL extends RewriteURL{
 	
 	private $_aliasMap;
@@ -51,4 +51,3 @@ class RewriteAliasURL extends RewriteURL{
 		return $this->addAliasToLink($strUrl);
 	}
 }
-?>

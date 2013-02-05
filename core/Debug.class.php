@@ -1,4 +1,4 @@
-<?
+<?php
 class Debug
 {
 	private static $mode;
@@ -21,4 +21,3 @@ class Debug
 		static::$mode = $mode;
 	}
 }
-?>

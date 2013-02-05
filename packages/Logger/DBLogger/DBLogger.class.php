@@ -1,4 +1,4 @@
-<?
+<?php
 class DBLogger extends Logger{
 
 	const TBL_REQUEST_LOG = 'log_requests';
@@ -43,4 +43,3 @@ class DBLogger extends Logger{
 		Reg::get('sql')->exec($qb->getSQL());
 	}
 }
-?>

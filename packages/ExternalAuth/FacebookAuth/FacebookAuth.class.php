@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Class does Authorization against facebook.
  * 
@@ -428,4 +428,3 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 							 WHERE `ext_user_id` = {$extUser->id}");
 	}
 }
-?>

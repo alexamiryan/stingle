@@ -1,4 +1,4 @@
-<?
+<?php
 class ConversationAttachmentManager extends DbAccessor{
 	
 	const TBL_CONVERSATION_ATTACHEMENTS		= "conversation_attachments";
@@ -215,4 +215,3 @@ class ConversationAttachmentManager extends DbAccessor{
 		return $attachment;
 	}
 }
-?>

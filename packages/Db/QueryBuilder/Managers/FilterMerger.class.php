@@ -1,4 +1,4 @@
-<?
+<?php
 class FilterMerger{
 	
 	private $mainFilter;
@@ -34,4 +34,3 @@ class FilterMerger{
 		$this->mainFilter->getQb()->andWhere($parts['where']);
 	}
 }
-?>

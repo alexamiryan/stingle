@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatSessionFilter extends Filter {
 	
 	public function __construct(){
@@ -123,4 +123,3 @@ class ChatSessionFilter extends Filter {
 		$this->setOrder(new Field("date", "chat_sess"), MySqlDatabase::ORDER_DESC);
 	}
 }
-?>

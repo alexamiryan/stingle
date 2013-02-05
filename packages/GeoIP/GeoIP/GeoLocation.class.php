@@ -1,4 +1,4 @@
-<?
+<?php
 class GeoLocation
 {
 	public $country;
@@ -8,4 +8,3 @@ class GeoLocation
 	public $longitude;
 	
 }
-?>

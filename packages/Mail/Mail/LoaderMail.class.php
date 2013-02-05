@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderMail extends Loader{
 	protected function includes(){
 		require_once ('Exceptions/MailException.class.php');
@@ -12,4 +12,3 @@ class LoaderMail extends Loader{
 		Reg::register($this->config->Objects->MailSender, new MailSender($this->config->AuxConfig));
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Class for verifying Yubico One-Time-Passcodes
  *
@@ -478,4 +478,4 @@ class Yubikey{
 		throw new YubikeyException('NO_VALID_ANSWER');
 	}
 }
-?>
+

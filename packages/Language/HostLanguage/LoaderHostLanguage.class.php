@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderHostLanguage extends Loader{
 	protected function includes(){
 		require_once ('HostLanguageManager.class.php');
@@ -13,4 +13,3 @@ class LoaderHostLanguage extends Loader{
 		$this->register(new HostLanguageManager(Reg::get($hostConfig->Objects->Host)));
 	}
 }
-?>

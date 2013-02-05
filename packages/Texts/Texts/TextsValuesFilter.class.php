@@ -1,4 +1,4 @@
-<?
+<?php
 class TextsValuesFilter extends Filter {
 	
 	public function __construct(){
@@ -63,4 +63,3 @@ class TextsValuesFilter extends Filter {
 	}
 	
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 abstract class Filter{
 	protected $qb;
 	
@@ -41,4 +41,3 @@ abstract class Filter{
 		$this->qb = $qb;
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class OTCConfig extends Config {
 	
 	/**
@@ -39,4 +39,3 @@ class OTCConfig extends Config {
 	 */
 	public $validityTime = null;
 }
-?>

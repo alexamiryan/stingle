@@ -1,4 +1,4 @@
-<?
+<?php
 class FileUploader
 {
 	public static function upload($file, $fileName = null, $uploadDir = null){
@@ -48,4 +48,3 @@ class FileUploader
 		@unlink($imagePath);
 	}
 }
-?>

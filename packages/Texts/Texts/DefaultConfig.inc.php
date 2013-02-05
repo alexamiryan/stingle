@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'Objects' => array(	
 											'TextsGroupManager' => 'textsGrpMgr',
@@ -13,4 +13,3 @@ $defaultConfig = array(
 												'TextsAliasManager' => -1
 											)
 					);
-?>

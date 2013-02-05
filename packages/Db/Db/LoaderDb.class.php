@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderDb extends Loader{
 	protected function includes(){
 		require_once ('MySqlDbManager.class.php');
@@ -24,4 +24,3 @@ class LoaderDb extends Loader{
 		$this->register($query);
 	}
 }
-?>

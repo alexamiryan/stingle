@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Return text for currect host/language
  *
@@ -20,4 +20,3 @@ function smarty_modifier_text($name, $group){
 		}
 	}
 }
-?>

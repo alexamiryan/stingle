@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatMessage
 {
 	public $id;
@@ -8,4 +8,3 @@ class ChatMessage
 	public $message;
 	public $is_system;	
 }
-?>

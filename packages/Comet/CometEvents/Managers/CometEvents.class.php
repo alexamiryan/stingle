@@ -1,4 +1,4 @@
-<?
+<?php
 class CometEvents extends DbAccessor{
 	const TBL_COMET_EVENTS = "comet_events";
 	
@@ -78,4 +78,3 @@ class CometEvents extends DbAccessor{
 		return $event;
 	}
 }
-?>

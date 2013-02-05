@@ -1,4 +1,4 @@
-<?
+<?php
 class IpFilter extends DbAccessor {
 	
 	const TBL_SECURITY_WHITELISTED_IPS	= "security_whitelisted_ips";
@@ -106,4 +106,3 @@ class IpFilter extends DbAccessor {
 		return false;
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * DKIM or DomainKeys config class 
  * @author user
@@ -54,4 +54,3 @@ class DKIMConfig extends Config
 	 */
 	public $identity = '';
 }
-?>

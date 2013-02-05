@@ -1,4 +1,4 @@
-<?
+<?php
 class TextValue
 {
 	public $id;
@@ -9,4 +9,3 @@ class TextValue
 	public $hostLanguageId;
 	public $display = 1;
 }
-?>

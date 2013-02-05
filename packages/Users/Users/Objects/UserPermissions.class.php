@@ -1,4 +1,4 @@
-<?
+<?php
 class UserPermissions{
 	private $permissionsList;
 	
@@ -30,4 +30,3 @@ class UserPermissions{
 		return $this->permissionsList;
 	}
 }
-?>

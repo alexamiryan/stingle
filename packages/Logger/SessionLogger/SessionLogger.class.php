@@ -1,4 +1,4 @@
-<?
+<?php
 class SessionLogger extends Logger
 {
 	private static $prefix = "slogger";
@@ -27,4 +27,3 @@ class SessionLogger extends Logger
 		$_SESSION[static::$prefix . $name] = array();
 	}
 }
-?>

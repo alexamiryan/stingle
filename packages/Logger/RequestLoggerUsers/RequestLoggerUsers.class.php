@@ -1,4 +1,4 @@
-<?
+<?php
 class RequestLoggerUsers extends DBLogger {
 
 	public static function logRequest($dbInstanceKey = null){
@@ -29,4 +29,3 @@ class RequestLoggerUsers extends DBLogger {
 		$sql->exec($qb->getSQL());
 	} 
 }
-?>

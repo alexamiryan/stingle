@@ -1,4 +1,4 @@
-<?
+<?php
 class UserPhoto
 {
 	public $id;
@@ -9,4 +9,3 @@ class UserPhoto
 	public $status;
 	public $modificationDate;
 }
-?>

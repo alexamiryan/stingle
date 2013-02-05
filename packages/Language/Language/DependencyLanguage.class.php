@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyLanguage extends Dependency
 {
 	public function __construct(){
@@ -6,4 +6,3 @@ class DependencyLanguage extends Dependency
 		$this->addPlugin("Pager", "MysqlPager");
 	}
 }
-?>

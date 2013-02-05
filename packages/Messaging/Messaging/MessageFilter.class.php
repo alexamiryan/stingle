@@ -1,4 +1,4 @@
-<?
+<?php
 class MessageFilter extends Filter {
 	
 	public function __construct($headersOnly = true){
@@ -133,4 +133,3 @@ class MessageFilter extends Filter {
 		$this->setOrder(new Field("date", "main"), MySqlDatabase::ORDER_DESC);
 	}
 }
-?>

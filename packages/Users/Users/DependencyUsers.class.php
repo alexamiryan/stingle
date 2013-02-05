@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyUsers extends Dependency
 {
 	public function __construct(){
@@ -8,4 +8,3 @@ class DependencyUsers extends Dependency
 		$this->addPlugin("Crypto");
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatComet extends CometChunk{
 	
 	protected $chatSessionUpdates = array();
@@ -278,4 +278,3 @@ class ChatComet extends CometChunk{
 		return $responseArray;
 	}
 }
-?>

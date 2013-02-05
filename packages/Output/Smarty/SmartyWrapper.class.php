@@ -1,4 +1,4 @@
-<?
+<?php
 class SmartyWrapper extends Smarty {
 
 	const PRIMARY = 0;
@@ -761,4 +761,3 @@ class SmartyWrapper extends Smarty {
 		}
 	}
 }
-?>

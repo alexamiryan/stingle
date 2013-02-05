@@ -1,4 +1,4 @@
-<?
+<?php
 class UserPhotosFilter extends Filter {
 	
 	public function __construct(){
@@ -78,4 +78,3 @@ class UserPhotosFilter extends Filter {
 		$this->setOrder(new Field("id", "up"), MySqlDatabase::ORDER_DESC);
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyPageInfo extends Dependency
 {
 	public function __construct(){
@@ -9,4 +9,3 @@ class DependencyPageInfo extends Dependency
 		$this->addPlugin("Language", "HostLanguage");
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class GeoIPGps
 {
 	protected $geoIP;
@@ -60,4 +60,3 @@ class GeoIPGps
 		return null;
 	}
 }
-?>

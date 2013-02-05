@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array(	'imageModels' => array(
 													/*
@@ -27,4 +27,3 @@ $defaultConfig = array(
 						),
 						'Objects' => array(	'ImageModificator' => 'imageMod' )
 );
-?>

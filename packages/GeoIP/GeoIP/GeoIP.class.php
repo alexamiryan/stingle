@@ -1,4 +1,4 @@
-<?
+<?php
 class GeoIP extends DbAccessor
 {
 	const TBL_BLOCKS = 'GeoIPBlocks';
@@ -107,4 +107,3 @@ class GeoIP extends DbAccessor
 		return false;
 	}
 }
-?>

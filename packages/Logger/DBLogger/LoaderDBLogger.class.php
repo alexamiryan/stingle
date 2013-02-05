@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderDBLogger extends Loader{
 	protected function includes(){
 		require_once ('DBLogger.class.php');
@@ -14,4 +14,3 @@ class LoaderDBLogger extends Loader{
 		}
 	}
 }
-?>

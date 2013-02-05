@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Mail Class
  * @author Aram Gevorgyan
@@ -156,4 +156,3 @@ class Mail{
 		}
 	}
 }
-?>

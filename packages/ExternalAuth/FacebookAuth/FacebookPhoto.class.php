@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Facebook's Photo class
  * 
@@ -37,4 +37,3 @@ class FacebookPhoto {
 	public $width = null;
 		
 	}
-?>

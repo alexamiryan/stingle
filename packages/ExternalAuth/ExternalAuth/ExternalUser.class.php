@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * 
  * Class ExternalUser is common ExternalUser Class for all social sites.
@@ -58,4 +58,3 @@ class ExternalUser{
 	public $otherFields = array();
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyConversations extends Dependency
 {
 	public function __construct(){
@@ -10,4 +10,3 @@ class DependencyConversations extends Dependency
 		$this->addPlugin("Comet", "Comet");
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderGeoIP extends Loader{
 	
 	protected function includes(){
@@ -14,4 +14,3 @@ class LoaderGeoIP extends Loader{
 		$this->register(new GeoIP());
 	}
 }
-?>

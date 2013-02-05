@@ -1,4 +1,4 @@
-<?
+<?php
 class OneTimeCodes extends DbAccessor {
 	
 	const TBL_ONE_TIME_CODES	= "security_one_time_codes";
@@ -206,4 +206,3 @@ class OneTimeCodes extends DbAccessor {
 		return $this->query->affected();
 	}
 }
-?>

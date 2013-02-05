@@ -1,4 +1,4 @@
-<?
+<?php
 class Image extends Model
 {
 	private $info;
@@ -417,4 +417,3 @@ class Image extends Model
 	    return true;
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderChat extends Loader{
 	
 	protected function includes(){
@@ -33,4 +33,3 @@ class LoaderChat extends Loader{
 		$this->register(new ChatSessionManager($this->config->AuxConfig));
 	}
 }
-?>

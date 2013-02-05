@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatMessageManager extends DbAccessor
 {
 	const TBL_CHAT_MESSAGES = 'chat_messages';
@@ -91,4 +91,3 @@ class ChatMessageManager extends DbAccessor
 		return $chatMessage;
 	}
 }
-?>

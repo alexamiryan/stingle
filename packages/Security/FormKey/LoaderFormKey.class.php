@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderFormKey extends Loader{
 	protected function includes(){
 		require_once ('FormKey.class.php');
@@ -9,4 +9,3 @@ class LoaderFormKey extends Loader{
 		$this->register(new FormKey($this->config->AuxConfig));
 	}
 }
-?>

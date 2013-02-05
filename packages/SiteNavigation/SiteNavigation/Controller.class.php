@@ -1,4 +1,4 @@
-<?
+<?php
 class Controller
 {
 	private $config;
@@ -94,4 +94,3 @@ class Controller
 		}			
 	}
 }
-?>

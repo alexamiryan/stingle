@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderUserPhotos extends Loader{
 	protected function includes(){
 		require_once ('UserPhotosFilter.class.php');
@@ -15,4 +15,3 @@ class LoaderUserPhotos extends Loader{
 		$this->register(new UserPhotoManager($this->config->AuxConfig));
 	}
 }
-?>

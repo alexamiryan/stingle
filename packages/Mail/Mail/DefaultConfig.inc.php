@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'Objects' => array(	'MailSender' => 'mail'),
 						'AuxConfig' => array( 
@@ -6,4 +6,3 @@ $defaultConfig = array(
 												'domainKeysEnabled' => false		
 											)				
 					);
-?>

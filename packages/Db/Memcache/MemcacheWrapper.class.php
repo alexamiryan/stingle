@@ -1,4 +1,4 @@
-<?
+<?php
 class MemcacheWrapper
 {
 	private $memcache = null;
@@ -105,4 +105,3 @@ class MemcacheWrapper
 	    return $list;
 	}
 }
-?>

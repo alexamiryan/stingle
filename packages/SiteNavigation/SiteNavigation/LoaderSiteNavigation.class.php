@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderSiteNavigation extends Loader{
 	protected function includes(){
 		require_once ('Exceptions/FileNotFoundException.class.php');
@@ -26,4 +26,3 @@ class LoaderSiteNavigation extends Loader{
 		$this->controller->exec();
 	}
 }
-?>

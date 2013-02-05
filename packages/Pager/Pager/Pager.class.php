@@ -1,4 +1,4 @@
-<?
+<?php
 abstract class Pager extends Model{
 	
 	/**
@@ -173,4 +173,3 @@ abstract class Pager extends Model{
 		return static::$pagerInstances[$id];
 	}
 }
-?>

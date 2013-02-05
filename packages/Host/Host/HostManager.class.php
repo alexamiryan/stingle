@@ -1,4 +1,4 @@
-<?
+<?php
 class HostManager{
 	
 	public static function updateHost(Host $host){
@@ -232,4 +232,3 @@ class HostManager{
 		return preg_replace('/www\./','',$string);
 	}
 }
-?>

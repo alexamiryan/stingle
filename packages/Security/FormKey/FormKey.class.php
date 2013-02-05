@@ -1,4 +1,4 @@
-<?
+<?php
 class FormKey {  
     private $issuedKeys = array(); 
     private $keyTimeout = 1800; 
@@ -41,4 +41,3 @@ class FormKey {
 		throw new FormKeySecurityException("Unauthorized page access.");
     }
 }
-?>

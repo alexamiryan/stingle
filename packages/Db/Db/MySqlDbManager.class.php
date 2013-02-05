@@ -1,4 +1,4 @@
-<?
+<?php
 class MySqlDbManager
 {
 	/**
@@ -130,4 +130,3 @@ class MySqlDbManager
 		return $server . "." . count(static::$instances);
 	}
 }
-?>

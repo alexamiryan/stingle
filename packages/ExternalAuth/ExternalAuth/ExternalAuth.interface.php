@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * 
@@ -66,4 +66,3 @@ interface ExternalAuth
 	 */
 	public function getName();
 }
-?>

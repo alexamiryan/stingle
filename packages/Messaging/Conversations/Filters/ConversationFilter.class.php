@@ -1,4 +1,4 @@
-<?
+<?php
 class ConversationFilter extends MergeableFilter{
 	
 	public function __construct(){
@@ -71,4 +71,3 @@ class ConversationFilter extends MergeableFilter{
 	}
 	
 }
-?>

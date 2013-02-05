@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderImageModificator extends Loader{
 	protected function includes(){
 		require_once ('ImageModificator.class.php');
@@ -13,4 +13,3 @@ class LoaderImageModificator extends Loader{
 		$this->register(new ImageModificator($this->config->AuxConfig));
 	}
 }
-?>

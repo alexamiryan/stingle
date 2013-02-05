@@ -1,4 +1,4 @@
-<?
+<?php
 class UserPhotoManager extends DbAccessor
 {
 	const TBL_USERS_PHOTOS = 'users_photos';
@@ -261,4 +261,3 @@ class UserPhotoManager extends DbAccessor
 		return $userPhotoObj;
 	}
 }
-?>

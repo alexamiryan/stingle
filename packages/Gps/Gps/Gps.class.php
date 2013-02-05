@@ -1,4 +1,4 @@
-<?
+<?php
 class Gps extends DbAccessor
 {
 	const ROOT_NODE=1;
@@ -790,4 +790,3 @@ class Gps extends DbAccessor
 		return false;
 	}
 }
-?>

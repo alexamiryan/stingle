@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderExternalAuth extends Loader{
 	
 	protected function includes(){
@@ -7,4 +7,3 @@ class LoaderExternalAuth extends Loader{
 		require_once ('ExternalUserManager.class.php');
 	}
 }
-?>

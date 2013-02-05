@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderHost extends Loader{
 	protected function includes(){
 		require_once ('Host.class.php');
@@ -28,4 +28,3 @@ class LoaderHost extends Loader{
 		$this->register(HostManager::getSiteUrl());
 	}
 }
-?>

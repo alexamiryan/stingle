@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array(
 												'logMinutes' => 30,  // in minutes
@@ -11,4 +11,3 @@ $defaultConfig = array(
 												'ChatSessionManager' => 'chatSessMgr' 
 											)
 					);
-?>

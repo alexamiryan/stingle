@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderRewriteAliasURL extends Loader{
 	protected function includes(){
 		require_once ('RewriteAliasURL.class.php');
@@ -29,4 +29,3 @@ class LoaderRewriteAliasURL extends Loader{
 		Reg::get($this->config->Objects->rewriteAliasURL)->callParseCustomAliases();
 	}
 }
-?>

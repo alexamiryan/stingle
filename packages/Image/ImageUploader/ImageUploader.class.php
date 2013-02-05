@@ -1,4 +1,4 @@
-<?
+<?php
 class ImageUploader
 {
 	const IMAGE_TYPE_JPEG 	= 'jpeg';
@@ -158,4 +158,3 @@ class ImageUploader
 		}
 	}
 }
-?>

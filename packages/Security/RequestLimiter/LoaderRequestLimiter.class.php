@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderRequestLimiter extends Loader{
 	protected function includes(){
 		require_once ('Exceptions/RequestLimiterTooManyAuthTriesException.class.php');
@@ -79,4 +79,3 @@ class LoaderRequestLimiter extends Loader{
 		}
 	}
 }
-?>

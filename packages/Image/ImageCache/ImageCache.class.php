@@ -1,4 +1,4 @@
-<?
+<?php
 class ImageCache
 {
 	protected $config;
@@ -85,4 +85,3 @@ class ImageCache
 		}
 	}
 }
-?>

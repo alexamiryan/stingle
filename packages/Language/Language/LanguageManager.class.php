@@ -1,4 +1,4 @@
-<?
+<?php
 class LanguageManager extends DbAccessor {
 
 	protected $language; //Language object
@@ -846,4 +846,3 @@ class LanguageManager extends DbAccessor {
 		return $this->query->fetchRecords();
 	}
 }
-?>

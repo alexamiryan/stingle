@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderMemcache extends Loader{
 	protected function includes(){
 		require_once ('MemcacheWrapper.class.php');
@@ -20,4 +20,3 @@ class LoaderMemcache extends Loader{
 		}
 	}
 }
-?>

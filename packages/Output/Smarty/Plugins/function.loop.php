@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * @package Smarty
@@ -59,4 +59,3 @@ function smarty_function_loop($params, &$smarty){
 	}
 	return false;
 }
-?>

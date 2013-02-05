@@ -1,4 +1,4 @@
-<?
+<?php
 class ConfigManager
 {
 	private static $globalConfig;
@@ -193,4 +193,3 @@ class ConfigManager
 		return $currentObj;
 	}
 }
-?>

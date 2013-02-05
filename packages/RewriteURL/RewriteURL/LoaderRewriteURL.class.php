@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderRewriteURL extends Loader{
 	protected function includes(){
 		require_once ('RewriteURL.class.php');
@@ -17,4 +17,3 @@ class LoaderRewriteURL extends Loader{
 		}
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class IpFilterManager extends DbAccessor {
 	
 	public function __construct ($dbInstanceKey = null) {
@@ -177,4 +177,3 @@ class IpFilterManager extends DbAccessor {
 		return $this->query->fetchFields('country');
 	}
 }
-?>

@@ -1,5 +1,5 @@
 #!/usr/bin/php-cgi
-<?
+<?php
 ini_set('max_execution_time','172800');
 ini_set('memory_limit','2048M');
 
@@ -11,4 +11,3 @@ define("IS_CGI",1);
 
 include("index.php");
 
-?>

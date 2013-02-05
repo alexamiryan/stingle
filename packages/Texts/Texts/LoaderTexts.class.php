@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderTexts extends Loader{
 	protected function includes(){
 		require_once ('TextsGroup.class.php');
@@ -38,4 +38,3 @@ class LoaderTexts extends Loader{
 		$this->register(new TextsAliasManager());
 	}
 }
-?>

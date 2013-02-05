@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array( 'uploadDir' => 'uploads/attachs/',
 								'attachmentsClearTimeout' => 4, // In Days
@@ -14,4 +14,3 @@ $defaultConfig = array(
 								'ConversationManager' => 'convMgr',
 								'ConversationAttachmentManager' => 'convAttMgr' )
 					);
-?>

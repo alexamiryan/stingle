@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderHostControllerTemplate extends Loader{
 	protected function includes(){
 		require_once ('HostControllerTemplate.class.php');
@@ -26,4 +26,3 @@ class LoaderHostControllerTemplate extends Loader{
 		}
 	}
 }
-?>

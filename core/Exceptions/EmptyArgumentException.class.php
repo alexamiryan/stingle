@@ -1,4 +1,4 @@
-<?
+<?php
 
 class EmptyArgumentException extends InvalidArgumentException {
 	
@@ -34,4 +34,3 @@ class EmptyArgumentException extends InvalidArgumentException {
 		parent::__construct($message);
 	}
 }
-?>

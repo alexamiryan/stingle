@@ -1,4 +1,4 @@
-<?
+<?php
 class Language extends DbAccessor{
 	public $id; 		// int
 	public $shortName; 	// string
@@ -89,4 +89,3 @@ class Language extends DbAccessor{
 	}
 	
 }
-?>

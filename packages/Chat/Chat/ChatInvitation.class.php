@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatInvitation{
 	
 	public $id;
@@ -7,4 +7,3 @@ class ChatInvitation{
 	public $invitationMessage;
 	public $status;
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array(
 												'appId' => null,
@@ -7,4 +7,3 @@ $defaultConfig = array(
 											),	
 						'Objects' => array(	'FacebookAuth' => 'fbAuth' )
 					  );
-?>

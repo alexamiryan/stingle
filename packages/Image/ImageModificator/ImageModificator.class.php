@@ -1,4 +1,4 @@
-<?
+<?php
 class ImageModificator extends DbAccessor
 {
 	protected $config;
@@ -394,4 +394,3 @@ class ImageModificator extends DbAccessor
 		return $cropMinSize;
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array(	
 												'enableUrlRewrite' => true,
@@ -13,4 +13,3 @@ $defaultConfig = array(
 						'Objects' => array(	'rewriteURL' => 'rewriteURL'  ),
 						'Hooks' => array(  'BeforeRequestParserStep2' => 'ParseURL'  )
 					);
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class Host{
 
 	public $id;
@@ -51,4 +51,3 @@ class Host{
 		}
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderQueryBuilder extends Loader{
 	protected function includes(){
 		require_once ('Objects/QBPart.class.php');
@@ -26,4 +26,3 @@ class LoaderQueryBuilder extends Loader{
 	}
 
 }
-?>

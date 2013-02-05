@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatInvitationsFilter extends Filter {
 	
 	public function __construct(){
@@ -94,4 +94,3 @@ class ChatInvitationsFilter extends Filter {
 		return $this;
 	}
 }
-?>

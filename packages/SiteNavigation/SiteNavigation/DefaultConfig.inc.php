@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array(	'firstLevelDefaultValue' => 'home',
 												'actionName' => 'action',
@@ -11,4 +11,3 @@ $defaultConfig = array(
 						'ObjectsIgnored' => array(	'Nav' => 'nav'  ),
 						'Hooks' => array(	'RequestParser' => 'Parse', 'Controller' => 'ExecController'  )
 					);
-?>

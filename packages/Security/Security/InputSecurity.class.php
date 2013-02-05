@@ -1,4 +1,4 @@
-<?
+<?php
 class InputSecurity
 {
 	public static function secureInputData(){
@@ -22,4 +22,3 @@ class InputSecurity
 		}
 	}
 }
-?>

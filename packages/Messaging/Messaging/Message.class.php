@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * PHP Web Messaging System Object
@@ -33,4 +33,3 @@ class Message
 }
 
 
-?>

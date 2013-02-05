@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyRequestLoggerUsers extends Dependency
 {
 	public function __construct(){
@@ -6,4 +6,3 @@ class DependencyRequestLoggerUsers extends Dependency
 		$this->addPlugin("Users", "Users");
 	}
 }
-?>

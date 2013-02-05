@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatInvitationManager extends DbAccessor
 {
 	const TBL_CHAT_INVITATIONS = 'chat_invitations';
@@ -119,4 +119,3 @@ class ChatInvitationManager extends DbAccessor
 		return (empty($lastId) ? 0 : $lastId);
 	}
 }
-?>

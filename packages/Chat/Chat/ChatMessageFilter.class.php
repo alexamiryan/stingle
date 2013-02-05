@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatMessageFilter extends Filter {
 	
 	public function __construct(){
@@ -147,4 +147,3 @@ class ChatMessageFilter extends Filter {
 		$this->setOrder(new Field("datetime", "chat_msg"), MySqlDatabase::ORDER_DESC);
 	}
 }
-?>

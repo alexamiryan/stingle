@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderUserProfile extends Loader{
 	protected function includes(){
 		require_once ('UserProfile.class.php');
@@ -8,4 +8,3 @@ class LoaderUserProfile extends Loader{
 		Tbl::registerTableNames('UserProfile');
 	}
 }
-?>

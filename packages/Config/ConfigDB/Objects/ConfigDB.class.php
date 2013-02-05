@@ -1,4 +1,4 @@
-<?
+<?php
 class ConfigDB
 {
 	public $id;
@@ -11,4 +11,3 @@ class ConfigDB
 	public $host;
 	public $language;
 }
-?>

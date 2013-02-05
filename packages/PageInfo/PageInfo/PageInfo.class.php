@@ -1,4 +1,4 @@
-<?
+<?php
 class PageInfo extends DbAccessor
 {
 	private $host; 		//Host object
@@ -97,4 +97,3 @@ class PageInfo extends DbAccessor
 		return $qb->getSQL();
 	}
 }
-?>

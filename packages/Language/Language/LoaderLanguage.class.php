@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderLanguage extends Loader{
 	protected function includes(){
 		require_once ('Language.class.php');
@@ -24,4 +24,3 @@ class LoaderLanguage extends Loader{
 		Reg::get($this->config->Objects->LanguageManager)->defineAllConsts();
 	}
 }
-?>

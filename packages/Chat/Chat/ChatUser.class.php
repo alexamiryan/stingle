@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatUser
 {
 	public $userId;
@@ -15,4 +15,3 @@ class ChatUser
 		return new $chatUserClassName($userId);
 	}
 }
-?>

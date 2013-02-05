@@ -1,4 +1,4 @@
-<?
+<?php
 class Field extends Base{
 	
 	protected $_preSeparator = '';
@@ -33,4 +33,3 @@ class Field extends Base{
 		return $returnString;
 	}
 }
-?>

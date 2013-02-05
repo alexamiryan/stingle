@@ -1,4 +1,4 @@
-<?
+<?php
 class ConversationMessage {
 	public $id;
 	public $uuid;
@@ -13,4 +13,3 @@ class ConversationMessage {
 	public $hasAttachment = 0;
 	public $attachments = array();
 }
-?>

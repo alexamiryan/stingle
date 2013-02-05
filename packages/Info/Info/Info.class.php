@@ -1,4 +1,4 @@
-<?
+<?php
 class Info
 {
 	private $elements = array();
@@ -100,4 +100,3 @@ class Info
 		$this->sessRef = $this->elements;
 	}
 }
-?>

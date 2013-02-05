@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderPageInfo extends Loader{
 	protected function includes(){
 		require_once ('PageInfo.class.php');
@@ -32,4 +32,3 @@ class LoaderPageInfo extends Loader{
 	}
 
 }
-?>

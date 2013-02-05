@@ -1,4 +1,4 @@
-<?
+<?php
 class TextAlias
 {
 	public $id;
@@ -7,4 +7,3 @@ class TextAlias
 	public $host;
 	public $hostLanguageId;
 }
-?>

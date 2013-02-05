@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyChat extends Dependency
 {
 	public function __construct(){
@@ -7,4 +7,3 @@ class DependencyChat extends Dependency
 		$this->addPlugin("Comet", "Comet");
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyRequestLimiter extends Dependency
 {
 	public function __construct(){
@@ -6,4 +6,3 @@ class DependencyRequestLimiter extends Dependency
 		$this->addPlugin("Security");
 	}
 }
-?>

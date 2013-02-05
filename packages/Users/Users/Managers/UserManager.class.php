@@ -1,4 +1,4 @@
-<?
+<?php
 class UserManager extends DbAccessor{
 	
 	const TBL_USERS 				= "wum_users";
@@ -426,4 +426,3 @@ class UserManager extends DbAccessor{
 	}
 	
 }
-?>

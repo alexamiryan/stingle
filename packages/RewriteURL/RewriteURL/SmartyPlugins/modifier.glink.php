@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Make link string from given formatted string.
  * If OUTPUT_LINK_STYLE is
@@ -20,4 +20,3 @@ function smarty_modifier_glink($link, $with_gets = false, $exclude = ''){
 
 	return $link;
 }
-?>

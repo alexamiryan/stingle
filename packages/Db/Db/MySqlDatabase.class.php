@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Db_MySqlDatabase
  *

@@ -1,4 +1,4 @@
-<?
+<?php
 class JSON
 {
 	/**
@@ -24,4 +24,3 @@ class JSON
 		return json_decode($string);
 	}
 }
-?>

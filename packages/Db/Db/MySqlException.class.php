@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * TODO connect with db instances
  *
@@ -28,4 +28,3 @@ class MySqlException extends Exception {
 	}
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyTexts extends Dependency
 {
 	public function __construct(){
@@ -8,4 +8,3 @@ class DependencyTexts extends Dependency
 		$this->addPlugin("Language", "HostLanguage");
 	}
 }
-?>

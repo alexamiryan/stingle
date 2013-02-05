@@ -1,4 +1,4 @@
-<?
+<?php
 class TextsGroupManager extends DbAccessor{
 	
 	const TBL_TEXTS_GROUPS = "texts_groups";
@@ -111,4 +111,3 @@ class TextsGroupManager extends DbAccessor{
 		return $group;
 	}
 }
-?>

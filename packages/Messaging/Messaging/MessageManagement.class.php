@@ -1,4 +1,4 @@
-<?
+<?php
 class MessageManagement extends DbAccessor
 {
 	
@@ -529,4 +529,3 @@ class MessageManagement extends DbAccessor
 	}
 }
 
-?>

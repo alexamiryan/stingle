@@ -1,4 +1,4 @@
-<?
+<?php
 abstract class Loader {
 	protected $packageManager;
 	protected $packageName;
@@ -224,4 +224,3 @@ abstract class Loader {
 		Reg::register($registerName, $object);
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 function default_exception_handler(Exception $e){
 	$hookArgs = array('e' => $e);
 	HookManager::callHook('NoDebugExceptionHandler', $hookArgs);
@@ -22,4 +22,3 @@ function stingleOutputHandler($buffer){
 function shutdown(){
 	HookManager::callHook('Shutdown');
 }
-?>

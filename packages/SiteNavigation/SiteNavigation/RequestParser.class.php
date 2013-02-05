@@ -1,4 +1,4 @@
-<?
+<?php
 class RequestParser
 {
 	private $config;
@@ -62,4 +62,3 @@ class RequestParser
 		$this->firstLevelDefaultValue = $value;
 	}
 }
-?>

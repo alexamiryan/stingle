@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Mail Sender class
  * @author Aram Gevorgyan
@@ -342,4 +342,3 @@ class MailSender
 		return $headers;
 	}
 }
-?>

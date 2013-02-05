@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Create random value on give criteria
  *
@@ -41,4 +41,3 @@ function generateRandomString($length, $type = null){
 
 	return $rand_value;
 }
-?>

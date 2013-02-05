@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderGPG extends Loader{
 	
 	protected function includes(){
@@ -6,4 +6,3 @@ class LoaderGPG extends Loader{
 		require_once ('GPG.class.php');
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array('cgiHost' => 'mysite.com'),
 						'Objects' => array(	
@@ -9,4 +9,3 @@ $defaultConfig = array(
 											  ),
 						'Memcache' => array(  'HostManager' => -1, 'Host' => -1  )
 					);
-?>

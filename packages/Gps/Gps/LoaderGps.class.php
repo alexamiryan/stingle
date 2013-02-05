@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderGps extends Loader{
 	
 	protected function includes(){
@@ -14,4 +14,3 @@ class LoaderGps extends Loader{
 		$this->register($this->gps);
 	}
 }
-?>

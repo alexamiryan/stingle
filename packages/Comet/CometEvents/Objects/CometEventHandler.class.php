@@ -1,4 +1,4 @@
-<?
+<?php
 abstract class CometEventHandler{
 	
 	protected $params = array();
@@ -58,4 +58,3 @@ abstract class CometEventHandler{
 	 */
 	abstract public function getDataArray($params);
 }
-?>

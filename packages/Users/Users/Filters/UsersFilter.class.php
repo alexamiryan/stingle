@@ -1,4 +1,4 @@
-<?
+<?php
 class UsersFilter extends MergeableFilter{
 	
 	public function __construct(){
@@ -191,6 +191,14 @@ class UsersFilter extends MergeableFilter{
 		$this->setOrder(new Field('id', 'users'), MySqlDatabase::ORDER_ASC);
 	}
 	
+	public function setOrderLoginAsc(){
+		$this->setOrder(new Field('login', 'users'), MySqlDatabase::ORDER_ASC);
+	}
+	
+	public function setOrderLoginDesc(){
+		$this->setOrder(new Field('login', 'users'), MySqlDatabase::ORDER_DESC);
+	}
+	
 	public function setEmailConfirmationStatus($status = UserManager::STATE_EMAIL_CONFIRMED){
 		if(!is_numeric($status)){
 			throw new InvalidIntegerArgumentException("\$status have to be integer");
@@ -215,4 +223,3 @@ class UsersFilter extends MergeableFilter{
 				$this->qb->expr()->equal(new Field('group_id', 'users_groups'), new Field('id', 'groups')));
 	}
 }
-?>

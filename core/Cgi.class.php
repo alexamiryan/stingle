@@ -1,4 +1,4 @@
-<?
+<?php
 class Cgi
 {
 	private static $mode;
@@ -20,4 +20,3 @@ class Cgi
 		static::$mode = $mode;
 	}
 }
-?>

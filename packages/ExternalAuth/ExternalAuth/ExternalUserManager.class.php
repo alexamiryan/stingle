@@ -1,4 +1,4 @@
-<?
+<?php
 	/**
 	 * External User connection with local User Management
 	 *
@@ -45,4 +45,3 @@
 			}
 		}
 	}
-?>

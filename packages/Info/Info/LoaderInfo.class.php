@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderInfo extends Loader{
 	protected function includes(){
 		require_once ('Info.class.php');
@@ -12,4 +12,3 @@ class LoaderInfo extends Loader{
 		$this->register(new Info($_SESSION[$this->config->AuxConfig->errorSessionVar]));
 	}	
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 abstract class MergeableFilter extends Filter {
 	protected $primaryTable;
 	protected $primaryTableAlias;
@@ -34,4 +34,3 @@ abstract class MergeableFilter extends Filter {
 		return $this->primaryJoinField;
 	}
 }
-?>

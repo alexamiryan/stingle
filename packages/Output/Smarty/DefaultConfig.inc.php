@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_compile/",
 												'cacheDir' => "cache/templates_cache/",
 												'templateDir' => "view/",
@@ -27,4 +27,3 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 								  )
 				
 					);
-?>

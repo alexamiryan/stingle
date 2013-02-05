@@ -1,4 +1,4 @@
-<?
+<?php
 class CometEvent{
 	public $id;
 	public $date;
@@ -9,4 +9,3 @@ class CometEvent{
 	public $name;
 	public $data;
 }
-?>

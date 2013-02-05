@@ -1,4 +1,4 @@
-<?
+<?php
 class ConversationAttachmentFilter extends Filter {
 	
 	public function __construct(){
@@ -35,4 +35,3 @@ class ConversationAttachmentFilter extends Filter {
 		return $this;
 	}
 }
-?>

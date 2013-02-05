@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatSession{
 	
 	public $id;
@@ -11,4 +11,3 @@ class ChatSession{
 	public $closedReason;
 	public $closedDate;
 }
-?>

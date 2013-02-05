@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * @package Smarty
@@ -18,4 +18,3 @@ function smarty_function_chunk($params, &$smarty){
 	}
 	return "";
 }
-?>

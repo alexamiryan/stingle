@@ -1,4 +1,4 @@
-<?
+<?php
 class Tbl
 {
 	private static $tableNames;
@@ -136,4 +136,3 @@ class Tbl
 		}
 	}
 }
-?>

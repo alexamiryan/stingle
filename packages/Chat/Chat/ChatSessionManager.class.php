@@ -1,4 +1,4 @@
-<?
+<?php
 class ChatSessionManager extends DbAccessor
 {
 	const TBL_CHAT_SESSIONS = 'chat_sessions';
@@ -191,4 +191,3 @@ class ChatSessionManager extends DbAccessor
 		return $this->query->affected();
 	}
 }
-?>

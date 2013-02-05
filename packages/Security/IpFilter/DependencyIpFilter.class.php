@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyIpFilter extends Dependency
 {
 	public function __construct(){
@@ -7,4 +7,3 @@ class DependencyIpFilter extends Dependency
 		$this->addPlugin("GeoIP");
 	}
 }
-?>

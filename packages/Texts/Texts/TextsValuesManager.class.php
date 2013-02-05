@@ -1,4 +1,4 @@
-<?
+<?php
 class TextsValuesManager extends DbAccessor{
 	
 	const TBL_TEXTS_VALUES = "texts_values";
@@ -217,4 +217,3 @@ class TextsValuesManager extends DbAccessor{
 		return $textValue;
 	}
 }
-?>

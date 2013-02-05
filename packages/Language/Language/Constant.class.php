@@ -1,4 +1,4 @@
-<?
+<?php
 class Constant{
 	/**
 	 * Available types of constants in database
@@ -60,4 +60,3 @@ class Constant{
 		);*/
 	}
 }
-?>

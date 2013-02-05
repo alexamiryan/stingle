@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderYubikey extends Loader{
 	protected function includes(){
 		require_once ('Managers/Yubikey.class.php');
@@ -28,4 +28,3 @@ class LoaderYubikey extends Loader{
 		}
 	}
 }
-?>

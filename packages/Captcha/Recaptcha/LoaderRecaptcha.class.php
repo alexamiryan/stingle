@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderRecaptcha extends Loader{
 	
 	protected function includes(){
@@ -10,4 +10,3 @@ class LoaderRecaptcha extends Loader{
 		$this->register(new Recaptcha($this->config->AuxConfig));
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class HostControllerTemplate extends DbAccessor{
 	
 	const TBL_HOST_CONTROLLER_TEMPLATE = 'host_controller_template';
@@ -38,4 +38,3 @@ class HostControllerTemplate extends DbAccessor{
 		return $sql->affected();
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyDb extends Dependency
 {
 	public function __construct(){
@@ -6,4 +6,3 @@ class DependencyDb extends Dependency
 		$this->addPlugin("Logger", "SessionLogger");
 	}
 }
-?>

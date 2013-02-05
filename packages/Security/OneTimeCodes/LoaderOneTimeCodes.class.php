@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderOneTimeCodes extends Loader{
 	protected function includes(){
 		require_once ('OneTimeCodes.class.php');
@@ -13,4 +13,3 @@ class LoaderOneTimeCodes extends Loader{
 		$this->register(new OneTimeCodes($this->config->AuxConfig));
 	}
 }
-?>

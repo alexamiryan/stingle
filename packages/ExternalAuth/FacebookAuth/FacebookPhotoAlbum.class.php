@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Facebook's Photo Albums class
  *
@@ -30,4 +30,3 @@ class FacebookPhotoAlbum {
 	 */
 	public $type = null;
 }
-?>

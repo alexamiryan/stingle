@@ -1,4 +1,4 @@
-<?
+<?php
 class CometAbort extends CometChunk{
 	
 	const TBL_COMET_ABORT = 'comet_abort';
@@ -64,4 +64,3 @@ class CometAbort extends CometChunk{
 		return $sql->exec($qb->getSQL())->affected();
 	}
 }
-?>

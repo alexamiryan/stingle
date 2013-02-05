@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderMessaging extends Loader{
 	protected function includes(){
 		require_once ('MessageManagement.class.php');
@@ -14,4 +14,3 @@ class LoaderMessaging extends Loader{
 		$this->register(new MessageManagement());
 	}
 }
-?>

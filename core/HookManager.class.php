@@ -1,4 +1,4 @@
-<?
+<?php
 class HookManager{
 	private static $hooks = array();
 	
@@ -115,4 +115,3 @@ class HookManager{
 		return false;
 	}
 }
-?>

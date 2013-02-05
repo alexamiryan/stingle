@@ -1,4 +1,4 @@
-<?
+<?php
 class Text
 {
 	public $id;
@@ -6,4 +6,3 @@ class Text
 	public $name;
 	public $description;
 }
-?>

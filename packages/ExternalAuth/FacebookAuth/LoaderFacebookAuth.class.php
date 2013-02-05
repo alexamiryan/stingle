@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderFacebookAuth extends Loader{
 	
 	protected function includes(){
@@ -16,4 +16,3 @@ class LoaderFacebookAuth extends Loader{
 		$this->register($fbAuth);
 	}
 }
-?>

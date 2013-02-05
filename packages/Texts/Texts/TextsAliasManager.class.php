@@ -1,4 +1,4 @@
-<?
+<?php
 class TextsAliasManager extends DbAccessor{
 	
 	const TBL_TEXTS_ALIASES = "texts_aliases";
@@ -116,4 +116,3 @@ class TextsAliasManager extends DbAccessor{
 		return $textAlias;
 	}
 }
-?>

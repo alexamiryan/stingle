@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyMessaging extends Dependency
 {
 	public function __construct(){
@@ -6,4 +6,3 @@ class DependencyMessaging extends Dependency
 		$this->addPlugin("Db", "QueryBuilder");
 	}
 }
-?>

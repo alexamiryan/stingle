@@ -1,4 +1,4 @@
-<?
+<?php
 class RewriteAliasMap extends DbAccessor {
 	
 	const TBL_ALIAS 		= "url_alias";
@@ -172,4 +172,3 @@ class RewriteAliasMap extends DbAccessor {
 		return new Host($this->query->fetchField("host_id"));
 	}
 }
-?>

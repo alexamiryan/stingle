@@ -1,4 +1,4 @@
-<?
+<?php
 class RequestLimiter extends DbAccessor {
 	
 	const TBL_SECURITY_FLOODER_IPS 	= "security_flooder_ips";
@@ -116,4 +116,3 @@ class RequestLimiter extends DbAccessor {
 		$this->query->exec($qb->getSQL());
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class UsersGps extends Gps
 {
 	const TBL_USERS_GPS = 'users_gps';
@@ -23,4 +23,3 @@ class UsersGps extends Gps
 		}
 	}
 }
-?>

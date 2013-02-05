@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderSmarty extends Loader{
 	private $pluginsDirs = array();
 	
@@ -44,4 +44,3 @@ class LoaderSmarty extends Loader{
 
 	}
 }
-?>

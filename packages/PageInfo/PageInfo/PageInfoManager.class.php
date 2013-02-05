@@ -1,4 +1,4 @@
-<?
+<?php
 class PageInfoManager extends PageInfo 
 {
 	public static function getRecord(Language $lang=null, Host $host=null, $module, $page ){		
@@ -186,4 +186,3 @@ class PageInfoManager extends PageInfo
 		return $qb->getSQL();		
 	}
 }
-?>

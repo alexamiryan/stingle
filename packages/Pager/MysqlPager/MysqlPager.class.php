@@ -1,4 +1,4 @@
-<?
+<?php
 class MysqlPager extends Pager{
 
 	private $query;
@@ -177,4 +177,3 @@ class MysqlPager extends Pager{
 		return $this->executePagedSQL($query, $cacheMinutes = 0, $alterMethod)->fetchRecords();
 	}
 }
-?>

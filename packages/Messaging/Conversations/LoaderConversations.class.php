@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderConversations extends Loader{
 	protected function includes(){
 		require_once ('Objects/Conversation.class.php');
@@ -30,4 +30,3 @@ class LoaderConversations extends Loader{
 		$this->register(new ConversationAttachmentManager($this->config->AuxConfig));
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class RewriteURL{
 	protected $config;
 
@@ -82,4 +82,4 @@ class RewriteURL{
 	}
 	
 }
-?>
+

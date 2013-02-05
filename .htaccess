@@ -3,3 +3,7 @@ Options -Indexes
 order deny,allow
 deny from all
 </FilesMatch>
+<FilesMatch .*\.sql$>
+order deny,allow
+deny from all
+</FilesMatch>

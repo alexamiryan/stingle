@@ -179,15 +179,21 @@ class Tbl
 		
 		$sqlsPath = preg_replace("/(.+?".str_replace('/', '\/', STINGLE_PATH)."packages\/.+?\/.+?\/).*/", "$1SQL/", $callerFile);
 		
-		$sqlFiles = array();
-		$dir  = opendir($sqlsPath);
-		while (false !== ($filename = readdir($dir))) {
-			if(preg_match("/(.+)\.sql$/i", $filename, $matches)){
-				$sqlFiles[$matches[1]] = array('path' => $sqlsPath, 'filename' => $filename);
-			}
+		if($sqlsPath == $callerFile){
+			$sqlsPath = preg_replace("/(.+?".str_replace('/', '\/', SITE_PACKAGES_PATH).".+?\/.+?\/).*/", "$1SQL/", $callerFile);
 		}
-		closedir($dir);
 		
+		$sqlFiles = array();
+		
+		if($sqlsPath != $callerFile and file_exists($sqlsPath) and is_dir($sqlsPath)){
+			$dir  = opendir($sqlsPath);
+			while (false !== ($filename = readdir($dir))) {
+				if(preg_match("/(.+)\.sql$/i", $filename, $matches)){
+					$sqlFiles[$matches[1]] = array('path' => $sqlsPath, 'filename' => $filename);
+				}
+			}
+			closedir($dir);
+		}
 		return $sqlFiles;
 	}
 }

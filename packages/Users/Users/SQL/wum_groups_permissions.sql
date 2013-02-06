@@ -20,22 +20,21 @@
 --
 
 --
--- Table structure for table `configs`
+-- Table structure for table `wum_groups_permissions`
 --
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `configs` (
+CREATE TABLE IF NOT EXISTS `wum_groups_permissions` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `location` varchar(256) NOT NULL,
-  `name` varchar(128) NOT NULL,
-  `value` text,
-  `host_lang_id` int(11) unsigned default NULL COMMENT 'Host Language Id',
-  `alias_of` int(11) unsigned default NULL,
+  `group_id` int(10) unsigned NOT NULL,
+  `permission_id` int(10) unsigned NOT NULL,
+  `args` varchar(256) default NULL,
   PRIMARY KEY  (`id`),
-  KEY `parent_id` (`location`(255)),
-  KEY `host_lang_id` (`host_lang_id`),
-  KEY `alias_of` (`alias_of`)
+  KEY `fk_rg` (`group_id`),
+  KEY `fk_rp` (`permission_id`),
+  CONSTRAINT `wum_groups_permissions_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `wum_groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `wum_groups_permissions_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `wum_permissions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -48,4 +47,4 @@ CREATE TABLE IF NOT EXISTS `configs` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-02-05 18:37:42
+-- Dump completed on 2013-02-06 17:28:45

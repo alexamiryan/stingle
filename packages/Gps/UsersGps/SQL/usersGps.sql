@@ -23,10 +23,9 @@
 -- Table structure for table `users_gps`
 --
 
-DROP TABLE IF EXISTS `users_gps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `users_gps` (
+CREATE TABLE IF NOT EXISTS `users_gps` (
   `user_id` int(10) unsigned NOT NULL,
   `node_id` int(10) unsigned NOT NULL,
   UNIQUE KEY `user_id` (`user_id`,`node_id`),

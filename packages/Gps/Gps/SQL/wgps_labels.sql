@@ -20,23 +20,22 @@
 --
 
 --
--- Table structure for table `configs`
+-- Table structure for table `wgps_labels`
 --
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `configs` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `location` varchar(256) NOT NULL,
-  `name` varchar(128) NOT NULL,
-  `value` text,
-  `host_lang_id` int(11) unsigned default NULL COMMENT 'Host Language Id',
-  `alias_of` int(11) unsigned default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `parent_id` (`location`(255)),
-  KEY `host_lang_id` (`host_lang_id`),
-  KEY `alias_of` (`alias_of`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE IF NOT EXISTS `wgps_labels` (
+  `country_id` int(10) unsigned NOT NULL COMMENT 'Country node id',
+  `type` varchar(32) character set utf8 NOT NULL COMMENT 'Wgps field type',
+  `constant` varchar(32) character set utf8 NOT NULL COMMENT 'Constant name',
+  UNIQUE KEY `country_id` (`country_id`,`type`),
+  KEY `type` (`type`),
+  KEY `constant` (`constant`),
+  CONSTRAINT `wgps_labels_ibfk_2` FOREIGN KEY (`type`) REFERENCES `wgps_types` (`type`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `wgps_labels_ibfk_4` FOREIGN KEY (`country_id`) REFERENCES `wgps_tree` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `wgps_labels_ibfk_5` FOREIGN KEY (`constant`) REFERENCES `lm_constants` (`key`) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Labels of wgps fields';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -48,4 +47,4 @@ CREATE TABLE IF NOT EXISTS `configs` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-02-05 18:37:42
+-- Dump completed on 2013-02-06 17:44:12

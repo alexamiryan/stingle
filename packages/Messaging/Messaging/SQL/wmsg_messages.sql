@@ -20,23 +20,20 @@
 --
 
 --
--- Table structure for table `configs`
+-- Table structure for table `wmsg_messages`
 --
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `configs` (
+CREATE TABLE IF NOT EXISTS `wmsg_messages` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `location` varchar(256) NOT NULL,
-  `name` varchar(128) NOT NULL,
-  `value` text,
-  `host_lang_id` int(11) unsigned default NULL COMMENT 'Host Language Id',
-  `alias_of` int(11) unsigned default NULL,
+  `date` int(10) unsigned NOT NULL default '0' COMMENT 'Date of send',
+  `subject` varchar(128) NOT NULL COMMENT 'Subject of the message',
+  `message` text NOT NULL COMMENT 'Message body',
   PRIMARY KEY  (`id`),
-  KEY `parent_id` (`location`(255)),
-  KEY `host_lang_id` (`host_lang_id`),
-  KEY `alias_of` (`alias_of`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  KEY `id_date` (`id`,`date`),
+  KEY `date_id` (`date`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -48,4 +45,4 @@ CREATE TABLE IF NOT EXISTS `configs` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-02-05 18:37:42
+-- Dump completed on 2013-02-06 17:18:23

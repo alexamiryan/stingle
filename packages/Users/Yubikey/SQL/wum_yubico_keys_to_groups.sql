@@ -20,23 +20,21 @@
 --
 
 --
--- Table structure for table `configs`
+-- Table structure for table `wum_yubico_keys_to_groups`
 --
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `configs` (
+CREATE TABLE IF NOT EXISTS `wum_yubico_keys_to_groups` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `location` varchar(256) NOT NULL,
-  `name` varchar(128) NOT NULL,
-  `value` text,
-  `host_lang_id` int(11) unsigned default NULL COMMENT 'Host Language Id',
-  `alias_of` int(11) unsigned default NULL,
+  `yubikey_id` int(10) unsigned NOT NULL,
+  `group_id` int(10) unsigned NOT NULL,
   PRIMARY KEY  (`id`),
-  KEY `parent_id` (`location`(255)),
-  KEY `host_lang_id` (`host_lang_id`),
-  KEY `alias_of` (`alias_of`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  KEY `yubikey_id` (`yubikey_id`),
+  KEY `group_id` (`group_id`),
+  CONSTRAINT `wum_yubico_keys_to_groups_ibfk_1` FOREIGN KEY (`yubikey_id`) REFERENCES `wum_yubico_keys` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `wum_yubico_keys_to_groups_ibfk_2` FOREIGN KEY (`group_id`) REFERENCES `wum_groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -48,4 +46,4 @@ CREATE TABLE IF NOT EXISTS `configs` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-02-05 18:37:42
+-- Dump completed on 2013-02-06 17:30:38

@@ -23,10 +23,9 @@
 -- Table structure for table `conversations`
 --
 
-DROP TABLE IF EXISTS `conversations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `conversations` (
+CREATE TABLE IF NOT EXISTS `conversations` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `uuid` int(11) unsigned NOT NULL COMMENT 'UUID of conversation',
   `user_id` int(10) unsigned NOT NULL COMMENT 'User ID',
@@ -42,53 +41,7 @@ CREATE TABLE `conversations` (
   KEY `user_interlocutor` (`user_id`,`interlocutor_id`),
   KEY `user_id` (`user_id`),
   KEY `interlocutor_id` (`interlocutor_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=307 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `conversation_attachments`
---
-
-DROP TABLE IF EXISTS `conversation_attachments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `conversation_attachments` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `message_id` int(10) unsigned default NULL,
-  `system_filename` varchar(64) NOT NULL,
-  `filename` varchar(256) NOT NULL,
-  `mime_type` varchar(64) NOT NULL,
-  `date` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  PRIMARY KEY  (`id`),
-  KEY `message_id` (`message_id`),
-  CONSTRAINT `conversation_attachments_ibfk_1` FOREIGN KEY (`message_id`) REFERENCES `conversation_messages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=279 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `conversation_messages`
---
-
-DROP TABLE IF EXISTS `conversation_messages`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `conversation_messages` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'ID of the message',
-  `uuid` int(11) unsigned NOT NULL COMMENT 'UUID of conversation',
-  `date` timestamp NOT NULL default CURRENT_TIMESTAMP COMMENT 'Message sent datetime',
-  `sender_id` int(10) unsigned NOT NULL COMMENT 'User ID of sender',
-  `receiver_id` int(10) unsigned NOT NULL COMMENT 'User ID of receiver',
-  `message` text NOT NULL COMMENT 'Message body',
-  `read` tinyint(1) NOT NULL default '0' COMMENT 'Read status of receiver',
-  `deleted` int(10) NOT NULL default '0',
-  `has_attachment` tinyint(1) NOT NULL default '0',
-  PRIMARY KEY  (`id`),
-  KEY `uuid` (`uuid`),
-  KEY `sender_id` (`sender_id`),
-  KEY `receiver_id` (`receiver_id`),
-  KEY `deleted` (`deleted`),
-  CONSTRAINT `conversation_messages_ibfk_3` FOREIGN KEY (`uuid`) REFERENCES `conversations` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=8208 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -100,4 +53,4 @@ CREATE TABLE `conversation_messages` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-02-05 18:38:28
+-- Dump completed on 2013-02-06 17:19:15

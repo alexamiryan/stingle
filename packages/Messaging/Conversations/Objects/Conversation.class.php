@@ -1,4 +1,4 @@
-<?
+<?php
 class Conversation{
 	public $id;
 	public $uuid;
@@ -13,4 +13,3 @@ class Conversation{
 	public $fetchFrom = null;
 	public $hasAttachment = 0;
 }
-?>

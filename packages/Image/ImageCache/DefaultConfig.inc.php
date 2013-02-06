@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array(	'cacheDir' => 'uploads/photos/cache/',
 												'folders' => array(
@@ -8,4 +8,3 @@ $defaultConfig = array(
 																)),
 						'Objects' => array(	'ImageCache' => 'imageCache' )
 					);
-?>

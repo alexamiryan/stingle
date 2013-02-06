@@ -1,5 +1,0 @@
-<?
-class RequestLimiterBlockedException extends RuntimeException{
-	
-}
-?>

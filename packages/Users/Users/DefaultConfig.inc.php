@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array(	'sessionVarName' => 'user',
 												'loginCookieName' => 'login-cookie',
@@ -16,4 +16,3 @@ $defaultConfig = array(
 						'Hooks' => array(	'AfterPackagesLoad' => 'UserAuthorization'  ),
 						'Memcache' => array(  'UserManager' => 360  )
 					);
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class Permission{
 	
 	public $id;
@@ -6,4 +6,3 @@ class Permission{
 	public $description;
 	public $args;
 }
-?>

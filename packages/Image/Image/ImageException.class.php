@@ -1,6 +1,0 @@
-<?
-class ImageException extends Exception
-{
-	
-}
-?>

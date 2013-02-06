@@ -1,4 +1,4 @@
-<?
+<?php
 class Config{
 	
 	private $_configToParse;
@@ -91,4 +91,3 @@ class Config{
 		unset($this->_configToParse);
 	}
 }
-?>

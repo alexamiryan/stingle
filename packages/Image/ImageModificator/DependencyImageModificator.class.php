@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyImageModificator extends Dependency
 {
 	public function __construct(){
@@ -6,4 +6,3 @@ class DependencyImageModificator extends Dependency
 		$this->addPlugin("Image", "Image");
 	}
 }
-?>

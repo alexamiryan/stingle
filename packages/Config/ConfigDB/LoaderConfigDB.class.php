@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderConfigDB extends Loader{
 	
 	protected function includes(){
@@ -24,4 +24,3 @@ class LoaderConfigDB extends Loader{
 		ConfigDBManager::initDBConfig($configDBFilter);
 	}
 }
-?>

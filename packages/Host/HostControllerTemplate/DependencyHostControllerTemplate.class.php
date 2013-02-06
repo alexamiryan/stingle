@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyHostControllerTemplate extends Dependency
 {
 	public function __construct(){
@@ -8,4 +8,3 @@ class DependencyHostControllerTemplate extends Dependency
 		$this->addPlugin("Db", "QueryBuilder");
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * @package Smarty
@@ -14,4 +14,3 @@ function smarty_function_rand($params, &$smarty){
 	
 	return generateRandomString($length, $type);
 }
-?>

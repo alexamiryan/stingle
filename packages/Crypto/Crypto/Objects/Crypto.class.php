@@ -1,4 +1,4 @@
-<?
+<?php
 class Crypto
 {
 	
@@ -210,4 +210,3 @@ class Crypto
 		return self::$RSeed % ($max - $min + 1) + $min;
 	}
 }
-?>

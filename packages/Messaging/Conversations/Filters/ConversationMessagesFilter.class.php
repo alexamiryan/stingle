@@ -1,4 +1,4 @@
-<?
+<?php
 class ConversationMessagesFilter extends MergeableFilter{
 	
 	public function __construct(){
@@ -126,4 +126,3 @@ class ConversationMessagesFilter extends MergeableFilter{
 	}
 	
 }
-?>

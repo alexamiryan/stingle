@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -30,4 +30,3 @@ function smarty_modifiercompiler_default ($params, $compiler)
     return $output;
 } 
 
-?>

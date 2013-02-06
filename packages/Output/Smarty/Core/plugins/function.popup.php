@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -115,4 +115,3 @@ function smarty_function_popup($params, $template)
     return $retval;
 }
 
-?>

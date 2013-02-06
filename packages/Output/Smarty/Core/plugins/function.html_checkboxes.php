@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -140,4 +140,3 @@ function smarty_function_html_checkboxes_output($name, $value, $output, $selecte
     return $_output;
 }
 
-?>

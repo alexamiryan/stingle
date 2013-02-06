@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -36,4 +36,3 @@ function smarty_modifiercompiler_count_characters($params, $compiler)
     } 
 }
 
-?>

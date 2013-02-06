@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * 
@@ -28,4 +28,3 @@ function smarty_modifiercompiler_count_words($params, $compiler)
     } 
 } 
 
-?>

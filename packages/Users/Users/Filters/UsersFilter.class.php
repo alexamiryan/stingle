@@ -1,4 +1,4 @@
-<?
+<?php
 class UsersFilter extends MergeableFilter{
 	
 	public function __construct(){
@@ -197,6 +197,14 @@ class UsersFilter extends MergeableFilter{
 	
 	public function setOrderLastLoginDateDesc(){
 		$this->setOrder(new Field('last_login_date', 'users'), MySqlDatabase::ORDER_DESC);
+	}	
+
+	public function setOrderLoginAsc(){
+		$this->setOrder(new Field('login', 'users'), MySqlDatabase::ORDER_ASC);
+	}
+	
+	public function setOrderLoginDesc(){
+		$this->setOrder(new Field('login', 'users'), MySqlDatabase::ORDER_DESC);
 	}
 	
 	public function setEmailConfirmationStatus($status = UserManager::STATE_EMAIL_CONFIRMED){
@@ -223,4 +231,3 @@ class UsersFilter extends MergeableFilter{
 				$this->qb->expr()->equal(new Field('group_id', 'users_groups'), new Field('id', 'groups')));
 	}
 }
-?>

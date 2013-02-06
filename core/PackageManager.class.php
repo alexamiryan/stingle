@@ -1,4 +1,4 @@
-<?
+<?php
 class PackageManager {
 	
 	private $customConfigs;
@@ -567,4 +567,3 @@ class PackageManager {
 		return $pluginConfig;
 	}
 }
-?>

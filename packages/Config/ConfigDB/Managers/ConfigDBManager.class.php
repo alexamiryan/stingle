@@ -1,4 +1,4 @@
-<?
+<?php
 class ConfigDBManager{
 	
 	const TBL_CONFIGS = "configs";
@@ -393,4 +393,3 @@ class ConfigDBManager{
 	}
 	
 }
-?>

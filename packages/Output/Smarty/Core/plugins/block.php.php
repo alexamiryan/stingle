@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin to execute PHP code
  * 
@@ -23,5 +23,3 @@ function smarty_block_php($params, $content, $template, &$repeat)
     eval($content);
     return '';
 }
-
-?>

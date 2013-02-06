@@ -1,10 +1,10 @@
-<?
+<?php
 class LoaderSiteNavigation extends Loader{
 	protected function includes(){
 		require_once ('Exceptions/FileNotFoundException.class.php');
-		require_once ('Nav.class.php');
-		require_once ('RequestParser.class.php');
-		require_once ('Controller.class.php');
+		require_once ('Objects/Nav.class.php');
+		require_once ('Managers/RequestParser.class.php');
+		require_once ('Managers/Controller.class.php');
 		require_once ('Helpers/helpers.php');
 	}
 	
@@ -26,4 +26,3 @@ class LoaderSiteNavigation extends Loader{
 		$this->controller->exec();
 	}
 }
-?>

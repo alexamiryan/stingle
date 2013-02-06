@@ -1,4 +1,4 @@
-<?
+<?php
 class UserManager extends DbAccessor{
 	
 	const TBL_USERS 				= "wum_users";
@@ -415,10 +415,10 @@ class UserManager extends DbAccessor{
 		$user->email = $data['email'];
 		$user->emailConfirmed = $data['email_confirmed'];
 		
-		if($initObjects & self::INIT_PROPERTIES != 0){
+		if(($initObjects & self::INIT_PROPERTIES) != 0){
 			$user->props = $this->getPropertiesObject($user->id, $cacheMinutes);
 		}
-		if($initObjects & self::INIT_PERMISSIONS != 0){
+		if(($initObjects & self::INIT_PERMISSIONS) != 0){
 			$user->perms = $this->getPermissionsObject($user->id, $cacheMinutes);
 		}
 		
@@ -426,4 +426,3 @@ class UserManager extends DbAccessor{
 	}
 	
 }
-?>

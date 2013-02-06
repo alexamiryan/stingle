@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * 
@@ -116,4 +116,3 @@ function smarty_function_html_options_optgroup($key, $values, $selected)
     return $optgroup_html;
 } 
 
-?>

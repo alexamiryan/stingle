@@ -1,4 +1,4 @@
-<?
+<?php
 abstract class CometBroadcastEventHandler extends CometEventHandler{
 	
 	public $isBroadcast = true;
@@ -6,4 +6,3 @@ abstract class CometBroadcastEventHandler extends CometEventHandler{
 	abstract public function getUsersListToListenTo();
 	abstract public function getEventTypesToListenTo();
 }
-?>

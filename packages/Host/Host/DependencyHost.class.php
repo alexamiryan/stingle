@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyHost extends Dependency
 {
 	public function __construct(){
@@ -6,4 +6,3 @@ class DependencyHost extends Dependency
 		$this->addPlugin("Db", "QueryBuilder");
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class SiteMode
 {
 	const MODE_PRODUCTION 	= 1;
@@ -24,4 +24,3 @@ class SiteMode
 		static::$mode = $mode;
 	}
 }
-?>

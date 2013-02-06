@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Draw Pager
  *
@@ -117,4 +117,3 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 		return $smarty->fetch($smarty->getChunkPath($pagerChunkFileName));
 	}
 }
-?>

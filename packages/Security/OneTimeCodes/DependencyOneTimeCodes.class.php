@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyOneTimeCodes extends Dependency
 {
 	public function __construct(){
@@ -7,4 +7,3 @@ class DependencyOneTimeCodes extends Dependency
 		$this->addPlugin("Crypto", "AES256");
 	}
 }
-?>

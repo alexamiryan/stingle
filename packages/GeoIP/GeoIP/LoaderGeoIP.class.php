@@ -1,9 +1,9 @@
-<?
+<?php
 class LoaderGeoIP extends Loader{
 	
 	protected function includes(){
-		require_once ('GeoIP.class.php');
-		require_once ('GeoLocation.class.php');
+		require_once ('Managers/GeoIP.class.php');
+		require_once ('Objects/GeoLocation.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
@@ -14,4 +14,3 @@ class LoaderGeoIP extends Loader{
 		$this->register(new GeoIP());
 	}
 }
-?>

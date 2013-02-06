@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -43,4 +43,3 @@ function _smarty_regex_replace_check($search)
     return $search;
 }
 
-?>

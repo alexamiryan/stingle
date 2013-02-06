@@ -1,5 +1,0 @@
-<?
-class SecurityException extends Exception {
-	
-}
-?>

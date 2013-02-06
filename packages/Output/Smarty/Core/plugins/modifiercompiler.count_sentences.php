@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -24,4 +24,3 @@ function smarty_modifiercompiler_count_sentences($params, $compiler)
     return 'preg_match_all(\'/[^\s]\.(?!\w)/\', ' . $params[0] . ', $tmp)';
 }
 
-?>

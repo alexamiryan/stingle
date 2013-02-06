@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array(
 												'publicKey' => '',
@@ -7,4 +7,3 @@ $defaultConfig = array(
 												'Recaptcha' => 'recaptcha' 
 											)
 					);
-?>

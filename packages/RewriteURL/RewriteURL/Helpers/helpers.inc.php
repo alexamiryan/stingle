@@ -1,4 +1,4 @@
-<?
+<?php
 function getCurrentUrl($exclude = array()){
 	$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
 
@@ -49,4 +49,3 @@ function getAllGetParams(array $excludeArray = array()){
 
 	return $returnString;
 }
-?>

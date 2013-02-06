@@ -1,4 +1,4 @@
-<?
+<?php
 class Comet{
 	
 	protected $chunks = array();
@@ -76,4 +76,3 @@ class Comet{
 		return false;
 	}
 }
-?>

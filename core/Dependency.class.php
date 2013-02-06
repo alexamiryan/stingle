@@ -1,4 +1,4 @@
-<?
+<?php
 class Dependency
 {
 	private $deps = array();
@@ -73,4 +73,3 @@ class Dependency
 		}
 	}
 }
-?>

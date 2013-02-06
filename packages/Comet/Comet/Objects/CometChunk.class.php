@@ -1,4 +1,4 @@
-<?
+<?php
 abstract class CometChunk{
 	
 	protected $isAnyData = false;
@@ -50,4 +50,3 @@ abstract class CometChunk{
 
 	abstract public function getDataArray();
 }
-?>

@@ -1,8 +1,8 @@
-<?
+<?php
 class LoaderPageInfo extends Loader{
 	protected function includes(){
-		require_once ('PageInfo.class.php');
-		require_once ('PageInfoManager.class.php');
+		require_once ('Managers/PageInfo.class.php');
+		require_once ('Managers/PageInfoManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
@@ -32,4 +32,3 @@ class LoaderPageInfo extends Loader{
 	}
 
 }
-?>

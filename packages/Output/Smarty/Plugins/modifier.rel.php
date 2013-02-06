@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Get relative file path from site absolute link
  * For example output from img modifier 
@@ -10,4 +10,3 @@
 function smarty_modifier_rel($filePath){
 	return preg_replace("/^\//", "", $filePath);
 }
-?>

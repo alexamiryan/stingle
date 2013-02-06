@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * 
@@ -58,4 +58,3 @@ function smarty_modifier_date_format($string, $format = SMARTY_RESOURCE_DATE_FOR
     }
 } 
 
-?>

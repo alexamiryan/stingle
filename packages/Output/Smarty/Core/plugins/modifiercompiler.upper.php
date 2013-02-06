@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -27,4 +27,3 @@ function smarty_modifiercompiler_upper($params, $compiler)
     } 
 } 
 
-?>

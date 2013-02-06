@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -32,4 +32,3 @@ function smarty_modifiercompiler_wordwrap($params, $compiler)
     return 'wordwrap(' . $params[0] . ',' . $params[1] . ',' . $params[2] . ',' . $params[3] . ')';
 } 
 
-?>

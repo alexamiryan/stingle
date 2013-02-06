@@ -1,4 +1,4 @@
-<?
+<?php
 class Reg
 {
 	private static $reg = array();
@@ -49,4 +49,3 @@ class Reg
 		return false;
 	}
 }
-?>

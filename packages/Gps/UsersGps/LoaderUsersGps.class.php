@@ -1,8 +1,8 @@
-<?
+<?php
 class LoaderUsersGps extends Loader{
 	
 	protected function includes(){
-		require_once ('UsersGps.class.php');
+		require_once ('Managers/UsersGps.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
@@ -13,4 +13,3 @@ class LoaderUsersGps extends Loader{
 		$this->register(new UsersGps());
 	}
 }
-?>

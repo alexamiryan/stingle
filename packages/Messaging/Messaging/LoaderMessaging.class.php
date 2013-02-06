@@ -1,9 +1,9 @@
-<?
+<?php
 class LoaderMessaging extends Loader{
 	protected function includes(){
-		require_once ('MessageManagement.class.php');
-		require_once ('Message.class.php');
-		require_once ('MessageFilter.class.php');
+		require_once ('Managers/MessageManagement.class.php');
+		require_once ('Objects/Message.class.php');
+		require_once ('Filters/MessageFilter.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
@@ -14,4 +14,3 @@ class LoaderMessaging extends Loader{
 		$this->register(new MessageManagement());
 	}
 }
-?>

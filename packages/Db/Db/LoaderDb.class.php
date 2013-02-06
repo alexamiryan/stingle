@@ -1,12 +1,12 @@
-<?
+<?php
 class LoaderDb extends Loader{
 	protected function includes(){
-		require_once ('MySqlDbManager.class.php');
-		require_once ('Tbl.class.php');
-		require_once ('DbAccessor.class.php');
-		require_once ('MySqlDatabase.class.php');
-		require_once ('MySqlException.class.php');
-		require_once ('MySqlQuery.class.php');
+		require_once ('Managers/MySqlDbManager.class.php');
+		require_once ('Managers/Tbl.class.php');
+		require_once ('Managers/DbAccessor.class.php');
+		require_once ('Managers/MySqlDatabase.class.php');
+		require_once ('Exceptions/MySqlException.class.php');
+		require_once ('Managers/MySqlQuery.class.php');
 	}
 	
 	protected function loadDb(){
@@ -24,4 +24,3 @@ class LoaderDb extends Loader{
 		$this->register($query);
 	}
 }
-?>

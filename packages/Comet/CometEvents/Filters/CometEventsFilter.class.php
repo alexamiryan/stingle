@@ -1,4 +1,4 @@
-<?
+<?php
 class CometEventsFilter extends Filter {
 	
 	public function __construct(){
@@ -85,4 +85,3 @@ class CometEventsFilter extends Filter {
 		return $this;
 	}
 }
-?>

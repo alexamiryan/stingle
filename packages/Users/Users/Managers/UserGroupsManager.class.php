@@ -1,4 +1,4 @@
-<?
+<?php
 class UserGroupsManager extends DbAccessor{
 	
 	public function createGroup(UserGroup $group){
@@ -116,4 +116,3 @@ class UserGroupsManager extends DbAccessor{
 		return $group;
 	}
 }
-?>

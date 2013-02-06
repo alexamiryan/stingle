@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'AuxConfig' => array(	'uploadDir' => 'uploads/photos/data/',
 												'saveFormat' => 'jpeg',
@@ -10,4 +10,3 @@ $defaultConfig = array(
 												'minimumSize' => array('largeSideMinSize'=> 50, 'smallSideMinSize' => 50)
 											)
 					);
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderCometEvents extends Loader{
 	protected function includes(){
 		require_once ('Filters/CometEventsFilter.class.php');
@@ -17,4 +17,3 @@ class LoaderCometEvents extends Loader{
 		$this->register(new CometEvents());
 	}
 }
-?>

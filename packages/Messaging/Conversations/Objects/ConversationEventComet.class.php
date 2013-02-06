@@ -1,4 +1,4 @@
-<?
+<?php
 class ConversationEventComet extends CometEventHandler{
 	
 	protected $name = "conv";
@@ -51,4 +51,3 @@ class ConversationEventComet extends CometEventHandler{
 		return $responseArray;
 	}
 }
-?>

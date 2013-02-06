@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderUsers extends Loader{
 	protected function includes(){
 		require_once ('Managers/UserAuthorization.class.php');
@@ -43,4 +43,3 @@ class LoaderUsers extends Loader{
 		Reg::register($this->config->ObjectsIgnored->User, Reg::get($this->config->Objects->UserAuthorization)->getUserFromRequest());
 	}
 }
-?>

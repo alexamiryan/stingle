@@ -1,4 +1,4 @@
-<?
+<?php
 class UserGroupsFilter extends MergeableFilter{
 	
 	public function __construct(){
@@ -41,4 +41,3 @@ class UserGroupsFilter extends MergeableFilter{
 	}
 	
 }
-?>

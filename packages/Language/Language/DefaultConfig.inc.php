@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(	
 						'Objects' => array(	'LanguageManager' => 'lm'  ),
 						'ObjectsIgnored' => array(  'Language' => 'language'  ),
@@ -6,4 +6,3 @@ $defaultConfig = array(
 											'AfterPackagesLoad' => 'DefineAllConstants'  ),
 						'Memcache' => array(  'LanguageManager' => -1, 'Language' => -1  )
 					);
-?>

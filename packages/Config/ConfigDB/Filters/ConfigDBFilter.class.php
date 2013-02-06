@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Filter Class for configDB class
  * @author Aram Gevorgyan
@@ -107,4 +107,3 @@ class ConfigDBFilter extends Filter{
 		return $this;
 	}
 }
-?>

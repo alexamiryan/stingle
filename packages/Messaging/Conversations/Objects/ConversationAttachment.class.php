@@ -1,4 +1,4 @@
-<?
+<?php
 class ConversationAttachment {
 	public $id;
 	public $messageId;
@@ -8,4 +8,3 @@ class ConversationAttachment {
 	public $isImage;
 	public $date;
 }
-?>

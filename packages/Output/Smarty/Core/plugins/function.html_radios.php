@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  * 
@@ -151,4 +151,3 @@ function smarty_function_html_radios_output($name, $value, $output, $selected, $
     return $_output;
 } 
 
-?>

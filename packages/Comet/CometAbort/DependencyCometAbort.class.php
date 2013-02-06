@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyCometAbort extends Dependency
 {
 	public function __construct(){
@@ -6,4 +6,3 @@ class DependencyCometAbort extends Dependency
 		$this->addPlugin("Db", "QueryBuilder");
 	}
 }
-?>

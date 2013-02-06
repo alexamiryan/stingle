@@ -1,4 +1,4 @@
-<?
+<?php
 class User{
 	
 	public $id = null;
@@ -21,4 +21,3 @@ class User{
 	 */
 	public $perms = null;
 }
-?>

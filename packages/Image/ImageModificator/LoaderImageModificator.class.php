@@ -1,8 +1,8 @@
-<?
+<?php
 class LoaderImageModificator extends Loader{
 	protected function includes(){
-		require_once ('ImageModificator.class.php');
-		require_once ('ImageModificatorException.class.php');
+		require_once ('Managers/ImageModificator.class.php');
+		require_once ('Exceptions/ImageModificatorException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
@@ -13,4 +13,3 @@ class LoaderImageModificator extends Loader{
 		$this->register(new ImageModificator($this->config->AuxConfig));
 	}
 }
-?>

@@ -1,10 +1,10 @@
-<?
+<?php
 class LoaderSmarty extends Loader{
 	private $pluginsDirs = array();
 	
 	protected function includes(){
 		require_once ('Core/Smarty.class.php');
-		require_once ('SmartyWrapper.class.php');
+		require_once ('Managers/SmartyWrapper.class.php');
 		require_once ('Exceptions/TemplateFileNotFoundException.class.php');
 	}
 	
@@ -44,4 +44,3 @@ class LoaderSmarty extends Loader{
 
 	}
 }
-?>

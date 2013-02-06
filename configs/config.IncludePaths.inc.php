@@ -1,4 +1,4 @@
-<?
+<?php
 $CONFIG['paths']['classes_folder'] = 'incs/classes/';
 
 $CONFIG['paths']['include'] = '.' . PATH_SEPARATOR . // same directory
@@ -11,4 +11,3 @@ $CONFIG['paths']['include'] = '.' . PATH_SEPARATOR . // same directory
 				'incs/funcs/' . PATH_SEPARATOR . // library directory
 				'incs/init/' . PATH_SEPARATOR . // library directory
 				'libs/' . PATH_SEPARATOR; // library directory
-?>

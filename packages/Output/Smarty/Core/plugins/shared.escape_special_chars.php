@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty shared plugin
  *
@@ -26,4 +26,3 @@ function smarty_function_escape_special_chars($string)
     return $string;
 }
 
-?>

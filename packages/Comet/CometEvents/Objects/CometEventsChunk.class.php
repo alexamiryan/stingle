@@ -1,4 +1,4 @@
-<?
+<?php
 class CometEventsChunk extends CometChunk{
 	
 	protected $name = "events";
@@ -123,4 +123,3 @@ class CometEventsChunk extends CometChunk{
 		return $responseArray;
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class UserPermissionsManager extends DbAccessor{
 	
 	
@@ -94,4 +94,3 @@ class UserPermissionsManager extends DbAccessor{
 		return $perm;
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 $defaultConfig = array(
 						'AuxConfig' => array(	"requestsLimit" => 150,
 												'loginBruteForceProtectionEnabled' => true,
@@ -9,4 +9,3 @@ $defaultConfig = array(
 										),
 						'Objects' => array('RequestLimiter' => 'requestLimiter')
 					  );
-?>

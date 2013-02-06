@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyImageUploader extends Dependency
 {
 	public function __construct(){
@@ -6,4 +6,3 @@ class DependencyImageUploader extends Dependency
 		$this->addPlugin("Crypto", "Crypto");
 	}
 }
-?>

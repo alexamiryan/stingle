@@ -1,4 +1,4 @@
-<?
+<?php
 
 class InvalidArrayArgumentException extends InvalidArgumentException {
 	
@@ -32,4 +32,3 @@ class InvalidArrayArgumentException extends InvalidArgumentException {
 	}
 }
 
-?>

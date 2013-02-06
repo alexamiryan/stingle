@@ -1,4 +1,4 @@
-<?
+<?php
 class Hook{
 	private $name;
 	private $method;
@@ -52,4 +52,3 @@ class Hook{
 		return $this->object;
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyCometEvents extends Dependency
 {
 	public function __construct(){
@@ -7,4 +7,3 @@ class DependencyCometEvents extends Dependency
 		$this->addPlugin("Users");
 	}
 }
-?>

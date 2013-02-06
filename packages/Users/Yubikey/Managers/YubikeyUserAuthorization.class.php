@@ -1,4 +1,4 @@
-<?
+<?php
 class YubikeyUserAuthorization extends DbAccessor{
 	
 	const TBL_KEYS = "wum_yubico_keys";
@@ -104,4 +104,3 @@ class YubikeyUserAuthorization extends DbAccessor{
 		return substr($otp, 0, 12);
 	}
 }
-?>

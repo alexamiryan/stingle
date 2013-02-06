@@ -1,8 +1,8 @@
-<?
+<?php
 class LoaderGeoIPGps extends Loader{
 	
 	protected function includes(){
-		require_once ('GeoIPGps.class.php');
+		require_once ('Managers/GeoIPGps.class.php');
 	}
 	
 	protected function loadGeoIPGps(){
@@ -13,4 +13,3 @@ class LoaderGeoIPGps extends Loader{
 		$this->register($geoIpGps);
 	}
 }
-?>

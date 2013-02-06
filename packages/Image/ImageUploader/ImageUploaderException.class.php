@@ -1,6 +1,0 @@
-<?
-class ImageUploaderException extends Exception
-{
-	
-}
-?>

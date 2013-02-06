@@ -1,4 +1,4 @@
-<?
+<?php
 class ConversationComet extends CometChunk{
 	
 	protected $name = "conv";
@@ -40,4 +40,3 @@ class ConversationComet extends CometChunk{
 		return $responseArray;
 	}
 }
-?>

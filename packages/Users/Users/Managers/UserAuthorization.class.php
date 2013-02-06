@@ -1,4 +1,4 @@
-<?
+<?php
 class UserAuthorization extends DbAccessor{
 	
 	protected $um;
@@ -176,4 +176,3 @@ class UserAuthorization extends DbAccessor{
 	}
 	
 }
-?>

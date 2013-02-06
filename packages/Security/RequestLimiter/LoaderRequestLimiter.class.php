@@ -1,9 +1,9 @@
-<?
+<?php
 class LoaderRequestLimiter extends Loader{
 	protected function includes(){
 		require_once ('Exceptions/RequestLimiterTooManyAuthTriesException.class.php');
-		require_once ('RequestLimiter.class.php');
-		require_once ('RequestLimiterBlockedException.class.php');
+		require_once ('Managers/RequestLimiter.class.php');
+		require_once ('Exceptions/RequestLimiterBlockedException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
@@ -79,4 +79,3 @@ class LoaderRequestLimiter extends Loader{
 		}
 	}
 }
-?>

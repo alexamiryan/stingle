@@ -1,7 +1,7 @@
-<?
+<?php
 class LoaderHostLanguage extends Loader{
 	protected function includes(){
-		require_once ('HostLanguageManager.class.php');
+		require_once ('Managers/HostLanguageManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){
@@ -13,4 +13,3 @@ class LoaderHostLanguage extends Loader{
 		$this->register(new HostLanguageManager(Reg::get($hostConfig->Objects->Host)));
 	}
 }
-?>

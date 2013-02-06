@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Smarty plugin
  *
@@ -212,5 +212,3 @@ function smarty_function_fetch($params, $template)
         return $content;
     }
 }
-
-?>

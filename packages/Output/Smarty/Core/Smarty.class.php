@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * Project:     Smarty: the PHP compiling template engine
@@ -805,5 +805,3 @@ Class SmartyException extends Exception {
  */
 Class SmartyCompilerException extends SmartyException  {
 }
-
-?>

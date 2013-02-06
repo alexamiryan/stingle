@@ -1,4 +1,4 @@
-<?
+<?php
 class LoaderCrypto extends Loader{
 	
 	protected function includes(){
@@ -9,4 +9,3 @@ class LoaderCrypto extends Loader{
 		require_once ('Helpers/helpers.inc.php');
 	}
 }
-?>

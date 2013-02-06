@@ -1,4 +1,4 @@
-<?
+<?php
 class DependencyRewriteAliasURL extends Dependency
 {
 	public function __construct(){
@@ -6,4 +6,3 @@ class DependencyRewriteAliasURL extends Dependency
 		$this->addPlugin("Host");
 	}
 }
-?>

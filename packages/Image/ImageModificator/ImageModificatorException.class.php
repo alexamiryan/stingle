@@ -1,6 +1,0 @@
-<?
-class ImageModificatorException extends Exception
-{
-	
-}
-?>

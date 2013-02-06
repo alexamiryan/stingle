@@ -12,7 +12,7 @@ class LoaderYubikey extends Loader{
 		Tbl::registerTableNames('YubikeyUserAuthorization');
 	}
 	
-	protected function hookYubicoAuth($params){
+	public function hookYubicoAuth($params){
 		$yubikeyUserAuthorization = new YubikeyUserAuthorization($this->config->AuxConfig);
 		
 		if(isset($params['user'])and is_a($params['user'], "User")){

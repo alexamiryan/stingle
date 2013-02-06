@@ -52,11 +52,12 @@ class Func extends QBpart
 
     public function __toString()
     {
-    	foreach($this->_arguments as &$arg){
+    	$finalArguments = $this->_arguments;
+    	foreach($finalArguments as &$arg){
     		$arg = Expr::quoteLiteral($arg);
     	}
     	
-        $returnStr = $this->_name . '(' . implode(', ', $this->_arguments) . ')';
+        $returnStr = $this->_name . '(' . implode(', ', $finalArguments) . ')';
         
         if($this->_alias != null){
         	$returnStr .= " as `". $this->_alias ."`";

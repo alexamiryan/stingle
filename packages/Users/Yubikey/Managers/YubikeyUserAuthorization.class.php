@@ -19,6 +19,8 @@ class YubikeyUserAuthorization extends DbAccessor{
 	 * @param var $sessionVar
 	 */
 	public function __construct(Config $config, $dbInstanceKey = null){
+		parent::__construct($dbInstanceKey);
+		
 		$this->authYubikey = new Yubikey($config->yubico_id, $config->yubico_key);
 	}
 	

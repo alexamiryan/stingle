@@ -22,14 +22,14 @@ class UserPermissionsFilter extends MergeableFilter{
 			throw new InvalidIntegerArgumentException("\$name have to be not empty string");
 		}
 	
-		$this->qb->andWhere($this->qb->expr()->notEqual(new Field('id', $this->primaryTableAlias), $userId));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('id', $this->primaryTableAlias), $userId));
 		return $this;
 	}
 	
 	public function setUser(User $user){
 		$this->joinUsersPermissionsTable();
 		
-		$this->qb->andWhere($this->qb->expr()->notEqual(new Field('user_id', 'users_perms'), $user->id));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('user_id', 'users_perms'), $user->id));
 		return $this;
 	}
 	
@@ -39,7 +39,7 @@ class UserPermissionsFilter extends MergeableFilter{
 		}
 		$this->joinGroupsPermissionsTable();
 	
-		$this->qb->andWhere($this->qb->expr()->notEqual(new Field('group_id', 'groups_perms'), $group->id));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('group_id', 'groups_perms'), $group->id));
 		return $this;
 	}
 	

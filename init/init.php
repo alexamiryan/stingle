@@ -17,8 +17,8 @@ require_once(STINGLE_PATH . "core/Exceptions/InvalidArrayArgumentException.class
 require_once(STINGLE_PATH . "core/Exceptions/InvalidIntegerArgumentException.class.php");
 require_once(STINGLE_PATH . "core/Exceptions/InvalidTimestampArgumentException.class.php");
 
-require_once(STINGLE_PATH . "functions/system.php");
-require_once(STINGLE_PATH . "functions/func.php");
+require_once(STINGLE_PATH . "helpers/system.php");
+require_once(STINGLE_PATH . "helpers/func.php");
 
 register_shutdown_function("shutdown");
 set_exception_handler("default_exception_handler");
@@ -33,8 +33,12 @@ $config = new Config($CONFIG);
 ConfigManager::setGlobalConfig($config);
 Reg::register('packageMgr', new PackageManager());
 
-error_reporting($config->site->error_reporting);
-session_name($config->site->site_id);
+if(isset($config->site->error_reporting)){
+	error_reporting($config->site->error_reporting);
+}
+if(isset($config->site->site_id)){
+	session_name($config->site->site_id);
+}
 
 session_start();
 ob_start('stingleOutputHandler');

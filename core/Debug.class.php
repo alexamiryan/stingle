@@ -1,7 +1,7 @@
 <?php
 class Debug
 {
-	private static $mode;
+	private static $mode = false;
 	
 	/**
 	 * Get debug mode

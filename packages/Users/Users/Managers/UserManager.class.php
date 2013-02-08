@@ -393,6 +393,16 @@ class UserManager extends DbAccessor{
 	}
 	
 	/**
+	 * Get empty user object.
+	 * If you overload this method in child manager class you can use extended User object
+	 * 
+	 *  @return User
+	 */
+	protected function getNewUserObject(){
+		return new User();
+	}
+	
+	/**
 	 * Get user Object from raw DB data
 	 * 
 	 * @param array $data
@@ -401,7 +411,7 @@ class UserManager extends DbAccessor{
 	 * @return User
 	 */
 	protected function getUserObjectFromData($data, $initObjects = self::INIT_ALL, $cacheMinutes = 0){
-		$user = new User();
+		$user = $this->getNewUserObject();
 		
 		$user->id = $data['id'];
 		$user->enabled = $data['enabled'];

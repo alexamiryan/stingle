@@ -20,22 +20,25 @@
 --
 
 --
--- Table structure for table `configs`
+-- Table structure for table `wmsg_extra`
 --
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `configs` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `location` varchar(256) NOT NULL,
-  `name` varchar(128) NOT NULL,
-  `value` text,
-  `host_lang_id` int(11) unsigned default NULL COMMENT 'Host Language Id',
-  `alias_of` int(11) unsigned default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `parent_id` (`location`(255)),
-  KEY `host_lang_id` (`host_lang_id`),
-  KEY `alias_of` (`alias_of`)
+CREATE TABLE IF NOT EXISTS `wmsg_extra` (
+  `message_id` int(10) unsigned NOT NULL COMMENT 'Message ID',
+  `sender` int(10) unsigned NOT NULL COMMENT 'User ID of sender',
+  `receiver` int(10) unsigned NOT NULL COMMENT 'User ID of receiver',
+  `read` tinyint(1) unsigned NOT NULL default '0' COMMENT 'Boolean (0,1). Is message marked as read.',
+  `deleted` tinyint(1) unsigned NOT NULL default '0' COMMENT 'Boolean (0,1). Is message permanently deleted.',
+  `trashed` tinyint(1) unsigned NOT NULL default '0' COMMENT 'Boolean (0,1). Is message trashed.',
+  `replied` int(10) unsigned default NULL,
+  KEY `message_id` (`message_id`),
+  KEY `receiver` (`receiver`,`deleted`,`trashed`),
+  KEY `sender` (`sender`,`deleted`,`trashed`),
+  KEY `replied` (`replied`),
+  KEY `receiver_sender` (`receiver`,`sender`),
+  CONSTRAINT `fk_msg_extra` FOREIGN KEY (`message_id`) REFERENCES `wmsg_messages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -48,4 +51,4 @@ CREATE TABLE IF NOT EXISTS `configs` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-02-05 18:37:42
+-- Dump completed on 2013-02-06 17:18:37

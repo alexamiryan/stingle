@@ -2,6 +2,7 @@
 class Tbl
 {
 	private static $tableNames;
+	private static $tableSQLFiles = array();
 	
 	const TABLE_NAMES_BEGIN = 'TBL_';
 	
@@ -50,6 +51,9 @@ class Tbl
 		if($dbInstanceKey === null){
 			$dbInstanceKey = self::getCallerDbInstanceKey();
 		}
+		
+		$sqlFiles = self::getCallerSQLFiles();
+		self::$tableSQLFiles = array_merge(self::$tableSQLFiles, $sqlFiles);
 		
 		if(!class_exists($className)){
 			throw new RuntimeException("Class '$className' doesn't exists or it is not loaded!");
@@ -108,6 +112,39 @@ class Tbl
 		return self::$tableNames[$dbInstanceKey][$className][$tableName];
 	}
 	
+	public static function getTableSQLFilePath($tableName){
+		if(empty($tableName)){
+			throw new InvalidArgumentException("You have to specify table name");
+		}
+	
+		if(isset(self::$tableSQLFiles[$tableName]) and !empty(self::$tableSQLFiles[$tableName])){
+			return self::$tableSQLFiles[$tableName];
+		}
+		return false;
+	}
+	
+	public static function getPluginSQLFilePathsByTableName($tableName){
+		if(empty($tableName)){
+			throw new InvalidArgumentException("You have to specify table name");
+		}
+	
+		if(isset(self::$tableSQLFiles[$tableName]) and !empty(self::$tableSQLFiles[$tableName])){
+			$myTableSQLFile = self::$tableSQLFiles[$tableName];
+			
+			$files = array();
+			
+			foreach(self::$tableSQLFiles as $tableName => $sqlFile){
+				if($myTableSQLFile['path'] == $sqlFile['path']){
+					array_push($files, $sqlFile['path'] . $sqlFile['filename']);
+				}
+			}
+			
+			return $files;
+		}
+		
+		return false;
+	}
+	
 	private static function getCallerClassName(){
 		$backtrace = debug_backtrace();
 		if(!empty($backtrace[2]['object']) and is_object($backtrace[2]['object'])){
@@ -134,5 +171,23 @@ class Tbl
 		else{
 			return MySqlDbManager::getDefaultInstanceKey();
 		}
+	}
+	
+	private static function getCallerSQLFiles(){
+		$backtrace = debug_backtrace();
+		$callerFile = $backtrace[1]['file'];
+		
+		$sqlsPath = preg_replace("/(.+?".str_replace('/', '\/', STINGLE_PATH)."packages\/.+?\/.+?\/).*/", "$1SQL/", $callerFile);
+		
+		$sqlFiles = array();
+		$dir  = opendir($sqlsPath);
+		while (false !== ($filename = readdir($dir))) {
+			if(preg_match("/(.+)\.sql$/i", $filename, $matches)){
+				$sqlFiles[$matches[1]] = array('path' => $sqlsPath, 'filename' => $filename);
+			}
+		}
+		closedir($dir);
+		
+		return $sqlFiles;
 	}
 }

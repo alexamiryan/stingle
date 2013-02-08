@@ -22,6 +22,8 @@ class MySqlQuery
 	protected $logger;
 	protected $log = false;
 	
+	protected $nonExitentTables = array();
+	
 	const LOGGER_NAME = 'MysqlQuery';
 
 	/**
@@ -114,7 +116,36 @@ class MySqlQuery
 			return $this;
 		}
 		else{
-			throw new MySqlException("MySQL Error: " . $this->errorMessage() . " in query `$sql_statement`", $this->errorCode());
+			$errorCode = $this->errorCode();
+			$errorMessage = $this->errorMessage();
+			if($errorCode == 1146){
+				preg_match("/Table \'.*?\.(.+?)\' doesn\'t exist/", $errorMessage, $matches);
+				
+				if(isset($matches[1])){
+					$nonExistantTableName = $matches[1];
+
+					if(!in_array($nonExistantTableName, $this->nonExitentTables)){
+						
+						$sqlFiles = Tbl::getPluginSQLFilePathsByTableName($nonExistantTableName);
+						if($sqlFiles !== false){
+							$db = Reg::get(ConfigManager::getConfig("Db", "Db")->Objects->Db);
+							$db->startTransaction();
+							foreach($sqlFiles as  $sqlFilePath){
+								self::executeSQLFile($sqlFilePath);
+							}
+							
+							if($db->commit()){
+								array_push($this->nonExitentTables, $nonExistantTableName);
+								return $this->exec($sql_statement);
+							}
+							else{
+								$db->rollBack();
+							}
+						}
+					}
+				}
+			}
+			throw new MySqlException("MySQL Error: $errorCode: $errorMessage in query `$sql_statement`", $errorCode);
 		}
 	}
 
@@ -579,5 +610,40 @@ class MySqlQuery
 	public function getFoundRowsCount(){
 		$this->exec("SELECT FOUND_ROWS() AS `cnt`");
 		return $this->fetchField('cnt');
+	}
+	
+	public function executeSQLFile($file, $delimiter = ';'){
+		$matches = array();
+		$otherDelimiter = false;
+		if (is_file($file) === true) {
+			$file = fopen($file, 'r');
+			if (is_resource($file) === true) {
+				$query = array();
+				while (feof($file) === false) {
+					$query[] = fgets($file);
+					if (preg_match('~' . preg_quote('delimiter', '~') . '\s*([^\s]+)$~iS', end($query), $matches) === 1){
+						//DELIMITER DIRECTIVE DETECTED
+						array_pop($query); //WE DON'T NEED THIS LINE IN SQL QUERY
+						if( $otherDelimiter = ( $matches[1] != $delimiter )){
+						}
+						else{
+							// THIS IS THE DEFAULT DELIMITER, DELETE THE LINE BEFORE THE LAST (THAT SHOULD BE THE NOT DEFAULT DELIMITER) AND WE SHOULD CLOSE THE STATEMENT
+							array_pop($query);
+							$query[]=$delimiter;
+						}
+					}
+					if ( !$otherDelimiter && preg_match('~' . preg_quote($delimiter, '~') . '\s*$~iS', end($query)) === 1) {
+						$query = trim(implode('', $query));
+						
+						$this->exec($query);
+					}
+					if (is_string($query) === true) {
+						$query = array();
+					}
+				}
+				return fclose($file);
+			}
+		}
+		return false;
 	}
 }

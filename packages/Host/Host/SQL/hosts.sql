@@ -23,16 +23,15 @@
 -- Table structure for table `hosts`
 --
 
-DROP TABLE IF EXISTS `hosts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `hosts` (
+CREATE TABLE IF NOT EXISTS `hosts` (
   `id` tinyint(2) unsigned NOT NULL auto_increment,
   `host` varchar(100) NOT NULL COMMENT 'host name',
   `subdomain` varchar(256) default NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `host` (`host`)
-) ENGINE=InnoDB AUTO_INCREMENT=116 DEFAULT CHARSET=latin1 COMMENT='known hosts';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='known hosts';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

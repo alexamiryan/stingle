@@ -62,7 +62,7 @@ class HostManager{
 		$host->id = $sql->getLastInsertId();
 	}
 	
-	public static function getHostByName($hostName, $cacheMinutes = null){
+	public static function getHostByName($hostName, $tryToAutoCreateHost = true, $cacheMinutes = null){
 		$sql = MySqlDbManager::getQueryObject();
 		
 		$qb = new QueryBuilder();
@@ -96,6 +96,14 @@ class HostManager{
 				$host = new Host();
 				Host::setData($data, $host);
 				return $host;
+			}
+			elseif($tryToAutoCreateHost){
+				$host = new Host();
+				$host->host = $hostName;
+				
+				self::addHost($host);
+				
+				return self::getHostByName($hostName, false, $cacheMinutes);
 			}
 			throw new RuntimeException("There is no such host (".$originalHostName.")");
 		}

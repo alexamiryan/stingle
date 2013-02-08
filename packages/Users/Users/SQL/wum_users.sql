@@ -20,22 +20,30 @@
 --
 
 --
--- Table structure for table `configs`
+-- Table structure for table `wum_users`
 --
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `configs` (
+CREATE TABLE IF NOT EXISTS `wum_users` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `location` varchar(256) NOT NULL,
-  `name` varchar(128) NOT NULL,
-  `value` text,
-  `host_lang_id` int(11) unsigned default NULL COMMENT 'Host Language Id',
-  `alias_of` int(11) unsigned default NULL,
+  `enabled` tinyint(1) NOT NULL default '1' COMMENT 'Is User Enabled',
+  `creation_date` date NOT NULL COMMENT 'User creation date',
+  `creation_time` time NOT NULL COMMENT 'User creation time',
+  `login` varchar(64) NOT NULL COMMENT 'Username',
+  `password` varchar(128) NOT NULL COMMENT 'Salted hashed password',
+  `salt` varchar(128) NOT NULL,
+  `last_login_ip` varchar(64) default NULL,
+  `last_login_date` timestamp NULL default NULL COMMENT 'Last login date',
+  `email` varchar(250) default NULL COMMENT 'Email address',
+  `email_confirmed` tinyint(1) unsigned NOT NULL default '0' COMMENT 'Shows user confirmed his email or not',
   PRIMARY KEY  (`id`),
-  KEY `parent_id` (`location`(255)),
-  KEY `host_lang_id` (`host_lang_id`),
-  KEY `alias_of` (`alias_of`)
+  UNIQUE KEY `uni_login` (`login`),
+  KEY `ind_email` (`email`),
+  KEY `ind_enable` USING BTREE (`enabled`),
+  KEY `last_login_date` (`last_login_date`),
+  KEY `creation_date` (`creation_date`),
+  KEY `creation_time` (`creation_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -48,4 +56,4 @@ CREATE TABLE IF NOT EXISTS `configs` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-02-05 18:37:42
+-- Dump completed on 2013-02-06 17:28:03

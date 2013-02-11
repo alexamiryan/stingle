@@ -94,8 +94,6 @@ class Controller
 				}
 			}
 		}
-		catch(ControllerTerminateException $e){
-			echo "qaqik";exit;
-		}
+		catch(ControllerTerminateException $e){}
 	}
 }

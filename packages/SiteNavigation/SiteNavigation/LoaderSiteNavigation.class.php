@@ -1,6 +1,7 @@
 <?php
 class LoaderSiteNavigation extends Loader{
 	protected function includes(){
+		require_once ('Exceptions/ControllerTerminateException.class.php');
 		require_once ('Exceptions/FileNotFoundException.class.php');
 		require_once ('Objects/Nav.class.php');
 		require_once ('Managers/RequestParser.class.php');

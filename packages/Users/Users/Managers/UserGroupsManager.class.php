@@ -28,8 +28,8 @@ class UserGroupsManager extends DbAccessor{
 		$qb = new QueryBuilder();
 		
 		$qb->update(Tbl::get('TBL_GROUPS', 'UserManager'))
-			->set('name', $group->name)
-			->set('description', $group->description)
+			->set(new Field('name'), $group->name)
+			->set(new Field('description'), $group->description)
 			->where($qb->expr()->equal(new Field('id'), $group->id));
 		
 		return $this->query->exec($qb->getSQL())->affected();
@@ -48,12 +48,17 @@ class UserGroupsManager extends DbAccessor{
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
-	public function getGroups(UserGroupsFilter $filter = null, $cacheMinutes = 0){
+	public function getGroups(UserGroupsFilter $filter = null, MysqlPager $pager = null, $cacheMinutes = 0){
 		if($filter === null){
 			$filter = new UserGroupsFilter();
 		}
+		if($pager !== null){
+			$this->query = $pager->executePagedSQL($filter->getSQL(), $cacheMinutes);
+		}
+		else{
+			$this->query->exec($filter->getSQL(), $cacheMinutes);
+		}
 		
-		$this->query->exec($filter->getSQL(), $cacheMinutes);
 		
 		$groups = array();
 		if($this->query->countRecords()){
@@ -66,7 +71,7 @@ class UserGroupsManager extends DbAccessor{
 	}
 	
 	public function getGroup(UserGroupsFilter $filter = null, $cacheMinutes = 0){
-		$groups = $this->getGroups($filter, $cacheMinutes);
+		$groups = $this->getGroups($filter, null, $cacheMinutes);
 		if(count($groups) !== 1){
 			throw new UserNotFoundException("There is no such group or group is not unique.");
 		}
@@ -80,6 +85,17 @@ class UserGroupsManager extends DbAccessor{
 		
 		$filter = new UserGroupsFilter();
 		$filter->setName($name);
+		
+		return $this->getGroup($filter, $cacheMinutes);
+	}
+	
+	public function getGroupById($groupId , $cacheMinutes = 0){
+		if(!is_numeric($groupId)){
+			throw new InvalidArgumentException("Group id is not numeric");
+		}
+		
+		$filter = new UserGroupsFilter();
+		$filter->setId($groupId);
 		
 		return $this->getGroup($filter, $cacheMinutes);
 	}

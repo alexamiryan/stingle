@@ -2,12 +2,12 @@
 class UserPermissionsManager extends DbAccessor{
 	
 	
-	public function getPermissions(UserPermissionsFilter $filter = null){
+	public function getPermissions(UserPermissionsFilter $filter = null, $cacheminutes = null){
 		if($filter === null){
 			$filter = new UserPermissionsFilter();
 		}
 		
-		$this->query->exec($filter->getSQL());
+		$this->query->exec($filter->getSQL(), $cacheminutes);
 		
 		$perms = array();
 		if($this->query->countRecords()){
@@ -17,6 +17,26 @@ class UserPermissionsManager extends DbAccessor{
 		}
 		
 		return $perms;
+	}
+	
+	public function getPermission(UserPermissionsFilter $filter = null, $cacheminutes = null){
+		$permissions = $this->getPermissions($filter, $cacheminutes);
+		
+		if(count($permissions) !== 1){
+			throw new Exception("There is no permission or it is not unique");
+		}
+		
+		return $permissions[0];
+	}
+	
+	public function getPermissionById($permissionId){
+		if(!is_numeric($permissionId)){
+			throw new InvalidArgumentException("PerrmisionId is not numeric");
+		}
+		$filter = new UserPermissionsFilter();
+		$filter->setId($permissionId);
+		
+		return $this->getPermission($filter);
 	}
 	
 	public function addPermissionToUser(Permission $perm, User $user, $args = null){
@@ -37,7 +57,7 @@ class UserPermissionsManager extends DbAccessor{
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
-	public function addPermissionToGroup(Permission $perm, Group $group, $args = null){
+	public function addPermissionToGroup(Permission $perm, UserGroup $group, $args = null){
 		$qb = new QueryBuilder();
 		
 		$values = array(
@@ -65,7 +85,7 @@ class UserPermissionsManager extends DbAccessor{
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
-	public function removePermissionFromGroup(Permission $perm, Group $group){
+	public function removePermissionFromGroup(Permission $perm, UserGroup $group){
 		$qb = new QueryBuilder();
 	
 		$qb->delete(Tbl::get('TBL_GROUPS_PERMISSIONS', 'UserManager'))

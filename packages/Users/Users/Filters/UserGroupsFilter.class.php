@@ -30,7 +30,7 @@ class UserGroupsFilter extends MergeableFilter{
 	public function setUser(User $user){
 		$this->joinUsersGroupsTable();
 		
-		$this->qb->andWhere($this->qb->expr()->notEqual(new Field('user_id', 'users_groups'), $user->id));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('user_id', 'users_groups'), $user->id));
 		return $this;
 	}
 	

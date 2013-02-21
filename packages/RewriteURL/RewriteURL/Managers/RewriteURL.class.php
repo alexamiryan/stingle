@@ -13,11 +13,10 @@ class RewriteURL{
 		if(!$this->config->enableUrlRewrite){
 			return;
 		}
-		$this->config->sitePath = "/";
 		
 		// grab URL query string
-		$uri = $_SERVER['REQUEST_URI'];
-		$sitePath = $this->config->sitePath;
+		$uri = trim($_SERVER['REQUEST_URI'], '/');
+		$sitePath = trim($this->config->sitePath, '/');
 		
 		// Strip first slash from uri
 		if(substr($uri, 0, 1) == '/'){
@@ -30,8 +29,8 @@ class RewriteURL{
 		}
 		
 		// Strip sitePath from uri if exists
-		if(strpos($uri, $sitePath) == 0){
-			$uri = str_replace($sitePath, "", $uri);
+		if(!empty($sitePath) and strpos($uri, $sitePath) == 0){
+			$uri = trim(str_replace($sitePath, "", $uri), '/');
 		}
 		
 		// Start parsing uri parts

@@ -60,7 +60,7 @@ class HostLanguageManager extends LanguageManager {
 	 * Get Default language
 	 * @return Language
 	 */
-	public function getDefaultLanguage($cacheMinutes = null){
+	public function getDefaultLanguage($cacheMinutes = null, $tryToAutoCreateDefaultLanguage = true){
 		$qb = new QueryBuilder();
 		$qb->select(new Field('*', 'l'))
 			->from(Tbl::get("TBL_HOST_LANGUAGE"), 'hl')
@@ -74,6 +74,16 @@ class HostLanguageManager extends LanguageManager {
 			$l = new Language();
 			Language::setData($lang_data,$l);
 			return $l;
+		}
+		elseif($tryToAutoCreateDefaultLanguage){
+			$defaultLanguage= parent::getDefaultLanguage();
+			try{
+				$this->addHostLanguage($this->host, $defaultLanguage);
+				$this->setHostsDefaultLanguage($this->host, $defaultLanguage);
+			}
+			catch(MySqlException $e){}
+			
+			return $this->getDefaultLanguage(0, false);
 		}
 		throw new RuntimeException("Default language not defined for '". $this->host->host ."'");
 	}

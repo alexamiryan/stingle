@@ -40,6 +40,9 @@ class LoaderUsers extends Loader{
 	}
 	
 	public function hookUserAuthorization(){
-		Reg::register($this->config->ObjectsIgnored->User, Reg::get($this->config->Objects->UserAuthorization)->getUserFromRequest());
+		$user = Reg::get($this->config->Objects->UserAuthorization)->getUserFromRequest();
+		if(is_a($user, "User")){
+			Reg::register($this->config->ObjectsIgnored->User, $user);
+		}
 	}
 }

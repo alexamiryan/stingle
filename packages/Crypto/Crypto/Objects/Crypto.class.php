@@ -143,11 +143,14 @@ class Crypto
 		$pr_bits    = '';
 
 		#Unix/Linux platform
-		$fp = @fopen( '/dev/urandom', 'rb' );
-		if( $fp !== false ){
-			$pr_bits    .= @fread( $fp, $bytes );
-			@fclose( $fp );
+		try{
+			$fp = @fopen( '/dev/urandom', 'rb' );
+			if( $fp !== false ){
+				$pr_bits    .= @fread( $fp, $bytes );
+				@fclose( $fp );
+			}
 		}
+		catch(Exception $e){}
 
 		#MS-Windows platform before CAPICOM discontinued
 		if( @class_exists( 'COM' ) ){

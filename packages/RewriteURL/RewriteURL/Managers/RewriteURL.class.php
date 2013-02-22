@@ -13,26 +13,9 @@ class RewriteURL{
 		if(!$this->config->enableUrlRewrite){
 			return;
 		}
-		$this->config->sitePath = "/";
 		
 		// grab URL query string
-		$uri = $_SERVER['REQUEST_URI'];
-		$sitePath = $this->config->sitePath;
-		
-		// Strip first slash from uri
-		if(substr($uri, 0, 1) == '/'){
-			$uri = substr($uri, 1);
-		}
-		
-		// Strip first slash from sitePath
-		if(substr($sitePath, 0, 1) == '/'){
-			$sitePath = substr($sitePath, 1);
-		}
-		
-		// Strip sitePath from uri if exists
-		if(strpos($uri, $sitePath) == 0){
-			$uri = str_replace($sitePath, "", $uri);
-		}
+		$uri = $this->getStripedUri();
 		
 		// Start parsing uri parts
 		$levels = $this->config->levels->toArray();
@@ -75,6 +58,26 @@ class RewriteURL{
 		return $strUrl;
 	}
 	
+	/**
+	 * Strip SITE_PATH from URI and return it.
+	 */
+	public function getStripedUri(){
+		// grab URL query string
+		$uri = trim($_SERVER['REQUEST_URI'], '/');
+		$sitePath = $this->getSitePath();
+		
+		// Strip sitePath from uri if exists
+		if(!empty($sitePath) and strpos($uri, $sitePath) == 0){
+			$uri = trim(str_replace($sitePath, "", $uri), '/');
+		}
+		
+		return $uri;
+	}
+	
+	public function getSitePath(){
+		return trim($this->config->sitePath, '/');
+	}
+	
 	public static function ensureLastSlash(&$strUrl){
 		if(substr($strUrl, strlen($strUrl) - 1) != '/'){
 			$strUrl .= '/';
@@ -82,4 +85,3 @@ class RewriteURL{
 	}
 	
 }
-

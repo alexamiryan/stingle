@@ -29,8 +29,8 @@ class RewriteAliasURL extends RewriteURL{
 			$uri = rawurldecode($_SERVER['REQUEST_URI']);
 			static::ensureLastSlash($uri);
 			if(method_exists($this, 'parseCustomAliases')){
-				$uri = $this->parseCustomAliases($uri);
-				$_SERVER['REQUEST_URI'] = $uri;
+				$uri = $this->parseCustomAliases($this->getStripedUri());
+				$_SERVER['REQUEST_URI'] = $this->getSitePath() . '/' . $uri;
 			}
 		}
 	}

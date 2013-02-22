@@ -117,6 +117,8 @@ class Tbl
 			throw new InvalidArgumentException("You have to specify table name");
 		}
 	
+		$tableName = strtolower($tableName);
+	
 		if(isset(self::$tableSQLFiles[$tableName]) and !empty(self::$tableSQLFiles[$tableName])){
 			return self::$tableSQLFiles[$tableName];
 		}
@@ -127,6 +129,8 @@ class Tbl
 		if(empty($tableName)){
 			throw new InvalidArgumentException("You have to specify table name");
 		}
+	
+		$tableName = strtolower($tableName);
 	
 		if(isset(self::$tableSQLFiles[$tableName]) and !empty(self::$tableSQLFiles[$tableName])){
 			$myTableSQLFile = self::$tableSQLFiles[$tableName];
@@ -177,19 +181,31 @@ class Tbl
 		$backtrace = debug_backtrace();
 		$callerFile = $backtrace[1]['file'];
 		
-		$sqlsPath = preg_replace("/(.+?".str_replace('/', '\/', STINGLE_PATH)."packages\/.+?\/.+?\/).*/", "$1SQL/", $callerFile);
+		if(DIRECTORY_SEPARATOR == '/'){
+			$sqlsPath = preg_replace("/(.+?".str_replace('/', '\/', STINGLE_PATH)."packages\/.+?\/.+?\/).*/", "$1SQL/", $callerFile);
+		}
+		elseif(DIRECTORY_SEPARATOR == '\\'){
+			$sqlsPath = preg_replace("/(.+?".str_replace('/', "\\\\", STINGLE_PATH)."packages\\\\.+?\\\\.+?\\\\).*/", "$1SQL\\", $callerFile);
+		}
+		else{
+			throw new RuntimeException("Unexpected DIRECTORY_SEPARATOR detected!");
+		}
 		
 		if($sqlsPath == $callerFile){
-			$sqlsPath = preg_replace("/(.+?".str_replace('/', '\/', SITE_PACKAGES_PATH).".+?\/.+?\/).*/", "$1SQL/", $callerFile);
+			if(DIRECTORY_SEPARATOR == '/'){
+				$sqlsPath = preg_replace("/(.+?".str_replace('/', '\/', SITE_PACKAGES_PATH).".+?\/.+?\/).*/", "$1SQL/", $callerFile);
+			}
+			elseif(DIRECTORY_SEPARATOR == '\\'){
+				$sqlsPath = preg_replace("/(.+?".str_replace('/', "\\\\", SITE_PACKAGES_PATH).".+?\\\\.+?\\\\).*/", "$1SQL\\", $callerFile);
+			}
 		}
 		
 		$sqlFiles = array();
-		
 		if($sqlsPath != $callerFile and file_exists($sqlsPath) and is_dir($sqlsPath)){
 			$dir  = opendir($sqlsPath);
 			while (false !== ($filename = readdir($dir))) {
 				if(preg_match("/(.+)\.sql$/i", $filename, $matches)){
-					$sqlFiles[$matches[1]] = array('path' => $sqlsPath, 'filename' => $filename);
+					$sqlFiles[strtolower($matches[1])] = array('path' => $sqlsPath, 'filename' => $filename);
 				}
 			}
 			closedir($dir);

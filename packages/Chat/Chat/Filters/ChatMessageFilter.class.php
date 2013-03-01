@@ -135,7 +135,7 @@ class ChatMessageFilter extends Filter {
 			throw new InvalidArgumentException("\$minutes have to be integer");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->less(new Func('TIMESTAMPDIFF', array('MINUTE', new Field('datetime', 'chat_msg'), 'NOW()')), $minutes));
+		$this->qb->andWhere($this->qb->expr()->less(new Func('TIMESTAMPDIFF', array(new Literal('MINUTE'), new Field('datetime', 'chat_msg'), new Func("NOW"))), $minutes));
 		return $this;
 	}
 	

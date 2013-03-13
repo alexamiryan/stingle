@@ -86,7 +86,6 @@ class UserAuthorization extends DbAccessor{
 		}
 			
 		return $usr;
-		
 	}
 	
 	
@@ -116,7 +115,7 @@ class UserAuthorization extends DbAccessor{
 				if(count($cookieData) == 2){
 					list($userId, $hash) = $cookieData;
 		
-					$usr = $this->um->getUserById($userId, UserManager::INIT_NONE);
+					$usr = $this->um->getUserById($userId);
 		
 					$correctHashFotUser = hash('sha256', $usr->login . ":" . $usr->password);
 		
@@ -188,7 +187,7 @@ class UserAuthorization extends DbAccessor{
 			->set(new Field('last_login_date'), new Func('NOW'))
 			->where($qb->expr()->equal(new Field('id'), $usr->id));
 		
-		$this->query->exec($qb->getSQL(), 0);
+		$this->query->exec($qb->getSQL());
 		
 		return $this->query->affected();
 	}

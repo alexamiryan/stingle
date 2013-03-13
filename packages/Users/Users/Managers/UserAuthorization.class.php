@@ -116,12 +116,13 @@ class UserAuthorization extends DbAccessor{
 				if(count($cookieData) == 2){
 					list($userId, $hash) = $cookieData;
 		
-					$usr = $this->um->getUserById($userData['id'], UserManager::INIT_NONE);
+					$usr = $this->um->getUserById($userId, UserManager::INIT_NONE);
 		
 					$correctHashFotUser = hash('sha256', $usr->login . ":" . $usr->password);
 		
-					if($encryptedSalt === $correctSalt){
-						return $this->getUserOnSuccessAuth($usr->id);
+					if($correctHashFotUser === $hash){
+						$this->checkIfLoginIsAllowed($usr);
+						return $usr;
 					}
 				}
 			}

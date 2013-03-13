@@ -18,6 +18,24 @@ class UserGroupsFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setIdIn($ids){
+		if(empty($ids) or !is_array($ids)){
+			throw new InvalidIntegerArgumentException("\$ids have to be non empty array");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field('id', $this->primaryTableAlias), $ids));
+		return $this;
+	}
+	
+	public function setIdNotIn($ids){
+		if(empty($ids) or !is_array($ids)){
+			throw new InvalidIntegerArgumentException("\$ids have to be non empty array");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->notIn(new Field('id', $this->primaryTableAlias), $ids));
+		return $this;
+	}
+	
 	public function setName($name){
 		if(empty($name)){
 			throw new InvalidIntegerArgumentException("\$name have to be not empty string");

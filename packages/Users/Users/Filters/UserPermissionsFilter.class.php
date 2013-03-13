@@ -44,11 +44,13 @@ class UserPermissionsFilter extends MergeableFilter{
 	}
 	
 	protected function joinUsersPermissionsTable(){
+		$this->qb->addSelect(new Field('args', 'users_perms'));		
 		$this->qb->leftJoin(Tbl::get('TBL_USERS_PERMISSIONS', 'UserManager'),	'users_perms',
 				$this->qb->expr()->equal(new Field('id', $this->primaryTableAlias), new Field('permission_id', 'users_perms')));
 	}
 	
 	protected function joinGroupsPermissionsTable(){
+		$this->qb->addSelect(new Field('args', 'groups_perms'));
 		$this->qb->leftJoin(Tbl::get('TBL_GROUPS_PERMISSIONS', 'UserManager'),	'groups_perms',
 				$this->qb->expr()->equal(new Field('id', $this->primaryTableAlias), new Field('permission_id', 'groups_perms')));
 	}

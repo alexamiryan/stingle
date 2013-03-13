@@ -6,7 +6,7 @@ class UserPermissionsManager extends DbAccessor{
 		if($filter === null){
 			$filter = new UserPermissionsFilter();
 		}
-		
+		//echo $filter->getSQL();
 		$this->query->exec($filter->getSQL(), $cacheminutes);
 		
 		$perms = array();

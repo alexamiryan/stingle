@@ -79,6 +79,7 @@ class UserAuthorization extends DbAccessor{
 		HookManager::callHook("OnUserLogin", $hookParams);
 		
 		$this->saveUserIdInSession($usr);
+		$this->updateUserLastLoginDate($usr);
 		
 		if($writeCookie){
 			$this->writeLoginCookie($usr);
@@ -87,6 +88,8 @@ class UserAuthorization extends DbAccessor{
 		return $usr;
 		
 	}
+	
+	
 	
 	/**
 	 * Does logout operation
@@ -173,6 +176,20 @@ class UserAuthorization extends DbAccessor{
 			$this->doLogout();
 			throw new UserDisabledException("Account is disabled");
 		}
+	}
+	
+	protected function updateUserLastLoginDate(User $usr){
+		if(empty($usr->id) or !is_numeric($usr->id)){
+			throw new InvalidArgumentException("user Id have to be non zero integer!");
+		}
+		$qb = new QueryBuilder();
+		$qb->update(Tbl::get('TBL_USERS', 'UserManager'))
+			->set(new Field('last_login_date'), new Func('NOW'))
+			->where($qb->expr()->equal(new Field('id'), $usr->id));
+		
+		$this->query->exec($qb->getSQL(), 0);
+		
+		return $this->query->affected();
 	}
 	
 }

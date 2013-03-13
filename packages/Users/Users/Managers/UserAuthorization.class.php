@@ -182,14 +182,13 @@ class UserAuthorization extends DbAccessor{
 		if(empty($usr->id) or !is_numeric($usr->id)){
 			throw new InvalidArgumentException("user Id have to be non zero integer!");
 		}
+		
 		$qb = new QueryBuilder();
-		$qb->update(Tbl::get('TBL_USERS', 'UserManager'))
-			->set(new Field('last_login_date'), new Func('NOW'))
-			->where($qb->expr()->equal(new Field('id'), $usr->id));
+		$qb->select(new Func("NOW", null, 'now'));
+		$now = Reg::get('sql')->exec($qb->getSQL())->fetchField('now');
 		
-		$this->query->exec($qb->getSQL());
+		$usr->lastLoginDate = $now;
 		
-		return $this->query->affected();
+		$this->um->updateUser($usr);
 	}
-	
 }

@@ -183,9 +183,7 @@ class UserAuthorization extends DbAccessor{
 			throw new InvalidArgumentException("user Id have to be non zero integer!");
 		}
 		
-		$qb = new QueryBuilder();
-		$qb->select(new Func("NOW", null, 'now'));
-		$now = Reg::get('sql')->exec($qb->getSQL())->fetchField('now');
+		$now = getDBCurrentDateTime();
 		
 		$usr->lastLoginDate = $now;
 		

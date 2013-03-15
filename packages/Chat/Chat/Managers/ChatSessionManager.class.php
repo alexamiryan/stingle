@@ -159,7 +159,6 @@ class ChatSessionManager extends DbAccessor
 	}
 	
 	public function closeSession(ChatSession $session, ChatUser $closerUser, $reason = null){
-		$updateReason = "";
 		
 		$qb = new QueryBuilder();
 		$qb->update(Tbl::get('TBL_CHAT_SESSIONS'))

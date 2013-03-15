@@ -115,11 +115,11 @@ class ChatMessageFilter extends Filter {
 		
 		$andClause1 = new Andx();
 		$andClause1->add($this->qb->expr()->equal(new Field('receiver_user_id', 'chat_msg'), $myUserId));
-		$andClause1->add($this->qb->expr()->in(new Field('sender_user_id', 'chat_msg'), implode(",", $interlocutorsIds)));
+		$andClause1->add($this->qb->expr()->in(new Field('sender_user_id', 'chat_msg'),  $interlocutorsIds));
 		
 		$andClause2 = new Andx();
 		$andClause2->add($this->qb->expr()->equal(new Field('sender_user_id', 'chat_msg'), $myUserId));
-		$andClause2->add($this->qb->expr()->equal(new Field('receiver_user_id', 'chat_msg'), implode(",", $interlocutorsIds)));
+		$andClause2->add($this->qb->expr()->in(new Field('receiver_user_id', 'chat_msg'),  $interlocutorsIds));
 		
 		$orClause = new Orx();
 		$orClause->add($andClause1);

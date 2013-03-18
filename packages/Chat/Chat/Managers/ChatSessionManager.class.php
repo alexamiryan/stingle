@@ -54,7 +54,7 @@ class ChatSessionManager extends DbAccessor
 		return $chatSessions;
 	}
 	
-	public function getChatSessions(ChatSessionFilter $filter, $myUserId = null){
+	public function getChatSessions(ChatSessionFilter $filter = null, $myUserId = null){
 		$chatSessions = array();
 		
 		if($filter == null){
@@ -72,12 +72,19 @@ class ChatSessionManager extends DbAccessor
 		return $chatSessions;
 	}
 	
-	public function getChatSession(ChatSessionFilter $filter, $myUserId = null){
+	public function getChatSession(ChatSessionFilter $filter = null, $myUserId = null){
 		$sessions = $this->getChatSessions($filter, $myUserId);
 		if(count($sessions) !== 1){
 			throw new ChatSessionException("There is no such chat session or it is not unique.");
 		}
 		return $sessions[0];
+	}
+	
+	public function getChatSessionById($sessionId, $myUserId = null){
+		$filter = new ChatSessionFilter();
+		$filter->setId($sessionId);
+		$session = $this->getChatSession($filter);
+		return $session;
 	}
 	
 	protected function getChatSessionObject($sessionRow, $myUserId = null){

@@ -23,7 +23,7 @@ class UserPermissions{
 		if(isset($this->permissionsList[$permissionName])){
 			return $this->permissionsList[$permissionName];
 		}
-		return false;
+		throw new UserPermissionException();
 	}
 	
 	public function getPermissionsList(){

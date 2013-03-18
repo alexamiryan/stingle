@@ -27,6 +27,8 @@ class ChatInvitationManager extends DbAccessor
 		
 		$sqlQuery = $filter->getSQL();
 		
+		//echo $sqlQuery;
+		
 		$invitationRows = $this->query->exec($sqlQuery)->fetchRecords();
 										
 		foreach ($invitationRows as $invitationRow){

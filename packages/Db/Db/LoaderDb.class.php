@@ -7,6 +7,7 @@ class LoaderDb extends Loader{
 		require_once ('Managers/MySqlDatabase.class.php');
 		require_once ('Exceptions/MySqlException.class.php');
 		require_once ('Managers/MySqlQuery.class.php');
+		require_once ('Helpers/helpers.inc.php');
 	}
 	
 	protected function loadDb(){

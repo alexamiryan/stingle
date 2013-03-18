@@ -13,6 +13,7 @@ class ConversationManager extends DbAccessor{
 	
 	const STATUS_DELETED_NO 			= 0;
 	const STATUS_DELETED_YES			= 1;
+	const STATUS_DELETED_BOTH			= -1;
 	
 	const STATUS_HAS_ATTACHMENT_NO		= 0;
 	const STATUS_HAS_ATTACHMENT_YES		= 1;
@@ -87,6 +88,31 @@ class ConversationManager extends DbAccessor{
 	
 	public function trashConversation($userId, $uuid){
 		return $this->changeTrashedStatus($userId, $uuid, self::STATUS_TRASHED_TRAHSED);
+	}
+	
+	public function removeConversation($conversation){
+		if(empty($conversation->uuid) or !is_numeric($conversation->uuid)){
+			throw new InvalidIntegerArgumentException("conversation uuid have to be non zero integer.");
+		}
+		$this->removeAllConversationMessages($conversation->uuid);
+		
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_CONVERSATIONS'))
+			->where($qb->expr()->equal(new Field('uuid'), $conversation->uuid));
+
+		return $this->query->exec($qb->getSQL())->affected();
+	}
+	
+	public function removeAllConversationMessages($uuid){
+		if(empty($uuid) or !is_numeric($uuid)){
+			throw new InvalidIntegerArgumentException("\$uuid have to be non zero integer.");
+		}
+		
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_CONVERSATION_MESSAGES'))
+			->where($qb->expr()->equal(new Field('uuid'), $uuid));
+			
+		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
 	public function deleteConversation($userId, $uuid){

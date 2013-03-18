@@ -115,11 +115,11 @@ class ChatMessageFilter extends Filter {
 		
 		$andClause1 = new Andx();
 		$andClause1->add($this->qb->expr()->equal(new Field('receiver_user_id', 'chat_msg'), $myUserId));
-		$andClause1->add($this->qb->expr()->in(new Field('sender_user_id', 'chat_msg'), implode(",", $interlocutorsIds)));
+		$andClause1->add($this->qb->expr()->in(new Field('sender_user_id', 'chat_msg'),  $interlocutorsIds));
 		
 		$andClause2 = new Andx();
 		$andClause2->add($this->qb->expr()->equal(new Field('sender_user_id', 'chat_msg'), $myUserId));
-		$andClause2->add($this->qb->expr()->equal(new Field('receiver_user_id', 'chat_msg'), implode(",", $interlocutorsIds)));
+		$andClause2->add($this->qb->expr()->in(new Field('receiver_user_id', 'chat_msg'),  $interlocutorsIds));
 		
 		$orClause = new Orx();
 		$orClause->add($andClause1);
@@ -135,7 +135,7 @@ class ChatMessageFilter extends Filter {
 			throw new InvalidArgumentException("\$minutes have to be integer");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->less(new Func('TIMESTAMPDIFF', array('MINUTE', new Field('datetime', 'chat_msg'), 'NOW()')), $minutes));
+		$this->qb->andWhere($this->qb->expr()->less(new Func('TIMESTAMPDIFF', array(new Literal('MINUTE'), new Field('datetime', 'chat_msg'), new Func("NOW"))), $minutes));
 		return $this;
 	}
 	

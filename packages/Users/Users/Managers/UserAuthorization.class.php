@@ -79,14 +79,16 @@ class UserAuthorization extends DbAccessor{
 		HookManager::callHook("OnUserLogin", $hookParams);
 		
 		$this->saveUserIdInSession($usr);
+		$this->updateUserLastLoginDate($usr);
 		
 		if($writeCookie){
 			$this->writeLoginCookie($usr);
 		}
 			
 		return $usr;
-		
 	}
+	
+	
 	
 	/**
 	 * Does logout operation
@@ -113,12 +115,13 @@ class UserAuthorization extends DbAccessor{
 				if(count($cookieData) == 2){
 					list($userId, $hash) = $cookieData;
 		
-					$usr = $this->um->getUserById($userData['id'], UserManager::INIT_NONE);
+					$usr = $this->um->getUserById($userId);
 		
 					$correctHashFotUser = hash('sha256', $usr->login . ":" . $usr->password);
 		
-					if($encryptedSalt === $correctSalt){
-						return $this->getUserOnSuccessAuth($usr->id);
+					if($correctHashFotUser === $hash){
+						$this->checkIfLoginIsAllowed($usr);
+						return $usr;
 					}
 				}
 			}
@@ -175,4 +178,15 @@ class UserAuthorization extends DbAccessor{
 		}
 	}
 	
+	protected function updateUserLastLoginDate(User $usr){
+		if(empty($usr->id) or !is_numeric($usr->id)){
+			throw new InvalidArgumentException("user Id have to be non zero integer!");
+		}
+		
+		$now = getDBCurrentDateTime();
+		
+		$usr->lastLoginDate = $now;
+		
+		$this->um->updateUser($usr);
+	}
 }

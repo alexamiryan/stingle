@@ -39,7 +39,7 @@ class ConfigDBManager{
 		if(empty($config->name)){
 			throw new InvalidArgumentException("Name of new config should be specified");
 		}
-		if(empty($config->value)){
+		if(!isset($config->value)){
 			throw new InvalidArgumentException("Value of new config should be specified");
 		}
 			
@@ -129,7 +129,7 @@ class ConfigDBManager{
 		if(!isset($newDBConfig->name) or empty($newDBConfig->name)){
 			throw new InvalidArgumentException("New Name of config should be specified");
 		}
-		if(!isset($newDBConfig->value) or empty($newDBConfig->value)){
+		if(!isset($newDBConfig->value)){
 			throw new InvalidArgumentException("Value of new config should be specified");
 		}
 		$odlHostLangid = null;

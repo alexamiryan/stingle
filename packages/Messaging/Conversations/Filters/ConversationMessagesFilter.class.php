@@ -62,12 +62,30 @@ class ConversationMessagesFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setSenderIdIn($senderIds){
+		if(empty($senderIds) or !is_array($senderIds)){
+			throw new InvalidIntegerArgumentException("\$senderIds have to be non empty array");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field("sender_id", "conv_msgs"), $senderIds));
+		return $this;
+	}
+	
 	public function setReceiverId($receiverId){
 		if(empty($receiverId) or !is_numeric($receiverId)){
 			throw new InvalidIntegerArgumentException("\$receiverId have to be non zero integer.");
 		}
 	
 		$this->qb->andWhere($this->qb->expr()->equal(new Field("receiver_id", "conv_msgs"), $receiverId));
+		return $this;
+	}
+	
+	public function setReceiverdIn($receiverds){
+		if(empty($receiverds) or !is_array($receiverds)){
+			throw new InvalidIntegerArgumentException("\$receiverds have to be non empty array");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field("receiver_id", "conv_msgs"), $receiverds));
 		return $this;
 	}
 	
@@ -109,6 +127,26 @@ class ConversationMessagesFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setDeletedStatusEqual($status){
+		if(!is_numeric($status) or !in_array($status, ConversationManager::getConstsArray("STATUS_DELETED"))){
+			throw new InvalidIntegerArgumentException("Invalid \$status specified.");
+		}
+			
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("deleted", "conv_msgs"), $status));
+		
+		return $this;
+	}
+	
+	public function setDeletedStatusNotEqual($status){
+		if(!is_numeric($status) or !in_array($status, ConversationManager::getConstsArray("STATUS_DELETED"))){
+			throw new InvalidIntegerArgumentException("Invalid \$status specified.");
+		}
+			
+		$this->qb->andWhere($this->qb->expr()->notEqual(new Field("deleted", "conv_msgs"), $status));
+		
+		return $this;
+	}
+	
 	public function setOrderIdAsc(){
 		$this->setOrder(new Field('id', 'conv_msgs'), MySqlDatabase::ORDER_ASC);
 	}
@@ -125,4 +163,23 @@ class ConversationMessagesFilter extends MergeableFilter{
 		$this->setOrder(new Field('date', 'conv_msgs'), MySqlDatabase::ORDER_DESC);
 	}
 	
+	/**
+	 * Set Date greater than given param
+	 * @param string $date in DEFAULT_DATETIME_FORMAT
+	 * @throws InvalidIntegerArgumentException
+	 */
+	public function setDateGreater($date){
+		$this->qb->andWhere($this->qb->expr()->greater(new Field('date'), $date));
+		return $this;
+	}
+	
+	/**
+	 * Set Date less than given date parameter
+	 * @param string $date in DEFAULT_DATETIME_FORMAT
+	 * @throws InvalidIntegerArgumentException
+	 */
+	public function setDateLess($date){
+		$this->qb->andWhere($this->qb->expr()->less(new Field('date'), $date));
+		return $this;
+	}
 }

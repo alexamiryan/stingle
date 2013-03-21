@@ -528,7 +528,8 @@ class LanguageManager extends DbAccessor {
 		if($language === null){
 			$language = $this->getDefaultLanguage();
 		}
-
+		
+		$new_key_created = false;
 		if(!$this->keyExists($key)){
 			$id = $this->createKey($key, $type);
 			$new_key_created = true;

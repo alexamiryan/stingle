@@ -1,8 +1,8 @@
 <?php
-class ChatInvitationsFilter extends Filter {
+class ChatInvitationsFilter extends MergeableFilter {
 	
 	public function __construct(){
-		parent::__construct();
+		parent::__construct(Tbl::get('TBL_CHAT_INVITATIONS', 'ChatInvitationManager'), "inv", "id");
 	
 		$this->qb->select(new Field("*", "inv"))
 			->from(Tbl::get('TBL_CHAT_INVITATIONS', 'ChatInvitationManager'), "inv");

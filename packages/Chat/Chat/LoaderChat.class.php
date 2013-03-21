@@ -3,15 +3,16 @@ class LoaderChat extends Loader{
 	
 	protected function includes(){
 		require_once ('Objects/ChatInvitation.class.php');
-		require_once ('Managers/ChatInvitationManager.class.php');
-		require_once ('Filters/ChatInvitationsFilter.class.php');
 		require_once ('Objects/ChatMessage.class.php');
-		require_once ('Filters/ChatMessageFilter.class.php');
-		require_once ('Managers/ChatMessageManager.class.php');
 		require_once ('Objects/ChatSession.class.php');
-		require_once ('Filters/ChatSessionFilter.class.php');
-		require_once ('Managers/ChatSessionManager.class.php');
+		require_once ('Objects/ChatSessionLog.class.php');
 		require_once ('Objects/ChatUser.class.php');
+		require_once ('Filters/ChatInvitationsFilter.class.php');
+		require_once ('Filters/ChatMessageFilter.class.php');
+		require_once ('Filters/ChatSessionFilter.class.php');
+		require_once ('Managers/ChatInvitationManager.class.php');
+		require_once ('Managers/ChatMessageManager.class.php');
+		require_once ('Managers/ChatSessionManager.class.php');
 		require_once ('Exceptions/ChatInvitationException.class.php');
 		require_once ('Exceptions/ChatSessionException.class.php');
 	}

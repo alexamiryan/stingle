@@ -174,6 +174,22 @@ function getMonthDays($month, $year){
 	}
 }
 
+/**
+ * Convert seconds to readable time format
+ * @param unknown_type $seconds
+ * @param unknown_type $delimiter
+ */
+function secondsToTime($seconds, $delimiter = ":"){
+	$seconds = abs($seconds);
+	$hours = floor($seconds/3600);
+	$minutes = floor(($seconds - ($hours*3600))/60);
+	$sec = $seconds - $hours * 3600 - $minutes * 60;
+	if($hours < 10) $hours = "0".$hours;
+	if($minutes < 10) $minutes = "0".$minutes;
+	if($sec < 10) $sec = "0".$sec;
+	return $hours. $delimiter .$minutes. $delimiter .$sec;
+}
+
 function urlFriendlyText($string){
 	return preg_replace('/\s+/i', "-", $string);
 }

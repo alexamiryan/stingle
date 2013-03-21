@@ -1,8 +1,8 @@
 <?php
-class ChatSessionFilter extends Filter {
+class ChatSessionFilter extends MergeableFilter{
 	
 	public function __construct(){
-		parent::__construct();
+		parent::__construct(Tbl::get('TBL_CHAT_SESSIONS', 'ChatSessionManager'), "chat_sess", "id");
 	
 		$this->qb->select(new Field("*", "chat_sess"))
 			->from(Tbl::get('TBL_CHAT_SESSIONS', 'ChatSessionManager'), "chat_sess");

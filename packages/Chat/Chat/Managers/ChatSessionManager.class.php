@@ -2,6 +2,7 @@
 class ChatSessionManager extends DbAccessor
 {
 	const TBL_CHAT_SESSIONS = 'chat_sessions';
+	const TBL_CHAT_SESSIONS_LOG = 'chat_sessions_log';
 	
 	const CLOSED_STATUS_NO = 0; 
 	const CLOSED_STATUS_YES = 1; 
@@ -54,7 +55,12 @@ class ChatSessionManager extends DbAccessor
 		return $chatSessions;
 	}
 	
-	public function getChatSessions(ChatSessionFilter $filter, $myUserId = null){
+	/**
+	 * Sessions list
+	 * @param ChatSessionFilter $filter
+	 * @param unknown_type $myUserId
+	 */
+	public function getChatSessions(ChatSessionFilter $filter = null, $myUserId = null){
 		$chatSessions = array();
 		
 		if($filter == null){
@@ -72,12 +78,38 @@ class ChatSessionManager extends DbAccessor
 		return $chatSessions;
 	}
 	
-	public function getChatSession(ChatSessionFilter $filter, $myUserId = null){
+	/**
+	 * Sessions count
+	 * @param ProfileViewsFilter $filter
+	 * @param Integer $cacheMinutes
+	 * @return Integer
+	 */
+	public function getChatSessionsCount(ChatSessionFilter $filter = null){
+	
+		if($filter == null){
+			$filter = new ChatSessionFilter();
+		}
+		$filter->setSelectCount();
+	
+		$sqlQuery = $filter->getSQL();
+	
+		$this->query->exec($sqlQuery);
+		return $this->query->fetchField('cnt');
+	}
+	
+	public function getChatSession(ChatSessionFilter $filter = null, $myUserId = null){
 		$sessions = $this->getChatSessions($filter, $myUserId);
 		if(count($sessions) !== 1){
 			throw new ChatSessionException("There is no such chat session or it is not unique.");
 		}
 		return $sessions[0];
+	}
+	
+	public function getChatSessionById($sessionId, $myUserId = null){
+		$filter = new ChatSessionFilter();
+		$filter->setId($sessionId);
+		$session = $this->getChatSession($filter);
+		return $session;
 	}
 	
 	protected function getChatSessionObject($sessionRow, $myUserId = null){
@@ -145,7 +177,10 @@ class ChatSessionManager extends DbAccessor
 			));
 		$this->query->exec($qb->getSQL());
 		
-		return $this->query->getLastInsertId();
+		$newSessionId = $this->query->getLastInsertId();
+		//$this->insertSessionLog($inviterUserId, $invitedUserId);
+		
+		return $newSessionId;
 	}
 	
 	public function deleteSession($sessionId){
@@ -187,6 +222,113 @@ class ChatSessionManager extends DbAccessor
 						 ));
 						 
 		$this->query->exec($qb->getSQL());
+		return $this->query->affected();
+	}
+	
+	public function getChatSessionsLog(MysqlPager $pager = null, $myUserId = null, $cacheMinutes = 0){
+		$sessions = array();
+		$qb = new QueryBuilder();
+		$qb->select(new Field("*", "chat_sess_log"))->from(Tbl::get('TBL_CHAT_SESSIONS_LOG'), "chat_sess_log");
+
+		if($myUserId !== null){
+			$orClause = new Orx();
+			$orClause->add($qb->expr()->equal(new Field("user1_id", "chat_sess_log"), $myUserId));
+			$orClause->add($qb->expr()->equal(new Field("user2_id", "chat_sess_log"), $myUserId));
+			$qb->andWhere($orClause);
+		}
+		
+		$qb->orderBy(new Field("datetime", "chat_sess_log"), MySqlDatabase::ORDER_DESC);
+		$sqlQuery = $qb->getSQL();
+		
+		if($pager !== null){
+			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes);
+		}
+		else{
+			$this->query->exec($sqlQuery, $cacheMinutes);
+		}
+		
+		if($this->query->countRecords()){
+			while(($sesLogRow = $this->query->fetchRecord()) != null){
+				$chatSession = new ChatSessionLog();
+
+				$chatSession->user1 = ChatUser::getObject($sesLogRow['user1_id']);
+				$chatSession->user2 = ChatUser::getObject($sesLogRow['user2_id']);
+				
+				$chatSession->id = $sesLogRow['id'];
+				$chatSession->closedDate = $sesLogRow['datetime'];
+				
+				array_push($sessions, $chatSession);
+			}
+		}
+		
+		return $sessions;
+	}
+	
+	public function getChatSessionsLogCount($myUserId = null){
+		
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count(new Field('*'), 'cnt'))->from(Tbl::get('TBL_CHAT_SESSIONS_LOG'), "chat_sess_log");
+		if($myUserId !== null){
+			$orClause = new Orx();
+			$orClause->add($qb->expr()->equal(new Field("user1_id", "chat_sess_log"), $myUserId));
+			$orClause->add($qb->expr()->equal(new Field("user2_id", "chat_sess_log"), $myUserId));
+			$qb->andWhere($orClause);
+		}
+		
+		$sqlQuery = $qb->getSQL();
+		$this->query->exec($sqlQuery);
+		return $this->query->fetchField('cnt');
+	}
+	/**
+	 * @param integer $inviterUserId
+	 * @param integer $invitedUserId
+	 * @deprecated Sessions log insertd by mysql TRIGGER chat_sessions_log 
+	 */
+	protected function insertSessionLog($inviterUserId, $invitedUserId){
+		if($inviterUserId > $invitedUserId){
+			$userId1 = $inviterUserId;
+			$userId2 = $invitedUserId;
+		}
+		else{
+			$userId1 = $invitedUserId;
+			$userId2 = $inviterUserId;
+		}
+		$qb = new QueryBuilder();
+		$qb->select(new Field('id'))->from(Tbl::get('TBL_CHAT_SESSIONS_LOG'));
+		
+		$andClause1 = new Andx();
+		$andClause1->add($qb->expr()->equal(new Field('user1_id', Tbl::get('TBL_CHAT_SESSIONS_LOG')), $userId1));
+		$andClause1->add($qb->expr()->equal(new Field('user2_id', Tbl::get('TBL_CHAT_SESSIONS_LOG')), $userId2));
+		
+		$andClause2 = new Andx();
+		$andClause2->add($qb->expr()->equal(new Field('user1_id', Tbl::get('TBL_CHAT_SESSIONS_LOG')), $userId2));
+		$andClause2->add($qb->expr()->equal(new Field('user2_id', Tbl::get('TBL_CHAT_SESSIONS_LOG')), $userId1));
+		
+		$orClause = new Orx();
+		$orClause->add($andClause1);
+		$orClause->add($andClause2);
+		
+		$qb->andWhere($orClause);
+		$this->query->exec($qb->getSQL());
+		
+		$qb = new QueryBuilder();
+		if($this->query->countRecords()){
+			$sesionId = $this->query->fetchField("id");
+			$qb->update(Tbl::get('TBL_CHAT_SESSIONS_LOG'))
+			->set(new Field('datetime'), date(DEFAULT_DATETIME_FORMAT))
+			->where($qb->expr()->equal(new Field('id'), $sesionId));
+			
+		}
+		else{
+			$qb->insert(Tbl::get('TBL_CHAT_SESSIONS_LOG'))
+			->values(array(
+					'user1_id' => $userId1,
+					'user2_id' => $userId2,
+					'datetime' => date(DEFAULT_DATETIME_FORMAT)
+			));
+		}
+		$this->query->exec($qb->getSQL());
+		
 		return $this->query->affected();
 	}
 }

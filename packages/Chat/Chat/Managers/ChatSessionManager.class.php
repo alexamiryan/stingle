@@ -55,6 +55,11 @@ class ChatSessionManager extends DbAccessor
 		return $chatSessions;
 	}
 	
+	/**
+	 * Sessions list
+	 * @param ChatSessionFilter $filter
+	 * @param unknown_type $myUserId
+	 */
 	public function getChatSessions(ChatSessionFilter $filter = null, $myUserId = null){
 		$chatSessions = array();
 		
@@ -71,6 +76,25 @@ class ChatSessionManager extends DbAccessor
 		}
 		
 		return $chatSessions;
+	}
+	
+	/**
+	 * Sessions count
+	 * @param ProfileViewsFilter $filter
+	 * @param Integer $cacheMinutes
+	 * @return Integer
+	 */
+	public function getChatSessionsCount(ChatSessionFilter $filter = null){
+	
+		if($filter == null){
+			$filter = new ChatSessionFilter();
+		}
+		$filter->setSelectCount();
+	
+		$sqlQuery = $filter->getSQL();
+	
+		$this->query->exec($sqlQuery);
+		return $this->query->fetchField('cnt');
 	}
 	
 	public function getChatSession(ChatSessionFilter $filter = null, $myUserId = null){
@@ -238,6 +262,22 @@ class ChatSessionManager extends DbAccessor
 		}
 		
 		return $sessions;
+	}
+	
+	public function getChatSessionsLogCount($myUserId = null){
+		
+		$qb = new QueryBuilder();
+		$qb->select($qb->expr()->count(new Field('*'), 'cnt'))->from(Tbl::get('TBL_CHAT_SESSIONS_LOG'), "chat_sess_log");
+		if($myUserId !== null){
+			$orClause = new Orx();
+			$orClause->add($qb->expr()->equal(new Field("user1_id", "chat_sess_log"), $myUserId));
+			$orClause->add($qb->expr()->equal(new Field("user2_id", "chat_sess_log"), $myUserId));
+			$qb->andWhere($orClause);
+		}
+		
+		$sqlQuery = $qb->getSQL();
+		$this->query->exec($sqlQuery);
+		return $this->query->fetchField('cnt');
 	}
 	/**
 	 * @param integer $inviterUserId

@@ -6,6 +6,8 @@ class Comet{
 	private $runInteval;
 	private $timeout;
 	
+	private $isInstantOutput = false;
+	
 	public function __construct($runInteval = null, $timeout = null){
 		if(!empty($runInteval) and is_numeric($runInteval)){
 			$this->runInteval = $runInteval;
@@ -35,6 +37,10 @@ class Comet{
 		return false;
 	}
 	
+	public function setInstantOutput($status = true){
+		$this->isInstantOutput = $status;
+	}
+	
 	public function run(){
 		$startTime = time();
 
@@ -45,7 +51,7 @@ class Comet{
 				$chunk->run();
 			}
 		
-			if($this->isAnyData() or time() - $startTime > $this->timeout){
+			if($this->isAnyData() or time() - $startTime > $this->timeout or $this->isInstantOutput){
 				JSON::jsonOutput($this->getOutputArray());
 				break;
 			}

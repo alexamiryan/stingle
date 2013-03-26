@@ -117,6 +117,7 @@ class ChatInvitationManager extends DbAccessor
 		$qb = new QueryBuilder();
 		$qb->select($qb->expr()->max(new Field('id'), 'lastId'))
 			->from(Tbl::get('TBL_CHAT_INVITATIONS'));
+		
 		$lastId = $this->query->exec($qb->getSQL())->fetchField('lastId');
 		return (empty($lastId) ? 0 : $lastId);
 	}

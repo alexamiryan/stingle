@@ -6,6 +6,7 @@ class LoaderSmarty extends Loader{
 		require_once ('Core/Smarty.class.php');
 		require_once ('Managers/SmartyWrapper.class.php');
 		require_once ('Exceptions/TemplateFileNotFoundException.class.php');
+		require_once ('Exceptions/ImageFileNotFoundException.class.php');
 	}
 	
 	protected function loadSmarty(){

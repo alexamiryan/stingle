@@ -338,7 +338,7 @@ class SmartyWrapper extends Smarty {
 				break;
 			}
 		}
-		throw new RuntimeException("Unable to find given filename ($fileName) in all available lookup locations!");
+		throw new ImageFileNotFoundException("Unable to find given filename ($fileName) in all available lookup locations!");
 	}
 	
 	public function getChunkPath($fileName){

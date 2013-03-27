@@ -103,8 +103,8 @@ class Image extends Model
 				$mode=1;
 			}
 			else{
-				$future_width=$this->info[0]*$height/$this->info[1];
-				$future_height=$this->info[1]*$width/$this->info[0];
+				$future_width=ceil($this->info[0]*$height/$this->info[1]);
+				$future_height=ceil($this->info[1]*$width/$this->info[0]);
 				if($this->info[0]>=$width or $this->info[1]>=$height){
 					if($this->info[0]>=$this->info[1]){
 						if ($future_height<=$height) {
@@ -125,8 +125,8 @@ class Image extends Model
 				}
 			}
 			if($mode==1){
-				$resized_image = imagecreatetruecolor($width, $this->info[1]*$width/$this->info[0]);
-				if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $width, $this->info[1]*$width/$this->info[0], $this->info[0], $this->info[1])){
+				$resized_image = imagecreatetruecolor($width, ceil($this->info[1]*$width/$this->info[0]));
+				if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $width, ceil($this->info[1]*$width/$this->info[0]), $this->info[0], $this->info[1])){
 					throw new RuntimeException("Unable to resize image!");
 				}
 				else{
@@ -135,8 +135,8 @@ class Image extends Model
 				}
 			}
 			elseif($mode==2){
-				$resized_image = imagecreatetruecolor($this->info[0]*$height/$this->info[1], $height);
-				if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $this->info[0]*$height/$this->info[1], $height, $this->info[0], $this->info[1])){
+				$resized_image = imagecreatetruecolor(ceil($this->info[0]*$height/$this->info[1]), $height);
+				if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, ceil($this->info[0]*$height/$this->info[1]), $height, $this->info[0], $this->info[1])){
 					throw new RuntimeException("Unable to resize image!");
 				}
 				else{

@@ -152,6 +152,20 @@ class UserManager extends DbAccessor{
 		return $users[0]->id;
 	}
 	
+	public function getLoginById($id, $cacheMinutes = 0){
+		if(empty($id) or !is_numeric($id)){
+			throw new InvalidArgumentException("\$id have to be non zero integer");
+		}
+	
+		$filter = new UsersFilter();
+		$filter->setUserIdEqual($id);
+		$users = $this->getUsersList($filter, null, static::INIT_NONE, $cacheMinutes);
+		if(count($users) !== 1){
+			throw new UserNotFoundException("There is no such user or user is not unique.");
+		}
+		return $users[0]->login;
+	}
+	
 	/**
 	 * Check if user with given login exists
 	 * 

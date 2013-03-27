@@ -38,6 +38,21 @@ CREATE TABLE IF NOT EXISTS `chat_sessions` (
   UNIQUE KEY `inviter_user_id` (`inviter_user_id`,`invited_user_id`),
   KEY `invited_user_id` (`invited_user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='Chat Sessions';
+
+--
+-- Table structure for table `chat_sessions_log`. Trigger should be created to fill this table.
+--
+
+CREATE TABLE IF NOT EXISTS `chat_sessions_log` (
+  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'primary id',
+  `user1_id` int(10) unsigned NOT NULL,
+  `user2_id` int(10) unsigned NOT NULL,
+  `datetime` datetime NOT NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `user1_id` (`user1_id`,`user2_id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8  ;
+
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -48,5 +63,17 @@ CREATE TABLE IF NOT EXISTS `chat_sessions` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+--
+--delimiter //
+--CREATE    
+--   TRIGGER chat_sessions_log AFTER DELETE
+--    ON chat_sessions FOR EACH ROW BEGIN
+--	IF OLD.inviter_user_id > OLD.invited_user_id THEN INSERT INTO chat_sessions_log SET user1_id = OLD.inviter_user_id, user2_id = OLD.invited_user_id,`datetime` = NOW() ON DUPLICATE KEY UPDATE `datetime` = NOW() ;
+--	ELSE INSERT INTO chat_sessions_log SET user1_id = OLD.invited_user_id, user2_id = OLD.inviter_user_id,`datetime` = NOW() ON DUPLICATE KEY UPDATE`datetime` = NOW() ;
+--	END IF;
+--END//
+
+--delimiter ;
+---
 
 -- Dump completed on 2013-02-06 17:08:16

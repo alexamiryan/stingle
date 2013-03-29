@@ -402,7 +402,7 @@ class ConversationManager extends DbAccessor{
 		$conversationFilter = new ConversationFilter();
 		$conversationFilter->setUUID($uuid);
 		$conversationFilter->setUserId($userId);
-		$conversation = $this->getConversation($conversationFilter);
+		$conversation = $this->getConversation($conversationFilter, true);
 		
 		$unreadFilter = new ConversationMessagesFilter();
 		$unreadFilter->setReceiverId($userId);

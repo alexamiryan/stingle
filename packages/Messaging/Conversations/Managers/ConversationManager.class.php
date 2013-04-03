@@ -757,8 +757,11 @@ class ConversationManager extends DbAccessor{
 		if(!$reduced){
 			$UserManager = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManager);
 			
-			$conversation->user = $UserManager->getUserById($conversationRow['user_id']);
-			$conversation->interlocutor = $UserManager->getUserById($conversationRow['interlocutor_id']);
+			try{
+				$conversation->user = $UserManager->getUserById($conversationRow['user_id']);
+				$conversation->interlocutor = $UserManager->getUserById($conversationRow['interlocutor_id']);
+			}
+			catch(UserNotFoundException $e){ }
 		}
 		$conversation->lastMsgDate = $conversationRow['last_msg_date'];
 		$conversation->read = $conversationRow['read'];

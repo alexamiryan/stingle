@@ -137,6 +137,16 @@ class ConversationMessagesFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setDeletedStatusIn($statuses){
+		if(empty($statuses) or !is_array($statuses)){
+			throw new InvalidIntegerArgumentException("\$statuses have to be non empty array");
+		}
+			
+		$this->qb->andWhere($this->qb->expr()->in(new Field("deleted", "conv_msgs"), $statuses));
+	
+		return $this;
+	}
+	
 	public function setDeletedStatusNotEqual($status){
 		if(!is_numeric($status) or !in_array($status, ConversationManager::getConstsArray("STATUS_DELETED"))){
 			throw new InvalidIntegerArgumentException("Invalid \$status specified.");
@@ -144,6 +154,12 @@ class ConversationMessagesFilter extends MergeableFilter{
 			
 		$this->qb->andWhere($this->qb->expr()->notEqual(new Field("deleted", "conv_msgs"), $status));
 		
+		return $this;
+	}
+	
+	public function setDeletedStatusNotDeleted(){
+		$this->qb->andWhere($this->qb->expr()->greaterEqual(new Field("deleted", "conv_msgs"), 0));
+	
 		return $this;
 	}
 	

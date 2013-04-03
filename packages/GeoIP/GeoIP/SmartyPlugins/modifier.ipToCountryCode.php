@@ -6,5 +6,8 @@
  * @return string
  */
 function smarty_modifier_ipToCountryCode($ip){
-	return Reg::get('geoIp')->getCountryCode($ip, -1);
+	if(!empty($ip)){
+		return Reg::get('geoIp')->getCountryCode($ip, -1);
+	}
+	return "";
 }

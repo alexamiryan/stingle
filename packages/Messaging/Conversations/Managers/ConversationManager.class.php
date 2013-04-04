@@ -390,6 +390,32 @@ class ConversationManager extends DbAccessor{
 		return $affected;
 	}
 	
+	public function wipeConversationMessage($conversationMessageId){
+		if(empty($conversationMessageId) or !is_numeric($conversationMessageId)){
+			throw new InvalidIntegerArgumentException("\$conversationMessageId have to be non zero integer.");
+		}
+		
+		// Get message
+		$filter = new ConversationMessagesFilter();
+		$filter->setId($conversationMessageId);
+		
+		$message = $this->getConversationMessage($filter, true);
+		
+		$qb = new QueryBuilder();
+		$qb->delete(Tbl::get('TBL_CONVERSATION_MESSAGES'))
+			->where($qb->expr()->equal(new Field('id'), $message->id));
+		
+		$affected = $this->query->exec($qb->getSQL())->affected();
+		
+		$this->correctConversationReadStatus($message->uuid, $message->senderId);
+		$this->correctConversationHasAttachment($message->uuid, $message->senderId);
+		
+		$this->correctConversationReadStatus($message->uuid, $message->receiverId);
+		$this->correctConversationHasAttachment($message->uuid, $message->receiverId);
+		
+		return $affected;
+	}
+	
 	public function correctConversationReadStatus($uuid, $userId){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidIntegerArgumentException("\$receiverUserId have to be non zero integer.");

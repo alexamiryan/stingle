@@ -195,7 +195,7 @@ class ConfigDBManager{
 		}
 		$sql = MySqlDbManager::getQueryObject();
 		$sqlQuery = $filter->getSQL();
-		//echo $sqlQuery; exit;
+		
 		if($pager !== null){
 			$sql = $pager->executePagedSQL($sqlQuery, $cacheMinutes);
 		}

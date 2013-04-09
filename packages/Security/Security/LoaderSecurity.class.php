@@ -7,7 +7,6 @@ class LoaderSecurity extends Loader{
 	
 	public function hookSecureInputData(){
 		if($this->config->AuxConfig->enableInputSecurity){
-			echo "qaq";exit;
 			InputSecurity::secureInputData();
 		}
 	}

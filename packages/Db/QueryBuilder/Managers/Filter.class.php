@@ -33,6 +33,9 @@ abstract class Filter{
 		$this->qb->select($this->qb->expr()->count(new Field('*'), 'cnt'));
 	}
 	
+	/**
+	 * @return QueryBuilder
+	 */
 	public function getQb(){
 		return $this->qb;
 	}

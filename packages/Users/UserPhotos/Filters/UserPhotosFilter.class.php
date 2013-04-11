@@ -1,8 +1,8 @@
 <?php
-class UserPhotosFilter extends Filter {
-	
+class UserPhotosFilter extends MergeableFilter {
+
 	public function __construct(){
-		parent::__construct();
+		parent::__construct(Tbl::get('TBL_USERS_PHOTOS', 'UserPhotoManager'), "up", "user_id");
 	
 		$this->qb->select(new Field("*", "up"))
 			->from(Tbl::get('TBL_USERS_PHOTOS', 'UserPhotoManager'), "up");

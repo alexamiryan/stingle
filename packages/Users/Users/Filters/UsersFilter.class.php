@@ -92,6 +92,18 @@ class UsersFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setGroupIdNotEqual($groupId){
+		if(empty($groupId) or !is_numeric($groupId)){
+			throw new InvalidArgumentException("\$groupId have to be non empty integer");
+		}
+		
+		$this->joinUsersGroupsTable();
+		
+		$this->qb->andWhere($this->qb->expr()->notEqual(new Field('group_id', "users_groups"), $groupId));
+		
+		return $this;
+	}
+	
 	public function setGroupIds($groupIds){
 		if(empty($groupIds) or !is_array($groupIds)){
 			throw new InvalidArgumentException("\$groupIds have to be non empty array");

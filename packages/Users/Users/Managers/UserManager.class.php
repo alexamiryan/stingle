@@ -385,7 +385,7 @@ class UserManager extends DbAccessor{
 		$qb->select(new Field('*'))
 			->from(Tbl::get('TBL_USERS_PROPERTIES'))
 			->where($qb->expr()->equal(new Field('user_id'), $userId));
-		$this->query->exec($qb->getSQL());
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		
 		$properties = new UserProperties();
 		

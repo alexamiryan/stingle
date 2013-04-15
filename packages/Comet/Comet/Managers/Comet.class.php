@@ -76,9 +76,11 @@ class Comet{
 		
 		$output['causedBy'] = $causedBy;
 		
+		$output['status'] = "ok";
+		
 		if(!empty($output)){
 			return $output;
 		}
-		return false;
+		return array('status'=>'nok');
 	}
 }

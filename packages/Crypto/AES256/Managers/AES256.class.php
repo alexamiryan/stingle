@@ -61,8 +61,12 @@ class AES256
 		// Initialize encryption module for decryption
 		mcrypt_generic_init($td, $key, $iv);
 		
+		$decryptedString = "";
 		// Decrypt encrypted string
-		$decryptedString = trim(mdecrypt_generic($td, pack("H*", $string)));
+		try{
+			 $decryptedString = trim(mdecrypt_generic($td, pack("H*", $string)));
+		}
+		catch(ErrorException $e){ }
 		
 		// Terminate decryption handle and close module
 		mcrypt_generic_deinit($td);

@@ -149,6 +149,8 @@ class SmartyWrapper extends Smarty {
 	 */
 	private $defaultRelativeTplPath;
 	
+	protected $urlCounterForClearCache = null;
+	
 	/**
 	 * 
 	 * Templates config
@@ -190,6 +192,8 @@ class SmartyWrapper extends Smarty {
 
 		$this->defaultRelativeTemplatesPath = $config->defaultRelativeTemplatesPath;
 		$this->defaultRelativeTplPath = $config->defaultRelativeTplPath;
+		
+		$this->urlCounterForClearCache = $config->urlCounterForClearCache;
 		
 		// Set default template
 		$this->templatesConfig = $config->templatesConfig;
@@ -392,30 +396,34 @@ class SmartyWrapper extends Smarty {
 	}
 	
 	private function getCssFilePath($fileName){
-		$resultingFileName = $fileName;
+		$resultingFilePath = $fileName;
 		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
-			$resultingFileName = SITE_PATH . $this->findFilePath('css/' . $fileName);
-			if($resultingFileName === false){
+			$resultingFilePath = SITE_PATH . $this->findFilePath('css/' . $fileName);
+			if($resultingFilePath === false){
 				throw new TemplateFileNotFoundException("CSS file '$fileName' not found.");
 			}
+			
+			if($this->urlCounterForClearCache != null){
+				$resultingFilePath .= "?cnt={$this->urlCounterForClearCache}";
+			}
 		}
-		return $resultingFileName;
+		return $resultingFilePath;
 	}
 	
 	
 	public function addPrimaryCss($fileName, $fromTop = false) {
-		$this->addPrimaryCssAtPos($fileName, static::PRIMARY, $fromTop);
+		$this->addCssAtPos($fileName, static::PRIMARY, $fromTop);
 	}
 	
 	public function addCss($fileName, $fromTop = false) {
-		$this->addPrimaryCssAtPos($fileName, static::SECONDARY, $fromTop);
+		$this->addCssAtPos($fileName, static::SECONDARY, $fromTop);
 	}
 	
 	/**
 	 * Adds a CSS file to the header section of the page displayed.
 	 * @param $fileName
 	 */
-	public function addPrimaryCssAtPos($fileName, $position = null, $fromTop = false) {
+	public function addCssAtPos($fileName, $position = null, $fromTop = false) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("CSS filename is not specified");
 		}
@@ -428,6 +436,7 @@ class SmartyWrapper extends Smarty {
 		}
 	
 		$filePath = $this->getCssFilePath($fileName);
+		
 		if(!empty($filePath) and $filePath != '/'){
 			if($fromTop){
 				array_splice($this->cssFiles[$position], 0, 0, $filePath);
@@ -454,14 +463,18 @@ class SmartyWrapper extends Smarty {
 	}
 	
 	private function getJsFilePath($fileName){
-		$resultingFileName = $fileName;
+		$resultingFilePath = $fileName;
 		if((strpos($fileName, "https://") === false and strpos($fileName, "http://") === false) and substr($fileName,0,1) != "/"){
-			$resultingFileName = SITE_PATH . $this->findFilePath('js/' . $fileName);
-			if($resultingFileName === false){
+			$resultingFilePath = SITE_PATH . $this->findFilePath('js/' . $fileName);
+			if($resultingFilePath === false){
 				throw new TemplateFileNotFoundException("JS file '$fileName' not found.");
 			}
+			
+			if($this->urlCounterForClearCache != null){
+				$resultingFilePath .= "?cnt={$this->urlCounterForClearCache}";
+			}
 		}
-		return $resultingFileName;
+		return $resultingFilePath;
 	}
 	
 	
@@ -490,6 +503,7 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		$filePath = $this->getJsFilePath($fileName);
+		
 		if(!empty($filePath) and $filePath != '/'){
 			if($fromTop){
 				array_splice($this->jsFiles[$position], 0, 0, $filePath);

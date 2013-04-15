@@ -10,6 +10,8 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 												'errorPage' => "error/error",
 												'error404Page' => "error/404",
 												'exceptionPage' => "error/exception",
+		
+												'urlCounterForClearCache' => null,
 
 												'templatesConfig' => array(
 																			'defaultTemplateName' => "default",

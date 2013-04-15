@@ -79,7 +79,7 @@ class UserAuthorization extends DbAccessor{
 		HookManager::callHook("OnUserLogin", $hookParams);
 		
 		$this->saveUserIdInSession($usr);
-		$this->updateUserLastLoginDate($usr);
+		$this->updateUserLastLoginDateAndIP($usr);
 		
 		if($writeCookie){
 			$this->writeLoginCookie($usr);
@@ -178,7 +178,7 @@ class UserAuthorization extends DbAccessor{
 		}
 	}
 	
-	protected function updateUserLastLoginDate(User $usr){
+	protected function updateUserLastLoginDateAndIP(User $usr){
 		if(empty($usr->id) or !is_numeric($usr->id)){
 			throw new InvalidArgumentException("user Id have to be non zero integer!");
 		}
@@ -186,6 +186,7 @@ class UserAuthorization extends DbAccessor{
 		$now = getDBCurrentDateTime();
 		
 		$usr->lastLoginDate = $now;
+		$usr->lastLoginIP = $_SERVER['REMOTE_ADDR'];
 		
 		$this->um->updateUser($usr);
 	}

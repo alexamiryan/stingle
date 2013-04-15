@@ -64,7 +64,9 @@ class AES256
 		$decryptedString = "";
 		// Decrypt encrypted string
 		try{
-			 $decryptedString = trim(mdecrypt_generic($td, pack("H*", $string)));
+			if(ctype_xdigit($string)){
+				$decryptedString = trim(mdecrypt_generic($td, pack("H*", $string)));
+			}
 		}
 		catch(ErrorException $e){ }
 		

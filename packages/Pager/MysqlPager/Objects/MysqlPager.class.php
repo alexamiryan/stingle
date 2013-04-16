@@ -92,15 +92,15 @@ class MysqlPager extends Pager{
 	 * @param string $query
 	 * @return MySqlQuery
 	 */
-	private function executePagedSQLUsingCalcRows($query){
+	private function executePagedSQLUsingCalcRows($query, $cacheMinutes = 0, $cacheTag = null){
 		$offsetLength = $this->getOffsetLength();
 		$query = $this->alterQueryForCalcRows($query);
 		$query = $this->alterQueryForLimit($query, $offsetLength['offset'], $offsetLength['length']);
-		$this->query->exec($query);
+		$this->query->exec($query, $cacheMinutes, $cacheTag);
 
 		$executedQueryObj = clone($this->query);
 
-		$this->setTotalRecordsCount($this->query->getFoundRowsCount());
+		$this->setTotalRecordsCount($this->query->getFoundRowsCount($cacheMinutes, $cacheTag));
 
 		return $executedQueryObj;
 	}
@@ -110,7 +110,7 @@ class MysqlPager extends Pager{
 	 * @param string $query
 	 * @return MySqlQuery
 	 */
-	private function executePagedSQLUsingReplace($query, $cacheMinutes = 0){
+	private function executePagedSQLUsingReplace($query, $cacheMinutes = 0, $cacheTag = null){
 		$countQuery = $this->alterQueryForReplace($query);
 		$this->query->exec($countQuery, $cacheMinutes);
 		$recordsCount = $this->query->fetchField("count");
@@ -119,7 +119,7 @@ class MysqlPager extends Pager{
 		
 		$offsetLength = $this->getOffsetLength();
 		$queryWithLimit = $this->alterQueryForLimit($query, $offsetLength['offset'], $offsetLength['length']);
-		$this->query->exec($queryWithLimit, $cacheMinutes);
+		$this->query->exec($queryWithLimit, $cacheMinutes, $cacheTag);
 
 		return clone($this->query);
 	}
@@ -131,7 +131,7 @@ class MysqlPager extends Pager{
 	 * @param int $alterMethod
 	 * @return MySqlQuery
 	 */
-	public function executePagedSQL($query, $cacheMinutes = 0, $alterMethod = null){
+	public function executePagedSQL($query, $cacheMinutes = 0, $alterMethod = null, $cacheTag = null){
 		if(empty($query)){
 			throw new InvalidArgumentException("\$query have to be non empty string");
 		}
@@ -153,10 +153,10 @@ class MysqlPager extends Pager{
 		$queryWithResult = null;
 		switch ($alterMethod) {
 			case static::METHOD_REPLACE :
-				$queryWithResult = $this->executePagedSQLUsingReplace($query, $cacheMinutes);
+				$queryWithResult = $this->executePagedSQLUsingReplace($query, $cacheMinutes, $cacheTag);
 				break;
 			case static::METHOD_CALC_ROWS :
-				$queryWithResult = $this->executePagedSQLUsingCalcRows($query);
+				$queryWithResult = $this->executePagedSQLUsingCalcRows($query, $cacheMinutes, $cacheTag);
 				break;
 			default :
 				throw new InvalidArgumentException("Incorrect alter method given!");

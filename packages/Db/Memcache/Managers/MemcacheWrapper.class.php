@@ -1,14 +1,15 @@
 <?php
-class MemcacheWrapper
-{
+class MemcacheWrapper{
+	
+	/**
+	 * @var Memcache
+	 */
 	private $memcache = null;
 
 	/**
 	 * Class constructor
 	 *
 	 * @param $memcache_host, $memcache_port
-	 * @return wmemcache Object
-	 * @version 1.0
 	 */
 	public function __construct($memcache_host='127.0.0.1', $memcache_port=11211) {
 		if(is_null($this->memcache) || (!is_object($this->memcache))) {
@@ -50,6 +51,32 @@ class MemcacheWrapper
 			throw new InvalidArgumentException("\$key is empty");
 		}
 		return $this->memcache->get($key);
+	}
+	
+	/**
+	 * Increment cache item with given key
+	 *
+	 * @param string $key
+	 * @return integer|false
+	 */
+	public function increment($key) {
+		if(empty($key)){
+			throw new InvalidArgumentException("\$key is empty");
+		}
+		return $this->memcache->increment($key);
+	}
+	
+	/**
+	 * Decrement cache item with given key
+	 *
+	 * @param string $key
+	 * @return integer|false
+	 */
+	public function decrement($key) {
+		if(empty($key)){
+			throw new InvalidArgumentException("\$key is empty");
+		}
+		return $this->memcache->decrement($key);
 	}
 	
 	/**

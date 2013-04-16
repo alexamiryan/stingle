@@ -5,7 +5,7 @@ $defaultConfig = array(
 												'rememberDaysCount' => 30,
 												'userPropertiesMap' => array(),
 												'siteSalt' => 'o&&Y@J5l2t]7M}#@zWuCzQXlx0U1NZ:x%`EYH;="6j1q(?_"sDxZ;]|:Fv>3f(K',
-												'pbdkf2IterationCount' => 1024
+												'pbdkf2IterationCount' => 1024,
 								),
 
 						'Objects' => array(		'UserManager' => 'userMgr',

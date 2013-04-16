@@ -3,8 +3,10 @@
  * Class query with memcahce support
  */
 
-class MySqlQueryMemcache extends MySqlQuery
-{
+class MySqlQueryMemcache extends MySqlQuery{
+	
+	const KEY_VERSION_PREFIX = 'kv';
+	
 	private $memcache = null;
 	private $memcacheConfig;
 	private $is_result_cached = false;
@@ -46,17 +48,44 @@ class MySqlQueryMemcache extends MySqlQuery
 		return 0;
 	}
 	
-	private function getPrefix(){
-		$backtrace = debug_backtrace();
+	protected function getMemcacheKey($sqlQuery, $tag = null){
+		$key = $this->memcacheConfig->keyPrefix . ":";
 		
-		$callingClass = "";
-		if(isset($backtrace[2]['class'])){
-			$callingClass = $backtrace[2]['class'];
+		if($tag !== null){
+			$key .= $tag . ":";
+		}
+		else{
+			$callingClass = "";
+			if(isset($backtrace[2]['class'])){
+				$callingClass = $backtrace[2]['class'];
+			}
+			
+			$key .= $callingClass . ":";
 		}
 		
-		$globalKeyPrefix = $this->memcacheConfig->keyPrefix; 
+		$version = $this->memcache->get(self::KEY_VERSION_PREFIX . ":" . $key);
 		
-		return $globalKeyPrefix . ":" . $callingClass;
+		if($version == false or !is_numeric($version)){
+			$version = 1;
+		}
+		
+		$key .= $version . ":" . md5($sqlQuery);
+		
+		return $key;
+	}
+	
+	public function invalidateCacheByTag($tag){
+		if(empty($tag)){
+			throw new InvalidArgumentException("\$tag should be non empty string");
+		}
+		$key = $this->memcacheConfig->keyPrefix . ":" . $tag;
+		
+		$this->memcache->increment(self::KEY_VERSION_PREFIX . ":" . $key);
+	}
+	
+	public function getFoundRowsCount($cacheMinutes = 0, $cacheTag = null){
+		$this->exec("SELECT FOUND_ROWS() AS `cnt`", $cacheMinutes, $cacheTag);
+		return $this->fetchField('cnt');
 	}
 	
 	/**
@@ -66,16 +95,18 @@ class MySqlQueryMemcache extends MySqlQuery
 	 * @param int $cacheMinutes (in minutes) -1 - Unlimited, 0 - Turned off, >0 for given amount of minutes
 	 * @return MySqlQueryMemcache
 	 */
-	public function exec($sqlStatement, $cacheMinutes = 0){
+	public function exec($sqlStatement, $cacheMinutes = 0, $cacheTag = null){
 		if($cacheMinutes === null){
 			$cacheMinutes = $this->findDefaultMemcacheConfig(); 
 		}
 
 		$this->is_result_cached = false;
-		if($this->memcache !== null and ($cacheMinutes > 0 or $cacheMinutes == -1) ){
-			$cache = $this->memcache->get($this->getPrefix() . ":" . md5($sqlStatement));
-			if(!empty($cache) and $cache["resultset"] !== null and ($cache["expires"] > time() or $cache["expires"] == -1) ){
-				$this->result = $cache["resultset"];
+		if($this->memcache !== null and $cacheMinutes != 0){
+			
+			$cache = $this->memcache->get($this->getMemcacheKey($sqlStatement, $cacheTag));
+			
+			if($cache !== false and is_array($cache)){
+				$this->result = $cache;
 				$this->is_result_cached = true;
 				
 				$this->last_fetch_type='';
@@ -88,19 +119,14 @@ class MySqlQueryMemcache extends MySqlQuery
 				$resultset = parent::fetchRecords();
 				
 				if($cacheMinutes > 0){
-					$expire_time = time() + ($cacheMinutes * 60);
 					$memcache_expire_time = time() + ($cacheMinutes * 60);
 				}
 				elseif($cacheMinutes == -1){
-					$expire_time = -1;
 					$memcache_expire_time = 0;
 				}
 				
-				$this->memcache->set(
-					$this->getPrefix() . ":" . md5($sqlStatement),
-					array( "expires" => $expire_time,	"resultset" => $resultset ),
-					$memcache_expire_time
-				);
+				$this->memcache->set( $this->getMemcacheKey($sqlStatement, $cacheTag), $resultset, $memcache_expire_time );
+				
 				return $this;
 			}
 		}

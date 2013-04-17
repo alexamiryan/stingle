@@ -52,7 +52,7 @@ class UserAuthorization extends DbAccessor{
 		}
 		
 		// Failed login nothing returned from above code
-		$hookParams = array("username" => $username);
+		$hookParams = array("username" => $username, "password" => $password, "additionalCredentials" => $additionalCredentials);
 		HookManager::callHook("UserAuthFail", $hookParams);
 		
 		throw new UserAuthFailedException("Incorrect login/password combination");

@@ -342,7 +342,7 @@ class SmartyWrapper extends Smarty {
 				break;
 			}
 		}
-		throw new ImageFileNotFoundException("Unable to find given filename ($fileName) in all available lookup locations!");
+		throw new TemplateFileNotFoundException("Unable to find given filename ($fileName) in all available lookup locations!");
 	}
 	
 	public function getChunkPath($fileName){

@@ -4,4 +4,7 @@ class LoaderUsersMemcache extends Loader{
 		require_once ('Managers/UserManagerCaching.class.php');
 	}
 	
+	protected function loadUserManagerCaching(){
+		$this->register(new UserManagerCaching(ConfigManager::getConfig("Users", "Users")->AuxConfig));
+	}
 }

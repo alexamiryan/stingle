@@ -1,6 +1,8 @@
 <?php
 class MemcacheWrapper{
 	
+	const KEY_VERSION_PREFIX = 'kv';
+	
 	/**
 	 * @var Memcache
 	 */
@@ -31,8 +33,8 @@ class MemcacheWrapper{
 	 * @return bool ture if successful false otherwise
 	 */
 	public function set($key, $value, $expire = 0, $flag = 0) {
-		if(empty($key) or empty($value)){
-			throw new InvalidArgumentException("\$key and \$value can't be empty");
+		if(empty($key)){
+			throw new InvalidArgumentException("\$key can't be empty");
 		}
 		
 		if (!$this->memcache->set($key, $value, $flag, $expire)){
@@ -130,5 +132,52 @@ class MemcacheWrapper{
 	    ksort($list);
 	    
 	    return $list;
+	}
+	
+	public function getNamespacedKey($tag = null){
+		$key = ConfigManager::getConfig("Db", "Memcache")->AuxConfig->keyPrefix . ":";
+		
+		$key = $this->getKeyBeginning($tag);
+		
+		$version = $this->get(self::KEY_VERSION_PREFIX . ":" . $key);
+		
+		if($version == false or !is_numeric($version)){
+			$version = 1;
+		}
+		
+		$key .= $version;
+		
+		return $key;
+	}
+	
+	public function invalidateCacheByTag($tag = null){
+		if(empty($tag)){
+			throw new InvalidArgumentException("\$tag should be non empty string");
+		}
+
+		$key = $this->getKeyBeginning($tag);
+	
+		if(!$this->increment(self::KEY_VERSION_PREFIX . ":" . $key)){
+			$this->set(self::KEY_VERSION_PREFIX . ":" . $key, 2);
+		}
+	}
+	
+	protected function getKeyBeginning($tag = null){
+		$key = ConfigManager::getConfig("Db", "Memcache")->AuxConfig->keyPrefix . ":";
+		
+		if($tag !== null){
+			$key .= $tag . ":";
+		}
+		else{
+			$callingClass = "";
+			$backtrace = debug_backtrace();
+			if(isset($backtrace[3]['class'])){
+				$callingClass = $backtrace[2]['class'];
+			}
+		
+			$key .= $callingClass . ":";
+		}
+		
+		return $key;
 	}
 }

@@ -1,4 +1,7 @@
 <?php
-$defaultConfig = array(	
-						'AuxConfig' => array(	),						
-					);
+$defaultConfig = array(
+		'Objects' => array(	
+				'UserManagerCaching' => 'userMgr'
+				),
+		'AuxConfig' => array(	)
+);

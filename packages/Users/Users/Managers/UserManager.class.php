@@ -51,17 +51,18 @@ class UserManager extends DbAccessor{
 		}
 
 		$sqlQuery = $filter->getSQL();
+		$sql = MySqlDbManager::getQueryObject();
 		if($pager !== null){
-			$this->query = $pager->executePagedSQL($sqlQuery, $cacheMinutes, null, $cacheTag);
+			$sql = $pager->executePagedSQL($sqlQuery, $cacheMinutes, null, $cacheTag);
 		}
 		else{
-			$this->query->exec($sqlQuery, $cacheMinutes, $cacheTag);
+			$sql->exec($sqlQuery, $cacheMinutes, $cacheTag);
 		}
 		
 		$users = array();
-		if($this->query->countRecords()){
-			foreach($this->query->fetchRecords() as $row){
-				array_push($users, $this->getUserObjectFromData($row, $initObjects, $cacheMinutes, $cacheTag));
+		if($sql->countRecords()){
+			while(($userId = $sql->fetchField('id')) != false){
+				array_push($users, $this->getUserById($userId, $initObjects, $cacheMinutes, $cacheTag));
 			}
 		}
 
@@ -111,6 +112,7 @@ class UserManager extends DbAccessor{
 	 * @param integer $userId
 	 * @param @param integer $initObjects For ex. INIT_PROPERTIES | INIT_PERMISSIONS
 	 * @param integer $cacheMinutes
+	 * @param string $cacheTag
 	 * @throws InvalidArgumentException
 	 * @throws UserNotFoundException
 	 * @return User
@@ -120,61 +122,21 @@ class UserManager extends DbAccessor{
 			throw new InvalidArgumentException("\$userId have to be non zero integer");
 		}
 		
-		$filter = new UsersFilter();
-		$filter->setUserIdEqual($userId);
-		$users = $this->getUsersList($filter, null, $initObjects, $cacheMinutes, $cacheTag);
-		if(count($users) !== 1){
-			throw new UserNotFoundException("There is no such user or user is not unique.");
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_USERS'))
+			->where($qb->expr()->equal(new Field('id'), $userId));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes, $cacheTag);
+		
+		if($this->query->countRecords() == 1){
+			return $this->getUserObjectFromData($this->query->fetchRecord(), $initObjects, $cacheMinutes, $cacheTag);
 		}
-		return $users[0];
+		
+		throw new UserNotFoundException("There is no such user or user is not unique.");
 	}
 	
-	/**
-	 * Get User ID By Login
-	 * 
-	 * @param string $login
-	 * @param integer $cacheMinutes
-	 * @throws InvalidArgumentException
-	 * @throws UserNotFoundException
-	 * @return integer
-	 */
-	public function getIdByLogin($login, $cacheMinutes = 0, $cacheTag = null){
-		if(empty($login)){
-			throw new InvalidArgumentException("\$login have to be non empty string");
-		}
-	
-		$filter = new UsersFilter();
-		$filter->setLogin($login);
-		$users = $this->getUsersList($filter, null, static::INIT_NONE, $cacheMinutes, $cacheTag);
-		if(count($users) !== 1){
-			throw new UserNotFoundException("There is no such user or user is not unique.");
-		}
-		return $users[0]->id;
-	}
-	
-	/**
-	 * Get User Login By ID
-	 *
-	 * @param string $id
-	 * @param integer $cacheMinutes
-	 * @throws InvalidArgumentException
-	 * @throws UserNotFoundException
-	 * @return integer
-	 */
-	public function getLoginById($id, $cacheMinutes = 0, $cacheTag = null){
-		if(empty($id) or !is_numeric($id)){
-			throw new InvalidArgumentException("\$id have to be non zero integer");
-		}
-	
-		$filter = new UsersFilter();
-		$filter->setUserIdEqual($id);
-		$users = $this->getUsersList($filter, null, static::INIT_NONE, $cacheMinutes, $cacheTag);
-		if(count($users) !== 1){
-			throw new UserNotFoundException("There is no such user or user is not unique.");
-		}
-		return $users[0]->login;
-	}
-	
+
 	/**
 	 * Check if user with given login exists
 	 * 

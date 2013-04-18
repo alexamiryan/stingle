@@ -5,9 +5,7 @@
 
 class MySqlQueryMemcache extends MySqlQuery{
 	
-	const KEY_VERSION_PREFIX = 'kv';
-	
-	private $memcache = null;
+	public $memcache = null;
 	private $memcacheConfig;
 	private $is_result_cached = false;
 
@@ -49,38 +47,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 	}
 	
 	protected function getMemcacheKey($sqlQuery, $tag = null){
-		$key = $this->memcacheConfig->keyPrefix . ":";
-		
-		if($tag !== null){
-			$key .= $tag . ":";
-		}
-		else{
-			$callingClass = "";
-			if(isset($backtrace[2]['class'])){
-				$callingClass = $backtrace[2]['class'];
-			}
-			
-			$key .= $callingClass . ":";
-		}
-		
-		$version = $this->memcache->get(self::KEY_VERSION_PREFIX . ":" . $key);
-		
-		if($version == false or !is_numeric($version)){
-			$version = 1;
-		}
-		
-		$key .= $version . ":" . md5($sqlQuery);
-		
-		return $key;
-	}
-	
-	public function invalidateCacheByTag($tag){
-		if(empty($tag)){
-			throw new InvalidArgumentException("\$tag should be non empty string");
-		}
-		$key = $this->memcacheConfig->keyPrefix . ":" . $tag;
-		
-		$this->memcache->increment(self::KEY_VERSION_PREFIX . ":" . $key);
+		return $this->memcache->getNamespacedKey($tag) . ":" . md5($sqlQuery);
 	}
 	
 	public function getFoundRowsCount($cacheMinutes = 0, $cacheTag = null){
@@ -102,7 +69,6 @@ class MySqlQueryMemcache extends MySqlQuery{
 
 		$this->is_result_cached = false;
 		if($this->memcache !== null and $cacheMinutes != 0){
-			
 			$cache = $this->memcache->get($this->getMemcacheKey($sqlStatement, $cacheTag));
 			
 			if($cache !== false and is_array($cache)){

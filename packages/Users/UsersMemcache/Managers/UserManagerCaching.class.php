@@ -3,8 +3,35 @@ class UserManagerCaching extends UserManager{
 	
 	const USER_TAG = 'usr';
 	
+	/**
+	 * @var MemcacheWrapper
+	 */
+	private $memcache = null;
+	
+	public function __construct($config, $dbInstanceKey = null){
+		parent::__construct($config, $dbInstanceKey);
+		
+		$this->memcache = $this->query->memcache;
+	}
+	
 	public function getUserById($userId, $initObjects = self::INIT_ALL, $cacheMinutes = 0, $cacheTag = null){
-		return parent::getUserById($userId, $initObjects, -1, self::USER_TAG . $userId);
+		if($this->memcache != null){
+			$key = $this->memcache->getNamespacedKey(self::USER_TAG . $userId);
+			$cache = $this->memcache->get($key);
+			
+			if($cache !== false and is_a($cache, "User")){
+				return $cache;
+			}
+		
+			$user = parent::getUserById($userId, $initObjects, -1, self::USER_TAG . $userId);
+			
+			$this->memcache->set($key, $user, 0);
+			
+			return $user;
+		}
+		else{
+			return parent::getUserById($userId, $initObjects, -1, self::USER_TAG . $userId);
+		}
 	}
 	
 	public function createUser(User $user){
@@ -44,6 +71,8 @@ class UserManagerCaching extends UserManager{
 			throw new InvalidArgumentException("\$userId have to be non zero integer"); 
 		}
 		
-		$this->query->invalidateCacheByTag(self::USER_TAG . $userId);
+		if($this->memcache != null){
+			$this->memcache->invalidateCacheByTag(self::USER_TAG . $userId);
+		}
 	}
 }

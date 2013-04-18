@@ -4,7 +4,7 @@ class UsersFilter extends MergeableFilter{
 	public function __construct(){
 		parent::__construct(Tbl::get('TBL_USERS', 'UserManager'), "users", "id");
 		
-		$this->qb->select(new Field("*", $this->primaryTableAlias))
+		$this->qb->select(new Field("id", $this->primaryTableAlias))
 			->from($this->primaryTable, $this->primaryTableAlias);
 	}
 	

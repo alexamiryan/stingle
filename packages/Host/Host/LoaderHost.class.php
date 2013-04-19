@@ -21,7 +21,7 @@ class LoaderHost extends Loader{
 	}
 	
 	protected function loadHost(){
-		$this->register(HostManager::getHostByName($this->hostName));
+		$this->register(HostManager::getHostByName($this->hostName, $this->config->AuxConfig->autoCreateHost));
 	}
 	
 	protected function loadSiteUrl(){

@@ -171,8 +171,8 @@ class MemcacheWrapper{
 		else{
 			$callingClass = "";
 			$backtrace = debug_backtrace();
-			if(isset($backtrace[3]['class'])){
-				$callingClass = $backtrace[2]['class'];
+			if(isset($backtrace[4]['class'])){
+				$callingClass = $backtrace[4]['class'];
 			}
 		
 			$key .= $callingClass . ":";

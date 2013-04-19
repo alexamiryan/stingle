@@ -23,14 +23,14 @@ class UserManagerCaching extends UserManager{
 				return $cache;
 			}
 		
-			$user = parent::getUserById($userId, $initObjects, -1, self::USER_TAG . $userId);
+			$user = parent::getUserById($userId, $initObjects);
 			
 			$this->memcache->set($key, $user, 0);
 			
 			return $user;
 		}
 		else{
-			return parent::getUserById($userId, $initObjects, -1, self::USER_TAG . $userId);
+			return parent::getUserById($userId, $initObjects);
 		}
 	}
 	

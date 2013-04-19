@@ -113,4 +113,18 @@ class UserPermissionsManager extends DbAccessor{
 		
 		return $perm;
 	}
+	
+	public static function hasPermission(User $user, $permissionName){
+		if(isset($user->perms->permissionsList[$permissionName])){
+			return true;
+		}
+		return false;
+	}
+	
+	public static function getPermissionFromUser(User $user, $permissionName){
+		if(isset($user->perms->permissionsList[$permissionName])){
+			return $user->perms->permissionsList[$permissionName];
+		}
+		throw new UserPermissionException();
+	}
 }

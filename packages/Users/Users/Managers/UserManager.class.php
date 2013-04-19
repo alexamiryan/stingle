@@ -329,12 +329,13 @@ class UserManager extends DbAccessor{
 		
 		$permissionsData = $this->query->fetchRecords();
 		
-		$permissionsList = array();
+		$perms =  new UserPermissions();
 		foreach($permissionsData as $row){
-			array_push($permissionsList, UserPermissionsManager::getPermissionsObjectFromData($row));
+			$permObject = UserPermissionsManager::getPermissionsObjectFromData($row);
+			$perms->permissionsList[$permObject->name] = $permObject;
 		}
 		
-		return new UserPermissions($permissionsList);
+		return $perms;
 	}
 	
 	/**

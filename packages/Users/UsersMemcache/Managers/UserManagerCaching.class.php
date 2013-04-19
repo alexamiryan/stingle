@@ -19,11 +19,11 @@ class UserManagerCaching extends UserManager{
 			$key = $this->memcache->getNamespacedKey(self::USER_TAG . $userId);
 			$cache = $this->memcache->get($key);
 			
-			if($cache !== false and is_a($cache, "User")){
+			if($cache !== false and !empty($cache) and is_a($cache, "User") and isset($cache->id) and !empty($cache->id)){
 				return $cache;
 			}
 		
-			$user = parent::getUserById($userId, $initObjects);
+			$user = parent::getUserById($userId, self::INIT_ALL);
 			
 			$this->memcache->set($key, $user, 0);
 			

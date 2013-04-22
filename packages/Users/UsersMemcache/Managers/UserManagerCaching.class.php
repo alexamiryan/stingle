@@ -1,7 +1,7 @@
 <?php
 class UserManagerCaching extends UserManager{
 	
-	const USER_TAG = 'usr';
+	const USER_TAG = 'uo:usr';
 	
 	/**
 	 * @var MemcacheWrapper

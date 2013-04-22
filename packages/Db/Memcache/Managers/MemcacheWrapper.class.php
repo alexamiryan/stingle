@@ -139,14 +139,12 @@ class MemcacheWrapper{
 		
 		$key = $this->getKeyBeginning($tag);
 		
-		$version = $this->get(self::KEY_VERSION_PREFIX . ":" . $key);
-		
+		$version = $this->get($this->getKeyBeginning($tag, true));
 		if($version == false or !is_numeric($version)){
 			$version = 1;
 		}
 		
 		$key .= $version;
-		
 		return $key;
 	}
 	
@@ -155,15 +153,19 @@ class MemcacheWrapper{
 			throw new InvalidArgumentException("\$tag should be non empty string");
 		}
 
-		$key = $this->getKeyBeginning($tag);
+		$versionKey = $this->getKeyBeginning($tag, true);
 	
-		if(!$this->increment(self::KEY_VERSION_PREFIX . ":" . $key)){
-			$this->set(self::KEY_VERSION_PREFIX . ":" . $key, 2);
+		if(!$this->increment($versionKey)){
+			$this->set($versionKey, 2);
 		}
 	}
 	
-	protected function getKeyBeginning($tag = null){
+	protected function getKeyBeginning($tag = null, $isVersionKey = false){
 		$key = ConfigManager::getConfig("Db", "Memcache")->AuxConfig->keyPrefix . ":";
+		
+		if($isVersionKey){
+			$key .= self::KEY_VERSION_PREFIX . ":";
+		}
 		
 		if($tag !== null){
 			$key .= $tag . ":";

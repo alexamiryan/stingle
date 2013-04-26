@@ -8,6 +8,10 @@ class Controller
 		$this->config = $config;
 	}
 	
+	public function getControllersPath(){
+		return $this->controllersPath;
+	}
+	
 	public function setControllersPath($path){
 		if(empty($path)){
 			throw new InvalidArgumentException("\$path have to be non empty string");

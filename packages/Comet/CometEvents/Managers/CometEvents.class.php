@@ -59,8 +59,12 @@ class CometEvents extends DbAccessor{
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
+	protected function getNewEventObject(){
+		return new CometEvent();
+	}
+	
 	protected function getEventObjectFromData($eventRow, $reduced = false){
-		$event = new CometEvent();
+		$event = $this->getNewEventObject();
 		$event->id = $eventRow['id'];
 		$event->date = $eventRow['date'];
 		$event->selfUserId = $eventRow['self_user_id'];

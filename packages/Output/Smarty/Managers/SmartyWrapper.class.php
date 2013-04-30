@@ -160,6 +160,11 @@ class SmartyWrapper extends Smarty {
 	
 	public $pagesPath = 'pages/';
 	
+	public function __construct(){
+		parent::__construct();
+		$this->muteExpectedErrors();
+	}
+	
 	public function isInitialized(){
 		if($this->isInitialized){
 			return true;
@@ -186,9 +191,14 @@ class SmartyWrapper extends Smarty {
 	 * @param array $config SmartyWrapper configuration
 	 */
 	private function loadConfig($config) {
-		$this->cache_dir = $config->cacheDir;
-		$this->compile_dir = $config->compileDir;
-		$this->template_dir = $config->templateDir;
+		$this->setCacheDir($config->cacheDir);
+		$this->setCompileDir($config->compileDir);
+		$this->setTemplateDir($config->templateDir);
+		
+		$this->setCaching($config->caching);
+		$this->setCacheLifetime($config->defaultCacheTime);
+		$this->setCompileCheck($config->compileCheck);
+		$this->setUseSubDirs(true);
 
 		$this->defaultRelativeTemplatesPath = $config->defaultRelativeTemplatesPath;
 		$this->defaultRelativeTplPath = $config->defaultRelativeTplPath;
@@ -213,17 +223,6 @@ class SmartyWrapper extends Smarty {
 	}
 
 	/**
-	 * Add additional plugins dir
-	 * @param $pluginDir
-	 */
-	public function addPluginsDir($pluginDir) {
-		if(empty($pluginDir)){
-			throw new InvalidArgumentException("Plugin Dir is not specified");
-		}
-		array_push($this->plugins_dir, $pluginDir);
-	}
-	
-	/**
 	 * Set template
 	 * 
 	 * @param string $template
@@ -231,8 +230,8 @@ class SmartyWrapper extends Smarty {
 	 * @throws RuntimeException
 	 */
 	public function setTemplate($template){
-		if(!is_dir($this->template_dir."templates/".$template)){
-			throw new InvalidArgumentException("Specified templates directory (".$this->template_dir."templates/".$template.") doesn't exist");
+		if(!is_dir($this->getTemplateDir(0)."templates/".$template)){
+			throw new InvalidArgumentException("Specified templates directory (".$this->getTemplateDir(0)."templates/".$template.") doesn't exist");
 		}
 		
 		if(!isset($this->templatesConfig->templates->$template)){
@@ -265,9 +264,9 @@ class SmartyWrapper extends Smarty {
 	 * @throws RuntimeException
 	 */
 	public function getFilePathFromTemplate($filename, $withAbsolutePath = false){
-		$templatePathPrefix = $this->template_dir . $this->defaultRelativeTemplatesPath;
+		$templatePathPrefix = $this->getTemplateDir(0) . $this->defaultRelativeTemplatesPath;
 		if($withAbsolutePath){
-			$returnTemplatePathPrefix = $this->template_dir . $this->defaultRelativeTemplatesPath;
+			$returnTemplatePathPrefix = $this->getTemplateDir(0) . $this->defaultRelativeTemplatesPath;
 		}
 		else{
 			$returnTemplatePathPrefix = $this->defaultRelativeTemplatesPath;
@@ -299,7 +298,7 @@ class SmartyWrapper extends Smarty {
 	 *  @return string
 	 */
 	public function findFilePath($fileName, $alternatePath = null){
-		$templatePathPrefix = $this->template_dir . $this->defaultRelativeTemplatesPath;
+		$templatePathPrefix = $this->getTemplateDir(0) . $this->defaultRelativeTemplatesPath;
 		$currentTemplate = $this->template;
 		$nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
 		
@@ -379,7 +378,7 @@ class SmartyWrapper extends Smarty {
 		if(file_exists($this->getFilePathFromTemplate('layouts/' . $layout . '.tpl', true))){
 			$this->layoutPath = $this->getFilePathFromTemplate('layouts/' . $layout . '.tpl');
 		}
-		elseif(file_exists($this->template_dir . "system/layouts/" . $layout . '.tpl')){
+		elseif(file_exists($this->getTemplateDir(0) . "system/layouts/" . $layout . '.tpl')){
 			$this->layoutPath = "system/layouts/" . $layout . '.tpl';
 		}
 		else{
@@ -656,13 +655,33 @@ class SmartyWrapper extends Smarty {
 		$this->assign ( '__CustomHeadTags', $this->CustomHeadTags );
 		
 		// Template Paths
-		$this->assign ( '__ViewDirPath', $this->template_dir );
+		$this->assign ( '__ViewDirPath', $this->getTemplateDir(0) );
 		$this->assign ( '__PagesPath', $this->pagesPath );
 	}
 	
-	public function fetch($template, $cache_id = null, $compile_id = null, $parent = null, $display = false){
+	public function fetch($template = null, $cache_id = null, $compile_id = null, $parent = null, $display = false, $merge_tpl_vars = true, $no_output_filter = false){
 		$this->defaultAssingns();
-		return parent::fetch($template, $cache_id, $compile_id, $parent, $display);
+		return parent::fetch($template, $cache_id, $compile_id, $parent, $display, $merge_tpl_vars, $no_output_filter);
+	}
+	
+	public function setGlobalCachingOn(){
+		$this->setCaching(self::CACHING_LIFETIME_CURRENT);
+	}
+	
+	public function setLocalCachingOn(){
+		$this->setCaching(self::CACHING_LIFETIME_SAVED);
+	}
+	
+	public function setCachingOff(){
+		$this->setCaching(self::CACHING_OFF);
+	}
+	
+	public function setCacheTime($time){
+		if(!is_int($time)){
+			throw new InvalidArgumentException("\$time have to be integer");
+		}
+		
+		$this->setCacheLifetime($time);
 	}
 	
 	/**
@@ -765,7 +784,7 @@ class SmartyWrapper extends Smarty {
 		else{
 			$this->assign ( '__modulePageTpl', $this->fileToDisplay);
 		}
-		
+		//$return = true;
 		// Finally display
 		if($return){
 			return parent::fetch($this->fileToDisplay);

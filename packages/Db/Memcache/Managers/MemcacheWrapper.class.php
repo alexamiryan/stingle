@@ -3,6 +3,10 @@ class MemcacheWrapper{
 	
 	const KEY_VERSION_PREFIX = 'kv';
 	
+	const MEMCACHE_OFF = 0;
+	const MEMCACHE_UNLIMITED = -1;
+	const MEMCACHE_DEFAULT = null;
+	
 	/**
 	 * @var Memcache
 	 */

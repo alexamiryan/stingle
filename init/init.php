@@ -91,7 +91,7 @@ HookManager::callHook("Controller");
 
 HookManager::callHook("AfterController");
 
-$time = microtime(true);
+//$time = microtime(true);
 HookManager::callHook("BeforeOutput");
 
 HookManager::callHook("Output");

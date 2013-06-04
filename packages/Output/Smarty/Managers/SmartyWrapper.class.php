@@ -8,6 +8,9 @@ class SmartyWrapper extends Smarty {
 	 * Relative path of the module's wrappers
 	 * @var string
 	 */
+	protected $mainTemplate = 'system/index.tpl';
+	
+	
 	protected $wrappersDir = 'wrappers/';
 
 	
@@ -36,7 +39,7 @@ class SmartyWrapper extends Smarty {
 	/**
 	 * The selected page layout path. One of located in /templates/layouts folder
 	 */
-	private $layoutPath;
+	private $layoutPath = null;
 	
 	private $isLayoutSet = false;
 
@@ -151,6 +154,8 @@ class SmartyWrapper extends Smarty {
 	
 	protected $urlCounterForClearCache = null;
 	
+	protected $cacheId = null;
+	
 	/**
 	 * 
 	 * Templates config
@@ -199,6 +204,13 @@ class SmartyWrapper extends Smarty {
 		$this->setCacheLifetime($config->defaultCacheTime);
 		$this->setCompileCheck($config->compileCheck);
 		$this->setUseSubDirs(true);
+		
+		if($config->memcacheSupport){
+			Reg::get('packageMgr')->usePlugin("Db", "Memcache");
+			if(ConfigManager::getConfig("Db", "Memcache")->AuxConfig->enabled){
+				$this->caching_type = 'memcache';
+			}
+		}
 
 		$this->defaultRelativeTemplatesPath = $config->defaultRelativeTemplatesPath;
 		$this->defaultRelativeTplPath = $config->defaultRelativeTplPath;
@@ -664,12 +676,13 @@ class SmartyWrapper extends Smarty {
 		return parent::fetch($template, $cache_id, $compile_id, $parent, $display, $merge_tpl_vars, $no_output_filter);
 	}
 	
-	public function setGlobalCachingOn(){
-		$this->setCaching(self::CACHING_LIFETIME_CURRENT);
-	}
-	
-	public function setLocalCachingOn(){
-		$this->setCaching(self::CACHING_LIFETIME_SAVED);
+	public function setCachingOn($isPerPage = true){
+		if($isPerPage){
+			$this->setCaching(self::CACHING_LIFETIME_SAVED);
+		}
+		else{
+			$this->setCaching(self::CACHING_LIFETIME_CURRENT);
+		}
 	}
 	
 	public function setCachingOff(){
@@ -682,6 +695,17 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		$this->setCacheLifetime($time);
+	}
+	
+	public function setCacheId($cacheId){
+		$this->cacheId = $cacheId;
+	}
+	
+	public function isPageCached(){
+		if($this->cacheId !== null and parent::isCached($this->mainTemplate, $this->cacheId)){
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -784,13 +808,26 @@ class SmartyWrapper extends Smarty {
 		else{
 			$this->assign ( '__modulePageTpl', $this->fileToDisplay);
 		}
+		
+		$this->assign ( '__layoutTpl', $this->layoutPath);
+		
 		//$return = true;
 		// Finally display
 		if($return){
-			return parent::fetch($this->fileToDisplay);
+			if($this->cacheId !== null){
+				return parent::fetch($this->fileToDisplay, $this->cacheId);
+			}
+			else{
+				return parent::fetch($this->fileToDisplay);
+			}
 		}
 		else{
-			parent::display ( $this->layoutPath );
+			if($this->cacheId !== null){
+				parent::display ( $this->mainTemplate, $this->cacheId);
+			}
+			else{
+				parent::display ( $this->mainTemplate );
+			}
 		}
 	}
 }

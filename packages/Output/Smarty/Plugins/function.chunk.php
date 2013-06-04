@@ -13,7 +13,7 @@ function smarty_function_chunk($params, &$smarty){
 	unset($params['file']);
 
 	if(isset($params['cache']) and $params['cache'] == true){
-		$smarty->setLocalCachingOn();
+		$smarty->setCachingOn();
 		$cacheEnabled = true;
 		
 		if(isset($params['cacheTime']) and is_int($params['cacheTime'])){
@@ -32,11 +32,14 @@ function smarty_function_chunk($params, &$smarty){
 		if(isset($params['cacheId']) and !empty($params['cacheId'])){
 			$cacheId = $params['cacheId'];
 		}
-		else{
-			$cacheIdFromParent = $smarty->getTemplateVars('cacheId');
-			if(!empty($cacheIdFromParent)){
-				$cacheId = $cacheIdFromParent;
-			}
+		elseif (isset($params['targetId']) and !empty($params['targetId'])){
+			$cacheId = getSmartyCacheId($params['targetId']);
+		}
+		elseif(!fempty($targetIdFromParent = $smarty->getTemplateVars('targetId'))){
+			$cacheId = getSmartyCacheId($targetIdFromParent);
+		}
+		elseif(!fempty($cacheIdFromParent = $smarty->getTemplateVars('cacheId'))){
+			$cacheId = $cacheIdFromParent;
 		}
 
 		if($cacheId != null){

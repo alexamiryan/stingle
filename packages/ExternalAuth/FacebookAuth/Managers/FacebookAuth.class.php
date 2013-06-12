@@ -274,8 +274,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
     	if($accessToken === null) {
     		$accessToken = $this->getAccessToken($code);
     	}
-    	$extAlbumUrl = "https://graph.facebook.com/me/albums?$accessToken&limit=0";
-    	
+    	$extAlbumUrl = "https://graph.facebook.com/me/albums?$accessToken&limit=100&offset=0";
     	try{
  			$extAlbum = json_decode(file_get_contents($extAlbumUrl));
 	 	}
@@ -304,7 +303,7 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
      		$this->redirectToDialog();   
     	}    	
     	$accessToken = $this->getAccessToken($code);
- 		$extAlbum = $this->getAlbums($accessToken);    	
+ 		$extAlbum = $this->getAlbums($accessToken);
     	$filesArray = array ();
     	if(is_array($extAlbum) and count($extAlbum)){
 	 		foreach ($extAlbum as $albumObj) {

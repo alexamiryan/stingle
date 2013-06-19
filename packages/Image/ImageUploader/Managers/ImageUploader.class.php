@@ -28,18 +28,6 @@ class ImageUploader
 		}
 		ensurePathLastSlash($uploadDir);
 		
-		$format = null;
-		if(isset($imageUploaderConfig->saveFormat) and $imageUploaderConfig->saveFormat != null){
-			$format = $imageUploaderConfig->saveFormat;
-		}
-		else{
-			$format = $image->getType();
-		}
-		
-	    if($fileName === null){
-			$fileName = static::findNewFileName($uploadDir, $format);
-	    }
-
 	    if (!in_array($file["type"], $imageUploaderConfig->acceptedMimeTypes->toArray())){
 	    	throw new ImageException("Unsupported file uploaded!");
 	    }
@@ -53,6 +41,18 @@ class ImageUploader
 	    
 	    // Check if we are able to create image resource from this file.
 	    $image = new Image($file['tmp_name']);
+	    
+	    $format = null;
+	    if(isset($imageUploaderConfig->saveFormat) and $imageUploaderConfig->saveFormat != null){
+	    	$format = $imageUploaderConfig->saveFormat;
+	    }
+	    else{
+	    	$format = $image->getType();
+	    }
+	    
+	    if($fileName === null){
+	    	$fileName = static::findNewFileName($uploadDir, $format);
+	    }
 	    
 	    $savePath = $uploadDir . $fileName;
 	    

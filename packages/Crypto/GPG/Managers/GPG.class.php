@@ -15,7 +15,8 @@ class GPG
 	 * @return string
 	 */
 	public static function encrypt($string, $encryptKeyID, $armour = true){
-		$gpg = new Crypt_GPG();
+		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
+		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
 		
 		if(is_array($encryptKeyID)){
 			foreach($encryptKeyID as $keyId){
@@ -38,7 +39,8 @@ class GPG
 	 * @return string
 	 */
 	public static function decrypt($string, $keyPassword = null, $keyID = null){
-		$gpg = new Crypt_GPG();
+		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
+		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
 		
 		if($keyID === null){
 			$keyID = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->defaultKey;
@@ -64,7 +66,8 @@ class GPG
 	 * @return string
 	 */
 	public static function sign($string, $keyPassword = null, $keyID = null, $mode = null, $armor = true){
-		$gpg = new Crypt_GPG();
+		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
+		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
 
 		if($mode === null){
 			$mode = Crypt_GPG::SIGN_MODE_CLEAR;
@@ -90,7 +93,8 @@ class GPG
 	 * @return boolean
 	 */
 	public static function verify($string){
-		$gpg = new Crypt_GPG();
+		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
+		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
 		$signatures = $gpg->verify($string);
 		
 		if ($signatures[0]->isValid()) {
@@ -113,7 +117,8 @@ class GPG
 	 * @return string
 	 */
 	public static function encryptAndSign($string, $encryptKeyID, $signkeyPassword = null, $signkeyID = null, $mode = null, $armor = true){
-		$gpg = new Crypt_GPG();
+		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
+		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
 
 		if($mode === null){
 			$mode = Crypt_GPG::SIGN_MODE_CLEAR;
@@ -149,7 +154,8 @@ class GPG
 	 * @return array|false
 	 */
 	public static function decryptAndVerify($string, $keyPassword = null, $keyID = null){
-		$gpg = new Crypt_GPG();
+		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
+		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
 		
 		if($keyID === null){
 			$keyID = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->defaultKey;

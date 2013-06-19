@@ -56,7 +56,15 @@ class ImageUploader
 	    	}
 	    }
 	    
-		switch($imageUploaderConfig->saveFormat){
+	    $format = null;
+	    if(isset($imageUploaderConfig->saveFormat) and $imageUploaderConfig->saveFormat != null){
+	    	$format = $imageUploaderConfig->saveFormat;
+	    }
+	    else{
+	    	$format = $image->getType();
+	    }
+	    
+		switch($format){
 			case Image::IMAGE_TYPE_JPEG:
 				$image->writeJpeg($savePath);
 				break;

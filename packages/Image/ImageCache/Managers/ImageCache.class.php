@@ -30,7 +30,17 @@ class ImageCache
 		$resultingFilePath = $this->config->cacheDir . $folderName . "/" . $image->fileName;
 		
 		if($forceGenerate or !file_exists($resultingFilePath)){
-			$image->writeJpeg($resultingFilePath);
+			switch ($image->getType()){
+				case Image::IMAGE_TYPE_JPEG:
+					$image->writeJpeg($resultingFilePath);
+					break;
+				case Image::IMAGE_TYPE_GIF:
+					$image->writeGif($resultingFilePath);
+					break;
+				case Image::IMAGE_TYPE_PNG:
+					$image->writePng($resultingFilePath);
+					break;
+			}
 		}
 		
 		return $resultingFilePath;

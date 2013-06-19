@@ -1,10 +1,6 @@
 <?php
 class ImageUploader
 {
-	const IMAGE_TYPE_JPEG 	= 'jpeg';
-	const IMAGE_TYPE_PNG 	= 'png';
-	const IMAGE_TYPE_GIF 	= 'gif';
-	
 	const EXCEPTION_IMAGE_IS_SMALL = 1;
 	const EXCEPTION_IMAGE_IS_BIG = 2;
 	
@@ -61,13 +57,13 @@ class ImageUploader
 	    }
 	    
 		switch($imageUploaderConfig->saveFormat){
-			case self::IMAGE_TYPE_JPEG:
+			case Image::IMAGE_TYPE_JPEG:
 				$image->writeJpeg($savePath);
 				break;
-			case self::IMAGE_TYPE_PNG:
+			case Image::IMAGE_TYPE_PNG:
 				$image->writePng($savePath);
 				break;
-			case self::IMAGE_TYPE_GIF:
+			case Image::IMAGE_TYPE_GIF:
 				$image->writeGif($savePath);
 				break;
 		}
@@ -146,13 +142,13 @@ class ImageUploader
 	 */
 	private static function getAppropriateFileExtension($imageFormat){
 		switch($imageFormat){
-			case self::IMAGE_TYPE_JPEG:
+			case Image::IMAGE_TYPE_JPEG:
 				return '.jpg';
 				break;
-			case self::IMAGE_TYPE_PNG:
+			case Image::IMAGE_TYPE_PNG:
 				return '.png';
 				break;
-			case self::IMAGE_TYPE_GIF:
+			case Image::IMAGE_TYPE_GIF:
 				return '.gif';
 				break;
 		}

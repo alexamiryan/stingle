@@ -1,11 +1,15 @@
 <?php
 class Image extends Model
 {
-	private $info;
+	private $info = null;
 	private $imageRes;
 	
 	public $fileName;
 	public $filePath;
+	
+	const IMAGE_TYPE_JPEG 	= 'jpeg';
+	const IMAGE_TYPE_PNG 	= 'png';
+	const IMAGE_TYPE_GIF 	= 'gif';
 	
 	const DIMENSIONS_EQUAL 									= 1;
 	const DIMENSIONS_SMALLER 								= 2;
@@ -13,7 +17,6 @@ class Image extends Model
 	const DIMENSIONS_WIDTH_LARGER_HEIGHT_SMALLER 			= 4;
 	const DIMENSIONS_HEIGHT_LARGER__WIDTH_SMALLER 			= 5;
 
-	
 	const CORNER_TOP_LEFT 		= 1;
 	const CORNER_TOP_RIGHT 		= 2;
 	const CORNER_BOTTOM_LEFT 	= 3;
@@ -36,7 +39,6 @@ class Image extends Model
 		}
 		
 		$this->imageRes = $this->createImageRes($filePath);
-		$this->info = getimagesize($filePath);
 		
 		$this->filePath = $filePath;
 		$this->fileName = basename($filePath);
@@ -54,10 +56,10 @@ class Image extends Model
 	 * @param string $filename
 	 */
 	private function createImageRes($filePath){
-		if(($info=@getimagesize($filePath)) == false or !in_array($info[2], array(IMAGETYPE_JPEG, IMAGETYPE_GIF, IMAGETYPE_PNG))){
+		if(($this->info=@getimagesize($filePath)) == false or !in_array($this->info[2], array(IMAGETYPE_JPEG, IMAGETYPE_GIF, IMAGETYPE_PNG))){
 			throw new RuntimeException("Given file is not a image!");
 		}
-		switch ($info[2]){
+		switch ($this->info[2]){
 			case IMAGETYPE_JPEG:
 				$imageRes=@imagecreatefromjpeg($filePath);
 				break;
@@ -74,6 +76,28 @@ class Image extends Model
 		return $imageRes;
 	}
 
+	
+	public function getType(){
+		switch ($this->info[2]){
+			case IMAGETYPE_JPEG:
+				return self::IMAGE_TYPE_JPEG;
+			case IMAGETYPE_GIF:
+				return self::IMAGE_TYPE_GIF;
+			case IMAGETYPE_PNG:
+				return self::IMAGE_TYPE_PNG;
+			default:
+				throw new RuntimeException("Invalid image or object is not initialized!");
+		}
+	}
+	
+	public function getWidth(){
+		return $this->info[0];
+	}
+	
+	public function getHeight(){
+		return $this->info[0];
+	}
+	
 	/**
 	 * Resize image
 	 *
@@ -126,6 +150,8 @@ class Image extends Model
 			}
 			if($mode==1){
 				$resized_image = imagecreatetruecolor($width, ceil($this->info[1]*$width/$this->info[0]));
+				$this->makeImageTransparent($resized_image, $width, ceil($this->info[1]*$width/$this->info[0]));
+				
 				if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $width, ceil($this->info[1]*$width/$this->info[0]), $this->info[0], $this->info[1])){
 					throw new RuntimeException("Unable to resize image!");
 				}
@@ -136,6 +162,8 @@ class Image extends Model
 			}
 			elseif($mode==2){
 				$resized_image = imagecreatetruecolor(ceil($this->info[0]*$height/$this->info[1]), $height);
+				$this->makeImageTransparent($resized_image, ceil($this->info[0]*$height/$this->info[1]), $height);
+				
 				if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, ceil($this->info[0]*$height/$this->info[1]), $height, $this->info[0], $this->info[1])){
 					throw new RuntimeException("Unable to resize image!");
 				}
@@ -150,6 +178,8 @@ class Image extends Model
 		}
 		else{
 			$resized_image = imagecreatetruecolor($width, $height);
+			$this->makeImageTransparent($resized_image, $width, $height);
+			
 			if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $width, $height, $this->info[0], $this->info[1])){
 				throw new RuntimeException("Unable to resize image!");
 			}
@@ -206,6 +236,9 @@ class Image extends Model
 	 * @return bool
 	 */
 	public function writePng($filePath=null){
+		imagealphablending( $this->imageRes, false );
+		imagesavealpha( $this->imageRes, true );
+		
 		if(!imagepng($this->imageRes, $filePath)){
 			throw new RuntimeException("Unable to write image file!");
 		}
@@ -273,6 +306,7 @@ class Image extends Model
 		}
 		
 		$newImg=imagecreatetruecolor($img_info[0],$img_info[1]);
+		$this->makeImageTransparent($newImg, $img_info[0],$img_info[1]);
 
 		if(!imagecopy ($newImg, $img_res,0,0,0,0,$img_info[0],$img_info[1])){
 			throw new RuntimeException("Unable to add background!");
@@ -304,6 +338,8 @@ class Image extends Model
 		}
 		
 		$cropped_image = imagecreatetruecolor($width, $height);
+		$this->makeImageTransparent($cropped_image, $width, $height);
+		
 		if(!imagecopyresampled($cropped_image, $this->imageRes, 0, 0, $x, $y, $width, $height, $width, $height)){
 			throw new RuntimeException("Unable to crop!");
 		}
@@ -415,5 +451,11 @@ class Image extends Model
 	    }
 	    
 	    return true;
+	}
+	
+	private function makeImageTransparent($imgRes, $width, $height){
+		imagealphablending($imgRes, false);
+		imagesavealpha($imgRes,true);
+		imagefilledrectangle($imgRes, 0, 0, $width, $height, imagecolorallocatealpha($imgRes, 255, 255, 255, 127));
 	}
 }

@@ -28,8 +28,16 @@ class ImageUploader
 		}
 		ensurePathLastSlash($uploadDir);
 		
+		$format = null;
+		if(isset($imageUploaderConfig->saveFormat) and $imageUploaderConfig->saveFormat != null){
+			$format = $imageUploaderConfig->saveFormat;
+		}
+		else{
+			$format = $image->getType();
+		}
+		
 	    if($fileName === null){
-			$fileName = static::findNewFileName($uploadDir, $imageUploaderConfig->saveFormat);
+			$fileName = static::findNewFileName($uploadDir, $format);
 	    }
 
 	    if (!in_array($file["type"], $imageUploaderConfig->acceptedMimeTypes->toArray())){
@@ -54,14 +62,6 @@ class ImageUploader
 	    	if(!$checkResult){
 	    		throw new ImageUploaderException("Given image is smaller than specified minimum size.", static::EXCEPTION_IMAGE_IS_SMALL);
 	    	}
-	    }
-	    
-	    $format = null;
-	    if(isset($imageUploaderConfig->saveFormat) and $imageUploaderConfig->saveFormat != null){
-	    	$format = $imageUploaderConfig->saveFormat;
-	    }
-	    else{
-	    	$format = $image->getType();
 	    }
 	    
 		switch($format){

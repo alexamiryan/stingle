@@ -45,15 +45,39 @@ class UserPhotoManager extends DbAccessor
 			$image = ImageUploader::upload($file);
 		}
 		
+		$photo = new UserPhoto();
+		$photo->fileName = $image->fileName;
+		$photo->userId = $userId;
+		$photo->status = self::MODERATION_STATUS_NEW;
+		
+		return $this->addPhoto($photo);
+		
+	}
+	
+	public function addPhoto(UserPhoto $photo){
+		if(empty($photo)){
+			throw new InvalidArgumentException("\$photo is empty!");
+		}
+		if(empty($photo->fileName)){
+			throw new InvalidArgumentException("photo fileName is have to been non empty string!");
+		}
+		
 		$qb = new QueryBuilder();
 		$qb->insert(Tbl::get('TBL_USERS_PHOTOS'))
-			->values(array("user_id" => $userId, "filename" => $image->fileName));
+			->values(array(	"user_id" => $photo->userId, 
+							"filename" => $photo->fileName,
+							"status" => $photo->status));
 		
 		$this->query->exec($qb->getSQL());
 		
 		$photoId = $this->query->getLastInsertId();
 		
+		if($photo->status == self::MODERATION_STATUS_APPROVED){
+			$this->correctDefaultPhoto($photo->userId);
+		}
+		
 		return $photoId;
+		
 	}
 	
 	
@@ -158,6 +182,18 @@ class UserPhotoManager extends DbAccessor
 		if(Reg::get('packageMgr')->isPluginLoaded("Image", "ImageModificator")){
 			Reg::get(ConfigManager::getConfig("Image", "ImageModificator")->Objects->ImageModificator)->
 				deleteCropSettings($photo->fileName);
+		}
+		
+		$this->deletPhotoFromDB($photo);
+		
+	}
+	
+	public function deletPhotoFromDB(UserPhoto $photo){
+		if(empty($photo->id)){
+			throw new InvalidArgumentException("UserPhoto object has no id!");
+		}
+		if(empty($photo->userId)){
+			$photo = $this->getPhoto($photo->id);
 		}
 		
 		$qb = new QueryBuilder();

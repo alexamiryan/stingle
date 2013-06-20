@@ -1,7 +1,7 @@
 <?php
 $defaultConfig = array(	
 						'AuxConfig' => array(	'uploadDir' => 'uploads/photos/data/',
-												'saveFormat' => 'jpeg',
+												'saveFormat' => null,
 												'acceptedMimeTypes' => array(	'image/gif',
 																				'image/jpeg',
 																				'image/pjpeg',

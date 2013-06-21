@@ -279,16 +279,19 @@ class UserManager extends DbAccessor{
 	 * @return integer Affected
 	 */
 	protected function updateUserProperties(UserProperties $properties){
-		$qb = new QueryBuilder();
-	
-		$qb->update(Tbl::get('TBL_USERS_PROPERTIES'));
+		if(count($this->config->userPropertiesMap->toArray()) > 0){
+			$qb = new QueryBuilder();
 		
-		foreach($this->config->userPropertiesMap as $objectKey => $dbKey){
-			$qb->set(new Field($dbKey), $properties->$objectKey);
+			$qb->update(Tbl::get('TBL_USERS_PROPERTIES'));
+			
+			foreach($this->config->userPropertiesMap as $objectKey => $dbKey){
+				$qb->set(new Field($dbKey), $properties->$objectKey);
+			}
+			
+			$qb->where($qb->expr()->equal(new Field('user_id'), $properties->userId));
+			return $this->query->exec($qb->getSQL())->affected();
 		}
-		
-		$qb->where($qb->expr()->equal(new Field('user_id'), $properties->userId));
-		return $this->query->exec($qb->getSQL())->affected();
+		return 0;
 	}
 	
 	/**

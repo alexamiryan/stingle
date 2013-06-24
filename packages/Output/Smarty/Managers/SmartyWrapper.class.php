@@ -660,6 +660,18 @@ class SmartyWrapper extends Smarty {
 		$this->assign ( '__PagesPath', $this->pagesPath );
 	}
 	
+	protected function handlePagerNotFaound(){
+		header("HTTP/1.0 404 Not Found");
+		$this->fileToDisplay = $this->getFilePathFromTemplate($this->pagesPath . $this->error404Page . ".tpl");
+		
+		if(empty($this->fileToDisplay)){
+			$this->fileToDisplay = 'system/common/404.tpl';
+		}
+		$this->setPageTitle("404 Not Found");
+		
+		$this->removeWrapper();
+	}
+	
 	public function fetch($template, $cache_id = null, $compile_id = null, $parent = null, $display = false){
 		$this->defaultAssingns();
 		return parent::fetch($template, $cache_id, $compile_id, $parent, $display);
@@ -736,15 +748,7 @@ class SmartyWrapper extends Smarty {
 		$requiredLevelsCount = $nav->existentLevelsCount - 2;
 		if(empty($this->fileToDisplay) or $foundLevelsCount < $requiredLevelsCount){
 			if($return == false){
-				header("HTTP/1.0 404 Not Found");
-				$this->fileToDisplay = $this->getFilePathFromTemplate($this->pagesPath . $this->error404Page . ".tpl");
-				
-				if(empty($this->fileToDisplay)){
-					$this->fileToDisplay = 'system/common/404.tpl';
-				}
-				$this->setPageTitle("404 Not Found");
-				
-				$this->removeWrapper();
+				$this->handlePagerNotFaound();
 			}
 			else{
 				throw new TemplateFileNotFoundException("Can't find matching template to display");

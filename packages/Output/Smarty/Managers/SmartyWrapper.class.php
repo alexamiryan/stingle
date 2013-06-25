@@ -660,7 +660,7 @@ class SmartyWrapper extends Smarty {
 		$this->assign ( '__PagesPath', $this->pagesPath );
 	}
 	
-	protected function handlePagerNotFaound(){
+	protected function handlePagerNotFound(){
 		header("HTTP/1.0 404 Not Found");
 		$this->fileToDisplay = $this->getFilePathFromTemplate($this->pagesPath . $this->error404Page . ".tpl");
 		
@@ -748,7 +748,7 @@ class SmartyWrapper extends Smarty {
 		$requiredLevelsCount = $nav->existentLevelsCount - 2;
 		if(empty($this->fileToDisplay) or $foundLevelsCount < $requiredLevelsCount){
 			if($return == false){
-				$this->handlePagerNotFaound();
+				$this->handlePagerNotFound();
 			}
 			else{
 				throw new TemplateFileNotFoundException("Can't find matching template to display");

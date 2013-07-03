@@ -1,6 +1,6 @@
 <?php
 $defaultConfig = array(	
 						'AuxConfig' => array(	
-												'defaultVidualPagesCount' => 5,
+												'defaultVisualPagesCount' => 5,
 												'pagerChunkFileName' => 'pager.tpl'  )
 					);

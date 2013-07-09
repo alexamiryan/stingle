@@ -17,7 +17,7 @@ function smarty_function_draw_pager($params, Smarty_Internal_Template &$smarty){
 	extract($params);
 	
 	if(empty($visualPagesCount)){
-		$visualPagesCount = ConfigManager::getConfig("Pager","Pager")->AuxConfig->defaultVidualPagesCount;
+		$visualPagesCount = ConfigManager::getConfig("Pager","Pager")->AuxConfig->defaultVisualPagesCount;
 	}
 	if(empty($id)){
 		$id = null;

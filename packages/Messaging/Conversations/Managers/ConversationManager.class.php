@@ -84,6 +84,9 @@ class ConversationManager extends DbAccessor{
 			->andWhere($qb->expr()->equal(new Field('user_id'), $userId));
 	
 		$this->query->exec($qb->getSQL());
+		
+		$hookParams = array('type'=> 'readStatus', 'uuid' => $uuid, 'userId' => $userId, 'newStatus' => $status);
+		HookManager::callHook("ConversationUpdate", $hookParams);
 	}
 	
 	public function trashConversation($userId, $uuid){
@@ -162,6 +165,9 @@ class ConversationManager extends DbAccessor{
 			->andWhere($qb->expr()->equal(new Field('user_id'), $userId));
 	
 		$this->query->exec($qb->getSQL());
+		
+		$hookParams = array('type'=>'trashStatus','uuid' => $uuid, 'userId' => $userId, 'newStatus' => $status);
+		HookManager::callHook("ConversationUpdate", $hookParams);
 	}
 	
 	public function getConversations(ConversationFilter $filter, MysqlPager $pager = null, $reduced = false){
@@ -284,6 +290,9 @@ class ConversationManager extends DbAccessor{
 			$this->correctConversationReadStatus($message->uuid, $message->receiverId);
 		}
 		
+		$hookParams = array('msgId' => $message->id,'newStatus' => self::STATUS_READ_READ);
+		HookManager::callHook("ConversationMessageUpdate", $hookParams);
+		
 		return $affected;
 	}
 	
@@ -386,6 +395,9 @@ class ConversationManager extends DbAccessor{
 	
 		$this->correctConversationReadStatus($message->uuid, $myUserId);
 		$this->correctConversationHasAttachment($message->uuid, $myUserId);
+		
+		$hookParams = array('type'=>'deletedStatus','msgId' => $message->id,'newStatus' => $finalDeletedStatus);
+		HookManager::callHook("ConversationMessageUpdate", $hookParams);
 		
 		return $affected;
 	}
@@ -517,6 +529,17 @@ class ConversationManager extends DbAccessor{
 			throw new InvalidIntegerArgumentException("\$uuid have to be non zero integer.");
 		}
 	
+		// Get message IDs that we gona mark as read to be able to call update hook on them
+		$qb = new QueryBuilder();
+		$qb->select(new Field('id'))
+			->from(Tbl::get('TBL_CONVERSATION_MESSAGES'))
+			->where($qb->expr()->equal(new Field('read'), self::STATUS_READ_UNREAD))
+			->andWhere($qb->expr()->equal(new Field('uuid'), $uuid))
+			->andWhere($qb->expr()->equal(new Field('receiver_id'), $receiverUserId));
+		$this->query->exec($qb->getSQL());
+		
+		$msgIds = $this->query->fetchFields('id');
+		
 		// Change read status on all messages
 		$qb = new QueryBuilder();
 		$qb->update(Tbl::get('TBL_CONVERSATION_MESSAGES'))
@@ -533,6 +556,14 @@ class ConversationManager extends DbAccessor{
 			->where($qb->expr()->equal(new Field('uuid'), $uuid))
 			->andWhere($qb->expr()->equal(new Field('user_id'), $receiverUserId));
 		$this->query->exec($qb->getSQL());
+		
+		$hookParams = array('type'=>'allMessagesRead');
+		HookManager::callHook("ConversationUpdate", $hookParams);
+		
+		foreach ($msgIds as $msgId){
+			$hookParams = array('type'=> 'readStatus', 'uuid' => $uuid, 'userId' => $receiverUserId, 'newStatus' => self::STATUS_READ_READ);
+			HookManager::callHook("ConversationMessageUpdate", $hookParams);
+		}
 	}
 	
 	public function isConversationExists($userId1, $userId2){
@@ -564,6 +595,9 @@ class ConversationManager extends DbAccessor{
 			->where($qb->expr()->equal(new Field('uuid'), $uuid));
 		
 		$this->query->exec($qb->getSQL());
+		
+		$hookParams = array('type'=> 'lastMsgDate', 'uuid' => $uuid, 'date' => ($date !== null ? $date : date(DEFAULT_DATE_FORMAT)));
+		HookManager::callHook("ConversationUpdate", $hookParams);
 	}
 	
 	public function isConversationBelongsToUser($uuid, $userId){
@@ -593,6 +627,9 @@ class ConversationManager extends DbAccessor{
 		$this->query->exec($qb->getSQL());
 		
 		$this->setConversationHasAttachment($message->uuid);
+		
+		$hookParams = array('type'=> 'hasAttach', 'msgId' => $message->id, 'hasAttach' => 1);
+		HookManager::callHook("ConversationMessageUpdate", $hookParams);
 	}
 	
 	public function setConversationHasAttachment($uuid, $userId = null){
@@ -625,6 +662,9 @@ class ConversationManager extends DbAccessor{
 		}
 		
 		$this->query->exec($qb->getSQL());
+		
+		$hookParams = array('type'=> 'hasAttach', 'uuid' => $uuid, 'hasAttach' => $status);
+		HookManager::callHook("ConversationUpdate", $hookParams);
 	}
 	
 	protected function addMessageToConversation($uuid, $senderId, $message){
@@ -679,11 +719,7 @@ class ConversationManager extends DbAccessor{
 		}
 		
 		// Update Conversation last message date
-		$qb = new QueryBuilder();
-		$qb->update(Tbl::get('TBL_CONVERSATIONS'))
-			->set(new Field('last_msg_date'), new Literal((String)new Func("NOW")))
-			->where($qb->expr()->equal(new Field('uuid'), $uuid));
-		$this->query->exec($qb->getSQL());
+		$this->updateConversationLastMsgDate($uuid);
 		
 		return $messageId;
 	}

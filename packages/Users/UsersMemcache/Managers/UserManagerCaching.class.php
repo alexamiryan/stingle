@@ -74,5 +74,8 @@ class UserManagerCaching extends UserManager{
 		if($this->memcache != null){
 			$this->memcache->invalidateCacheByTag(self::USER_TAG . $userId);
 		}
+		
+		$hookParams = array('userId'=>$userId);
+		HookManager::callHook("ClearUserCache", $hookParams);
 	}
 }

@@ -91,10 +91,11 @@ HookManager::callHook("Controller");
 
 HookManager::callHook("AfterController");
 
+//$time = microtime(true);
 HookManager::callHook("BeforeOutput");
 
 HookManager::callHook("Output");
 
 HookManager::callHook("AfterOutput");
-
+//echo "out - " . (microtime(true) - $time) . "<br>";
 // Finish

@@ -77,4 +77,9 @@ class UserPhotosFilter extends MergeableFilter {
 	public function setOrderIdDesc(){
 		$this->setOrder(new Field("id", "up"), MySqlDatabase::ORDER_DESC);
 	}
+	
+	public function setOrderStatusDesc(){
+		$this->setOrder(new Field("status", "up"), MySqlDatabase::ORDER_DESC);
+	}
+	
 }

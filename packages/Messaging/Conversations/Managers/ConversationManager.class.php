@@ -172,7 +172,6 @@ class ConversationManager extends DbAccessor{
 	
 	public function getConversations(ConversationFilter $filter, MysqlPager $pager = null, $reduced = false){
 		$conversations = array();
-		
 		$sqlQuery = $filter->getSQL();
 		
 		if($pager !== null){
@@ -591,9 +590,8 @@ class ConversationManager extends DbAccessor{
 		$qb = new QueryBuilder();
 		
 		$qb->update(Tbl::get('TBL_CONVERSATIONS'))
-			->set(new Field('last_msg_date'), ($date !== null ? $date : 'NOW()'))
+			->set(new Field('last_msg_date'), ($date !== null ? $date : new Func("NOW")))
 			->where($qb->expr()->equal(new Field('uuid'), $uuid));
-		
 		$this->query->exec($qb->getSQL());
 		
 		$hookParams = array('type'=> 'lastMsgDate', 'uuid' => $uuid, 'date' => ($date !== null ? $date : date(DEFAULT_DATE_FORMAT)));

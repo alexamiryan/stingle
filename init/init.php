@@ -17,6 +17,8 @@ require_once(STINGLE_PATH . "core/Exceptions/InvalidArrayArgumentException.class
 require_once(STINGLE_PATH . "core/Exceptions/InvalidIntegerArgumentException.class.php");
 require_once(STINGLE_PATH . "core/Exceptions/InvalidTimestampArgumentException.class.php");
 
+require_once(STINGLE_PATH . "configs/system.inc.php");
+
 require_once(STINGLE_PATH . "helpers/system.php");
 require_once(STINGLE_PATH . "helpers/func.php");
 
@@ -28,8 +30,7 @@ set_error_handler(
         'throw new ErrorException($message, $severity, $severity, $file, $line);'
     )
 );
-
-$config = new Config($CONFIG);
+$config = ConfigManager::mergeConfigs(new Config($CONFIG), new Config($SYSCONFIG));
 ConfigManager::setGlobalConfig($config);
 Reg::register('packageMgr', new PackageManager());
 

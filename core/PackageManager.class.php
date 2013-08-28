@@ -163,6 +163,21 @@ class PackageManager {
 	 * @param array $pluginsToLoad
 	 */
 	private function buildAllowanceTables($pluginsToLoad){
+		if(ConfigManager::getGlobalConfig()->Stingle->AllowanceTablesCache === true){
+			$cacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'allowanceTables-' . md5(json_encode($pluginsToLoad));
+			if(file_exists($cacheFilename)){
+				try{
+					$allowanceTables = unserialize(file_get_contents($cacheFilename));
+					if(is_array($allowanceTables) and isset($allowanceTables['objectAllowanceTable']) and isset($allowanceTables['hookAllowanceTable'])){
+						$this->objectAllowanceTable = $allowanceTables['objectAllowanceTable'];
+						$this->hookAllowanceTable = $allowanceTables['hookAllowanceTable'];
+						return;
+					}
+				}
+				catch(Exception $e){ }
+			}
+		}
+		
 		if(empty($pluginsToLoad)){
 			return;
 		}
@@ -249,6 +264,13 @@ class PackageManager {
 					$thisPriorityHooks[$hook] = $plugin;
 				}
 			}
+		}
+		
+		if(ConfigManager::getGlobalConfig()->Stingle->AllowanceTablesCache === true){
+			$cacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'allowanceTables-' . md5(json_encode($pluginsToLoad));
+			$cacheContents = array('objectAllowanceTable' => $this->objectAllowanceTable, 'hookAllowanceTable' => $this->hookAllowanceTable);
+			
+			file_put_contents($cacheFilename, serialize($cacheContents));
 		}
 	}
 	

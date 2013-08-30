@@ -5,5 +5,12 @@
  */
 
 function smarty_modifier_C($constantName){
-	return constant($constantName);
+	$value = "";
+//	try{
+		$value = Reg::get('lm')->getValueOf($constantName);
+	/*}
+	catch(Exception $e){
+		$value = constant($constantName);
+	}*/
+	return $value;
 }

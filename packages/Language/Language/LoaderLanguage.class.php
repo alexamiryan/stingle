@@ -21,6 +21,8 @@ class LoaderLanguage extends Loader{
 	}
 	
 	public function hookDefineAllConstants(){
-		Reg::get($this->config->Objects->LanguageManager)->defineAllConsts();
+		if($this->config->AuxConfig->defineAllConstsOn === true){
+			Reg::get($this->config->Objects->LanguageManager)->defineAllConsts();
+		}
 	}
 }

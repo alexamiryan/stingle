@@ -19,10 +19,16 @@
 			$um = Reg::get(ConfigManager::getConfig("Users", "Users")->Objects->UserManager);
 						
 			$tepmOwnUser = new User();
-						
-			$randomPassword = generateRandomString(12);
+			$props = new UserProperties();
+			$tepmOwnUser->props = $props;
+			
 			$username = static::findFreeRandomUsername($extAuth->getName());
-			$userId = $um->createUser($username, $randomPassword, $tepmOwnUser);
+			$randomPassword = generateRandomString(12);
+			
+			$tepmOwnUser->login = $username;
+			$tepmOwnUser->password = $randomPassword;
+						
+			$userId = $um->createUser($tepmOwnUser);
 			if($userId !== false) {
 				$extAuth->addToExtMap($userId, $extUser);
 			}

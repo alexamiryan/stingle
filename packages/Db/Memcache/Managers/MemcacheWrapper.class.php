@@ -27,6 +27,15 @@ class MemcacheWrapper{
 	}
 
 	/**
+	 * Get Memcache object
+	 * 
+	 * @return Memcache
+	 */
+	public function getMemcache(){
+		return $this->memcache;
+	}
+	
+	/**
 	 * Put an object in memcache. if there's already an entry
 	 * with the specified key it will be overwritten
 	 *

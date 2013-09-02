@@ -317,3 +317,23 @@ function stripSlashesFromArray(&$array){
 function isAssoc(array $array){
 	return array_keys($array) !== range(0, count($array) - 1);
 }
+
+/**
+ * Base64 encode data that can be used in GET parameter
+ * 
+ * @param mixed $input
+ * @return string
+ */
+function base64_url_encode($input) {
+	return strtr(base64_encode($input), '+/=', '-_,');
+}
+
+/**
+ * Base64 decode data that can be used in GET parameter
+ * 
+ * @param string $input
+ * @return mixed
+ */
+function base64_url_decode($input) {
+	return base64_decode(strtr($input, '-_,', '+/='));
+}

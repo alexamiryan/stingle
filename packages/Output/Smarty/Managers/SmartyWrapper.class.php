@@ -641,7 +641,7 @@ class SmartyWrapper extends Smarty {
 		$this->isOutputDisabled = true;
 	}
 
-	private function defaultAssingns(){
+	protected function defaultAssingns(){
 		
 		ksort($this->jsFiles);
 		$jsFiles = array();

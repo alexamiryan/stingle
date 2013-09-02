@@ -1,5 +1,6 @@
 <?php
 $defaultConfig = array(	
+						'AuxConfig' => array( 'defineAllConstsOn' => false ),
 						'Objects' => array(	'LanguageManager' => 'lm'  ),
 						'ObjectsIgnored' => array(  'Language' => 'language'  ),
 						'Hooks' => array(	'AfterThisPluginTreeInit' => 'GetLanguageObj',

@@ -16,7 +16,7 @@ class LanguageManager extends DbAccessor {
 			} elseif (isset($_COOKIE['language']) && $this->languageExists($_COOKIE['language'])) {
 				$shortName = $_COOKIE['language'];
 			}
-
+			
 			if($shortName !== false){
 				$language = Language::getLanguage($shortName);
 			}
@@ -306,16 +306,7 @@ class LanguageManager extends DbAccessor {
 		if($this->query->countRecords()){
 			return $this->query->fetchField('value');
 		}
-		else{
-			$default_lang = $this->getDefaultLanguage($cacheMinutes);
-			if($language->id != $default_lang->id){
-				return $this->getValueOf($key, $default_lang , $cacheMinutes);
-			}
-		}		
-		if(Debug::getMode()){
-			throw new RuntimeException("'$key'"." doesn't exists for given language and even for default language.");
-		}
-		return "_#_"; // return this sign if I have nothink to return.
+		throw new RuntimeException("'$key'"." doesn't exists for given language and even for default language.");
 	}
 
 	/**

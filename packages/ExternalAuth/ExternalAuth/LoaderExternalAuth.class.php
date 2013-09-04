@@ -2,8 +2,8 @@
 class LoaderExternalAuth extends Loader{
 	
 	protected function includes(){
-		require_once ('Interfaces/ExternalAuth.interface.php');
-		require_once ('Objects/ExternalUser.class.php');
-		require_once ('Managers/ExternalUserManager.class.php');
+		stingleInclude ('Interfaces/ExternalAuth.interface.php');
+		stingleInclude ('Objects/ExternalUser.class.php');
+		stingleInclude ('Managers/ExternalUserManager.class.php');
 	}
 }

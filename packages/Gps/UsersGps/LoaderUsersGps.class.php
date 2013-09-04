@@ -2,7 +2,7 @@
 class LoaderUsersGps extends Loader{
 	
 	protected function includes(){
-		require_once ('Managers/UsersGps.class.php');
+		stingleInclude ('Managers/UsersGps.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

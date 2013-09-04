@@ -337,3 +337,20 @@ function base64_url_encode($input) {
 function base64_url_decode($input) {
 	return base64_decode(strtr($input, '-_,', '+/='));
 }
+
+function stingleInclude($file, $precompileCode = null, $postcompileCode = null, $isPathAbsolute = false){
+	$bt = debug_backtrace();
+	$old = getcwd();
+	chdir(dirname($bt[0]['file']));
+	require_once ($file);
+	if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
+		if($isPathAbsolute){
+			array_push($GLOBALS['includedClasses'], array('file' => $file, 'precompileCode'=>$precompileCode, 'postcompileCode' => $postcompileCode));
+		}
+		else{
+			array_push($GLOBALS['includedClasses'], array('file' => dirname($bt[0]['file']) . '/' . $file, 'precompileCode'=>$precompileCode, 'postcompileCode' => $postcompileCode));
+		}
+	}
+	chdir($old);
+}
+

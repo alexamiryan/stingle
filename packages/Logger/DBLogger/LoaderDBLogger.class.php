@@ -1,7 +1,7 @@
 <?php
 class LoaderDBLogger extends Loader{
 	protected function includes(){
-		require_once ('Managers/DBLogger.class.php');
+		stingleInclude ('Managers/DBLogger.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

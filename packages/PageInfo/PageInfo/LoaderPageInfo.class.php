@@ -1,8 +1,8 @@
 <?php
 class LoaderPageInfo extends Loader{
 	protected function includes(){
-		require_once ('Managers/PageInfo.class.php');
-		require_once ('Managers/PageInfoManager.class.php');
+		stingleInclude ('Managers/PageInfo.class.php');
+		stingleInclude ('Managers/PageInfoManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

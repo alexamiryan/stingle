@@ -1,9 +1,9 @@
 <?php
 class LoaderLanguage extends Loader{
 	protected function includes(){
-		require_once ('Objects/Language.class.php');
-		require_once ('Objects/Constant.class.php');
-		require_once ('Managers/LanguageManager.class.php');
+		stingleInclude ('Objects/Language.class.php');
+		stingleInclude ('Objects/Constant.class.php');
+		stingleInclude ('Managers/LanguageManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

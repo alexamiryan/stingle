@@ -65,6 +65,17 @@ if(isset($config->Hooks)){
 // Init packages/plugins
 HookManager::callHook("BeforePackagesLoad");
 
+$cacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'classes.php';
+if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
+	if(file_exists($cacheFilename)){
+		$GLOBALS['doNotIncludeClasses'] = true;
+		require_once ($cacheFilename);
+	}
+	if(!isset($GLOBALS['includedClasses'])){
+		$GLOBALS['includedClasses'] = array();
+	}
+}
+
 foreach(get_object_vars($config->Packages) as $package){
 	$package = get_object_vars($package);
 	if(!isset($package[1])){
@@ -76,6 +87,27 @@ Reg::get('packageMgr')->load();
 
 HookManager::callHook("AfterPackagesLoad");
 
+if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true and !file_exists($cacheFilename)){
+	$fileContents = "<?php\n\n";
+	foreach($GLOBALS['includedClasses'] as $file){
+		$content = file_get_contents($file['file']);
+		$content = str_replace("<?php", "", $content);
+		$content = str_replace("<?", "", $content);
+		$content = str_replace("?>", "", $content);
+		
+		if(!empty($file['precompileCode'])){
+			$fileContents .= $file['precompileCode'] . "\n\n";
+		}
+		
+		$fileContents .= $content . "\n\n";
+		
+		if(!empty($file['postcompileCode'])){
+			$fileContents .= $file['postcompileCode'] . "\n\n";
+		}
+	}
+		
+	file_put_contents($cacheFilename, $fileContents);
+}
 
 // Request Parser
 HookManager::callHook("BeforeRequestParser");

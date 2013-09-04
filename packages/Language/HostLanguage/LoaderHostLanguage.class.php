@@ -1,7 +1,7 @@
 <?php
 class LoaderHostLanguage extends Loader{
 	protected function includes(){
-		require_once ('Managers/HostLanguageManager.class.php');
+		stingleInclude ('Managers/HostLanguageManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

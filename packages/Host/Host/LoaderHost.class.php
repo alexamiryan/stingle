@@ -1,8 +1,8 @@
 <?php
 class LoaderHost extends Loader{
 	protected function includes(){
-		require_once ('Objects/Host.class.php');
-		require_once ('Managers/HostManager.class.php');
+		stingleInclude ('Objects/Host.class.php');
+		stingleInclude ('Managers/HostManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

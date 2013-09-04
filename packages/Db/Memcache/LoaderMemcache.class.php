@@ -1,8 +1,8 @@
 <?php
 class LoaderMemcache extends Loader{
 	protected function includes(){
-		require_once ('Managers/MemcacheWrapper.class.php');
-		require_once ('Managers/MySqlQueryMemcache.class.php');
+		stingleInclude ('Managers/MemcacheWrapper.class.php');
+		stingleInclude ('Managers/MySqlQueryMemcache.class.php');
 	}
 	
 	protected function loadQuery(){

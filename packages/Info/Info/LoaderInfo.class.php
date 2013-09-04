@@ -1,7 +1,7 @@
 <?php
 class LoaderInfo extends Loader{
 	protected function includes(){
-		require_once ('Objects/Info.class.php');
+		stingleInclude ('Objects/Info.class.php');
 	}
 	
 	protected function loadInfo(){

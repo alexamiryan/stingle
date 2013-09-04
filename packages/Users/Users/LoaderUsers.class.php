@@ -1,24 +1,24 @@
 <?php
 class LoaderUsers extends Loader{
 	protected function includes(){
-		require_once ('Managers/UserAuthorization.class.php');
-		require_once ('Managers/UserGroupsManager.class.php');
-		require_once ('Managers/UserManager.class.php');
-		require_once ('Managers/UserPermissionsManager.class.php');
-		require_once ('Objects/User.class.php');
-		require_once ('Objects/UserGroup.class.php');
-		require_once ('Objects/Permission.class.php');
-		require_once ('Objects/UserPermissions.class.php');
-		require_once ('Objects/UserProperties.class.php');
-		require_once ('Filters/UserGroupsFilter.class.php');
-		require_once ('Filters/UserPermissionsFilter.class.php');
-		require_once ('Filters/UsersFilter.class.php');
-		require_once ('Exceptions/UserException.class.php');
-		require_once ('Exceptions/UserAuthFailedException.class.php');
-		require_once ('Exceptions/UserDisabledException.class.php');
-		require_once ('Exceptions/UserNotFoundException.class.php');
-		require_once ('Exceptions/UserPermissionException.class.php');
-		require_once ('Helpers/helpers.inc.php');
+		stingleInclude ('Managers/UserAuthorization.class.php');
+		stingleInclude ('Managers/UserGroupsManager.class.php');
+		stingleInclude ('Managers/UserManager.class.php');
+		stingleInclude ('Managers/UserPermissionsManager.class.php');
+		stingleInclude ('Objects/User.class.php');
+		stingleInclude ('Objects/UserGroup.class.php');
+		stingleInclude ('Objects/Permission.class.php');
+		stingleInclude ('Objects/UserPermissions.class.php');
+		stingleInclude ('Objects/UserProperties.class.php');
+		stingleInclude ('Filters/UserGroupsFilter.class.php');
+		stingleInclude ('Filters/UserPermissionsFilter.class.php');
+		stingleInclude ('Filters/UsersFilter.class.php');
+		stingleInclude ('Exceptions/UserException.class.php');
+		stingleInclude ('Exceptions/UserAuthFailedException.class.php');
+		stingleInclude ('Exceptions/UserDisabledException.class.php');
+		stingleInclude ('Exceptions/UserNotFoundException.class.php');
+		stingleInclude ('Exceptions/UserPermissionException.class.php');
+		stingleInclude ('Helpers/helpers.inc.php');
 	}
 	
 	protected function customInitBeforeObjects(){

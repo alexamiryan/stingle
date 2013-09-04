@@ -1,12 +1,12 @@
 <?php
 class LoaderSiteNavigation extends Loader{
 	protected function includes(){
-		require_once ('Exceptions/ControllerTerminateException.class.php');
-		require_once ('Exceptions/FileNotFoundException.class.php');
-		require_once ('Objects/Nav.class.php');
-		require_once ('Managers/RequestParser.class.php');
-		require_once ('Managers/Controller.class.php');
-		require_once ('Helpers/helpers.php');
+		stingleInclude ('Exceptions/ControllerTerminateException.class.php');
+		stingleInclude ('Exceptions/FileNotFoundException.class.php');
+		stingleInclude ('Objects/Nav.class.php');
+		stingleInclude ('Managers/RequestParser.class.php');
+		stingleInclude ('Managers/Controller.class.php');
+		stingleInclude ('Helpers/helpers.php');
 	}
 	
 	protected function loadController(){

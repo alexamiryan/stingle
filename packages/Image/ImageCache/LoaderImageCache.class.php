@@ -1,7 +1,7 @@
 <?php
 class LoaderImageCache extends Loader{
 	protected function includes(){
-		require_once ('Managers/ImageCache.class.php');
+		stingleInclude ('Managers/ImageCache.class.php');
 	}
 	
 	protected function loadImageCache(){

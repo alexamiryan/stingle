@@ -1,7 +1,7 @@
 <?php
 class LoaderUsersMemcache extends Loader{
 	protected function includes(){
-		require_once ('Managers/UserManagerCaching.class.php');
+		stingleInclude ('Managers/UserManagerCaching.class.php');
 	}
 	
 	protected function loadUserManagerCaching(){

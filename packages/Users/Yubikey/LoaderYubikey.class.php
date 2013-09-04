@@ -1,11 +1,11 @@
 <?php
 class LoaderYubikey extends Loader{
 	protected function includes(){
-		require_once ('Managers/Yubikey.class.php');
-		require_once ('Managers/YubikeyUserAuthorization.class.php');
-		require_once ('Exceptions/YubikeyException.class.php');
-		require_once ('Exceptions/YubikeyRequiredException.class.php');
-		require_once ('Exceptions/InvalidYubikeyException.class.php');
+		stingleInclude ('Managers/Yubikey.class.php');
+		stingleInclude ('Managers/YubikeyUserAuthorization.class.php');
+		stingleInclude ('Exceptions/YubikeyException.class.php');
+		stingleInclude ('Exceptions/YubikeyRequiredException.class.php');
+		stingleInclude ('Exceptions/InvalidYubikeyException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

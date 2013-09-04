@@ -2,7 +2,7 @@
 class LoaderGeoIPGps extends Loader{
 	
 	protected function includes(){
-		require_once ('Managers/GeoIPGps.class.php');
+		stingleInclude ('Managers/GeoIPGps.class.php');
 	}
 	
 	protected function loadGeoIPGps(){

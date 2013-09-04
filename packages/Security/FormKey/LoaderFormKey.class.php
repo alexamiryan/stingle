@@ -1,8 +1,8 @@
 <?php
 class LoaderFormKey extends Loader{
 	protected function includes(){
-		require_once ('Managers/FormKey.class.php');
-		require_once ('Exceptions/FormKeySecurityException.class.php');
+		stingleInclude ('Managers/FormKey.class.php');
+		stingleInclude ('Exceptions/FormKeySecurityException.class.php');
 	}
 	
 	protected function loadFormKey(){

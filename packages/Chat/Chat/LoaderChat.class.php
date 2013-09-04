@@ -2,19 +2,19 @@
 class LoaderChat extends Loader{
 	
 	protected function includes(){
-		require_once ('Objects/ChatInvitation.class.php');
-		require_once ('Objects/ChatMessage.class.php');
-		require_once ('Objects/ChatSession.class.php');
-		require_once ('Objects/ChatSessionLog.class.php');
-		require_once ('Objects/ChatUser.class.php');
-		require_once ('Filters/ChatInvitationsFilter.class.php');
-		require_once ('Filters/ChatMessageFilter.class.php');
-		require_once ('Filters/ChatSessionFilter.class.php');
-		require_once ('Managers/ChatInvitationManager.class.php');
-		require_once ('Managers/ChatMessageManager.class.php');
-		require_once ('Managers/ChatSessionManager.class.php');
-		require_once ('Exceptions/ChatInvitationException.class.php');
-		require_once ('Exceptions/ChatSessionException.class.php');
+		stingleInclude ('Objects/ChatInvitation.class.php');
+		stingleInclude ('Objects/ChatMessage.class.php');
+		stingleInclude ('Objects/ChatSession.class.php');
+		stingleInclude ('Objects/ChatSessionLog.class.php');
+		stingleInclude ('Objects/ChatUser.class.php');
+		stingleInclude ('Filters/ChatInvitationsFilter.class.php');
+		stingleInclude ('Filters/ChatMessageFilter.class.php');
+		stingleInclude ('Filters/ChatSessionFilter.class.php');
+		stingleInclude ('Managers/ChatInvitationManager.class.php');
+		stingleInclude ('Managers/ChatMessageManager.class.php');
+		stingleInclude ('Managers/ChatSessionManager.class.php');
+		stingleInclude ('Exceptions/ChatInvitationException.class.php');
+		stingleInclude ('Exceptions/ChatSessionException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

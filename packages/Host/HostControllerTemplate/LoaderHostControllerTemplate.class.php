@@ -1,7 +1,7 @@
 <?php
 class LoaderHostControllerTemplate extends Loader{
 	protected function includes(){
-		require_once ('Managers/HostControllerTemplate.class.php');
+		stingleInclude ('Managers/HostControllerTemplate.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

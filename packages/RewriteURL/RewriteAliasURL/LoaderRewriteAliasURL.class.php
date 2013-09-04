@@ -1,8 +1,8 @@
 <?php
 class LoaderRewriteAliasURL extends Loader{
 	protected function includes(){
-		require_once ('Managers/RewriteAliasURL.class.php');
-		require_once ('Managers/RewriteAliasMap.class.php');
+		stingleInclude ('Managers/RewriteAliasURL.class.php');
+		stingleInclude ('Managers/RewriteAliasMap.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

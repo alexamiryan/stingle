@@ -1,8 +1,8 @@
 <?php
 class LoaderImageModificator extends Loader{
 	protected function includes(){
-		require_once ('Managers/ImageModificator.class.php');
-		require_once ('Exceptions/ImageModificatorException.class.php');
+		stingleInclude ('Managers/ImageModificator.class.php');
+		stingleInclude ('Exceptions/ImageModificatorException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

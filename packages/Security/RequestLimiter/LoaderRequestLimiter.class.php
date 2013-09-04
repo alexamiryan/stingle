@@ -1,9 +1,9 @@
 <?php
 class LoaderRequestLimiter extends Loader{
 	protected function includes(){
-		require_once ('Exceptions/RequestLimiterTooManyAuthTriesException.class.php');
-		require_once ('Managers/RequestLimiter.class.php');
-		require_once ('Exceptions/RequestLimiterBlockedException.class.php');
+		stingleInclude ('Exceptions/RequestLimiterTooManyAuthTriesException.class.php');
+		stingleInclude ('Managers/RequestLimiter.class.php');
+		stingleInclude ('Exceptions/RequestLimiterBlockedException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

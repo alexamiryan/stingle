@@ -47,8 +47,10 @@ class PackageManager {
 		$callingFunctionName = $backtrace[1]['function'];
 		$myClassName = get_class($this);
 		
+		$forceLoaderIncludes = false;
 		if($myClassName != $callingClassName or !in_array($callingFunctionName, array("load", "addPackage", "resolveDependencies"))){
 			$this->buildAllowanceTables(array($packageName => array($pluginName)));
+			$forceLoaderIncludes = true;
 		}
 		
 		if($customConfig !== null){
@@ -63,7 +65,7 @@ class PackageManager {
 		$deps = $loader->getDependencies();
 		$this->resolveDependencies($deps);
 
-		$loader->load($overrideObjects);
+		$loader->load($overrideObjects, $forceLoaderIncludes);
 		array_push($this->loadedPackages[$packageName], $pluginName);
 	}
 	
@@ -552,14 +554,16 @@ class PackageManager {
 		
 		$className = "Loader$pluginName";
 		
-		if(file_exists(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/{$className}.class.php")){
-			require_once (SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/{$className}.class.php");
-		}
-		elseif(file_exists(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/{$className}.class.php")){
-			require_once (STINGLE_PATH . "packages/{$packageName}/{$pluginName}/{$className}.class.php");
-		}
-		else{
-			throw new RuntimeException("Loader file of plugin $pluginName in package $packageName does not exists");
+		if(!class_exists($className)){
+			if(file_exists(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/{$className}.class.php")){
+				stingleInclude (SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/{$className}.class.php", null, null, true);
+			}
+			elseif(file_exists(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/{$className}.class.php")){
+				stingleInclude (STINGLE_PATH . "packages/{$packageName}/{$pluginName}/{$className}.class.php", null, null, true);
+			}
+			else{
+				throw new RuntimeException("Loader file of plugin $pluginName in package $packageName does not exists");
+			}
 		}
 
 		try{

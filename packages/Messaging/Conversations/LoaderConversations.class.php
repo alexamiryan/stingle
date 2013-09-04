@@ -1,20 +1,20 @@
 <?php
 class LoaderConversations extends Loader{
 	protected function includes(){
-		require_once ('Objects/Conversation.class.php');
-		require_once ('Objects/ConversationMessage.class.php');
-		require_once ('Objects/ConversationAttachment.class.php');
-		require_once ('Objects/ConversationComet.class.php');
-		require_once ('Objects/ConversationEventComet.class.php');
-		require_once ('Filters/ConversationFilter.class.php');
-		require_once ('Filters/ConversationMessagesFilter.class.php');
-		require_once ('Filters/ConversationAttachmentFilter.class.php');
-		require_once ('Managers/ConversationManager.class.php');
-		require_once ('Managers/ConversationAttachmentManager.class.php');
-		require_once ('Exceptions/ConversationException.class.php');
-		require_once ('Exceptions/ConversationNotUniqueException.class.php');
-		require_once ('Exceptions/ConversationNotExistException.class.php');
-		require_once ('Exceptions/ConversationNotOwnException.class.php');
+		stingleInclude ('Objects/Conversation.class.php');
+		stingleInclude ('Objects/ConversationMessage.class.php');
+		stingleInclude ('Objects/ConversationAttachment.class.php');
+		stingleInclude ('Objects/ConversationComet.class.php');
+		stingleInclude ('Objects/ConversationEventComet.class.php');
+		stingleInclude ('Filters/ConversationFilter.class.php');
+		stingleInclude ('Filters/ConversationMessagesFilter.class.php');
+		stingleInclude ('Filters/ConversationAttachmentFilter.class.php');
+		stingleInclude ('Managers/ConversationManager.class.php');
+		stingleInclude ('Managers/ConversationAttachmentManager.class.php');
+		stingleInclude ('Exceptions/ConversationException.class.php');
+		stingleInclude ('Exceptions/ConversationNotUniqueException.class.php');
+		stingleInclude ('Exceptions/ConversationNotExistException.class.php');
+		stingleInclude ('Exceptions/ConversationNotOwnException.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

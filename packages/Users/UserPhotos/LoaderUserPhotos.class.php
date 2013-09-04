@@ -1,10 +1,10 @@
 <?php
 class LoaderUserPhotos extends Loader{
 	protected function includes(){
-		require_once ('Filters/UserPhotosFilter.class.php');
-		require_once ('Exceptions/UserPhotosException.class.php');
-		require_once ('Objects/UserPhoto.class.php');
-		require_once ('Managers/UserPhotoManager.class.php');
+		stingleInclude ('Filters/UserPhotosFilter.class.php');
+		stingleInclude ('Exceptions/UserPhotosException.class.php');
+		stingleInclude ('Objects/UserPhoto.class.php');
+		stingleInclude ('Managers/UserPhotoManager.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

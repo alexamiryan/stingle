@@ -2,9 +2,9 @@
 class LoaderConfigDB extends Loader{
 	
 	protected function includes(){
-		require_once ('Managers/ConfigDBManager.class.php');
-		require_once ('Filters/ConfigDBFilter.class.php');
-		require_once ('Objects/ConfigDB.class.php');
+		stingleInclude ('Managers/ConfigDBManager.class.php');
+		stingleInclude ('Filters/ConfigDBFilter.class.php');
+		stingleInclude ('Objects/ConfigDB.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

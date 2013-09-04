@@ -3,11 +3,13 @@ class LoaderSmarty extends Loader{
 	private $pluginsDirs = array();
 	
 	protected function includes(){
-		require_once ('Core/Smarty.class.php');
-		require_once ('Managers/SmartyWrapper.class.php');
-		require_once ('Managers/SmartyMemcache.class.php');
-		require_once ('Exceptions/TemplateFileNotFoundException.class.php');
-		require_once ('Exceptions/ImageFileNotFoundException.class.php');
+		$precompileCode = 'define("SMARTY_DIR", "'.dirname(__FILE__) . '/Core/'.'");';
+		
+		stingleInclude ('Core/Smarty.class.php', $precompileCode);
+		stingleInclude ('Managers/SmartyWrapper.class.php');
+		stingleInclude ('Managers/SmartyMemcache.class.php');
+		stingleInclude ('Exceptions/TemplateFileNotFoundException.class.php');
+		stingleInclude ('Exceptions/ImageFileNotFoundException.class.php');
 	}
 	
 	protected function loadSmarty(){

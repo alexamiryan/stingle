@@ -2,10 +2,10 @@
 class LoaderCrypto extends Loader{
 	
 	protected function includes(){
-		require_once ('Objects/Crypto.class.php');
-		require_once ('Exceptions/CryptoException.class.php');
-		require_once ('Exceptions/NoRandomProviderException.class.php');
-		require_once ('Exceptions/NotSupportedBigMathLibraryException.class.php');
-		require_once ('Helpers/helpers.inc.php');
+		stingleInclude ('Objects/Crypto.class.php');
+		stingleInclude ('Exceptions/CryptoException.class.php');
+		stingleInclude ('Exceptions/NoRandomProviderException.class.php');
+		stingleInclude ('Exceptions/NotSupportedBigMathLibraryException.class.php');
+		stingleInclude ('Helpers/helpers.inc.php');
 	}
 }

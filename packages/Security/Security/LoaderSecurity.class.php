@@ -1,8 +1,8 @@
 <?php
 class LoaderSecurity extends Loader{
 	protected function includes(){
-		require_once ('Exceptions/SecurityException.class.php');
-		require_once ('Managers/InputSecurity.class.php');
+		stingleInclude ('Exceptions/SecurityException.class.php');
+		stingleInclude ('Managers/InputSecurity.class.php');
 	}
 	
 	public function hookSecureInputData(){

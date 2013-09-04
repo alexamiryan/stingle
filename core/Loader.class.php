@@ -42,14 +42,16 @@ abstract class Loader {
 	 * 
 	 * @param boolean $overrideObjects
 	 */
-	final public function load($overrideObjects = false){
+	final public function load($overrideObjects = false, $forceIncludes = false){
 		$hookArgs = array(	'packageName' => $this->packageName, 
 							'pluginName' => $this->pluginName, 
 							'pluginConfig' => $this->config
 						);
 		
 		HookManager::callHook("BeforePluginInit", $hookArgs);
-		$this->includes();
+		if($forceIncludes or (!isset($GLOBALS['doNotIncludeClasses']) or $GLOBALS['doNotIncludeClasses'] !== true)){
+			$this->includes();
+		}
 		$this->customInitBeforeObjects();
 		$this->loadObjects($overrideObjects);
 		$this->customInitAfterObjects();
@@ -93,14 +95,16 @@ abstract class Loader {
 	public function getDependencies(){
 		$className = "Dependency{$this->pluginName}";
 		try{
-			if(file_exists(SITE_PACKAGES_PATH . "{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
-				require_once (SITE_PACKAGES_PATH . "{$this->packageName}/{$this->pluginName}/{$className}.class.php");
-			}
-			elseif(file_exists(STINGLE_PATH . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
-				require_once (STINGLE_PATH . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php");
-			}
-			else{
-				throw new RuntimeException();
+			if(!class_exists($className)){
+				if(file_exists(SITE_PACKAGES_PATH . "{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
+					stingleInclude(SITE_PACKAGES_PATH . "{$this->packageName}/{$this->pluginName}/{$className}.class.php", null, null, true);
+				}
+				elseif(file_exists(STINGLE_PATH . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
+					stingleInclude(STINGLE_PATH . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php", null, null, true);
+				}
+				else{
+					throw new RuntimeException();
+				}
 			}
 			
 			$deps = new $className();

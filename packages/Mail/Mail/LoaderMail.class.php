@@ -1,11 +1,11 @@
 <?php
 class LoaderMail extends Loader{
 	protected function includes(){
-		require_once ('Exceptions/MailException.class.php');
-		require_once ('Exceptions/DKIMConfigException.class.php');
-		require_once ('Managers/MailSender.class.php');
-		require_once ('Objects/Mail.class.php');
-		require_once ('Objects/DKIMConfig.class.php');
+		stingleInclude ('Exceptions/MailException.class.php');
+		stingleInclude ('Exceptions/DKIMConfigException.class.php');
+		stingleInclude ('Managers/MailSender.class.php');
+		stingleInclude ('Objects/Mail.class.php');
+		stingleInclude ('Objects/DKIMConfig.class.php');
 	}
 	
 	protected function loadMailSender(){

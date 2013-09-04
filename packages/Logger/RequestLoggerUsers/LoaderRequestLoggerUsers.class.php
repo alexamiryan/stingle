@@ -1,7 +1,7 @@
 <?php
 class LoaderRequestLoggerUsers extends Loader{
 	protected function includes(){
-		require_once ('Managers/RequestLoggerUsers.class.php');
+		stingleInclude ('Managers/RequestLoggerUsers.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

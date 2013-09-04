@@ -2,9 +2,9 @@
 class LoaderFacebookAuth extends Loader{
 	
 	protected function includes(){
-		require_once ('Managers/FacebookAuth.class.php');
-		require_once ('Objects/FacebookPhotoAlbum.class.php');
-		require_once ('Objects/FacebookPhoto.class.php');
+		stingleInclude ('Managers/FacebookAuth.class.php');
+		stingleInclude ('Objects/FacebookPhotoAlbum.class.php');
+		stingleInclude ('Objects/FacebookPhoto.class.php');
 	}
 	
 	protected function customInitBeforeObjects(){

@@ -1,13 +1,13 @@
 <?php
 class LoaderDb extends Loader{
 	protected function includes(){
-		require_once ('Managers/MySqlDbManager.class.php');
-		require_once ('Managers/Tbl.class.php');
-		require_once ('Managers/DbAccessor.class.php');
-		require_once ('Managers/MySqlDatabase.class.php');
-		require_once ('Exceptions/MySqlException.class.php');
-		require_once ('Managers/MySqlQuery.class.php');
-		require_once ('Helpers/helpers.inc.php');
+		stingleInclude ('Managers/MySqlDbManager.class.php');
+		stingleInclude ('Managers/Tbl.class.php');
+		stingleInclude ('Managers/DbAccessor.class.php');
+		stingleInclude ('Managers/MySqlDatabase.class.php');
+		stingleInclude ('Exceptions/MySqlException.class.php');
+		stingleInclude ('Managers/MySqlQuery.class.php');
+		stingleInclude ('Helpers/helpers.inc.php');
 	}
 	
 	protected function loadDb(){

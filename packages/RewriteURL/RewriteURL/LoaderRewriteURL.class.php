@@ -1,8 +1,8 @@
 <?php
 class LoaderRewriteURL extends Loader{
 	protected function includes(){
-		require_once ('Managers/RewriteURL.class.php');
-		require_once ('Helpers/helpers.inc.php');
+		stingleInclude ('Managers/RewriteURL.class.php');
+		stingleInclude ('Helpers/helpers.inc.php');
 	}
 	
 	protected function loadrewriteURL(){

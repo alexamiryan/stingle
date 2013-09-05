@@ -30,9 +30,28 @@ set_error_handler(
         'throw new ErrorException($message, $severity, $severity, $file, $line);'
     )
 );
-$config = ConfigManager::mergeConfigs(new Config($CONFIG), new Config($SYSCONFIG));
-ConfigManager::setGlobalConfig($config);
+
+if(!isset($SYSCONFIG)){ $SYSCONFIG = array(); }
+if(!isset($CONFIG)){ $CONFIG = array(); }
+
+$sysconfig = new Config($SYSCONFIG);
+
 Reg::register('packageMgr', new PackageManager());
+$configCacheFilename = $sysconfig->Stingle->CoreCachePath . 'configs';
+if($sysconfig->Stingle->BootCompiler === true and file_exists($configCacheFilename)){
+	try{
+		$config = unserialize(file_get_contents($configCacheFilename));
+		//ConfigManager::setCache($config);
+		ConfigManager::setGlobalConfig($config);
+	}
+	catch(Exception $e){
+		unlink($configCacheFilename);
+	}
+}
+else{
+	$config = ConfigManager::mergeConfigs(new Config($CONFIG), $sysconfig);
+	ConfigManager::setGlobalConfig($config);
+}
 
 if(isset($config->site->error_reporting)){
 	error_reporting($config->site->error_reporting);
@@ -65,11 +84,11 @@ if(isset($config->Hooks)){
 // Init packages/plugins
 HookManager::callHook("BeforePackagesLoad");
 
-$cacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'classes.php';
+$classesCacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'classes.php';
 if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
-	if(file_exists($cacheFilename)){
+	if(file_exists($classesCacheFilename)){
 		$GLOBALS['doNotIncludeClasses'] = true;
-		require_once ($cacheFilename);
+		require_once ($classesCacheFilename);
 	}
 	if(!isset($GLOBALS['includedClasses'])){
 		$GLOBALS['includedClasses'] = array();
@@ -87,26 +106,32 @@ Reg::get('packageMgr')->load();
 
 HookManager::callHook("AfterPackagesLoad");
 
-if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true and !file_exists($cacheFilename)){
-	$fileContents = "<?php\n\n";
-	foreach($GLOBALS['includedClasses'] as $file){
-		$content = file_get_contents($file['file']);
-		$content = str_replace("<?php", "", $content);
-		$content = str_replace("<?", "", $content);
-		$content = str_replace("?>", "", $content);
-		
-		if(!empty($file['precompileCode'])){
-			$fileContents .= $file['precompileCode'] . "\n\n";
+if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
+	if(!file_exists($classesCacheFilename)){
+		$fileContents = "<?php\n\n";
+		foreach($GLOBALS['includedClasses'] as $file){
+			$content = file_get_contents($file['file']);
+			$content = str_replace("<?php", "", $content);
+			$content = str_replace("<?", "", $content);
+			$content = str_replace("?>", "", $content);
+			
+			if(!empty($file['precompileCode'])){
+				$fileContents .= $file['precompileCode'] . "\n\n";
+			}
+			
+			$fileContents .= $content . "\n\n";
+			
+			if(!empty($file['postcompileCode'])){
+				$fileContents .= $file['postcompileCode'] . "\n\n";
+			}
 		}
-		
-		$fileContents .= $content . "\n\n";
-		
-		if(!empty($file['postcompileCode'])){
-			$fileContents .= $file['postcompileCode'] . "\n\n";
-		}
+			
+		file_put_contents($classesCacheFilename, $fileContents);
 	}
-		
-	file_put_contents($cacheFilename, $fileContents);
+	
+	if(!file_exists($configCacheFilename)){
+		file_put_contents($configCacheFilename, serialize(ConfigManager::getGlobalConfig()));
+	}
 }
 
 // Request Parser

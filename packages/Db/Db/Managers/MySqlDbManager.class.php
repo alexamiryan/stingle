@@ -61,7 +61,7 @@ class MySqlDbManager
     	}
     	
     	if( !isset(static::$instances[$instanceKey]) or !is_a(static::$instances[$instanceKey], "MySqlDatabase")){
-    		throw new MySqlException("Database instance with given key $instanceKey not found.");
+    		throw new MySqlException("Database instance with given key $instanceKey not found.",0);
     	}
     	
     	return static::$instances[$instanceKey];

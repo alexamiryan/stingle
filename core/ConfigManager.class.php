@@ -50,6 +50,10 @@ class ConfigManager
 		}
 	}
 	
+	public static function setCache(Config $config){
+		static::$cache = $config;
+	}
+	
 	/**
 	 * Get plugin config
 	 * 
@@ -72,6 +76,8 @@ class ConfigManager
 		if(isset(static::$cache->$packageName) and isset(static::$cache->$packageName->$pluginName)){
 			return static::$cache->$packageName->$pluginName;
 		}
+		
+		//echo "$packageName - $pluginName<br>\n";
 		
 		if(file_exists(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/DefaultConfig.inc.php")){
 			include(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/DefaultConfig.inc.php");

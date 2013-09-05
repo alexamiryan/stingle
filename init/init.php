@@ -41,7 +41,8 @@ $configCacheFilename = $sysconfig->Stingle->CoreCachePath . 'configs';
 if($sysconfig->Stingle->BootCompiler === true and file_exists($configCacheFilename)){
 	try{
 		$config = unserialize(file_get_contents($configCacheFilename));
-		//ConfigManager::setCache($config);
+		
+		ConfigManager::setCache($config);
 		ConfigManager::setGlobalConfig($config);
 	}
 	catch(Exception $e){
@@ -129,9 +130,7 @@ if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
 		file_put_contents($classesCacheFilename, $fileContents);
 	}
 	
-	if(!file_exists($configCacheFilename)){
-		file_put_contents($configCacheFilename, serialize(ConfigManager::getGlobalConfig()));
-	}
+	
 }
 
 // Request Parser
@@ -155,5 +154,11 @@ HookManager::callHook("BeforeOutput");
 HookManager::callHook("Output");
 
 HookManager::callHook("AfterOutput");
+
+if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
+	if(!file_exists($configCacheFilename)){
+		file_put_contents($configCacheFilename, serialize(ConfigManager::mergeConfigs(ConfigManager::getGlobalConfig(), ConfigManager::getCache())));
+	}
+}
 //echo "out - " . (microtime(true) - $time) . "<br>";
 // Finish

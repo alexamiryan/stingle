@@ -1,8 +1,6 @@
 <?php
 class Config{
 	
-	private $_configToParse;
-	
 	/**
 	 * Config constructor
 	 * 
@@ -10,9 +8,7 @@ class Config{
 	 */
 	public function __construct(array $CONFIG = null){
 		if($CONFIG !== null){
-			$this->_configToParse = $CONFIG;
-			
-			$this->parseConfig($this->_configToParse);
+			$this->parseConfig($CONFIG);
 		}
 	}
 	
@@ -88,6 +84,5 @@ class Config{
 				$this->$key = $value;
 			}
 		}
-		unset($this->_configToParse);
 	}
 }

@@ -54,6 +54,10 @@ class ConfigManager
 		static::$cache = $config;
 	}
 	
+	public static function getCache(){
+		return static::$cache;
+	}
+	
 	/**
 	 * Get plugin config
 	 * 
@@ -73,8 +77,15 @@ class ConfigManager
 			static::$cache = new Config();
 		}
 		
+		if(isset(static::$globalConfig->$packageName) and isset(static::$globalConfig->$packageName->$pluginName)){
+			$globalConfig = static::$globalConfig->$packageName->$pluginName;
+		}
+		else{
+			$globalConfig = new Config();
+		}
+		
 		if(isset(static::$cache->$packageName) and isset(static::$cache->$packageName->$pluginName)){
-			return static::$cache->$packageName->$pluginName;
+			return static::mergeConfigs($globalConfig, static::$cache->$packageName->$pluginName);
 		}
 		
 		//echo "$packageName - $pluginName<br>\n";
@@ -90,19 +101,12 @@ class ConfigManager
 		}
 		$defaultConfigObj = new Config($defaultConfig);
 		
-		if(isset(static::$globalConfig->$packageName) and isset(static::$globalConfig->$packageName->$pluginName)){
-			$globalConfig = static::$globalConfig->$packageName->$pluginName;
-		}
-		else{
-			$globalConfig = new Config();
-		}
-		
 		$result = static::mergeConfigs($globalConfig, $defaultConfigObj);
 		
 		if(!isset(static::$cache->$packageName)){
 			static::$cache->$packageName = new Config();
 		}
-		static::$cache->$packageName->$pluginName = $result;
+		static::$cache->$packageName->$pluginName = $defaultConfigObj;
 		
 		return $result;
 	}
@@ -147,30 +151,15 @@ class ConfigManager
 	 * @param string $value
 	 */
 	public static function addConfig($where, $key, $value){
-		if(!is_object(static::$cache)){
-			static::$cache = new Config();
-		}
 		$currentObj = &static::$globalConfig;
-		$currentCache = &static::$cache;
-		
-		$objCounter = 0;
-		$cacheCounter = 0;
 		
 		foreach ($where as $this_where){
-			if(isset($currentCache->$this_where)){
-				$currentCache = $currentCache->$this_where;
-				$cacheCounter++;
-			}
 			if(!isset($currentObj->$this_where)){
 				$currentObj->$this_where = new Config();
 			}
 			$currentObj = &$currentObj->$this_where;
-			$objCounter++;
 		}
 		$currentObj->$key = $value;
-		if($objCounter == $cacheCounter){
-			$currentCache = null;
-		}
 	}
 	
 	/**

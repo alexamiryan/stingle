@@ -24,7 +24,7 @@ class PackageManager {
 	 * @param boolean $loadAgain
 	 * @param boolean $overrideObjects
 	 */
-	public function usePlugin($packageName, $pluginName = null, Config $customConfig = null, $loadAgain = false, $overrideObjects = false){
+	public function usePlugin($packageName, $pluginName = null, Config $customConfig = null, $loadAgain = false, $overrideObjects = false, $forceLoaderIncludes = false){
 		if($pluginName === null){
 			$pluginName = $packageName;
 		}
@@ -47,11 +47,12 @@ class PackageManager {
 		$callingFunctionName = $backtrace[1]['function'];
 		$myClassName = get_class($this);
 		
-		$forceLoaderIncludes = false;
+		$forceLoaderIncludesAuto = false;
 		if($myClassName != $callingClassName or !in_array($callingFunctionName, array("load", "addPackage", "resolveDependencies"))){
 			$this->buildAllowanceTables(array($packageName => array($pluginName)));
-			$forceLoaderIncludes = true;
+			$forceLoaderIncludesAuto = true;
 		}
+		$forceLoaderIncludes = $forceLoaderIncludes || $forceLoaderIncludesAuto;
 		
 		if($customConfig !== null){
 			if(!isset($this->customConfigs->$packageName)){
@@ -63,7 +64,7 @@ class PackageManager {
 		$loader = $this->getPluginLoader($packageName, $pluginName);
 		
 		$deps = $loader->getDependencies();
-		$this->resolveDependencies($deps);
+		$this->resolveDependencies($deps, $forceLoaderIncludes);
 
 		$loader->load($overrideObjects, $forceLoaderIncludes);
 		array_push($this->loadedPackages[$packageName], $pluginName);
@@ -496,11 +497,11 @@ class PackageManager {
 	 * 
 	 * @param Dependency $deps
 	 */
-	private function resolveDependencies(Dependency $deps){
+	private function resolveDependencies(Dependency $deps, $forceLoaderIncludes = false){
 		foreach ($deps->getDependentPackages() as $depPackage){
 			foreach ($deps->getDependentPlugins($depPackage) as $depPlugin){
 				if(!isset($this->loadedPackages[$depPackage]) or !in_array($depPlugin, $this->loadedPackages[$depPackage])){
-					$this->usePlugin($depPackage, $depPlugin);
+					$this->usePlugin($depPackage, $depPlugin, null, false, false, $forceLoaderIncludes);
 				}
 			}
 		}

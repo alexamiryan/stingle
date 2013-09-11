@@ -65,7 +65,7 @@ class ConfigManager
 	 * @param string $pluginName
 	 * @return Config
 	 */
-	public static function getConfig($packageName, $pluginName = null){
+	public static function getConfig($packageName, $pluginName = null, $ignoreCache = false){
 		if(empty($packageName)){
 			throw new InvalidArgumentException("\$packageName is empty");
 		}
@@ -84,7 +84,7 @@ class ConfigManager
 			$globalConfig = new Config();
 		}
 		
-		if(isset(static::$cache->$packageName) and isset(static::$cache->$packageName->$pluginName)){
+		if(!$ignoreCache and isset(static::$cache->$packageName) and isset(static::$cache->$packageName->$pluginName)){
 			return static::mergeConfigs($globalConfig, static::$cache->$packageName->$pluginName);
 		}
 		
@@ -109,6 +109,10 @@ class ConfigManager
 		static::$cache->$packageName->$pluginName = $defaultConfigObj;
 		
 		return $result;
+	}
+	
+	public static function refreshPluginCache($packageName, $pluginName = null){
+		static::getConfig($packageName, $pluginName, true);
 	}
 	
 	/**

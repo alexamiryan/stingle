@@ -50,6 +50,7 @@ class PackageManager {
 		$forceLoaderIncludesAuto = false;
 		if($myClassName != $callingClassName or !in_array($callingFunctionName, array("load", "addPackage", "resolveDependencies"))){
 			$this->buildAllowanceTables(array($packageName => array($pluginName)));
+			ConfigManager::refreshPluginCache($packageName, $pluginName);
 			$forceLoaderIncludesAuto = true;
 		}
 		$forceLoaderIncludes = $forceLoaderIncludes || $forceLoaderIncludesAuto;

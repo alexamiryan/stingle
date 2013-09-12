@@ -49,8 +49,8 @@ class PackageManager {
 		
 		$forceLoaderIncludesAuto = false;
 		if($myClassName != $callingClassName or !in_array($callingFunctionName, array("load", "addPackage", "resolveDependencies"))){
-			$this->buildAllowanceTables(array($packageName => array($pluginName)));
 			ConfigManager::refreshPluginCache($packageName, $pluginName);
+			$this->buildAllowanceTables(array($packageName => array($pluginName)));
 			$forceLoaderIncludesAuto = true;
 		}
 		$forceLoaderIncludes = $forceLoaderIncludes || $forceLoaderIncludesAuto;
@@ -167,7 +167,7 @@ class PackageManager {
 	 * @param array $pluginsToLoad
 	 */
 	private function buildAllowanceTables($pluginsToLoad){
-		$pluginsToLoadHash = md5(json_encode($pluginsToLoad));
+		$pluginsToLoadHash = md5(json_encode(array_merge($this->loadedPackages, $pluginsToLoad)));
 		if(ConfigManager::getGlobalConfig()->Stingle->AllowanceTablesCache === true){
 			$cacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'allowanceTables-' . $pluginsToLoadHash;
 			if(file_exists($cacheFilename)){
@@ -228,7 +228,6 @@ class PackageManager {
 		}
 		
 		ksort($pluginsByPriority, SORT_NUMERIC);
-
 		foreach($pluginsByPriority as $priority=>$plugins){
 			$thisPriorityObjects = array();
 			foreach($plugins as $plugin){
@@ -243,7 +242,6 @@ class PackageManager {
 						$conflictingPlugin = $thisPriorityObjects[$Object];
 						throw new RuntimeException("Object conflict between {$plugin[1]} of package {$plugin[0]} and {$conflictingPlugin[1]} of package {$conflictingPlugin[0]} with Object $Object");
 					}
-					
 					$this->objectAllowanceTable[$Object] = $plugin;
 					$thisPriorityObjects[$Object] = $plugin;
 				}
@@ -270,7 +268,6 @@ class PackageManager {
 				}
 			}
 		}
-		
 		if(ConfigManager::getGlobalConfig()->Stingle->AllowanceTablesCache === true){
 			$cacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'allowanceTables-' . $pluginsToLoadHash;
 			$cacheContents = array('objectAllowanceTable' => $this->objectAllowanceTable, 'hookAllowanceTable' => $this->hookAllowanceTable);
@@ -584,8 +581,8 @@ class PackageManager {
 	 * @param string $packageName
 	 * @param string $pluginName
 	 */
-	public function getPluginConfig($packageName, $pluginName){
-		$pluginConfig = ConfigManager::getConfig($packageName, $pluginName);
+	public function getPluginConfig($packageName, $pluginName, $ignoreCache = false){
+		$pluginConfig = ConfigManager::getConfig($packageName, $pluginName, $ignoreCache);
 		if(isset($this->customConfigs->$packageName) and isset($this->customConfigs->$packageName->$pluginName)){
 			if(isset($this->forceCustomConfigs[$packageName]) and isset($this->forceCustomConfigs[$packageName][$pluginName]) and $this->forceCustomConfigs[$packageName][$pluginName] == true){
 				$pluginConfig = $this->customConfigs->$packageName->$pluginName;

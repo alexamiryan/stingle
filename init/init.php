@@ -110,24 +110,26 @@ HookManager::callHook("AfterPackagesLoad");
 if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
 	if(!file_exists($classesCacheFilename)){
 		$fileContents = "<?php\n\n";
-		foreach($GLOBALS['includedClasses'] as $file){
-			$content = file_get_contents($file['file']);
-			$content = str_replace("<?php", "", $content);
-			$content = str_replace("<?", "", $content);
-			$content = str_replace("?>", "", $content);
-			
-			if(!empty($file['precompileCode'])){
-				$fileContents .= $file['precompileCode'] . "\n\n";
+		if(count($GLOBALS['includedClasses']) > 0 and !isset($GLOBALS['doNotIncludeClasses'])){
+			foreach($GLOBALS['includedClasses'] as $file){
+				$content = file_get_contents($file['file']);
+				$content = str_replace("<?php", "", $content);
+				$content = str_replace("<?", "", $content);
+				$content = str_replace("?>", "", $content);
+				
+				if(!empty($file['precompileCode'])){
+					$fileContents .= $file['precompileCode'] . "\n\n";
+				}
+				
+				$fileContents .= $content . "\n\n";
+				
+				if(!empty($file['postcompileCode'])){
+					$fileContents .= $file['postcompileCode'] . "\n\n";
+				}
 			}
-			
-			$fileContents .= $content . "\n\n";
-			
-			if(!empty($file['postcompileCode'])){
-				$fileContents .= $file['postcompileCode'] . "\n\n";
-			}
+				
+			file_put_contents($classesCacheFilename, $fileContents);
 		}
-			
-		file_put_contents($classesCacheFilename, $fileContents);
 	}
 	
 	

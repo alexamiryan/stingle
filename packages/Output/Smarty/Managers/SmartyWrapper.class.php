@@ -801,13 +801,13 @@ class SmartyWrapper extends Smarty {
 		$this->defaultAssingns();
 		// Check if wrapper is set and if yes include it
 		if(!empty($this->wrapper)){
-			$wrapperPath = $this->getFilePathFromTemplate($this->includePath . $this->wrappersDir . $this->wrapper . ".tpl", true);
+			$wrapperPath = $this->findFilePath($this->wrappersDir . $this->wrapper . ".tpl");
 			if($wrapperPath === false){
 				throw new TemplateFileNotFoundException("Wrapper($wrapperName) is not found. All wrappers should be located in module's \"{$this->wrappersDir}\" directory");
 			}
 			
 			$this->assign ( 'modulePageTpl', $this->fileToDisplay);
-			$this->assign ( '__modulePageTpl', $this->getFilePathFromTemplate($this->includePath . $this->wrappersDir . $this->wrapper . ".tpl" ));
+			$this->assign ( '__modulePageTpl', $wrapperPath);
 		}
 		else{
 			$this->assign ( '__modulePageTpl', $this->fileToDisplay);

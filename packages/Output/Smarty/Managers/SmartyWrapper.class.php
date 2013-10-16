@@ -406,7 +406,7 @@ class SmartyWrapper extends Smarty {
 		return $this->layoutName;
 	}
 	
-	private function getCssFilePath($fileName){
+	protected function getCssFilePath($fileName){
 		$resultingFilePath = $fileName;
 		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
 			$resultingFilePath = SITE_PATH . $this->findFilePath('css/' . $fileName);
@@ -473,7 +473,7 @@ class SmartyWrapper extends Smarty {
 		return $this->getCssFilePath($fileName);
 	}
 	
-	private function getJsFilePath($fileName){
+	protected function getJsFilePath($fileName){
 		$resultingFilePath = $fileName;
 		if((strpos($fileName, "https://") === false and strpos($fileName, "http://") === false) and substr($fileName,0,1) != "/"){
 			$resultingFilePath = SITE_PATH . $this->findFilePath('js/' . $fileName);

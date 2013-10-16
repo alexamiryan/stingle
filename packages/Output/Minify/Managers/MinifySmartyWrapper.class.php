@@ -193,4 +193,20 @@ class MinifySmartyWrapper extends SmartyWrapper {
 	protected function handlePagerNotFound(){
 		redirect(SITE_PATH);
 	}
+	
+	public function getJsPathSmart($fileName){
+		if(empty($fileName)){
+			throw new InvalidArgumentException("JS filename is not specified");
+		}
+		$originalFilename = str_replace("/", "(slash)", $fileName);
+		return Reg::get('rewriteURL')->glink("get/js/name:" . base64_encode($fileName) . "/path:" . base64_encode($this->getCurrentPagePath()) . "/originalName:$originalFilename");
+	}
+	
+	public function getCssPathSmart($fileName){
+		if(empty($fileName)){
+			throw new InvalidArgumentException("CSS filename is not specified");
+		}
+		$originalFilename = str_replace("/", "(slash)", $fileName);
+		return Reg::get('rewriteURL')->glink("get/css/name:" . base64_encode($fileName) . "/path:" . base64_encode($this->getCurrentPagePath()) . "/originalName:$originalFilename");
+	}
 }

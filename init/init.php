@@ -22,19 +22,14 @@ require_once(STINGLE_PATH . "configs/system.inc.php");
 require_once(STINGLE_PATH . "helpers/system.php");
 require_once(STINGLE_PATH . "helpers/func.php");
 
-register_shutdown_function("shutdown");
-set_exception_handler("default_exception_handler");
-set_error_handler(
-    create_function(
-        '$severity, $message, $file, $line',
-        'throw new ErrorException($message, $severity, $severity, $file, $line);'
-    )
-);
-
 if(!isset($SYSCONFIG)){ $SYSCONFIG = array(); }
 if(!isset($CONFIG)){ $CONFIG = array(); }
 
 $sysconfig = new Config($SYSCONFIG);
+
+register_shutdown_function("shutdown");
+set_exception_handler("default_exception_handler");
+set_error_handler("default_error_handler");
 
 Reg::register('packageMgr', new PackageManager());
 $configCacheFilename = $sysconfig->Stingle->CoreCachePath . 'configs';

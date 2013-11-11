@@ -423,7 +423,7 @@ class Image extends Model
 		if(!($bg_blue>=0 and $bg_blue<=255)){
 			throw new InvalidArgumentException("\$bg_blue needs to be between 0 and 255!");
 		}
-		if(!($rotated_image=imagerotate($this->imageRes, $angle, imagecolorexact($this->imageRes, $bg_red, $bg_green, $bg_blue)))){
+		if(!($rotated_image=imagerotate($this->imageRes, 360 - $angle, imagecolorexact($this->imageRes, $bg_red, $bg_green, $bg_blue)))){
 			throw new RuntimeException("Unable to rotate!");
 		}
 

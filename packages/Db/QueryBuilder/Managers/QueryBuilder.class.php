@@ -382,13 +382,12 @@ class QueryBuilder
     public function add($sqlPartName, $sqlPart, $append = false)
     {
         $isMultiple = is_array($this->_sqlParts[$sqlPartName]);
-
         // This is introduced for backwards compatibility reasons.
         if ($sqlPartName == 'join') {
             $newSqlPart = array();
             foreach ($sqlPart AS $k => $v) {
                 if (is_numeric($k)) {
-                    $newSqlPart[$this->getRootAlias()] = $v;
+                    $newSqlPart[$this->getRootAlias()][] = $v;
                 } else {
                     $newSqlPart[$k] = $v;
                 }
@@ -1128,7 +1127,14 @@ class QueryBuilder
 
                 if ($from instanceof From && isset($joinParts[$from->getAlias()])) {
                     foreach ($joinParts[$from->getAlias()] as $join) {
-                        $fromClause .= ' ' . ((string) $join);
+                    	if(is_array($join)){
+                    		foreach($join as $subjoin){
+                    			$fromClause .= ' ' . ((string) $subjoin);
+                    		}
+                    	}
+                    	else{
+                        	$fromClause .= ' ' . ((string) $join);
+                    	}
                     }
                 }
 

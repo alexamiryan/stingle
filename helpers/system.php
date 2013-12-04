@@ -2,14 +2,21 @@
 function default_exception_handler(Exception $e){
 	$hookArgs = array('e' => $e);
 	HookManager::callHook('NoDebugExceptionHandler', $hookArgs);
-	
-	if(Debug::getMode()){
-		echo format_exception($e, true);
+	if(!in_array($e->getCode(), ConfigManager::getGlobalConfig()->Stingle->disabledErrors->toArray())){
+		if(Debug::getMode()){
+			echo format_exception($e, true);
+		}
+		else{
+			HookManager::callHook('ExceptionHandler', $hookArgs);
+		}
+		exit;
 	}
-	else{
-		HookManager::callHook('ExceptionHandler', $hookArgs);
+}
+
+function default_error_handler($severity, $message, $file, $line){
+	if(!in_array($severity, ConfigManager::getGlobalConfig()->Stingle->disabledErrors->toArray())){
+		throw new ErrorException($message, $severity, $severity, $file, $line);
 	}
-	exit;
 }
 
 function stingleOutputHandler($buffer){

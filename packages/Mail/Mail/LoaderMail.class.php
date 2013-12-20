@@ -6,9 +6,5 @@ class LoaderMail extends Loader{
 		stingleInclude ('Managers/MailSender.class.php');
 		stingleInclude ('Objects/Mail.class.php');
 		stingleInclude ('Objects/DKIMConfig.class.php');
-	}
-	
-	protected function loadMailSender(){
-		Reg::register($this->config->Objects->MailSender, new MailSender($this->config->AuxConfig));
-	}
+	}	
 }

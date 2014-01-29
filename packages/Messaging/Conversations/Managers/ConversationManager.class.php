@@ -22,9 +22,9 @@ class ConversationManager extends DbAccessor{
 		parent::__construct($dbInstanceKey);
 	}
 	
-	public function sendMessage($senderId, $receiverId, $message){
+	public function sendMessage($senderId, $receiverId, $message, $systemMessage = false){
 		if(!$this->isConversationExists($senderId, $receiverId)){
-			$this->openConversation($senderId, $receiverId);
+			$this->openConversation($senderId, $receiverId, $systemMessage);
 		}
 		
 		$filter = new ConversationFilter();
@@ -38,7 +38,7 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		return $this->addMessageToConversation($uuid, $senderId, $message);
+		return $this->addMessageToConversation($uuid, $senderId, $message, $systemMessage);
 	}
 	
 	public function sendMessageByUUID($uuid, $senderId, $message){
@@ -665,7 +665,7 @@ class ConversationManager extends DbAccessor{
 		HookManager::callHook("ConversationUpdate", $hookParams);
 	}
 	
-	protected function addMessageToConversation($uuid, $senderId, $message){
+	protected function addMessageToConversation($uuid, $senderId, $message, $systemMessage = false){
 		if(empty($uuid) or !is_numeric($uuid)){
 			throw InvalidArgumentException("UUID have to be non zero integer.");
 		}
@@ -687,7 +687,8 @@ class ConversationManager extends DbAccessor{
 						'uuid' => $uuid, 
 						'sender_id' => $senderId,
 						'receiver_id' => $conversation->interlocutorId,
-						'message' => $message
+						'message' => $message,
+						'system' => ($systemMessage) ? '1' : '0' 
 						)
 					);
 		
@@ -742,14 +743,14 @@ class ConversationManager extends DbAccessor{
 		return $this->query->exec($sqlQuery)->fetchField('maxId');
 	}
 	
-	protected function openConversation($userId1, $userId2){
+	protected function openConversation($userId1, $userId2, $systemMessage = false){
 		if(empty($userId1) or !is_numeric($userId1)){
 			throw new InvalidIntegerArgumentException("\$userId1 have to be non zero integer.");
 		}
 		if(empty($userId2) or !is_numeric($userId2)){
 			throw new InvalidIntegerArgumentException("\$userId2 have to be non zero integer.");
 		}
-		
+				
 		$db = MySqlDbManager::getDbObject();
 		
 		$db->lockTables(Tbl::get('TBL_CONVERSATIONS'), "w");
@@ -763,7 +764,8 @@ class ConversationManager extends DbAccessor{
 					array(
 						'uuid' => $newUUID, 
 						'user_id' => $userId1, 
-						'interlocutor_id' => $userId2
+						'interlocutor_id' => $userId2,
+						'system' => ($systemMessage) ? '1' : '0' 
 						)
 					);
 		
@@ -774,7 +776,8 @@ class ConversationManager extends DbAccessor{
 					array(
 						'uuid' => $newUUID,
 						'user_id' => $userId2,
-						'interlocutor_id' => $userId1
+						'interlocutor_id' => $userId1,
+						'system' => ($systemMessage) ? '1' : '0'
 						)
 					);
 		
@@ -829,6 +832,8 @@ class ConversationManager extends DbAccessor{
 		$conversation->trashed = $conversationRow['trashed'];
 		$conversation->fetchFrom = $conversationRow['fetch_from'];
 		$conversation->hasAttachment = $conversationRow['has_attachment'];
+		$conversation->system = $conversationRow['system'];
+		
 		
 		return $conversation;
 	}
@@ -854,6 +859,7 @@ class ConversationManager extends DbAccessor{
 		$message->read = $messageRow['read'];
 		$message->deleted = $messageRow['deleted'];
 		$message->hasAttachment = $messageRow['has_attachment'];
+		$message->system = $messageRow["system"];
 		
 		if(!$reduced and $message->hasAttachment == '1'){
 			$attachMgr = Reg::get(ConfigManager::getConfig("Messaging", "Conversations")->Objects->ConversationAttachmentManager);

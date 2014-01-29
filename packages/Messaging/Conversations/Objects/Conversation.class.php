@@ -12,4 +12,5 @@ class Conversation{
 	public $trashed = 0;
 	public $fetchFrom = null;
 	public $hasAttachment = 0;
+	public $system = 0;
 }

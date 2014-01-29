@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `conversations` (
   `trashed` tinyint(1) unsigned NOT NULL default '0' COMMENT 'Is conversation trashed by User. 0 - Not Trashed, 1 - Trashed, 2 - Deleted',
   `fetch_from` int(10) unsigned default NULL COMMENT 'If conversation was deleted previously, this is a id of last conversation that was deleted. If new message appears in this conversation then website should show messages starting from this message ID. ',
   `has_attachment` tinyint(1) NOT NULL default '0' COMMENT 'Is conversation contains attachment',
+  `system` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY  (`id`),
   KEY `uuid` (`uuid`),
   KEY `user_interlocutor` (`user_id`,`interlocutor_id`),

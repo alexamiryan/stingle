@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS `conversation_messages` (
   `read` tinyint(1) NOT NULL default '0' COMMENT 'Read status of receiver',
   `deleted` int(10) NOT NULL default '0',
   `has_attachment` tinyint(1) NOT NULL default '0',
+  `system` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY  (`id`),
   KEY `uuid` (`uuid`),
   KEY `sender_id` (`sender_id`),

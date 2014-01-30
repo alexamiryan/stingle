@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.5.29, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 5.5.35, for Linux (x86_64)
 --
--- Host: 192.168.0.1    Database: edesirs_new_admin
+-- Host: 192.168.0.1    Database: edesirs
 -- ------------------------------------------------------
--- Server version	5.0.95-log
+-- Server version	5.5.34
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,26 +16,23 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Not dumping tablespaces as no INFORMATION_SCHEMA.FILES table on this server
---
-
---
 -- Table structure for table `GeoIPLocation`
 --
 
+DROP TABLE IF EXISTS `GeoIPLocation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `GeoIPLocation` (
+CREATE TABLE `GeoIPLocation` (
   `locId` int(10) unsigned NOT NULL,
-  `country` char(2) default NULL,
-  `region` varchar(64) default NULL,
-  `city` varchar(128) default NULL,
-  `postal_code` varchar(32) default NULL,
-  `latitude` decimal(8,4) default NULL,
-  `longitude` decimal(8,4) default NULL,
-  `metro_code` varchar(8) default NULL,
-  `area_code` varchar(8) default NULL,
-  PRIMARY KEY  (`locId`)
+  `country` char(2) DEFAULT NULL,
+  `region` varchar(64) DEFAULT NULL,
+  `city` varchar(128) DEFAULT NULL,
+  `postal_code` varchar(32) DEFAULT NULL,
+  `latitude` decimal(8,4) DEFAULT NULL,
+  `longitude` decimal(8,4) DEFAULT NULL,
+  `metro_code` varchar(8) DEFAULT NULL,
+  `area_code` varchar(8) DEFAULT NULL,
+  PRIMARY KEY (`locId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -48,4 +45,4 @@ CREATE TABLE IF NOT EXISTS `GeoIPLocation` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-02-06 17:11:05
+-- Dump completed on 2014-01-30 16:54:50

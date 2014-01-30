@@ -36,17 +36,6 @@ class GeoIP extends DbAccessor
 								$qb->expr()->equal(new Field('locId', 'blocks'), new Field('locId', 'loc'))
 						)
 						->where(
-								$qb->expr()->equal(
-									new Field('index_geo', 'blocks'), 
-									$qb->expr()->diff(
-										new Func('INET_ATON', $ip), 
-										new Math(
-												new Func('INET_ATON', $ip), '%', 65536
-										)
-									)
-								)
-						)
-						->andWhere(
 								$qb->expr()->between(
 										new Func('INET_ATON', $ip), 
 										new Field('startIpNum'), 

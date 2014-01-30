@@ -41,9 +41,9 @@ class GeoIP extends DbAccessor
 										new Field('startIpNum'), 
 										new Field('endIpNum')
 								)
-						);
+						)
+						->limit(1);
 						
-				
 				$this->query->exec($qb->getSQL(), $cacheMinutes);
 				if($this->query->countRecords()){
 					$row = $this->query->fetchRecord();

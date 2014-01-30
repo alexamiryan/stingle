@@ -62,6 +62,18 @@ class ConversationFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setIsNotSystem(){
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("system", $this->primaryTableAlias), '0'));
+	
+		return $this;
+	}
+	
+	public function setIsSystem(){
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("system", $this->primaryTableAlias), '1'));
+	
+		return $this;
+	}
+	
 	public function setOrderLastMsgDateAsc(){
 		$this->setOrder(new Field('last_msg_date', 'conv'), MySqlDatabase::ORDER_ASC);
 	}

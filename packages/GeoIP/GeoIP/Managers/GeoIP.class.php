@@ -35,15 +35,9 @@ class GeoIP extends DbAccessor
 								'loc', 
 								$qb->expr()->equal(new Field('locId', 'blocks'), new Field('locId', 'loc'))
 						)
-						->where(
-								$qb->expr()->between(
-										new Func('INET_ATON', $ip), 
-										new Field('startIpNum'), 
-										new Field('endIpNum')
-								)
-						)
+						->where($qb->expr()->greaterEqual(new Field('endIpNum'), new Func('INET_ATON', $ip)))
 						->limit(1);
-						
+
 				$this->query->exec($qb->getSQL(), $cacheMinutes);
 				if($this->query->countRecords()){
 					$row = $this->query->fetchRecord();

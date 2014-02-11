@@ -753,7 +753,7 @@ class ConversationManager extends DbAccessor{
 				
 		$db = MySqlDbManager::getDbObject();
 		
-		$db->lockTables(Tbl::get('TBL_CONVERSATIONS'), "w");
+		$db->startTransaction();
 		
 		$newUUID = $this->getMaxUUID() + 1;
 		
@@ -783,7 +783,10 @@ class ConversationManager extends DbAccessor{
 		
 		$this->query->exec($qb->getSQL());
 		
-		$db->unlockTables();
+		if(!$db->commit()){
+			$db->rollBack();
+			return false;
+		}
 		
 		return $newUUID;
 	}

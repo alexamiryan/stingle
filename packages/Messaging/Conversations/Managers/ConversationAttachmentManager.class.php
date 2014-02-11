@@ -158,7 +158,7 @@ class ConversationAttachmentManager extends DbAccessor{
 	public function clearGarbage(){
 		$db = MySqlDbManager::getDbObject();
 		
-		$db->lockTables(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS'), "w");
+		$db->startTransaction();
 		
 		$qb = new QueryBuilder();
 	
@@ -183,7 +183,10 @@ class ConversationAttachmentManager extends DbAccessor{
 		
 		$deletedCount = $this->query->exec($qb->getSQL())->affected();
 		
-		$db->unlockTables();
+		if(!$db->commit()){
+			$db->rollBack();
+			return 0;
+		}
 		
 		return $deletedCount;
 	}

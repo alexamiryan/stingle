@@ -23,7 +23,11 @@ class FilterMerger{
 			$rightField = $filter->getPrimaryJoinfField();
 		}
 		
-		$this->mainFilter->getQb()->join($filter->getPrimaryTable(), $filter->getPrimaryTableAlias(), $joinType, new Comparison($leftField, $comparisionType, $rightField));
+		$this->mergeAdvanced($filter, new Comparison($leftField, $comparisionType, $rightField), $joinType);
+	}
+	
+	public function mergeAdvanced(MergeableFilter $filter, $condition, $joinType = Join::LEFT_JOIN){
+		$this->mainFilter->getQb()->join($filter->getPrimaryTable(), $filter->getPrimaryTableAlias(), $joinType, $condition);
 		
 		$parts = $filter->getQb()->getSQLParts();
 		
@@ -33,4 +37,5 @@ class FilterMerger{
 		
 		$this->mainFilter->getQb()->andWhere($parts['where']);
 	}
+	
 }

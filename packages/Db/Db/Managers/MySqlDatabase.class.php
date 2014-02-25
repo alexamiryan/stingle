@@ -150,9 +150,9 @@ class MySqlDatabase extends Model
 	 * @throws DB_Exception
 	 * @return boolean
 	*/
-	public function startTransaction(){
+	public function startTransaction($withSnapshot = false){
 		if(!$this->transaction_started){
-			if(@mysql_query("START TRANSACTION", $this->link)){
+			if(@mysql_query("START TRANSACTION" . ($withSnapshot ? " WITH CONSISTENT SNAPSHOT" : ""), $this->link)){
 				$this->transaction_started = true;
 				return true;
 			}

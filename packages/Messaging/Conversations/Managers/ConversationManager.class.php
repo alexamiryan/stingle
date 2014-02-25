@@ -753,7 +753,7 @@ class ConversationManager extends DbAccessor{
 				
 		$db = MySqlDbManager::getDbObject();
 		
-		$db->startTransaction();
+		$db->startTransaction(true);
 		
 		$newUUID = $this->getMaxUUID() + 1;
 		

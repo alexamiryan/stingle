@@ -6,6 +6,7 @@ class LoaderSmarty extends Loader{
 		$precompileCode = 'define("SMARTY_DIR", "'.dirname(__FILE__) . '/Core/'.'");';
 		
 		stingleInclude ('Core/Smarty.class.php', $precompileCode);
+		stingleInclude ('Helpers/functions.inc.php');
 		stingleInclude ('Managers/SmartyWrapper.class.php');
 		stingleInclude ('Managers/SmartyMemcache.class.php');
 		stingleInclude ('Exceptions/TemplateFileNotFoundException.class.php');

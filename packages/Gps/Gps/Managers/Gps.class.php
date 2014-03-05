@@ -619,13 +619,13 @@ class Gps extends DbAccessor
 		if($type_id !== null){
 			$qb->andWhere($qb->expr()->equal(new Field('type_id'), $type_id));
 		}
+		$qb->limit(1);
 		
-		
-		$this->query->exec($qb->getSQL(), $cacheMinutes);		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
 		if($this->query->countRecords()){
 			return $this->query->fetchRecord();
 		}
-						
+		
 		// If above query doesn't return record, find in some range of posible latitude and longitude
 		// As $latitude, $longitude are decimal(8,4)  find with 3 digits to the right of the decimal point
 		$digits_after = 3;

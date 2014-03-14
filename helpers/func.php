@@ -339,9 +339,12 @@ function base64_url_decode($input) {
 }
 
 function stingleInclude($file, $precompileCode = null, $postcompileCode = null, $isPathAbsolute = false){
+	$oldDir = null;
+	if(!$isPathAbsolute){
 	$bt = debug_backtrace();
-	$old = getcwd();
+		$oldDir = getcwd();
 	chdir(dirname($bt[0]['file']));
+	}
 	require_once ($file);
 	if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
 		if($isPathAbsolute){
@@ -351,6 +354,8 @@ function stingleInclude($file, $precompileCode = null, $postcompileCode = null, 
 			array_push($GLOBALS['includedClasses'], array('file' => dirname($bt[0]['file']) . '/' . $file, 'precompileCode'=>$precompileCode, 'postcompileCode' => $postcompileCode));
 		}
 	}
-	chdir($old);
+	if(!$isPathAbsolute and !empty($oldDir)){
+		chdir($oldDir);
+	}
 }
 

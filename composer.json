@@ -1,0 +1,14 @@
+{
+    "name": "alexamiryan/stingle",
+    "description": "Stingle PHP framework",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Aleksandr Amiryan",
+            "email": "alex@amiryan.org"
+        }
+    ],
+    "require": {
+
+    }
+}

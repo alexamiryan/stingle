@@ -48,4 +48,12 @@ class LoaderSmarty extends Loader{
 		}
 
 	}
+	
+	public function hookClearUserSmartyCache($params){
+		if(isset($params["userId"]) && !empty($params["userId"]) && is_numeric($params["userId"])){
+			$memcacheConfig = ConfigManager::getConfig('Db','Memcache')->AuxConfig;
+			$memcached = new MemcacheWrapper($memcacheConfig->host, $memcacheConfig->port);
+			$memcached->invalidateCacheByTag("smrt:u" . $params["userId"]);
+		}
+	}
 }

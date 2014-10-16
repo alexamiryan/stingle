@@ -33,10 +33,10 @@ function smarty_function_chunk($params, &$smarty){
 			$cacheId = $params['cacheId'];
 		}
 		elseif (isset($params['targetId']) and !empty($params['targetId'])){
-			$cacheId = getSmartyCacheId($params['targetId']);
+			$cacheId = 'id:' . getSmartyCacheId($params['targetId']);
 		}
 		elseif(!fempty($targetIdFromParent = $smarty->getTemplateVars('targetId'))){
-			$cacheId = getSmartyCacheId($targetIdFromParent);
+			$cacheId = 'id:' . getSmartyCacheId($targetIdFromParent);
 		}
 		elseif(!fempty($cacheIdFromParent = $smarty->getTemplateVars('cacheId'))){
 			$cacheId = $cacheIdFromParent;
@@ -46,7 +46,7 @@ function smarty_function_chunk($params, &$smarty){
 			$result = $smarty->fetch($path, $cacheId);
 		}
 		else{
-			$result =  $smarty->fetch($path);
+			$result = $smarty->fetch($path);
 		}
 		
 		if($cacheEnabled){

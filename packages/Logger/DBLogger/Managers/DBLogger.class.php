@@ -11,7 +11,7 @@ class DBLogger extends Logger{
 	public static function logRequest($dbInstanceKey = null){
 		$sql = MySqlDbManager::getQueryObject($dbInstanceKey);
 		$qb = new QueryBuilder();
-		$qb->insertDelayed(Tbl::get('TBL_REQUEST_LOG'))
+		$qb->insert(Tbl::get('TBL_REQUEST_LOG'))
 			->values(array(
 							"session_id" => session_id(), 
 							"get" => serialize($_GET), 
@@ -32,7 +32,7 @@ class DBLogger extends Logger{
 			$remoteIP=$_SERVER['REMOTE_ADDR'];
 		}
 		$qb = new QueryBuilder();
-		$qb->insertDelayed(Tbl::get('TBL_MIXED_LOG'))
+		$qb->insert(Tbl::get('TBL_MIXED_LOG'))
 			->values(array(
 							"session_id" => session_id(), 
 							"name" => $name, 

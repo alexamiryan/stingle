@@ -30,7 +30,8 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 											'AfterPluginInit' => 'CollectSmartyPluginsDir',
 											'AfterPackagesLoad' => 'RegisterSmartyPlugins',
 											'AfterRequestParser' => 'SmartyInit', 
-											'Output' => 'MainOutput'
+											'Output' => 'MainOutput',
+											'ClearUserCache' => 'ClearUserSmartyCache'
 								  )
 				
 					);

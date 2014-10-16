@@ -13,7 +13,7 @@ class RequestLoggerUsers extends DBLogger {
 			$userObjectSerialized = "'". mysql_real_escape_string(serialize($userObj)) . "'";
 		}
 		$qb = new QueryBuilder();
-		$qb->insertDelayed(Tbl::get('TBL_REQUEST_LOG'))
+		$qb->insert(Tbl::get('TBL_REQUEST_LOG'))
 			->values(array(
 							"user_id" => $userId, 
 							"user_obj" => $userObjectSerialized, 

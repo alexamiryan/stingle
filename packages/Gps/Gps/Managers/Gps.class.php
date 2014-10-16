@@ -596,6 +596,36 @@ class Gps extends DbAccessor
 		return $this->query->fetchRecord();
 	}
 	
+	public function getIsoCountries($cacheMinutes = null){
+		$qb = new QueryBuilder();
+		$qb->select(new Field('*'))
+			->from(Tbl::get('TBL_COUNTRY_ISO'));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
+		return $this->query->fetchRecords();
+	}
+	
+	/**
+	 * Get iso by gps_id code.
+	 * @return string
+	 */
+	public function getIsoCodeByGpsId($gpsId, $isoType = 'iso2', $cacheMinutes = null){
+		if(!is_numeric($gpsId)){
+			throw new InvalidArgumentException("Gps Id is not numeric");
+		}
+		if($isoType != 'iso2' || $isoType != 'iso3'){
+			$isoType = 'iso2';
+		}
+		
+		$qb = new QueryBuilder();
+		$qb->select(new Field($isoType))
+		->from(Tbl::get('TBL_COUNTRY_ISO'))
+		->andWhere($qb->expr()->equal(new Field('gps_id'), $gpsId));
+		
+		$this->query->exec($qb->getSQL(), $cacheMinutes);
+		return $this->query->fetchField($isoType);
+	}
+	
 	/**
 	 * Get closest node by latitude and longitude
 	 * This function use fast, but not exact algorithm

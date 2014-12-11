@@ -33,12 +33,14 @@ set_error_handler("default_error_handler");
 
 Reg::register('packageMgr', new PackageManager());
 $configCacheFilename = $sysconfig->Stingle->CoreCachePath . 'configs';
+$isGetConfigFromCache = false;
 if($sysconfig->Stingle->BootCompiler === true and file_exists($configCacheFilename)){
 	try{
 		$config = unserialize(file_get_contents($configCacheFilename));
 		
 		ConfigManager::setCache($config);
 		ConfigManager::setGlobalConfig($config);
+		$isGetConfigFromCache = true;
 	}
 	catch(Exception $e){
 		unlink($configCacheFilename);
@@ -153,7 +155,7 @@ HookManager::callHook("Output");
 HookManager::callHook("AfterOutput");
 
 if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
-	if(!file_exists($configCacheFilename)){
+	if(!file_exists($configCacheFilename) and !$isGetConfigFromCache){
 		file_put_contents($configCacheFilename, serialize(ConfigManager::mergeConfigs(ConfigManager::getGlobalConfig(), ConfigManager::getCache())));
 	}
 }

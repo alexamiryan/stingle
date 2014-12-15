@@ -36,36 +36,36 @@ class PageInfo extends DbAccessor
 		return array("title"=>'',"meta_keywords"=>'',"meta_description"=>'');
 	}
 	
-	private function getExact($module, $page){
-		$this->query->exec(static::queryString($this->language->id, $this->host->id, $module, $page));
+	private function getExact($module, $page, $cacheMinutes = null){
+		$this->query->exec(static::queryString($this->language->id, $this->host->id, $module, $page), $cacheMinutes);
 		$data = $this->query->fetchRecord();
 		return $data;
 	}
 	
-	private function getModuleDefault($module){
-		$this->query->exec(static::queryString($this->language->id, $this->host->id, $module));
+	private function getModuleDefault($module, $cacheMinutes = null){
+		$this->query->exec(static::queryString($this->language->id, $this->host->id, $module), $cacheMinutes);
 		$data = $this->query->fetchRecord();
 		return $data;
 	}
 	
-	private function getHostLangDefault(){
-		$this->query->exec(static::queryString($this->language->id, $this->host->id));
+	private function getHostLangDefault($cacheMinutes = null){
+		$this->query->exec(static::queryString($this->language->id, $this->host->id), $cacheMinutes);
 		$data = $this->query->fetchRecord();
 		return $data;
 	}
 	
-	private function getLangDefault(){
-		$this->query->exec(static::queryString($this->language->id));
+	private function getLangDefault($cacheMinutes = null){
+		$this->query->exec(static::queryString($this->language->id), $cacheMinutes);
 		$data = $this->query->fetchRecord();
 		return $data;
 	}
-	private function getDefault(){
-		$this->query->exec(static::queryString());
+	private function getDefault($cacheMinutes = null){
+		$this->query->exec(static::queryString(), $cacheMinutes);
 		$data = $this->query->fetchRecord();
 		return $data;
 	}
 	
-	protected static function queryString($lang_id=null, $host_id=null, $module=null, $page=null){
+	protected static function queryString($lang_id=null, $host_id=null, $module=null, $page=null, $cacheMinutes = null){
 		$qb = new QueryBuilder();
 		$qb->select(new Field('title'), new Field('meta_keywords'), new Field('meta_description'))
 			->from(Tbl::get('TBL_PAGE_INFO'));

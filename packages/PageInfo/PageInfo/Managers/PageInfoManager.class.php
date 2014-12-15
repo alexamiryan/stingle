@@ -12,7 +12,7 @@ class PageInfoManager extends PageInfo
 		return $pageInfo;		
 	}
 	
-	public static function getLanguageHosts(Language $lang){
+	public static function getLanguageHosts(Language $lang, $cacheMinutes = null){
 		$hosts = array();
 		$sql = MySqlDbManager::getQueryObject();
 		$qb = new QueryBuilder();
@@ -24,7 +24,7 @@ class PageInfoManager extends PageInfo
 			->andWhere($qb->expr()->isNotNull(new Field('host_id', 'pi')))
 			->groupBy(new Field('id', 'h'));
 			
-		$sql->exec($qb->getSQL());	
+		$sql->exec($qb->getSQL(), $cacheMinutes);	
 		$hosts_data = $sql->fetchRecords();
 		foreach ($hosts_data as $host_data){
 			$host = new Host();
@@ -34,7 +34,7 @@ class PageInfoManager extends PageInfo
 		return $hosts;		
 	}
 	
-	public static function getModules(Language $lang, Host $host){
+	public static function getModules(Language $lang, Host $host, $cacheMinutes = null){
 		$modules = array();
 		$sql = MySqlDbManager::getQueryObject();
 		$qb = new QueryBuilder();
@@ -45,14 +45,14 @@ class PageInfoManager extends PageInfo
 			->andWhere($qb->expr()->isNotNull(new Field('module', 'pi')))
 			->groupBy(new Field('module', 'pi'));
 			
-		$sql->exec($qb->getSQL());	
+		$sql->exec($qb->getSQL(), $cacheMinutes);	
 		if($sql->countRecords()){	
 			$modules = $sql->fetchRecords();
 		}
 		return $modules;		
 	}
 	
-	public static function getModulePages(Language $lang, Host $host, $module){
+	public static function getModulePages(Language $lang, Host $host, $module, $cacheMinutes = null){
 		$pages = array();
 		$sql = MySqlDbManager::getQueryObject();
 		$qb = new QueryBuilder();
@@ -64,7 +64,7 @@ class PageInfoManager extends PageInfo
 			->andWhere($qb->expr()->isNotNull(new Field('page', 'pi')))
 			->groupBy(new Field('page', 'pi'));
 			
-		$sql->exec($qb->getSQL());	
+		$sql->exec($qb->getSQL(), $cacheMinutes);	
 		if($sql->countRecords()){	
 			$pages = $sql->fetchRecords();
 		}
@@ -111,7 +111,7 @@ class PageInfoManager extends PageInfo
 	 * @param string $page
 	 * @return bool
 	 */
-	private static function exists($lang_id=null, $host_id=null, $module=null, $page=null){
+	private static function exists($lang_id=null, $host_id=null, $module=null, $page=null, $cacheMinutes = null){
 		$sql = MySqlDbManager::getQueryObject();
 		$qb = new QueryBuilder();
 
@@ -142,7 +142,7 @@ class PageInfoManager extends PageInfo
 			$qb->andWhere($qb->expr()->equal(new Field('page'), $page));
 		}	
 
-		$sql->exec($qb->getSQL());
+		$sql->exec($qb->getSQL(), $cacheMinutes);
 		if($sql->countRecords()){
 			return  $sql->fetchField("id");
 		}

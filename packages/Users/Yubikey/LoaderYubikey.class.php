@@ -2,7 +2,9 @@
 class LoaderYubikey extends Loader{
 	protected function includes(){
 		stingleInclude ('Managers/Yubikey.class.php');
+		stingleInclude ('Managers/YubikeyObject.class.php');
 		stingleInclude ('Managers/YubikeyUserAuthorization.class.php');
+		stingleInclude ('Managers/YubikeyManager.class.php');
 		stingleInclude ('Exceptions/YubikeyException.class.php');
 		stingleInclude ('Exceptions/YubikeyRequiredException.class.php');
 		stingleInclude ('Exceptions/InvalidYubikeyException.class.php');

@@ -45,7 +45,7 @@ class Smarty_CacheResource_Memcache extends Smarty_CacheResource_KeyValueStore {
 		$lookup = array();
 		
 		foreach ($keys as $key) {
-			$keyHash = $this->memcache->getNamespacedKey(self::TAG . $this->getIdKey($key)) . ":" . sha1($key);
+			$keyHash = $this->memcache->getNamespacedKey(self::TAG . $this->memcache->getIdKey($key)) . ":" . sha1($key);
 			$memcacheKeys[] = $keyHash;
 			$lookup[$keyHash] = $key;
 		}
@@ -68,7 +68,7 @@ class Smarty_CacheResource_Memcache extends Smarty_CacheResource_KeyValueStore {
 	 */
 	protected function write(array $keys, $expire=0){
 		foreach ($keys as $key => $value) {
-			$key = $this->memcache->getNamespacedKey(self::TAG . $this->getIdKey($key)) . ":" . sha1($key);
+			$key = $this->memcache->getNamespacedKey(self::TAG . $this->memcache->getIdKey($key)) . ":" . sha1($key);
 			$this->memcache->set($key, $value, $expire, 0);
 		}
 		return true;
@@ -82,7 +82,7 @@ class Smarty_CacheResource_Memcache extends Smarty_CacheResource_KeyValueStore {
 	 */
 	protected function delete(array $keys){
 		foreach ($keys as $key) {
-			$key = $this->memcache->getNamespacedKey(self::TAG . $this->getIdKey($key)) . ":" . sha1($key);
+			$key = $this->memcache->getNamespacedKey(self::TAG . $this->memcache->getIdKey($key)) . ":" . sha1($key);
 			$this->memcache->delete($key);
 		}
 		return true;
@@ -97,12 +97,4 @@ class Smarty_CacheResource_Memcache extends Smarty_CacheResource_KeyValueStore {
 		return $this->memcache->invalidateCacheByTag(self::TAG);
 	}
 	
-	protected function getIdKey($key){
-		$idTag = "";
-		if(preg_match("/id[\:\_]([a-z]\d+?)\D/i", $key, $matches)){
-			$idTag = ':' . $matches[1];
-		}
-		
-		return $idTag;
-	}
 }

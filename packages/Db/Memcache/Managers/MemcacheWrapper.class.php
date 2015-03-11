@@ -173,6 +173,15 @@ class MemcacheWrapper{
 		}
 	}
 	
+	public function getIdKey($key){
+		$idTag = "";
+		if(preg_match("/id[\:\_]([a-z]\d+?)\D/i", $key, $matches)){
+			$idTag = ':' . $matches[1];
+		}
+	
+		return $idTag;
+	}
+	
 	protected function getKeyBeginning($tag = null, $isVersionKey = false){
 		$key = ConfigManager::getConfig("Db", "Memcache")->AuxConfig->keyPrefix . ":";
 		
@@ -195,4 +204,6 @@ class MemcacheWrapper{
 		
 		return $key;
 	}
+	
+	
 }

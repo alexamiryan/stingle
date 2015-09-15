@@ -89,6 +89,7 @@ class MinifyWrapper{
 		$options = array(
 				'files' => $sources,
 				'maxAge' => 86400,
+				'encodeOutput' => ConfigManager::getConfig("Output","Minify")->AuxConfig->encodeOutput
 		);
 		
 		Minify::serve('Files', $options);

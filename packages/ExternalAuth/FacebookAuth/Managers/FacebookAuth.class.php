@@ -95,7 +95,8 @@ class FacebookAuth extends DbAccessor implements ExternalAuth
 	 */
 	private function getFBUserFromGraph($accessToken){
 		
-		$graphUrl = "https://graph.facebook.com/me?" . $accessToken;
+		$graphUrl = "https://graph.facebook.com/me?fields=email,name,first_name,last_name,birthday,gender&" 
+				. $accessToken;
 		try{
     		$fbUser = json_decode(file_get_contents($graphUrl));
 	 	}

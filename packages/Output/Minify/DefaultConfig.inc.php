@@ -1,6 +1,8 @@
 <?php
 $defaultConfig = array(	'Objects' => array(	'MinifySmarty' => 'smarty'),
-						'encodeOutput' => true,
-						'encodeMethod' => 'gzip',
+						'AuxConfig' => array(
+								'encodeOutput' => true,
+								'encodeMethod' => 'gzip'
+						)
 		
  );

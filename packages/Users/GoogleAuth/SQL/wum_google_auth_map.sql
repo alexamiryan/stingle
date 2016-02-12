@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.5.29, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 5.6.28, for Linux (x86_64)
 --
--- Host: 192.168.0.1    Database: edesirs_new_admin
+-- Host: localhost    Database: edesirs
 -- ------------------------------------------------------
--- Server version	5.0.95-log
+-- Server version	5.6.28
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,26 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Not dumping tablespaces as no INFORMATION_SCHEMA.FILES table on this server
+-- Table structure for table `wum_google_auth_map`
 --
 
---
--- Table structure for table `wum_yubico_keys_to_users`
---
-
+DROP TABLE IF EXISTS `wum_google_auth_map`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `wum_yubico_keys_to_users` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `yubikey_id` int(10) unsigned NOT NULL,
+CREATE TABLE `wum_google_auth_map` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY  (`id`),
-  KEY `yubikey_id` (`yubikey_id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `wum_yubico_keys_to_users_ibfk_1` FOREIGN KEY (`yubikey_id`) REFERENCES `wum_yubico_keys` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `wum_yubico_keys_to_users_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `wum_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `secret` varchar(32) NOT NULL,
+  `enabled` enum('0','1') NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `user_id_enabled` (`user_id`,`enabled`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `wum_google_auth_map`
+--
+
+LOCK TABLES `wum_google_auth_map` WRITE;
+/*!40000 ALTER TABLE `wum_google_auth_map` DISABLE KEYS */;
+/*!40000 ALTER TABLE `wum_google_auth_map` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -46,4 +50,5 @@ CREATE TABLE IF NOT EXISTS `wum_yubico_keys_to_users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-02-06 17:30:52
+-- Dump completed on 2016-02-12 16:38:21
+

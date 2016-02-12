@@ -1,5 +1,5 @@
 <?php
-class LoaderYubikey extends Loader{
+class LoaderGoogleAuth extends Loader{
 	protected function includes(){
 		stingleInclude ('Managers/GoogleAuthenticator.class.php');
 		stingleInclude ('Managers/GoogleAuthManager.class.php');
@@ -10,22 +10,22 @@ class LoaderYubikey extends Loader{
 	}
 	
 	protected function customInitBeforeObjects(){
-		Tbl::registerTableNames('YubikeyUserAuthorization');
+		Tbl::registerTableNames('GoogleAuthUserAuthorization');
 	}
 	
-	public function hookYubicoAuth($params){
-		$yubikeyUserAuthorization = new YubikeyUserAuthorization($this->config->AuxConfig);
+	public function hookGoogleAuth($params){
+		$googleAuth = new GoogleAuthUserAuthorization($this->config->AuxConfig);
 		
 		if(isset($params['user'])and is_a($params['user'], "User")){
-			$yubikeyOTP = "";
-			if(isset($params['additionalCredentials']) and isset($params['additionalCredentials']['yubikeyOTP'])){
-				$yubikeyOTP = $params['additionalCredentials']['yubikeyOTP'];
+			$gauthOTP = "";
+			if(isset($params['additionalCredentials']) and isset($params['additionalCredentials']['gauthOTP'])){
+				$gauthOTP = $params['additionalCredentials']['gauthOTP'];
 			}
 			
-			$yubikeyUserAuthorization->auth($params['user'], $yubikeyOTP);
+			$googleAuth->auth($params['user'], $gauthOTP);
 		}
 		else{
-			throw new RuntimeException("No user provided for Yubikey Authorization");
+			throw new RuntimeException("No user provided for GoogleAuth");
 		}
 	}
 }

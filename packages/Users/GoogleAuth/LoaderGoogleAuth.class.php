@@ -15,7 +15,6 @@ class LoaderGoogleAuth extends Loader{
 	
 	public function hookGoogleAuth($params){
 		$googleAuth = new GoogleAuthUserAuthorization($this->config->AuxConfig);
-		
 		if(isset($params['user'])and is_a($params['user'], "User")){
 			$gauthOTP = "";
 			if(isset($params['additionalCredentials']) and isset($params['additionalCredentials']['gauthOTP'])){

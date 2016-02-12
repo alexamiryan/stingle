@@ -1,2 +1,2 @@
 <?php
-class GoogleAuthRequiredException extends YubikeyException{}
+class GoogleAuthRequiredException extends GoogleAuthException{}

@@ -25,7 +25,7 @@ class GoogleAuthUserAuthorization extends DbAccessor{
 				throw new GoogleAuthRequiredException("GoogleAuth code is required for authorization");
 			}
 			
-			if(!$this->googleAuth->verifyCode($secret, $this->googleAuthManager->getSecret($user->id), 2)){
+			if(!$this->googleAuth->verifyCode($this->googleAuthManager->getSecret($user->id),$googleAuthOTP, 2)){
 				throw new InvalidGoogleAuthException("GoogleAuth code Validation Failed");
 			}
 

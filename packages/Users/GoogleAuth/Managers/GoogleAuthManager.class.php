@@ -72,26 +72,9 @@ class GoogleAuthManager extends DbAccessor
 	}
 	
 	
-	public function setNewGoogleAuthForUser($userId, $returnQrCodeLink = true){
-		if(!is_numeric($userId) or empty($userId)){
-			throw new GoogleAuthException("User Id is not valid!");
-		}
-	
-		$this->deleteGoogleAuthForUser($userId);
-		
+	public function generateSecret($returnQrCodeLink = true){
 		$gAuth = new GoogleAuthenticator();
-		
-		$newSecret = $gAuth->createSecret();
-		
-		$qb = new QueryBuilder();
-		
-		$qb->insert(Tbl::get('TBL_GOOGLE_AUTH_MAP', 'GoogleAuthUserAuthorization'))
-			->values(array(
-				'user_id' => $userId,
-				'secret' => $newSecret
-		));
-		
-		$this->query->exec($qb->getSQL());
+		$secret = $gAuth->createSecret();
 		
 		if($returnQrCodeLink){
 			return $this->getQrCodeURLFromSecret($newSecret);
@@ -99,6 +82,29 @@ class GoogleAuthManager extends DbAccessor
 		else{
 			return $newSecret;
 		}
+	}
+	
+	public function setNewGoogleAuthForUser($userId, $secret){
+		if(!is_numeric($userId) or empty($userId)){
+			throw new GoogleAuthException("User Id is not valid!");
+		}
+		if(empty($secret)){
+			throw new GoogleAuthException("Secret is empty");
+		}
+	
+		$this->deleteGoogleAuthForUser($userId);
+		
+		$qb = new QueryBuilder();
+		
+		$qb->insert(Tbl::get('TBL_GOOGLE_AUTH_MAP', 'GoogleAuthUserAuthorization'))
+			->values(array(
+				'user_id' => $userId,
+				'secret' => $secret
+		));
+		
+		$this->query->exec($qb->getSQL());
+		
+		return $this->query->affected();
 	}
 	
 	public function deleteGoogleAuthForUser($userId){

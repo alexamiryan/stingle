@@ -14,7 +14,7 @@ class LoaderYubikey extends Loader{
 		Tbl::registerTableNames('YubikeyUserAuthorization');
 	}
 	
-	public function hookYubicoAuth($params){
+	public function hookYubicoAuth(&$params){
 		$yubikeyUserAuthorization = new YubikeyUserAuthorization($this->config->AuxConfig);
 		
 		if(isset($params['user'])and is_a($params['user'], "User")){
@@ -23,7 +23,8 @@ class LoaderYubikey extends Loader{
 				$yubikeyOTP = $params['additionalCredentials']['yubikeyOTP'];
 			}
 			
-			$yubikeyUserAuthorization->auth($params['user'], $yubikeyOTP);
+			$result = $yubikeyUserAuthorization->auth($params['user'], $yubikeyOTP);
+			$params['wasActive'] = $result;
 		}
 		else{
 			throw new RuntimeException("No user provided for Yubikey Authorization");

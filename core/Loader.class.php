@@ -129,8 +129,24 @@ abstract class Loader {
 	 * 
 	 * @return Config
 	 */
-	private function getConfig(){
+	public function getConfig(){
 		return $this->packageManager->getPluginConfig($this->packageName, $this->pluginName);
+	}
+	
+	/**
+	 * Get package name of plugin of this loader
+	 * @return string
+	 */
+	public function getPackageName(){
+		return $this->packageName;
+	}
+	
+	/**
+	 * Get plugin name of this loader
+	 * @return string
+	 */
+	public function getPluginName(){
+		return $this->pluginName;
 	}
 	
 	/**

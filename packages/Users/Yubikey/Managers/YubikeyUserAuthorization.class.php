@@ -45,8 +45,9 @@ class YubikeyUserAuthorization extends DbAccessor{
 					throw new InvalidYubikeyException("Yubikey Validation Failed");
 				}
 			}
-
+			return true;
 		}
+		return false;
 	}
 	
 	/**

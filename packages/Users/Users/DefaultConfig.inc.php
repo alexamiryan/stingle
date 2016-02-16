@@ -6,6 +6,7 @@ $defaultConfig = array(
 												'userPropertiesMap' => array(),
 												'siteSalt' => 'o&&Y@J5l2t]7M}#@zWuCzQXlx0U1NZ:x%`EYH;="6j1q(?_"sDxZ;]|:Fv>3f(K',
 												'pbdkf2IterationCount' => 1024,
+												'secondFactorOrder' => array()
 								),
 
 						'Objects' => array(		'UserManager' => 'userMgr',

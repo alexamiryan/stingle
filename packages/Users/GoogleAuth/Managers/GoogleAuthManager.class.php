@@ -36,6 +36,8 @@ class GoogleAuthManager extends DbAccessor
 		$qb->select($qb->expr()->count(new Field('*'), 'cnt'))
 			->from(Tbl::get('TBL_GOOGLE_AUTH_MAP', 'GoogleAuthUserAuthorization'))
 			->where($qb->expr()->equal(new Field('user_id'), $userId));
+		
+		$this->query->exec($qb->getSQL());
 	
 		$count = $this->query->fetchField('cnt');
 	
@@ -64,6 +66,7 @@ class GoogleAuthManager extends DbAccessor
 	}
 	
 	public function getQrCodeURLFromSecret($secret){
+		$gAuth = new GoogleAuthenticator();
 		return $gAuth->getQRCodeGoogleUrl(ConfigManager::getConfig("Users", "GoogleAuth")->AuxConfig->siteName, $secret);
 	}
 	
@@ -77,10 +80,10 @@ class GoogleAuthManager extends DbAccessor
 		$secret = $gAuth->createSecret();
 		
 		if($returnQrCodeLink){
-			return $this->getQrCodeURLFromSecret($newSecret);
+			return $this->getQrCodeURLFromSecret($secret);
 		}
 		else{
-			return $newSecret;
+			return $secret;
 		}
 	}
 	

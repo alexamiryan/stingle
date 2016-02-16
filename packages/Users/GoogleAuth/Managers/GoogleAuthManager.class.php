@@ -75,16 +75,16 @@ class GoogleAuthManager extends DbAccessor
 	}
 	
 	
-	public function generateSecret($returnQrCodeLink = true){
+	public function generateSecret(){
 		$gAuth = new GoogleAuthenticator();
 		$secret = $gAuth->createSecret();
 		
-		if($returnQrCodeLink){
-			return $this->getQrCodeURLFromSecret($secret);
-		}
-		else{
-			return $secret;
-		}
+		return $secret;
+	}
+	
+	public function verifyCode($secret, $code){
+		$gAuth = new GoogleAuthenticator();
+		return $gAuth->verifyCode($secret, $code);
 	}
 	
 	public function setNewGoogleAuthForUser($userId, $secret){

@@ -21,8 +21,7 @@ class LoaderGoogleAuth extends Loader{
 				$gauthOTP = $params['additionalCredentials']['gauthOTP'];
 			}
 			
-			$result = $googleAuth->auth($params['user'], $gauthOTP);
-			$params['wasActive'] = $result;
+			return $googleAuth->auth($params['user'], $gauthOTP);
 		}
 		else{
 			throw new RuntimeException("No user provided for GoogleAuth");

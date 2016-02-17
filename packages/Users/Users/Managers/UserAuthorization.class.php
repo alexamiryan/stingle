@@ -104,8 +104,8 @@ class UserAuthorization extends DbAccessor{
 			
 			sort($orderedHooks);
 			foreach ($orderedHooks as $hook){
-				HookManager::executeHook($hook, $hookParams);
-				if(isset($hookParams['wasActive']) and $hookParams['wasActive'] != false){
+				$wasActive = HookManager::executeHook($hook, $hookParams);
+				if(isset($wasActive) and $wasActive != false){
 					break;
 				}
 			}

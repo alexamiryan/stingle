@@ -23,8 +23,7 @@ class LoaderYubikey extends Loader{
 				$yubikeyOTP = $params['additionalCredentials']['yubikeyOTP'];
 			}
 			
-			$result = $yubikeyUserAuthorization->auth($params['user'], $yubikeyOTP);
-			$params['wasActive'] = $result;
+			return $yubikeyUserAuthorization->auth($params['user'], $yubikeyOTP);
 		}
 		else{
 			throw new RuntimeException("No user provided for Yubikey Authorization");

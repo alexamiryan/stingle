@@ -1,54 +1,60 @@
--- MySQL dump 10.13  Distrib 5.6.28, for Linux (x86_64)
+-- phpMyAdmin SQL Dump
+-- version 4.4.15.4
+-- http://www.phpmyadmin.net
 --
--- Host: localhost    Database: edesirs
--- ------------------------------------------------------
--- Server version	5.6.28
+-- Host: localhost
+-- Generation Time: Feb 17, 2016 at 03:09 PM
+-- Server version: 5.6.28
+-- PHP Version: 5.6.17
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+--
+-- Database: `edesirs`
+--
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `wum_google_auth_map`
 --
 
 DROP TABLE IF EXISTS `wum_google_auth_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `wum_google_auth_map` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `wum_google_auth_map` (
+  `id` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
   `secret` varchar(32) NOT NULL,
-  `enabled` enum('0','1') NOT NULL DEFAULT '1',
-  PRIMARY KEY (`id`),
-  KEY `user_id_enabled` (`user_id`,`enabled`)
+  `enabled` enum('0','1') NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `wum_google_auth_map`
+-- Indexes for dumped tables
 --
 
-LOCK TABLES `wum_google_auth_map` WRITE;
-/*!40000 ALTER TABLE `wum_google_auth_map` DISABLE KEYS */;
-/*!40000 ALTER TABLE `wum_google_auth_map` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+--
+-- Indexes for table `wum_google_auth_map`
+--
+ALTER TABLE `wum_google_auth_map`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id_enabled` (`user_id`,`enabled`);
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+--
+-- AUTO_INCREMENT for dumped tables
+--
 
--- Dump completed on 2016-02-12 16:38:21
+--
+-- AUTO_INCREMENT for table `wum_google_auth_map`
+--
+ALTER TABLE `wum_google_auth_map`
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `wum_google_auth_map`
+--
+ALTER TABLE `wum_google_auth_map`
+  ADD CONSTRAINT `wum_google_auth_map_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `wum_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 

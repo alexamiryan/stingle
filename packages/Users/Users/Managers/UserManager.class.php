@@ -220,7 +220,7 @@ class UserManager extends DbAccessor{
 			->set(new Field('enabled'), $user->enabled)
 			->set(new Field('email'), $user->email)
 			->set(new Field('email_confirmed'), $user->emailConfirmed)
-			->set(new Field('last_login_date'), $user->lastLoginDate)
+			->set(new Field('last_login_date'), (!empty($user->lastLoginDate) ? $user->lastLoginDate : new Literal('NULL')))
 			->set(new Field('last_login_ip'), $user->lastLoginIP)
 			->where($qb->expr()->equal(new Field('id'), $user->id));
 		
@@ -285,7 +285,12 @@ class UserManager extends DbAccessor{
 			$qb->update(Tbl::get('TBL_USERS_PROPERTIES'));
 			
 			foreach($this->config->userPropertiesMap as $objectKey => $dbKey){
-				$qb->set(new Field($dbKey), $properties->$objectKey);
+				if($properties->$objectKey === '' or $properties->$objectKey === null){
+					$qb->set(new Field($dbKey), new Literal("NULL"));
+				}
+				else{
+					$qb->set(new Field($dbKey), $properties->$objectKey);
+				}
 			}
 			
 			$qb->where($qb->expr()->equal(new Field('user_id'), $properties->userId));

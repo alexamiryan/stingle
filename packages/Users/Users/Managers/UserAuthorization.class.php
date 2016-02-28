@@ -76,7 +76,40 @@ class UserAuthorization extends DbAccessor{
 		$this->checkIfLoginIsAllowed($usr);
 		
 		$hookParams = array("user" => $usr, "additionalCredentials" => $additionalCredentials);
-		HookManager::callHook("OnUserLogin", $hookParams);
+		
+		$secondFactorOrder = $this->config->secondFactorOrder;
+		
+		$orderedHooks = array();
+		
+		if(HookManager::isAnyHooksRegistered('OnUserLogin')){
+			$hooks = HookManager::getRegisteredHooks('OnUserLogin');
+			foreach($hooks as $hook){
+				$isSecondAuthHook = false;
+				$config = $hook->getObject()->getConfig();
+				if(isset($config->AuxConfig) and isset($config->AuxConfig->secondFactorAuthName)){
+					$authName = $config->AuxConfig->secondFactorAuthName;
+					
+					$order = array_search($authName, $secondFactorOrder->toArray());
+					
+					if($order !== false){
+						$orderedHooks[$order] = $hook;
+						$isSecondAuthHook = true;
+					}
+				}
+				
+				if(!$isSecondAuthHook){
+					HookManager::executeHook($hook, $hookParams);
+				}
+			}
+			
+			sort($orderedHooks);
+			foreach ($orderedHooks as $hook){
+				$wasActive = HookManager::executeHook($hook, $hookParams);
+				if(isset($wasActive) and $wasActive != false){
+					break;
+				}
+			}
+		}
 		
 		$this->saveUserIdInSession($usr);
 		$this->updateUserLastLoginDateAndIP($usr);

@@ -68,10 +68,10 @@ class HookManager{
 		$hookObj = $hook->getObject();
 		
 		if($hookObj !== null){
-			$hookObj->$hookMethod($arguments);
+			return $hookObj->$hookMethod($arguments);
 		}
 		else{
-			$hookMethod($arguments);
+			return $hookMethod($arguments);
 		}
 	}
 	

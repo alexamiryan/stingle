@@ -50,6 +50,12 @@ class ExternalUser{
 	public $sex = null;
 	
 	/**
+	 * User profile picture's url
+	 * @var String
+	 */
+	public $picture = null;
+	
+	/**
 	 * Other fields that are not 
 	 * part of default fields of 
 	 * ExternalUser Object

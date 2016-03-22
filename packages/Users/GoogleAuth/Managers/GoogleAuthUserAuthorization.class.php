@@ -19,6 +19,8 @@ class GoogleAuthUserAuthorization extends DbAccessor{
 	
 	
 	public function auth(User $user, $googleAuthOTP = null){
+		$hookParams = array('user'=>$user, 'googleAuthOTP'=>$googleAuthOTP);
+		HookManager::callHook("BeforeGoogleAuth", $hookParams);
 		
 		if($this->googleAuthManager->isEnabled($user->id)){
 			if(empty($googleAuthOTP)){
@@ -28,7 +30,13 @@ class GoogleAuthUserAuthorization extends DbAccessor{
 			if(!$this->googleAuth->verifyCode($this->googleAuthManager->getSecret($user->id),$googleAuthOTP, 2)){
 				throw new InvalidGoogleAuthException("GoogleAuth code Validation Failed");
 			}
-
+			
+			HookManager::callHook("OnSuccessGoogleAuth", $hookParams);
+			return true;
 		}
+		
+		HookManager::callHook("OnNotActiveGoogleAuth", $hookParams);
+		
+		return false;
 	}
 }

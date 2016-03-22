@@ -1,5 +1,7 @@
 <?php
 $defaultConfig = array(	
-						'AuxConfig' => array(	'siteName' => 'GoogleAuth'	),						
+						'AuxConfig' => array(
+								'secondFactorAuthName' => 'googleAuth',	
+								'siteName' => 'GoogleAuth'	),						
 						'Hooks' => array(	'OnUserLogin' => 'GoogleAuth'  )
 					);

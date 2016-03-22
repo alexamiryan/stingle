@@ -13,7 +13,7 @@ class LoaderGoogleAuth extends Loader{
 		Tbl::registerTableNames('GoogleAuthUserAuthorization');
 	}
 	
-	public function hookGoogleAuth($params){
+	public function hookGoogleAuth(&$params){
 		$googleAuth = new GoogleAuthUserAuthorization($this->config->AuxConfig);
 		if(isset($params['user'])and is_a($params['user'], "User")){
 			$gauthOTP = "";
@@ -21,7 +21,7 @@ class LoaderGoogleAuth extends Loader{
 				$gauthOTP = $params['additionalCredentials']['gauthOTP'];
 			}
 			
-			$googleAuth->auth($params['user'], $gauthOTP);
+			return $googleAuth->auth($params['user'], $gauthOTP);
 		}
 		else{
 			throw new RuntimeException("No user provided for GoogleAuth");

@@ -5,6 +5,14 @@
  */
 class GoogleAuthManager extends DbAccessor
 {
+	
+	protected $gAuth;
+	
+	public function __construct($dbInstanceKey = null){
+		parent::__construct($dbInstanceKey);
+		
+		$this->gAuth = new GoogleAuthenticator();
+	}
 
 	public function isEnabled($userId){
 		if(!is_numeric($userId) or empty($userId)){
@@ -65,26 +73,31 @@ class GoogleAuthManager extends DbAccessor
 		return false;
 	}
 	
-	public function getQrCodeURLFromSecret($secret){
-		$gAuth = new GoogleAuthenticator();
-		return $gAuth->getQRCodeGoogleUrl(ConfigManager::getConfig("Users", "GoogleAuth")->AuxConfig->siteName, $secret);
+	public function getQrCodeURLFromSecret($secret, $login = null){
+		$siteName = ConfigManager::getConfig("Users", "GoogleAuth")->AuxConfig->siteName;
+		if(!empty($login)){
+			$siteName .= ": $login";
+		}
+		return $this->gAuth->getQRCodeGoogleUrl($siteName, $secret);
 	}
 	
 	public function getQrCodeURLForUser($userId){
-		return $this->getQrCodeURLFromSecret($this->getSecret($userId));
+		$um = Reg::get(ConfigManager::getConfig("Users", "Users")->Objects->UserManager);
+		$user = $um->getUserById($userId, UserManager::INIT_NONE);
+		
+		return $this->getQrCodeURLFromSecret($this->getSecret($userId), $user->login);
 	}
 	
 	
 	public function generateSecret(){
-		$gAuth = new GoogleAuthenticator();
-		$secret = $gAuth->createSecret();
+		$secret = $this->gAuth->createSecret();
 		
 		return $secret;
 	}
 	
 	public function verifyCode($secret, $code){
-		$gAuth = new GoogleAuthenticator();
-		return $gAuth->verifyCode($secret, $code);
+		
+		return $this->gAuth->verifyCode($secret, $code);
 	}
 	
 	public function setNewGoogleAuthForUser($userId, $secret){

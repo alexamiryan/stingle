@@ -42,6 +42,11 @@ class ProfileKeyFilter extends MergeableFilter{
 		return $this;
 	}
 	
-	
+	public function setOrderAsc(){
+		$this->setOrder(new Field('sort_id', $this->primaryTableAlias), MySqlDatabase::ORDER_ASC);
+	}
+	public function setOrderDesc(){
+		$this->setOrder(new Field('sort_id', $this->primaryTableAlias), MySqlDatabase::ORDER_DESC);
+	}
 	
 }

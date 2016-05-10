@@ -1,5 +1,5 @@
 <?php
-class UserProfile extends Profile{
+class UserProfile extends ProfileDeprecated{
 	
 	const TBL_PROFILE_SAVE = "users_profile";
 	

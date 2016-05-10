@@ -1,6 +1,6 @@
 <?php
 
-class Profile extends DbAccessor{
+class ProfileDeprecated extends DbAccessor{
 
 	/**
 	 * Identifier for profile questions

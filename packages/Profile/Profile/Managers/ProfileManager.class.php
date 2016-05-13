@@ -26,11 +26,7 @@ class ProfileManager extends DbAccessor{
 	}
 	
 	
-	public function getKeys(){
-		
-	}
-	
-	public function getUserProfile($userId, $initObjects = self::INIT_ALL, $cacheMinutes = 0, $cacheTag = null){
+	public function getUserProfile($userId, $cacheMinutes = 0, $cacheTag = null){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");
 		}
@@ -42,19 +38,36 @@ class ProfileManager extends DbAccessor{
 		$sql = MySqlDbManager::getQueryObject();
 		$sql->exec($sqlQuery, $cacheMinutes, $cacheTag);
 	
-		$userProfile = new UserProfile();
-		$userProfile->userId = $userId;
+		$keyValuePairs = array();
 		
 		if($sql->countRecords()){
 			while(($profileDbRow = $sql->fetchRecord()) != false){
-				array_push($userProfile->keysValuePairs, $this->getUserProfileFromData($profileDbRow, $initObjects, $cacheMinutes, $cacheTag));
+				$keyValue = null;
+				if(isset($keyValuePairs[$profileDbRow['key_id']])){
+					$keyValue = $keyValuePairs[$profileDbRow['key_id']];
+				}
+				else{
+					$keyValue = new ProfileKeyValuePair();
+					$keyValue->key = $this->getKeyById($profileDbRow['key_id']);
+				}
+				
+				
+				if(!empty($profileDbRow['value_id'])){
+					array_push($keyValue->values, $this->getValueById($profileDbRow['value_id']));
+				}
+				
+				if(!empty($profileDbRow['value_cust'])){
+					$keyValue->valueCust = $profileDbRow['value_cust'];
+				}
+
+				$keyValuePairs[$profileDbRow['key_id']] = $keyValue;
 			}
 		}
 	
-		return $userProfile;
+		return $keyValuePairs;
 	}
 	
-	public function getKeys(ProfileKeyFilter $filter = null, $cacheMinutes = 0, $cacheTag = null){
+	public function getKeys(ProfileKeyFilter $filter = null, $cacheMinutes = MemcacheWrapper::MEMCACHE_UNLIMITED, $cacheTag = null){
 		if(empty($filter)){
 			$filter = new ProfileKeyFilter();
 		}
@@ -69,7 +82,7 @@ class ProfileManager extends DbAccessor{
 			while(($keyDbRow = $sql->fetchRecord()) != false){
 				$key = new ProfileKey();
 				$key->id = $keyDbRow['id'];
-				$key->key = $keyDbRow['key'];
+				$key->name = $keyDbRow['name'];
 				$key->type = $keyDbRow['type'];
 				$key->sortId = $keyDbRow['sort_id'];
 				$key->isEnabled = $keyDbRow['is_enabled'];
@@ -80,11 +93,11 @@ class ProfileManager extends DbAccessor{
 		return $keys;
 	}
 	
-	public function getKeyById($keyId){
+	public function getKeyById($keyId, $cacheMinutes = MemcacheWrapper::MEMCACHE_UNLIMITED, $cacheTag = null){
 		$filter = new ProfileKeyFilter();
 		$filter->setKeyId($keyId);
 		
-		$keys = $this->getKeys($filter);
+		$keys = $this->getKeys($filter, $cacheMinutes, $cacheTag);
 		
 		if(count($keys) == 1){
 			return $keys[0];
@@ -92,7 +105,7 @@ class ProfileManager extends DbAccessor{
 		return false;
 	}
 	
-	public function getValues(ProfileValueFilter $filter = null, $cacheMinutes = 0, $cacheTag = null){
+	public function getValues(ProfileValueFilter $filter = null, $cacheMinutes = MemcacheWrapper::MEMCACHE_UNLIMITED, $cacheTag = null){
 		if(empty($filter)){
 			$filter = new ProfileValueFilter();
 		}
@@ -105,11 +118,11 @@ class ProfileManager extends DbAccessor{
 	
 		if($sql->countRecords()){
 			while(($valueDbRow = $sql->fetchRecord()) != false){
-				$value = new ProfileKey();
+				$value = new ProfileValue();
 				$value->id = $valueDbRow['id'];
 				$value->keyId = $valueDbRow['key_id'];
 				$value->childKeyId = $valueDbRow['child_key_id'];
-				$value->value = $valueDbRow['value'];
+				$value->name = $valueDbRow['name'];
 				$value->sortId = $valueDbRow['sort_id'];
 				array_push($values, $value);
 			}
@@ -118,11 +131,11 @@ class ProfileManager extends DbAccessor{
 		return $values;
 	}
 	
-	public function getValueById($valueId){
+	public function getValueById($valueId, $cacheMinutes = MemcacheWrapper::MEMCACHE_UNLIMITED, $cacheTag = null){
 		$filter = new ProfileValueFilter();
 		$filter->setValueId($valueId);
 	
-		$values = $this->getValues($filter);
+		$values = $this->getValues($filter, $cacheMinutes, $cacheTag);
 	
 		if(count($values) == 1){
 			return $values[0];
@@ -130,23 +143,8 @@ class ProfileManager extends DbAccessor{
 		return false;
 	}
 	
-	protected function getUserProfileFromData($data, $initObjects = self::INIT_ALL, $cacheMinutes = 0, $cacheTag = null){
-		$keyValue = new ProfileKeyValuePair();
+	protected function getKeyValuePairFromSaveDBRow($data, $initObjects = self::INIT_ALL, $cacheMinutes = 0, $cacheTag = null){
 		
-		$keyValue->keyId = $data['key_id'];
-		
-		if(($initObjects & self::INIT_KEYS) != 0){
-			$keyValue->key = $this->getKeyById($data['key_id']);
-		}
-		
-		$keyValue->valueId = $data['value_id'];
-		
-		if(!empty($data['value_id']) and ($initObjects & self::INIT_VALUES) != 0){
-			$keyValue->value = $this->getValueById($data['value_id']);
-		}
-		elseif(!empty($data['value_cust'])){
-			$keyValue->valueCust = $data['value_cust'];
-		}
 	
 		return $keyValue;
 	}

@@ -1,20 +1,12 @@
 <?php
-class UserProfileFilter extends Filter{
+class UserProfileFilter extends MergeableFilter{
 	
 	public function __construct(){
-		parent::__construct();
+		parent::__construct(Tbl::get('TBL_PROFILE_SAVE', 'ProfileManager'), "prof_save", "id");
 		
-		/*$this->qb->select(new Field("*", $this->primaryTableAlias))
-			->from($this->primaryTable, $this->primaryTableAlias)
-			->leftJoin(Tbl::get('TBL_PROFILE_KEYS', 'ProfileManager'),	'prof_keys',
-					$this->qb->expr()->equal(new Field('key_id', '$this->primaryTableAlias'), new Field('id', 'prof_keys')))
-			->leftJoin(Tbl::get('TBL_PROFILE_VALUES', 'ProfileManager'),	'prof_vals',
-					$this->qb->expr()->equal(new Field('value_id', '$this->primaryTableAlias'), new Field('id', 'prof_vals')))
-			->setOrder(new Field('sort_id', "prof_keys"), MySqlDatabase::ORDER_ASC)
-			->setOrder(new Field('sort_id', "prof_vals"), MySqlDatabase::ORDER_ASC);*/
 		
-		$this->qb->select(new Field("*", "prof_save"))
-			->from($this->primaryTable, "prof_save");
+		$this->qb->select(new Field("*", $this->primaryTableAlias))
+			->from($this->primaryTable, $this->primaryTableAlias);
 		
 	}
 	

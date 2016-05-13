@@ -2,10 +2,8 @@
 class ProfileKeyValuePair{
 	
 	public $id;
-	public $keyId;
 	public $key = null;
-	public $valueId;
-	public $value = null;
+	public $values = array();
 	public $valueCust = null;
 	public $children = array(); 
 	

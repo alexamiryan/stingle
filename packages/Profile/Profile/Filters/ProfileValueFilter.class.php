@@ -6,7 +6,7 @@ class ProfileValueFilter extends MergeableFilter{
 		
 		$this->qb->select(new Field("*", $this->primaryTableAlias))
 			->from($this->primaryTable, $this->primaryTableAlias)
-			->setOrder(new Field('sort_id', $this->primaryTableAlias), MySqlDatabase::ORDER_ASC);
+			->orderBy(new Field('sort_id', $this->primaryTableAlias), MySqlDatabase::ORDER_ASC);
 	}
 	
 	public function setValueId($value){
@@ -43,9 +43,9 @@ class ProfileValueFilter extends MergeableFilter{
 	}
 	
 	public function setOrderAsc(){
-		$this->setOrder(new Field('sort_id', $this->primaryTableAlias), MySqlDatabase::ORDER_ASC);
+		$this->qb->orderBy(new Field('sort_id', $this->primaryTableAlias), MySqlDatabase::ORDER_ASC);
 	}
 	public function setOrderDesc(){
-		$this->setOrder(new Field('sort_id', $this->primaryTableAlias), MySqlDatabase::ORDER_DESC);
+		$this->qb->orderBy(new Field('sort_id', $this->primaryTableAlias), MySqlDatabase::ORDER_DESC);
 	}
 }

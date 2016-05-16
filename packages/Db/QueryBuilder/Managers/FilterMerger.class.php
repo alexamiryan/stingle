@@ -35,7 +35,9 @@ class FilterMerger{
 			$this->mainFilter->getQb()->add("join", $join, true);
 		}
 		
-		$this->mainFilter->getQb()->andWhere($parts['where']);
+		if(!empty($parts['where'])){
+			$this->mainFilter->getQb()->andWhere($parts['where']);
+		}
 	}
 	
 }

@@ -7,6 +7,7 @@ class ProfileManager extends DbAccessor{
 	
 	const KEY_TYPE_SINGLE 		= "single";
 	const KEY_TYPE_MULTI 		= "multi";
+	const KEY_TYPE_RANGE 		= "range";
 	const KEY_TYPE_CUSTOM 		= "custom";
 	
 	const KEY_STATUS_ENABLED 	= "1";
@@ -26,7 +27,38 @@ class ProfileManager extends DbAccessor{
 	}
 	
 	
-	public function getUserProfile($userId, $cacheMinutes = 0, $cacheTag = null){
+	public function getProfile($userId = null, $cacheMinutes = 0, $cacheTag = null){
+		$profile = new Profile();
+		
+		$userSaves = null;
+		if(!empty($userId) and is_numeric($userId)){
+			$profile->saves = $this->getUserProfileSave($userId);
+		}
+		
+		$keysFilter = new ProfileKeyFilter();
+		
+		$keyValuePairs = array();
+		
+		$keys = $this->getKeys($keysFilter, $cacheMinutes, $cacheTag);
+		foreach ($keys as $key){
+			$keyValue = new ProfileKeyValuePair();
+			
+			$keyValue->key = $key;
+			
+			$valuesFilter = new ProfileValueFilter();
+			$valuesFilter->setKeyId($key->id);
+			
+			$keyValue->values = $this->getValues($valuesFilter);
+			
+			$keyValuePairs[$key->id] = $keyValue;
+		}
+		
+		$profile->keyValues = $keyValuePairs;
+		
+		return $profile;
+	}
+	
+	public function getUserProfileSave($userId, $cacheMinutes = 0, $cacheTag = null){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");
 		}
@@ -38,33 +70,51 @@ class ProfileManager extends DbAccessor{
 		$sql = MySqlDbManager::getQueryObject();
 		$sql->exec($sqlQuery, $cacheMinutes, $cacheTag);
 	
-		$keyValuePairs = array();
+		$userSaves = array();
 		
 		if($sql->countRecords()){
 			while(($profileDbRow = $sql->fetchRecord()) != false){
-				$keyValue = null;
-				if(isset($keyValuePairs[$profileDbRow['key_id']])){
-					$keyValue = $keyValuePairs[$profileDbRow['key_id']];
+				$userSave = null;
+				if(isset($userSaves[$profileDbRow['key_id']])){
+					$userSave = $userSaves[$profileDbRow['key_id']];
 				}
 				else{
-					$keyValue = new ProfileKeyValuePair();
-					$keyValue->key = $this->getKeyById($profileDbRow['key_id']);
+					$userSave = new ProfileUserSave();
+					$userSave->keyId = $profileDbRow['key_id'];
 				}
 				
 				
 				if(!empty($profileDbRow['value_id'])){
-					array_push($keyValue->values, $this->getValueById($profileDbRow['value_id']));
+					array_push($userSave->valueIds, $profileDbRow['value_id']);
 				}
 				
 				if(!empty($profileDbRow['value_cust'])){
-					$keyValue->valueCust = $profileDbRow['value_cust'];
+					$userSave->custValue = $profileDbRow['value_cust'];
 				}
 
-				$keyValuePairs[$profileDbRow['key_id']] = $keyValue;
+				$userSaves[$profileDbRow['key_id']] = $userSave;
 			}
 		}
 	
-		return $keyValuePairs;
+		return $userSaves;
+	}
+	
+	public function getSavedUserProfile($userId){
+		if(empty($userId) or !is_numeric($userId)){
+			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");
+		}
+		
+		$filter = new UserProfileFilter();
+		$filter->setUserId($userId);
+		
+		$sqlQuery = $filter->getSQL();
+		$sql = MySqlDbManager::getQueryObject();
+		$sql->exec($sqlQuery, $cacheMinutes, $cacheTag);
+		
+		if($sql->countRecords()){
+			return $sql->fetchRecords();
+		}
+		return false;
 	}
 	
 	public function getKeys(ProfileKeyFilter $filter = null, $cacheMinutes = MemcacheWrapper::MEMCACHE_UNLIMITED, $cacheTag = null){
@@ -84,9 +134,11 @@ class ProfileManager extends DbAccessor{
 				$key->id = $keyDbRow['id'];
 				$key->name = $keyDbRow['name'];
 				$key->type = $keyDbRow['type'];
+				$key->rangeMin = $keyDbRow['range_min'];
+				$key->rangeMax = $keyDbRow['range_max'];
 				$key->sortId = $keyDbRow['sort_id'];
 				$key->isEnabled = $keyDbRow['is_enabled'];
-				array_push($keys, $key);
+				$keys[$keyDbRow['id']] = $key;
 			}
 		}
 		
@@ -124,7 +176,7 @@ class ProfileManager extends DbAccessor{
 				$value->childKeyId = $valueDbRow['child_key_id'];
 				$value->name = $valueDbRow['name'];
 				$value->sortId = $valueDbRow['sort_id'];
-				array_push($values, $value);
+				$values[$valueDbRow['id']] = $value;
 			}
 		}
 	

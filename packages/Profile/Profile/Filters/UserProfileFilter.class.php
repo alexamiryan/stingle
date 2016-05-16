@@ -2,7 +2,7 @@
 class UserProfileFilter extends MergeableFilter{
 	
 	public function __construct(){
-		parent::__construct(Tbl::get('TBL_PROFILE_SAVE', 'ProfileManager'), "prof_save", "id");
+		parent::__construct(Tbl::get('TBL_PROFILE_SAVE', 'ProfileManager'), "prof_save", "value_id");
 		
 		
 		$this->qb->select(new Field("*", $this->primaryTableAlias))

@@ -152,7 +152,8 @@ class ProfileManager extends DbAccessor{
 		$keys = $this->getKeys($filter, $cacheMinutes, $cacheTag);
 		
 		if(count($keys) == 1){
-			return $keys[0];
+			$slice = array_slice($keys, 0, 1);
+			return $slice[0];
 		}
 		return false;
 	}
@@ -193,6 +194,61 @@ class ProfileManager extends DbAccessor{
 			return $values[0];
 		}
 		return false;
+	}
+	
+	public function editProfile($userId, $profileSaves = array()){
+		if(empty($userId) or !is_numeric($userId)){
+			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");
+		}
+		
+			
+		$this->deleteProfile($userId);
+		
+		if(count($profileSaves)){
+		
+			foreach($profileSaves as $save){
+				if(is_a($save, "ProfileUserSave")){
+					if($save->custValue === null){
+						foreach($save->valueIds as $valueId){
+							$qb = new QueryBuilder();
+							
+							$qb->insert(Tbl::get('TBL_PROFILE_SAVE'))
+								->values(array(
+										'user_id' => $userId,
+										'key_id' => $save->keyId,
+										'value_id' => $valueId
+							));
+							$this->query->exec($qb->getSQL());
+						}
+					}
+					else{
+						$qb = new QueryBuilder();
+							
+						$qb->insert(Tbl::get('TBL_PROFILE_SAVE'))
+							->values(array(
+								'user_id' => $userId,
+								'key_id' => $save->keyId,
+								'value_cust' => $save->custValue
+						));
+						$this->query->exec($qb->getSQL());
+					}
+					
+				}
+			}
+		}
+	}
+	
+	public function deleteProfile($userId){
+		if(empty($userId) or !is_numeric($userId)){
+			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");
+		}
+		
+		$qb = new QueryBuilder();
+		
+		$qb->delete(Tbl::get('TBL_PROFILE_SAVE'))
+			->where($qb->expr()->equal(new Field('user_id'), $userId));
+		
+		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
 	protected function getKeyValuePairFromSaveDBRow($data, $initObjects = self::INIT_ALL, $cacheMinutes = 0, $cacheTag = null){

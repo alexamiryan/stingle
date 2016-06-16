@@ -33,6 +33,25 @@ class ProfileKeyFilter extends MergeableFilter{
 		$this->qb->andWhere($this->qb->expr()->equal(new Field('type', $this->primaryTableAlias), $value));
 		return $this;
 	}
+	
+	public function setGroup($value){
+		if(empty($value)){
+			throw new InvalidIntegerArgumentException("\$value have to be not empty string");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('grp', $this->primaryTableAlias), $value));
+		return $this;
+	}
+	
+	public function setGroups($value){
+		if(empty($value) or !is_array($value)){
+			throw new InvalidIntegerArgumentException("\$value have to be not empty array");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field('grp', $this->primaryTableAlias), $value));
+		return $this;
+	}
+	
 	public function setIsEnabled($value){
 		if(!in_array($value, ProfileManager::getConstsArray("KEY_STATUS"))){
 			throw new InvalidIntegerArgumentException("Invalid \$value given");

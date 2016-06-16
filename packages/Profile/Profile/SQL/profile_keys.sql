@@ -28,9 +28,11 @@ CREATE TABLE `profile_keys` (
   `type` enum('single','multi','range','custom') NOT NULL,
   `range_min` int(11) DEFAULT NULL,
   `range_max` int(11) DEFAULT NULL,
+  `grp` varchar(32) DEFAULT NULL,
   `sort_id` tinyint(4) NOT NULL DEFAULT '0',
   `is_enabled` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
+  KEY `grp` (`grp`),
   KEY `sort_id` (`sort_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

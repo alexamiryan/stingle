@@ -15,4 +15,8 @@ class LoaderProfile extends Loader{
 	protected function customInitBeforeObjects(){
 		Tbl::registerTableNames('ProfileManager');
 	}
+	
+	protected function loadProfileManager(){
+		$this->register(new ProfileManager());
+	}
 }

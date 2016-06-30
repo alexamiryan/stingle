@@ -99,7 +99,7 @@ class MailSender
 		}
 	
 		$pub_lines=explode("\n",$dkimConfig->publicKey) ;
-		$txt_record="{$dkimConfig->selector}._domainkey\tIN\tTXT\t\"v=DKIM1\\; k=rsa\\; g=*\\; s=email\; h=sha1\\; t=s\\; p=" ;
+		$txt_record="{$dkimConfig->selector}._domainkey\tIN\tTXT\t\"v=DKIM1\\; k=rsa\\; g=*\\; s=email\; h=sha256\\; t=s\\; p=" ;
 		foreach($pub_lines as $pub_line){
 			if (strpos($pub_line,'-----') !== 0){
 				$txt_record.=$pub_line ;
@@ -123,7 +123,7 @@ class MailSender
 		$DKIM_d = $dkimConfig->domain;
 		$DKIM_i = $dkimConfig->identity;
 		
-		$DKIM_a='rsa-sha1'; // Signature & hash algorithms
+		$DKIM_a='rsa-sha256'; // Signature & hash algorithms
 		$DKIM_c='relaxed/simple'; // Canonicalization of header/body
 		$DKIM_q='dns/txt'; // Query method
 		$DKIM_t=time() ; // Signature Timestamp = number of seconds since 00:00:00 on January 1, 1970 in the UTC time zone
@@ -136,7 +136,7 @@ class MailSender
 		$subject = str_replace('|','=7C', $this->DKIMQuotedPrintable($subject_header)) ; // Copied header fields (dkim-quoted-printable
 		$body = $this->simpleBodyCanonicalization($body);
 		$DKIM_l=strlen($body) ; // Length of body (in case MTA adds something afterwards)
-		$DKIM_bh=base64_encode(pack("H*", sha1($body))) ; // Base64 of packed binary SHA-1 hash of body
+		$DKIM_bh=base64_encode(pack("H*", hash('sha256', $body))) ; // Base64 of packed binary SHA-1 hash of body
 		$i_part=($DKIM_i == '')? '' : " i=$DKIM_i;" ;
 		$b='' ; // Base64 encoded signature
 		$dkim="DKIM-Signature: v=1; a=$DKIM_a; q=$DKIM_q; l=$DKIM_l; s=$DKIM_s;\r\n".
@@ -167,7 +167,7 @@ class MailSender
 	public function addDomainKey(Mail $mail, DKIMConfig $dkimConfig){
 		
 		// Creating DomainKey-Signature
-		$domainkeys = 	"DomainKey-Signature: " . "a=rsa-sha1; " . // The algorithm used to generate the signature "rsa-sha1"
+		$domainkeys = 	"DomainKey-Signature: " . "a=rsa-sha256; " . // The algorithm used to generate the signature "rsa-sha256"
 						"c=nofws; " . // Canonicalization Alghoritm "nofws"
 						"d={$dkimConfig->domain}; " . // The domain of the signing entity
 						"s={$dkimConfig->selector}; ";
@@ -222,7 +222,7 @@ class MailSender
     	} else {
       		$privKey = $dkimConfig->privateKey;
     	}
-		if(openssl_sign($s, $signature, $privKey)){
+		if(openssl_sign($s, $signature, $privKey, OPENSSL_ALGO_SHA256)){
 			return base64_encode($signature);
 		}
 		else{

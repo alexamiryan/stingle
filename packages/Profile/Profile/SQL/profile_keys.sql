@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.5.29, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 5.6.29, for Linux (x86_64)
 --
--- Host: 192.168.0.1    Database: edesirs_new_admin
+-- Host: localhost    Database: edesirs
 -- ------------------------------------------------------
--- Server version	5.0.95-log
+-- Server version	5.6.29
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,25 +16,24 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Not dumping tablespaces as no INFORMATION_SCHEMA.FILES table on this server
+-- Table structure for table `profile_keys`
 --
 
---
--- Table structure for table `users_profile`
---
-
+DROP TABLE IF EXISTS `profile_keys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `users_profile` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `user_id` int(10) unsigned NOT NULL,
-  `profile_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY  (`id`),
-  UNIQUE KEY `user_id_2` (`user_id`,`profile_id`),
-  KEY `user_id` (`user_id`),
-  KEY `profile_id` (`profile_id`),
-  CONSTRAINT `users_profile_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `wum_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `users_profile_ibfk_2` FOREIGN KEY (`profile_id`) REFERENCES `users_profile_keys` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE `profile_keys` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `type` enum('single','multi','range','custom') NOT NULL,
+  `range_min` int(11) DEFAULT NULL,
+  `range_max` int(11) DEFAULT NULL,
+  `grp` varchar(32) DEFAULT NULL,
+  `sort_id` tinyint(4) NOT NULL DEFAULT '0',
+  `is_enabled` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `grp` (`grp`),
+  KEY `sort_id` (`sort_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -47,4 +46,4 @@ CREATE TABLE IF NOT EXISTS `users_profile` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-02-05 18:55:01
+

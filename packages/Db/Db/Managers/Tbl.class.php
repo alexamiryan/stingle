@@ -180,12 +180,11 @@ class Tbl
 	private static function getCallerSQLFiles(){
 		$backtrace = debug_backtrace();
 		$callerFile = $backtrace[1]['file'];
-		
 		if(DIRECTORY_SEPARATOR == '/'){
-			$sqlsPath = preg_replace("/(.+?".str_replace('/', '\/', STINGLE_PATH)."packages\/.+?\/.+?\/).*/", "$1SQL/", $callerFile);
+			$sqlsPath = preg_replace("/(.*?".str_replace('/', '\/', STINGLE_PATH)."packages\/.+?\/.+?\/).*/", "$1SQL/", $callerFile);
 		}
 		elseif(DIRECTORY_SEPARATOR == '\\'){
-			$sqlsPath = preg_replace("/(.+?".str_replace('/', "\\\\", STINGLE_PATH)."packages\\\\.+?\\\\.+?\\\\).*/", "$1SQL\\", $callerFile);
+			$sqlsPath = preg_replace("/(.*?".str_replace('/', "\\\\", STINGLE_PATH)."packages\\\\.+?\\\\.+?\\\\).*/", "$1SQL\\", $callerFile);
 		}
 		else{
 			throw new RuntimeException("Unexpected DIRECTORY_SEPARATOR detected!");
@@ -193,10 +192,10 @@ class Tbl
 		
 		if($sqlsPath == $callerFile){
 			if(DIRECTORY_SEPARATOR == '/'){
-				$sqlsPath = preg_replace("/(.+?".str_replace('/', '\/', SITE_PACKAGES_PATH).".+?\/.+?\/).*/", "$1SQL/", $callerFile);
+				$sqlsPath = preg_replace("/(.*?".str_replace('/', '\/', SITE_PACKAGES_PATH).".+?\/.+?\/).*/", "$1SQL/", $callerFile);
 			}
 			elseif(DIRECTORY_SEPARATOR == '\\'){
-				$sqlsPath = preg_replace("/(.+?".str_replace('/', "\\\\", SITE_PACKAGES_PATH).".+?\\\\.+?\\\\).*/", "$1SQL\\", $callerFile);
+				$sqlsPath = preg_replace("/(.*?".str_replace('/', "\\\\", SITE_PACKAGES_PATH).".+?\\\\.+?\\\\).*/", "$1SQL\\", $callerFile);
 			}
 		}
 		

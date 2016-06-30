@@ -27,7 +27,7 @@ class ProfileManager extends DbAccessor{
 	}
 	
 	
-	public function getProfile($userId = null, $cacheMinutes = 0, $cacheTag = null){
+	public function getProfile($userId = null, $group = null, $cacheMinutes = 0, $cacheTag = null){
 		$profile = new Profile();
 		
 		$userSaves = null;
@@ -36,6 +36,15 @@ class ProfileManager extends DbAccessor{
 		}
 		
 		$keysFilter = new ProfileKeyFilter();
+		
+		if(!empty($group)){
+			if(is_array($group)){
+				$keysFilter->setGroups($group);
+			}
+			else{
+				$keysFilter->setGroup($group);
+			}
+		}
 		
 		$keyValuePairs = array();
 		

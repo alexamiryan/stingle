@@ -12,6 +12,7 @@ class UserPhotoManager extends DbAccessor
 	
 	const EXCEPTION_MAX_COUNT_REACHED = 1;
 	const EXCEPTION_UNAPROVED_TO_DEFAULT = 2;
+	const EXCEPTION_DECLINED_TO_DEFAULT = 3;
 	
 	private $config;
 	
@@ -72,7 +73,12 @@ class UserPhotoManager extends DbAccessor
 		
 		$photoId = $this->query->getLastInsertId();
 		
-		if($photo->status == self::MODERATION_STATUS_APPROVED){
+		if($this->config->preModeration){
+			if($photo->status == self::MODERATION_STATUS_APPROVED){
+				$this->correctDefaultPhoto($photo->userId);
+			}
+		}
+		else{
 			$this->correctDefaultPhoto($photo->userId);
 		}
 		
@@ -97,7 +103,13 @@ class UserPhotoManager extends DbAccessor
 			
 			$filter = new UserPhotosFilter();
 			$filter->setUserId($userId);
-			$filter->setStatusEqual(static::MODERATION_STATUS_APPROVED);
+			
+			if($this->config->preModeration){
+				$filter->setStatusEqual(static::MODERATION_STATUS_APPROVED);
+			}
+			else{
+				$filter->setStatusNotEqual(static::MODERATION_STATUS_DECLINED);
+			}
 			
 			$userPhotos = $this->getPhotos($filter);
 			
@@ -111,7 +123,14 @@ class UserPhotoManager extends DbAccessor
 	public function isUserHasDefaultPhoto($userId){
 		$filter = new UserPhotosFilter();
 		$filter->setUserId($userId);
-		$filter->setStatusEqual(static::MODERATION_STATUS_APPROVED);
+		
+		if($this->config->preModeration){
+			$filter->setStatusEqual(static::MODERATION_STATUS_APPROVED);
+		}
+		else{
+			$filter->setStatusNotEqual(static::MODERATION_STATUS_DECLINED);
+		}
+		
 		$filter->setDefaultStatus(static::STATUS_DEFAULT_YES);
 		
 		return (count($this->getPhotos($filter)) != 0);
@@ -120,7 +139,13 @@ class UserPhotoManager extends DbAccessor
 	public function isUserHasPhoto($userId){
 		$filter = new UserPhotosFilter();
 		$filter->setUserId($userId);
-		$filter->setStatusEqual(static::MODERATION_STATUS_APPROVED);
+		
+		if($this->config->preModeration){
+			$filter->setStatusEqual(static::MODERATION_STATUS_APPROVED);
+		}
+		else{
+			$filter->setStatusNotEqual(static::MODERATION_STATUS_DECLINED);
+		}
 		
 		return (count($this->getPhotos($filter)) != 0);
 	}
@@ -142,8 +167,15 @@ class UserPhotoManager extends DbAccessor
 			$photo = $this->getPhoto($photo->id);
 		}
 		
-		if($photo->status !== static::MODERATION_STATUS_APPROVED){
-			throw new UserPhotosException("Unapproved photo can't be set as default.", static::EXCEPTION_UNAPROVED_TO_DEFAULT);
+		if($this->config->preModeration){
+			if($photo->status !== static::MODERATION_STATUS_APPROVED){
+				throw new UserPhotosException("Unapproved photo can't be set as default.", static::EXCEPTION_UNAPROVED_TO_DEFAULT);
+			}
+		}
+		else{
+			if($photo->status == static::MODERATION_STATUS_DECLINED){
+				throw new UserPhotosException("Declined photo can't be set as default.", static::EXCEPTION_DECLINED_TO_DEFAULT);
+			}
 		}
 		
 		$qb = new QueryBuilder();

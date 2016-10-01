@@ -9,6 +9,7 @@ class ProfileManager extends DbAccessor{
 	const KEY_TYPE_MULTI 		= "multi";
 	const KEY_TYPE_RANGE 		= "range";
 	const KEY_TYPE_CUSTOM 		= "custom";
+	const KEY_TYPE_CUSTOMBIG	= "customBig";
 	
 	const KEY_STATUS_ENABLED 	= "1";
 	const KEY_STATUS_DISABLED	= "0";
@@ -32,7 +33,7 @@ class ProfileManager extends DbAccessor{
 		
 		$userSaves = null;
 		if(!empty($userId) and is_numeric($userId)){
-			$profile->saves = $this->getUserProfileSave($userId);
+			$profile->saves = $this->getUserProfileSave($userId, $group);
 		}
 		
 		$keysFilter = new ProfileKeyFilter();
@@ -67,13 +68,22 @@ class ProfileManager extends DbAccessor{
 		return $profile;
 	}
 	
-	public function getUserProfileSave($userId, $cacheMinutes = 0, $cacheTag = null){
+	public function getUserProfileSave($userId, $group = null, $cacheMinutes = 0, $cacheTag = null){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidIntegerArgumentException("\$userId have to be not empty integer");
 		}
 	
 		$filter = new UserProfileFilter();
 		$filter->setUserId($userId);
+                
+                if(!empty($group)){
+			if(is_array($group)){
+				$filter->setGroups($group);
+			}
+			else{
+				$filter->setGroup($group);
+			}
+		}
 		
 		$sqlQuery = $filter->getSQL();
 		$sql = MySqlDbManager::getQueryObject();
@@ -92,7 +102,10 @@ class ProfileManager extends DbAccessor{
 					$userSave->keyId = $profileDbRow['key_id'];
 				}
 				
-				
+				if(!empty($profileDbRow['key_group'])){
+					$userSave->keyGroup = $profileDbRow['key_group'];
+				}
+                                
 				if(!empty($profileDbRow['value_id'])){
 					array_push($userSave->valueIds, $profileDbRow['value_id']);
 				}
@@ -145,6 +158,7 @@ class ProfileManager extends DbAccessor{
 				$key->type = $keyDbRow['type'];
 				$key->rangeMin = $keyDbRow['range_min'];
 				$key->rangeMax = $keyDbRow['range_max'];
+				$key->group = $keyDbRow['grp'];
 				$key->sortId = $keyDbRow['sort_id'];
 				$key->isEnabled = $keyDbRow['is_enabled'];
 				$keys[$keyDbRow['id']] = $key;
@@ -225,6 +239,7 @@ class ProfileManager extends DbAccessor{
 								->values(array(
 										'user_id' => $userId,
 										'key_id' => $save->keyId,
+										'key_group' => $save->keyGroup,
 										'value_id' => $valueId
 							));
 							$this->query->exec($qb->getSQL());
@@ -237,6 +252,7 @@ class ProfileManager extends DbAccessor{
 							->values(array(
 								'user_id' => $userId,
 								'key_id' => $save->keyId,
+                                                                'key_group' => $save->keyGroup,
 								'value_cust' => $save->custValue
 						));
 						$this->query->exec($qb->getSQL());
@@ -260,10 +276,5 @@ class ProfileManager extends DbAccessor{
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
-	protected function getKeyValuePairFromSaveDBRow($data, $initObjects = self::INIT_ALL, $cacheMinutes = 0, $cacheTag = null){
-		
-	
-		return $keyValue;
-	}
 	
 }

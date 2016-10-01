@@ -44,6 +44,22 @@ class UserProfileFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setGroup($value){
+		if(empty($value)){
+			throw new InvalidIntegerArgumentException("\$value have to be not empty string");
+		}
 	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('key_group', $this->primaryTableAlias), $value));
+		return $this;
+	}
+	
+	public function setGroups($value){
+		if(empty($value) or !is_array($value)){
+			throw new InvalidIntegerArgumentException("\$value have to be not empty array");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field('key_group', $this->primaryTableAlias), $value));
+		return $this;
+	}
 	
 }

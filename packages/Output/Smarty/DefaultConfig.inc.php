@@ -17,6 +17,7 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 												'exceptionPage' => "error/exception",
 		
 												'urlCounterForClearCache' => null,
+												'denyEmbeddingSite' => true,
 
 												'templatesConfig' => array(
 																			'defaultTemplateName' => "default",

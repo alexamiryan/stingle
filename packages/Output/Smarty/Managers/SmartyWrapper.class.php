@@ -108,6 +108,12 @@ class SmartyWrapper extends Smarty {
 	private $wrapper;
 
 	/**
+	 * Deny embedding site into frames
+	 * @var boolean
+	 */
+	protected $denyEmbeddingSite = true;
+	
+	/**
 	 * a relative path to the root folder (usually just ../..)
 	 * doesn't contain the trailing slash
 	 * @var string
@@ -232,6 +238,8 @@ class SmartyWrapper extends Smarty {
 		
 		// Set error pages paths
 		$this->error404Page = $config->error404Page;
+		
+		$this->denyEmbeddingSite = $config->denyEmbeddingSite;
 	}
 
 	/**
@@ -731,6 +739,10 @@ class SmartyWrapper extends Smarty {
 	 * @return SmartyWrapper
 	 */
 	public function output($return = false){
+		if($this->denyEmbeddingSite){
+			header("Content-Security-Policy: frame-ancestors 'none'");
+			header("X-Frame-Options: DENY");
+		}
 		// Do not display anything if output is disabled
 		if($this->isOutputDisabled){
 			return;

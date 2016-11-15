@@ -7,8 +7,8 @@ $defaultConfig = array(
 															'module',
 															'page',
 															'subpage',
-															'puk',
-															'micropage')
+															'subpage1',
+															'subpage2')
 								),
 						'Objects' => array(	'rewriteURL' => 'rewriteURL'  ),
 						'Hooks' => array(  'BeforeRequestParserStep2' => 'ParseURL'  )

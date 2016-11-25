@@ -820,6 +820,7 @@ class SmartyWrapper extends Smarty {
 			
 			$this->assign ( 'modulePageTpl', $this->fileToDisplay);
 			$this->assign ( '__modulePageTpl', $wrapperPath);
+			$this->fileToDisplay = $wrapperPath;
 		}
 		else{
 			$this->assign ( '__modulePageTpl', $this->fileToDisplay);

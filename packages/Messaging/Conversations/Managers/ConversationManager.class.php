@@ -743,7 +743,7 @@ class ConversationManager extends DbAccessor{
 		return $this->query->exec($sqlQuery)->fetchField('maxId');
 	}
 	
-	protected function openConversation($userId1, $userId2, $systemMessage = false){
+	public function openConversation($userId1, $userId2, $systemMessage = false){
 		if(empty($userId1) or !is_numeric($userId1)){
 			throw new InvalidIntegerArgumentException("\$userId1 have to be non zero integer.");
 		}

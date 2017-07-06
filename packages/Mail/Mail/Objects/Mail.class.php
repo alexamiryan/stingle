@@ -73,15 +73,15 @@ class Mail{
      * @throws MailException
      * @return Boolean
      */
-    public function addTo($address, $name = ''){
+    public function addTo($address, $name = '', $checkValidity = true){
     	$address = trim($address);
-   		$name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
-    	if (!valid_email($address)) {
+   	$name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
+    	if ($checkValidity and !valid_email($address)) {
     		throw new MailException("to mail adress is not valid!");
     	}
-   	    if (!array_key_exists(strtolower($address), $this->to)) {
-        	$this->to[strtolower($address)] = array($address, $name);
-      		return true;
+	if (!array_key_exists(strtolower($address), $this->to)) {
+	    $this->to[strtolower($address)] = array($address, $name);
+	    return true;
     	}
     	return false;
     }
@@ -94,15 +94,15 @@ class Mail{
      * @throws MailException
      * @return Boolean
      */
-    public function addReplyTo($address, $name = ''){
+    public function addReplyTo($address, $name = '', $checkValidity = true){
     	$address = trim($address);
-   		$name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
-    	if (!valid_email($address)) {
+   	$name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
+    	if ($checkValidity and !valid_email($address)) {
     		throw new MailException("Reply to adress is not valid!");
     	}
-   	    if (!array_key_exists(strtolower($address), $this->replyTo)) {
-        	$this->replyTo[strtolower($address)] = array($address, $name);
-      		return true;
+	if (!array_key_exists(strtolower($address), $this->replyTo)) {
+	    $this->replyTo[strtolower($address)] = array($address, $name);
+	    return true;
     	}
     	return false;	
     }

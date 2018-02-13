@@ -211,8 +211,8 @@ class HostManager{
 		return $host_name;		
 	}
 	
-	public static function getSiteUrl(){
-		return static::protocol() . static::getHostName();		
+	public static function getSiteUrl($withWww = false){
+		return static::protocol() .($withWww ? 'www.' : ''). static::getHostName();		
 	}
 	
 	private static function getDevHostName(){

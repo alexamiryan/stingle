@@ -33,6 +33,10 @@ abstract class Filter{
 		$this->qb->select($this->qb->expr()->count(new Field('*'), 'cnt'));
 	}
 	
+	public function setSelectSum($field){
+		$this->qb->select(new Func('SUM', new Field($field), 'sum'));
+	}
+	
 	/**
 	 * @return QueryBuilder
 	 */

@@ -806,7 +806,7 @@ class SmartyWrapper extends Smarty {
 				$this->handlePagerNotFound();
 			}
 			else{
-				throw new TemplateFileNotFoundException("Can't find matching template to display");
+				throw new TemplateFileNotFoundException("Can't find matching template to display: " . $this->fileToDisplay);
 			}
 		}
 		

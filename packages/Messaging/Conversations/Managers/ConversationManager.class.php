@@ -492,6 +492,14 @@ class ConversationManager extends DbAccessor{
 		}
 	}
 	
+	public function getConversationsUnreadCountsSum(ConversationFilter $filter){
+		$filter->setSelectSum('unread_count');
+		
+		$sqlQuery = $filter->getSQL();
+		
+		return $this->query->exec($sqlQuery)->fetchField("sum");
+	}
+	
 	protected function setConversationUnreadCount(Conversation $conversation, $unreadCount){
 		if(!is_numeric($unreadCount)){
 			throw new InvalidIntegerArgumentException("\$unreadCount have to be integer.");

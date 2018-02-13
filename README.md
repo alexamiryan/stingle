@@ -4,4 +4,4 @@ Stingle is a scalable, MVC based, modular PHP framework. Main difference from ot
 has production ready plugins for all kinds of backend functionalities that website could have.
 
 
-For any questions and help on using Stingle please email to: alex@web-emedianet.com
+For any questions and help on using Stingle please email to: alex@amiryan.org

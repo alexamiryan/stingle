@@ -4,6 +4,7 @@ class Host{
 	public $id;
 	public $host;
 	public $subdomain = null;
+	public $https  = HostManager::HTTPS_NO;
 	public $baseDomain = null;
 	public $wildcardOf = null;
 
@@ -42,6 +43,7 @@ class Host{
 		$host->host = $data["host"];
 		if(!empty($data["subdomain"])){
 			$host->subdomain = $data["subdomain"];
+			$host->https = $data["https"];
 			
 			$baseDomainPosition = strpos($data["host"], $data["subdomain"]) + strlen($data["subdomain"]);
 			$host->baseDomain = substr($data["host"], $baseDomainPosition+1);

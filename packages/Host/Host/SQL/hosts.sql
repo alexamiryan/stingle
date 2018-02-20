@@ -26,10 +26,11 @@
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE IF NOT EXISTS `hosts` (
-  `id` tinyint(2) unsigned NOT NULL auto_increment,
+  `id` tinyint(2) UNSIGNED NOT NULL AUTO_INCREMENT,
   `host` varchar(100) NOT NULL COMMENT 'host name',
-  `subdomain` varchar(256) default NULL,
-  PRIMARY KEY  (`id`),
+  `subdomain` varchar(256) DEFAULT NULL,
+  `https` enum('y','n') NOT NULL DEFAULT 'n',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `host` (`host`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='known hosts';
 /*!40101 SET character_set_client = @saved_cs_client */;

@@ -1,6 +1,9 @@
 <?php
 class HostManager{
 	
+	const HTTPS_YES = 'y';
+	const HTTPS_NO = 'n';
+	
 	public static function updateHost(Host $host){
 		if(empty($host->id)){
 			throw new InvalidArgumentException("HostId is empty!");
@@ -9,6 +12,7 @@ class HostManager{
 		$qb->update(Tbl::get('TBL_HOSTS', 'Host'))
 			->set(new Field('host'), $host->host)
 			->set(new Field('subdomain'), $host->subdomain)
+			->set(new Field('https'), $host->https)
 			->where($qb->expr()->equal(new Field('id'), $host->id));
 
 		$sql = MySqlDbManager::getQueryObject();
@@ -48,7 +52,7 @@ class HostManager{
 		if(empty($host->host)){
 			throw new InvalidArgumentException("Host name is empty!");
 		}
-		$values = array( "host" => $host->host);
+		$values = array( "host" => $host->host, "https" => $host->https);
 		if(!empty($host->subdomain)){
 			$values["subdomain"] = $host->subdomain;
 		}
@@ -213,6 +217,22 @@ class HostManager{
 	
 	public static function getSiteUrl($withWww = false){
 		return static::protocol() .($withWww ? 'www.' : ''). static::getHostName();		
+	}
+	
+	public static function hostToURLAddress(Host $host){
+		$host_address = '';
+		if($host->https == HostManager::HTTPS_YES){
+			$host_address .= "https://";
+		}
+		else{
+			$host_address .= "http://";
+		}
+		
+		if($host->subdomain == null){
+			$host_address .= 'www.';
+		}
+		$host_address .= $host->host; 
+		return $host_address;
 	}
 	
 	private static function getDevHostName(){

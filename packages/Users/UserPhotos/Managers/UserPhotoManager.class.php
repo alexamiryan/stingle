@@ -89,9 +89,11 @@ class UserPhotoManager extends DbAccessor
 	
 	/**
 	 * Check if user don't have any default photo and 
-	 * make default one of it's approved photos
+	 * make default one of it's approved photos.
+	 * Returns new default photo if corrected
 	 * 
 	 * @param integer $userId
+	 * @return Photo $photo
 	 */
 	private function correctDefaultPhoto($userId){
 		if(empty($userId)){
@@ -116,8 +118,12 @@ class UserPhotoManager extends DbAccessor
 			if(count($userPhotos)){
 				// Set as default first of the user's approved photos
 				$this->setAsDefault($userPhotos[0]);
+				
+				return $userPhotos[0];
 			}
 		}
+		
+		return null;
 	}
 	
 	public function isUserHasDefaultPhoto($userId){
@@ -216,7 +222,7 @@ class UserPhotoManager extends DbAccessor
 				deleteCropSettings($photo->fileName);
 		}
 		
-		$this->deletPhotoFromDB($photo);
+		return $this->deletPhotoFromDB($photo);
 		
 	}
 	
@@ -235,7 +241,7 @@ class UserPhotoManager extends DbAccessor
 		
 		$this->query->exec($qb->getSQL());
 		
-		$this->correctDefaultPhoto($photo->userId);
+		return $this->correctDefaultPhoto($photo->userId);
 	}
 	
 	public function approvePhoto(UserPhoto $photo){

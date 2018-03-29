@@ -321,8 +321,6 @@ class MailSender
 		$headers="From: ".$from."\r\n";
 		$this->_headers[] = array("header"=>"From", "value"=>$from);
 		
-		$headers .= "Subject: {$mail->subject}\r\n";
-		$this->_headers[] = array("header"=>"Subject", "value"=>$mail->subject);
 		$headers .= "Content-Type: {$mail->contentType}\r\n";
 		$this->_headers[] = array("header"=>"Content-Type", "value"=>$mail->contentType);
 		

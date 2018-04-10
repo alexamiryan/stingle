@@ -414,6 +414,12 @@ class SmartyWrapper extends Smarty {
 		return $this->layoutName;
 	}
 	
+	protected function addCacheCounterToPath(&$path, $isSlash = false){
+		if($this->urlCounterForClearCache != null){
+			$path .= ($isSlash ? '/' : '?') . "cnt={$this->urlCounterForClearCache}";
+		}
+	}
+	
 	protected function getCssFilePath($fileName){
 		$resultingFilePath = $fileName;
 		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
@@ -422,9 +428,7 @@ class SmartyWrapper extends Smarty {
 				throw new TemplateFileNotFoundException("CSS file '$fileName' not found.");
 			}
 			
-			if($this->urlCounterForClearCache != null){
-				$resultingFilePath .= "?cnt={$this->urlCounterForClearCache}";
-			}
+			$this->addCacheCounterToPath($resultingFilePath);
 		}
 		return $resultingFilePath;
 	}
@@ -438,11 +442,19 @@ class SmartyWrapper extends Smarty {
 		$this->addCssAtPos($fileName, static::SECONDARY, $fromTop);
 	}
 	
+	public function addPrimaryCssSmart($fileName, $fromTop = false) {
+		$this->addCssAtPos($fileName, static::PRIMARY, $fromTop, true);
+	}
+	
+	public function addCssSmart($fileName, $fromTop = false) {
+		$this->addCssAtPos($fileName, static::SECONDARY, $fromTop, true);
+	}
+	
 	/**
 	 * Adds a CSS file to the header section of the page displayed.
 	 * @param $fileName
 	 */
-	public function addCssAtPos($fileName, $position = null, $fromTop = false) {
+	public function addCssAtPos($fileName, $position = null, $fromTop = false, $isSmart = false) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("CSS filename is not specified");
 		}
@@ -453,15 +465,21 @@ class SmartyWrapper extends Smarty {
 		if(!isset($this->cssFiles[$position]) or !is_array($this->cssFiles[$position])){
 			$this->cssFiles[$position] = array();
 		}
-	
-		$filePath = $this->getCssFilePath($fileName);
+		
+		if($isSmart){
+			$filePath = base64_encode($fileName);
+			$this->addCacheCounterToPath($filePath, true);
+		}
+		else{
+			$filePath = $this->getCssFilePath($fileName);
+		}
 		
 		if(!empty($filePath) and $filePath != '/'){
 			if($fromTop){
-				array_splice($this->cssFiles[$position], 0, 0, $filePath);
+				array_splice($this->cssFiles[$position], 0, 0, array('path' => $filePath, 'isSmart'=>$isSmart));
 			}
 			else{
-				array_push($this->cssFiles[$position], $filePath);
+				array_push($this->cssFiles[$position], array('path' => $filePath, 'isSmart'=>$isSmart));
 			}
 		}
 		else{
@@ -489,9 +507,7 @@ class SmartyWrapper extends Smarty {
 				throw new TemplateFileNotFoundException("JS file '$fileName' not found.");
 			}
 			
-			if($this->urlCounterForClearCache != null){
-				$resultingFilePath .= "?cnt={$this->urlCounterForClearCache}";
-			}
+			$this->addCacheCounterToPath($resultingFilePath);
 		}
 		return $resultingFilePath;
 	}
@@ -505,11 +521,19 @@ class SmartyWrapper extends Smarty {
 		$this->addJsAtPos($fileName, static::SECONDARY, $fromTop);
 	}
 	
+	public function addPrimaryJsSmart($fileName, $fromTop = false) {
+		$this->addJsAtPos($fileName, static::PRIMARY, $fromTop, true);
+	}
+	
+	public function addJsSmart($fileName, $fromTop = false) {
+		$this->addJsAtPos($fileName, static::SECONDARY, $fromTop, true);
+	}
+	
 	/**
 	 * Adds a JS file to the header section of the page displayed.
 	 * @param $fileName
 	 */
-	public function addJsAtPos($fileName, $position = null, $fromTop = false) {
+	public function addJsAtPos($fileName, $position = null, $fromTop = false, $isSmart = false) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
@@ -521,14 +545,20 @@ class SmartyWrapper extends Smarty {
 			$this->jsFiles[$position] = array();
 		}
 		
-		$filePath = $this->getJsFilePath($fileName);
+		if($isSmart){
+			$filePath = base64_encode($fileName);
+			$this->addCacheCounterToPath($filePath, true);
+		}
+		else{
+			$filePath = $this->getJsFilePath($fileName);
+		}
 		
 		if(!empty($filePath) and $filePath != '/'){
 			if($fromTop){
-				array_splice($this->jsFiles[$position], 0, 0, $filePath);
+				array_splice($this->jsFiles[$position], 0, 0, array('path' => $filePath, 'isSmart'=>$isSmart));
 			}
 			else{
-				array_push($this->jsFiles[$position], $filePath);
+				array_push($this->jsFiles[$position], array('path' => $filePath, 'isSmart'=>$isSmart));
 			}
 		}
 		else{

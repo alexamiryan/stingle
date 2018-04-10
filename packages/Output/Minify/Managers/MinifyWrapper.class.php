@@ -98,11 +98,12 @@ class MinifyWrapper{
 	
 	public function enableMemcache(){
 		$this->memcacheConfig = ConfigManager::getConfig("Db", "Memcache")->AuxConfig;
+		$minifyConfig = ConfigManager::getConfig('Output', 'Minify')->AuxConfig;
 		
 		if($this->memcacheConfig->enabled){
 			$memcache = new Memcache();
 			if($memcache->pconnect($this->memcacheConfig->host, $this->memcacheConfig->port)){
-				Minify::setCache(new Minify_Cache_Memcache($memcache));
+				Minify::setCache(new Minify_Cache_Memcache($memcache, $minifyConfig->memcacheCacheTime));
 			}
 		}
 	}

@@ -689,6 +689,7 @@ class SmartyWrapper extends Smarty {
 		
 		// CSS & JS files
 		$this->assign ( '__jsFiles',  $jsFiles);
+		$this->assign('__sitePath', SITE_PATH);
 		
 		ksort($this->cssFiles);
 		$cssFiles = array();
@@ -706,6 +707,7 @@ class SmartyWrapper extends Smarty {
 		
 		// Template Paths
 		$this->assign ( '__ViewDirPath', $this->getTemplateDir(0) );
+		$this->assign ( '__TemplatePath', $this->getTemplateDir(0) . $this->defaultRelativeTemplatesPath );
 		$this->assign ( '__PagesPath', $this->pagesPath );
 	}
 	

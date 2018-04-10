@@ -1,12 +1,12 @@
 <?php
-class MemcacheWrapper{
-	
+
+class MemcacheWrapper {
+
 	const KEY_VERSION_PREFIX = 'kv';
-	
 	const MEMCACHE_OFF = 0;
 	const MEMCACHE_UNLIMITED = -1;
 	const MEMCACHE_DEFAULT = null;
-	
+
 	/**
 	 * @var Memcache
 	 */
@@ -17,10 +17,10 @@ class MemcacheWrapper{
 	 *
 	 * @param $memcache_host, $memcache_port
 	 */
-	public function __construct($memcache_host='127.0.0.1', $memcache_port=11211) {
-		if(is_null($this->memcache) || (!is_object($this->memcache))) {
+	public function __construct($memcache_host = '127.0.0.1', $memcache_port = 11211) {
+		if (is_null($this->memcache) || (!is_object($this->memcache))) {
 			$this->memcache = new Memcache();
-			if(!$this->memcache->pconnect($memcache_host, $memcache_port)){
+			if (!$this->memcache->pconnect($memcache_host, $memcache_port)) {
 				throw new Exception("Error in object initialization", 2);
 			}
 		}
@@ -31,10 +31,10 @@ class MemcacheWrapper{
 	 * 
 	 * @return Memcache
 	 */
-	public function getMemcache(){
+	public function getMemcache() {
 		return $this->memcache;
 	}
-	
+
 	/**
 	 * Put an object in memcache. if there's already an entry
 	 * with the specified key it will be overwritten
@@ -46,11 +46,11 @@ class MemcacheWrapper{
 	 * @return bool ture if successful false otherwise
 	 */
 	public function set($key, $value, $expire = 0, $flag = 0) {
-		if(empty($key)){
+		if (empty($key)) {
 			throw new InvalidArgumentException("\$key can't be empty");
 		}
-		
-		if (!$this->memcache->set($key, $value, $flag, $expire)){
+
+		if (!$this->memcache->set($key, $value, $flag, $expire)) {
 			throw new RuntimeException("Unable to set data to Memcache");
 		}
 	}
@@ -62,12 +62,12 @@ class MemcacheWrapper{
 	 * @return string|array
 	 */
 	public function get($key) {
-		if(empty($key)){
+		if (empty($key)) {
 			throw new InvalidArgumentException("\$key is empty");
 		}
 		return $this->memcache->get($key);
 	}
-	
+
 	/**
 	 * Increment cache item with given key
 	 *
@@ -75,12 +75,12 @@ class MemcacheWrapper{
 	 * @return integer|false
 	 */
 	public function increment($key) {
-		if(empty($key)){
+		if (empty($key)) {
 			throw new InvalidArgumentException("\$key is empty");
 		}
 		return $this->memcache->increment($key);
 	}
-	
+
 	/**
 	 * Decrement cache item with given key
 	 *
@@ -88,122 +88,150 @@ class MemcacheWrapper{
 	 * @return integer|false
 	 */
 	public function decrement($key) {
-		if(empty($key)){
+		if (empty($key)) {
 			throw new InvalidArgumentException("\$key is empty");
 		}
 		return $this->memcache->decrement($key);
 	}
-	
+
 	/**
 	 * Returns various server statistics
 	 */
-	public function getServerStats(){
+	public function getServerStats() {
 		return $this->memcache->getExtendedStats();
 	}
-	
+
 	/**
 	 * Clear all save items in Memcache
 	 */
-	public function clearAllItems(){
+	public function clearAllItems() {
 		$this->memcache->flush();
 	}
-	
+
 	/**
 	 * Delete cache item with given key
 	 * @param string $key
 	 */
-	public function delete($key){
-		if(empty($key)){
+	public function delete($key) {
+		if (empty($key)) {
 			throw new InvalidArgumentException("\$key is empty");
 		}
 		return $this->memcache->delete($key);
 	}
-	
+
 	/**
 	 * Get array of cache item's keys
 	 * @return array
 	 */
-	public function getKeysList(){
+	public function getKeysList() {
 		$list = array();
-	    $allSlabs = $this->memcache->getExtendedStats('slabs');
-	    $items = $this->memcache->getExtendedStats('items');
-	    foreach($allSlabs as $server => $slabs) {
-    	    foreach($slabs AS $slabId => $slabMeta) {
-    	    	if (!is_numeric($slabId)){
+		$allSlabs = $this->memcache->getExtendedStats('slabs');
+		$items = $this->memcache->getExtendedStats('items');
+		foreach ($allSlabs as $server => $slabs) {
+			foreach ($slabs AS $slabId => $slabMeta) {
+				if (!is_numeric($slabId)) {
 					continue;
 				}
-				$cdump = $this->memcache->getExtendedStats('cachedump',(int)$slabId, 1000000);
-    	        foreach($cdump AS $server => $entries) {
-    	            if($entries) {
-        	            foreach($entries AS $eName => $eData) {
-        	            	array_push($list, $eName);
-        	            }
-    	            }
-    	        }
-    	    }
-	    }
-	    ksort($list);
-	    
-	    return $list;
+				$cdump = $this->memcache->getExtendedStats('cachedump', (int) $slabId, 1000000);
+				foreach ($cdump AS $server => $entries) {
+					if ($entries) {
+						foreach ($entries AS $eName => $eData) {
+							array_push($list, $eName);
+						}
+					}
+				}
+			}
+		}
+		ksort($list);
+
+		return $list;
 	}
-	
-	public function getNamespacedKey($tag = null){
+
+	public function getNamespacedKey($tag = null) {
 		$key = ConfigManager::getConfig("Db", "Memcache")->AuxConfig->keyPrefix . ":";
-		
+
 		$key = $this->getKeyBeginning($tag);
-		
+
 		$version = $this->get($this->getKeyBeginning($tag, true));
-		if($version == false or !is_numeric($version)){
+		if ($version == false or ! is_numeric($version)) {
 			$version = 1;
 		}
-		
+
 		$key .= $version;
 		return $key;
 	}
-	
-	public function invalidateCacheByTag($tag = null){
-		if(empty($tag)){
+
+	public function invalidateCacheByTag($tag = null) {
+		if (empty($tag)) {
 			throw new InvalidArgumentException("\$tag should be non empty string");
 		}
 
 		$versionKey = $this->getKeyBeginning($tag, true);
-	
-		if(!$this->increment($versionKey)){
+
+		if (!$this->increment($versionKey)) {
 			$this->set($versionKey, 2);
 		}
 	}
-	
-	public function getIdKey($key){
+
+	public function getIdKey($key) {
 		$idTag = "";
-		if(preg_match("/id[\:\_]([a-z]\d+?)\D/i", $key, $matches)){
+		if (preg_match("/id[\:\_]([a-z]\d+?)\D/i", $key, $matches)) {
 			$idTag = ':' . $matches[1];
 		}
-	
+
 		return $idTag;
 	}
-	
-	protected function getKeyBeginning($tag = null, $isVersionKey = false){
+
+	public function deleteKeys($classes, $customGlobalPrefix = null){
+	       if(!is_array($classes)){
+		       $classes = array($classes);
+	       }
+
+	       if($customGlobalPrefix !== null){
+		       $globalPrefix = $customGlobalPrefix;
+	       }
+	       else{
+		       $globalPrefix = ConfigManager::getConfig("Db", "Memcache")->AuxConfig->keyPrefix;
+	       }
+
+	       $list = $this->getKeysList();
+
+	       $count = 0;
+	       foreach ($list as $key){
+		       $array = explode(":", $key);
+		       if(count($array) >= 2){
+			       if($array[0] == $globalPrefix and in_array($array[1], $classes)){
+				       if($this->delete($key)){
+					       $count++;
+				       }
+			       }
+		       }
+	       }
+
+	       return $count;
+	}
+
+	protected function getKeyBeginning($tag = null, $isVersionKey = false) {
 		$key = ConfigManager::getConfig("Db", "Memcache")->AuxConfig->keyPrefix . ":";
-		
-		if($isVersionKey){
+
+		if ($isVersionKey) {
 			$key .= self::KEY_VERSION_PREFIX . ":";
 		}
-		
-		if($tag !== null){
+
+		if ($tag !== null) {
 			$key .= $tag . ":";
 		}
-		else{
+		else {
 			$callingClass = "";
 			$backtrace = debug_backtrace();
-			if(isset($backtrace[4]['class'])){
+			if (isset($backtrace[4]['class'])) {
 				$callingClass = $backtrace[4]['class'];
 			}
-		
+
 			$key .= $callingClass . ":";
 		}
-		
+
 		return $key;
 	}
-	
-	
+
 }

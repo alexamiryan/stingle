@@ -416,7 +416,7 @@ class SmartyWrapper extends Smarty {
 	
 	protected function addCacheCounterToPath(&$path, $isSlash = false){
 		if($this->urlCounterForClearCache != null){
-			$path .= ($isSlash ? '/' : '?') . "cnt={$this->urlCounterForClearCache}";
+			$path .= ($isSlash ? '/' : '?') . "cnt".($isSlash ? ':' : '=')."{$this->urlCounterForClearCache}";
 		}
 	}
 	

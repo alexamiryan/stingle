@@ -54,6 +54,12 @@ class SmartyWrapper extends Smarty {
 	 * @var array
 	 */
 	protected $jsFiles = array ();
+	
+	/**
+	 *
+	 * @var String All inline JSs that occurred during execution 
+	 */
+	protected $inlineJS = "";
 
 	/**
 	 * Title of the page to be displayed
@@ -565,6 +571,16 @@ class SmartyWrapper extends Smarty {
 			throw new SmartyException("Can't find JS file $fileName in current template or ony parent templates");
 		}
 	}
+	
+	public function addInlineJs($jsCode){
+		if(!empty($jsCode)){
+			$this->inlineJS .= $jsCode;
+		}
+	}
+	
+	public function getInlineJs(){
+		return $this->inlineJS;
+	}
 
 	/**
 	 * Get js file correct path
@@ -780,6 +796,8 @@ class SmartyWrapper extends Smarty {
 			return;
 		}
 		
+		$this->registerPlugin('function', "getInlineJS", array($this, "getInlineJs"));
+		
 		$navConfig = ConfigManager::getConfig("SiteNavigation")->AuxConfig;
 		$nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
 		
@@ -859,7 +877,7 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		$this->assign ( '__layoutTpl', $this->layoutPath);
-		
+		$this->assign ( '__inlineJS',  $this->inlineJS);
 		//$return = true;
 		// Finally display
 		if($return){

@@ -721,7 +721,7 @@ class QueryBuilder
     public function where($predicates)
     {
         if ( ! (func_num_args() == 1 && $predicates instanceof Composite)) {
-            $predicates = new Andx(func_get_args());
+           // $predicates = new Andx(func_get_args());
         }
 
         return $this->add('where', $predicates);

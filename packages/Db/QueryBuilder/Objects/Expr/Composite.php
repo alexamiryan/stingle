@@ -39,7 +39,7 @@ class Composite extends Base {
 		}
 
 		$components = array();
-
+		
 		foreach ($this->_parts as $part) {
 			$components[] = $this->processQueryPart($part);
 		}

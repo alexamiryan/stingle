@@ -38,7 +38,7 @@ class RequestParser
 		
 		// If no levels specified in $_GET we just take default first level value 
 		if($existentLevelsCount == 0){
-			$nav->$levels[0] = $this->config->firstLevelDefaultValue;
+			$nav->{$levels[0]} = $this->config->firstLevelDefaultValue;
 			$existentLevelsCount++;
 		}
 		

@@ -51,20 +51,16 @@ class Comparison extends QBpart {
 	}
 
 	public function __toString() {
-		try {
-			$leftExpr = Expr::quoteLiteral($this->_leftExpr);
-			$rightExpr = Expr::quoteLiteral($this->_rightExpr);
+		$leftExpr = Expr::quoteLiteral($this->_leftExpr);
+		$rightExpr = Expr::quoteLiteral($this->_rightExpr);
 
-			if ($leftExpr instanceof Math or $leftExpr instanceof QueryBuilder) {
-				$leftExpr = '(' . $leftExpr . ')';
-			}
-			if ($rightExpr instanceof Math or $rightExpr instanceof QueryBuilder) {
-				$rightExpr = '(' . $rightExpr . ')';
-			}
+		if ($leftExpr instanceof Math or $leftExpr instanceof QueryBuilder) {
+			$leftExpr = '(' . $leftExpr . ')';
 		}
-		catch (Exception $e) {
-			echo $e->getMessage();
+		if ($rightExpr instanceof Math or $rightExpr instanceof QueryBuilder) {
+			$rightExpr = '(' . $rightExpr . ')';
 		}
+		
 		return $leftExpr . ' ' . $this->_operator . ' ' . $rightExpr;
 	}
 

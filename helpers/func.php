@@ -1,5 +1,5 @@
 <?php
-function format_exception(Exception $e, $insert_pre = false){
+function format_exception($e, $insert_pre = false){
 	$message = get_class($e) . "\n" .
 	"Message:\n" . $e->getMessage() . "\n\n" .
 	"File: " . $e->getFile() . " on line " . $e->getLine() . "\n\n" .

@@ -1,5 +1,5 @@
 <?php
-function default_exception_handler(Exception $e){
+function default_exception_handler($e){
 	$hookArgs = array('e' => $e);
 	HookManager::callHook('NoDebugExceptionHandler', $hookArgs);
 	if(!in_array($e->getCode(), ConfigManager::getGlobalConfig()->Stingle->disabledErrors->toArray())){

@@ -522,7 +522,7 @@ class Expr
 	            return (string) $literal;
 	        } 
 	        else {
-	            return "'" . mysql_real_escape_string($literal) . "'";
+	            return "'" . MySqlDbManager::getQueryObject()->escapeString($literal) . "'";
 	        }
     	}
     }

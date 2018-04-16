@@ -10,7 +10,7 @@ class RequestLoggerUsers extends DBLogger {
 
 		if($userObj->isAuthorized()){
 			$userId = $userObj->id;
-			$userObjectSerialized = "'". mysql_real_escape_string(serialize($userObj)) . "'";
+			$userObjectSerialized = "'". MySqlDbManager::getQueryObject()->escapeString(serialize($userObj)) . "'";
 		}
 		$qb = new QueryBuilder();
 		$qb->insert(Tbl::get('TBL_REQUEST_LOG'))

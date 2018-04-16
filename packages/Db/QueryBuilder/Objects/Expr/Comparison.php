@@ -1,4 +1,5 @@
 <?php
+
 /*
  *  $Id$
  *
@@ -30,38 +31,41 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class Comparison extends QBpart
-{
-    const EQ  = '=';
-    const NEQ = '<>';
-    const LT  = '<';
-    const LTE = '<=';
-    const GT  = '>';
-    const GTE = '>=';
+class Comparison extends QBpart {
 
-    private $_leftExpr;
-    private $_operator;
-    private $_rightExpr;
+	const EQ = '=';
+	const NEQ = '<>';
+	const LT = '<';
+	const LTE = '<=';
+	const GT = '>';
+	const GTE = '>=';
 
-    public function __construct($leftExpr, $operator, $rightExpr)
-    {
-        $this->_leftExpr  = $leftExpr;
-        $this->_operator  = $operator;
-        $this->_rightExpr = $rightExpr;
-    }
+	private $_leftExpr;
+	private $_operator;
+	private $_rightExpr;
 
-    public function __toString()
-    {
-    	$leftExpr = Expr::quoteLiteral($this->_leftExpr);
-    	$rightExpr = Expr::quoteLiteral($this->_rightExpr);
-    	
-    	if ($leftExpr instanceof Math or $leftExpr instanceof QueryBuilder) {
-    		$leftExpr = '(' . $leftExpr . ')';
-    	}
-    	if ($rightExpr instanceof Math or $rightExpr instanceof QueryBuilder) {
-    		$rightExpr = '(' . $rightExpr . ')';
-    	}
-    	
-        return $leftExpr . ' ' . $this->_operator . ' ' . $rightExpr;
-    }
+	public function __construct($leftExpr, $operator, $rightExpr) {
+		$this->_leftExpr = $leftExpr;
+		$this->_operator = $operator;
+		$this->_rightExpr = $rightExpr;
+	}
+
+	public function __toString() {
+		try {
+			$leftExpr = Expr::quoteLiteral($this->_leftExpr);
+			$rightExpr = Expr::quoteLiteral($this->_rightExpr);
+
+			if ($leftExpr instanceof Math or $leftExpr instanceof QueryBuilder) {
+				$leftExpr = '(' . $leftExpr . ')';
+			}
+			if ($rightExpr instanceof Math or $rightExpr instanceof QueryBuilder) {
+				$rightExpr = '(' . $rightExpr . ')';
+			}
+		}
+		catch (Exception $e) {
+			echo $e->getMessage();
+		}
+		return $leftExpr . ' ' . $this->_operator . ' ' . $rightExpr;
+	}
+
 }

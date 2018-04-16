@@ -53,7 +53,7 @@ class MySqlQuery extends Model {
 	 *
 	 */
 	public function __destruct() {
-		if ($this->result) {
+		if (is_object($this->result)) {
 			$this->result->free();
 			$this->result = null;
 		}
@@ -588,6 +588,10 @@ class MySqlQuery extends Model {
 	public function getFoundRowsCount() {
 		$this->exec("SELECT FOUND_ROWS() AS `cnt`");
 		return $this->fetchField('cnt');
+	}
+	
+	public function escapeString($string){
+		return $this->link->real_escape_string($string);
 	}
 
 	public function executeSQLFile($file, $delimiter = ';') {

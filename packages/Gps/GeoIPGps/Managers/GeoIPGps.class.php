@@ -27,7 +27,7 @@ class GeoIPGps
 		$myGpses = array();
 		
 		if(isset($location->city) and !empty($location->city)){
-			$myGpses = $this->gps->getNodesByName(mysql_real_escape_string($location->city), $type_id, false, $cacheMinutes);
+			$myGpses = $this->gps->getNodesByName(MySqlDbManager::getQueryObject()->escapeString($location->city), $type_id, false, $cacheMinutes);
 		}
 			
 		if(count($myGpses) > 1){

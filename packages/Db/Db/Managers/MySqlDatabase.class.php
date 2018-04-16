@@ -26,7 +26,7 @@ class MySqlDatabase extends Model
 	/**
 	 * Database connection link
 	 * @access private
-	 * @var resource
+	 * @var mysqli
 	 */
 	protected $link;
 
@@ -51,38 +51,15 @@ class MySqlDatabase extends Model
 	 * @param $persistency
 	 * @return unknown_type
 	 */
-	public function __construct($server, $username, $password, $db_name = null, $persistency = true)
+	public function __construct($server, $username, $password, $db_name = null, $persistency = false)
 	{
 		if($persistency){
-			$this->link = @mysql_pconnect($server, $username, $password);
+			$server = 'p:' . $server;
 		}
-		else{
-			$this->link = @mysql_connect($server, $username, $password, true);
-		}
-
-		if(!$this->link){
-			if(mysql_errno()){
-				throw new MySqlException(mysql_error(), mysql_errno());
-			}
-			else{
-				throw new MySqlException("Can't connect to MySQL server on '$server'", 2003);
-			}
-		}
-
-		if($db_name !== null){
-			if(!$this->selectDatabase($db_name)){
-				if(mysql_errno()){
-					$error = mysql_error();
-					$errno = mysql_errno();
-				}
-				else{
-					$error = "Error selecting database '$db_name' on host '$server'";
-					$errno = 1049;
-				}
-	
-				@mysql_close($this->link);
-				throw new MySqlException($error, $errno);
-			}
+		
+		$this->link = new mysqli($server, $username, $password, $db_name);
+		if ($this->link->connect_errno) {
+			throw new MySqlException($this->link->connect_error, $this->link->connect_errno);
 		}
 	}
 
@@ -102,16 +79,16 @@ class MySqlDatabase extends Model
 	*/
 	public function __destruct(){
 		if(is_resource($this->link)){
-			mysql_close($this->link);
+			$this->link->close();
 		}
 	}
 
 	
     public function selectDatabase($dbName){
-    	if(!is_resource($this->link)){
-			throw new MySqlException(3, "There is no connection to the server");
-    	}
-    	return mysql_select_db($dbName, $this->link);
+    	if (!$this->link->ping()) {
+		throw new MySqlException(3, "There is no connection to the server");
+	}
+    	return $this->link->select_db($dbName);;
     }
     
 	/**
@@ -125,22 +102,11 @@ class MySqlDatabase extends Model
 	}
 
 
-	/**
-	 * Returns current database name
-	 *
-	 * @access public
-	 * @return string
-	*/
-	public function getName(){
-		return $this->name;
-	}
-
-
 	public function setConnectionEncoding($encoding){
 		if(empty($encoding)){
 			throw new InvalidArgumentException("\$encoding have to be non empty string.");
 		}
-		@mysql_query("SET NAMES $encoding", $this->link);
+		return $this->link->query("SET NAMES $encoding");
 	}
 
 	/**
@@ -150,9 +116,9 @@ class MySqlDatabase extends Model
 	 * @throws DB_Exception
 	 * @return boolean
 	*/
-	public function startTransaction($withSnapshot = false){
+	public function startTransaction($withSnapshot = false, $name = null){
 		if(!$this->transaction_started){
-			if(@mysql_query("START TRANSACTION" . ($withSnapshot ? " WITH CONSISTENT SNAPSHOT" : ""), $this->link)){
+			if($this->link->begin_transaction(($withSnapshot ? MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT : null), $name)){
 				$this->transaction_started = true;
 				return true;
 			}
@@ -172,14 +138,9 @@ class MySqlDatabase extends Model
 	 * @access public
 	 * @return boolean
 	*/
-	public function commit(){
+	public function commit($name = null){
 		if($this->transaction_started){
-			if(@mysql_query("COMMIT", $this->link)){
-				return true;
-			}
-			else{
-				return false;
-			}
+			return $this->link->commit(null, $name);
 		}
 		else{
 			return false;
@@ -197,12 +158,7 @@ class MySqlDatabase extends Model
 	*/
 	public function savePoint($identifier){
 		if($this->transaction_started && $identifier != ""){
-			if(@mysql_query("SAVEPOINT " . $identifier, $this->link)){
-				return true;
-			}
-			else{
-				return false;
-			}
+			return $this->link->savepoint($identifier);
 		}
 		else{
 			return false;
@@ -213,30 +169,15 @@ class MySqlDatabase extends Model
 	/**
 	 * Rolls back to last savePoint
 	 *
-	 * @param string $savepoint_identifier = ""
+	 * @param string $savepointIdentifier
 	 *
 	 * @access public
 	 * @return boolean
 	*/
-	public function rollBack($savepoint_identifier = ""){
+	public function rollBack($savepointIdentifier = null){
 		if($this->transaction_started){
-			if($savepoint_identifier != ""){
-				if(@mysql_query("ROLLBACK TO SAVEPOINT " . $savepoint_identifier, $this->link)){
-					return true;
-				}
-				else{
-					return false;
-				}
-			}
-			else{
-				if(@mysql_query("ROLLBACK", $this->link)){
-					return true;
-				}
-				else{
-					return false;
-				}
-			}
-		}
+			return $this->link->rollback(null, $savepointIdentifier);
+		}			
 		else{
 			return false;
 		}
@@ -250,42 +191,15 @@ class MySqlDatabase extends Model
 	 * @return array
 	*/
 	public function getTablesNames(){
-		$tables_result = @mysql_query("SHOW TABLES", $this->link);
-
-		while(($current_table = mysql_fetch_row($tables_result))){
-			$tables_names[] = $current_table[0];
+		$tablesResult = $this->link->query("SHOW TABLES");
+		
+		$tableNames = array();
+		while($currentTable = $tablesResult->fetch_row()){
+			array_push($tableNames, $currentTable[0]);
 		}
-		mysql_free_result($tables_result);
+		$tablesResult->free();
 
-		return $tables_names;
-	}
-
-
-	/**
-	 * Returns table's name with $offset id
-	 *
-	 * @param integer $offset
-	 *
-	 * @access public
-	 * @return string or boolean
-	 *
-	 * @todo change return false to smth else
-	*/
-	public function getTableName($offset){
-		$tables_result = @mysql_query("SHOW TABLES", $this->link);
-
-		if($offset >= 0 and $offset < mysql_num_rows($tables_result)){
-			if(@mysql_data_seek($tables_result, $offset)){
-				$table_row = mysql_fetch_array($tables_result);
-				return $table_row[0];
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
+		return $tableNames;
 	}
 
 
@@ -301,53 +215,44 @@ class MySqlDatabase extends Model
 	 * @param string $table
 	 * @param string $type
 	 *
-	 * @example $table = "table", $type = "r" (READ)
-	 * @example $table = "table", $type = "w" (WRITE)
+	 * @example $tables = "table", $type = "r" (READ)
+	 * @example $tables = "table", $type = "w" (WRITE)
 	 *
 	 * @access public
 	 * @return boolean
 	*/
 	public function lockTables($tables, $type="r"){
-		if(is_array($tables)){
-			$lock_query = "LOCK TABLES ";
-			foreach($tables as $table_name => $current_type){
-				$lock_query .= $table_name . " ";
-				if($current_type == "w"){
-					$lock_query .= " WRITE";
-				}
-				else{
-					$lock_query .= " READ";
-				}
-				$lock_query .= ", ";
-			}
-			$lock_query = substr($lock_query, 0, strlen($lock_query)-2);
-		}
-		elseif(is_string($tables)){
-			$table_name = $tables;
-			if($table_name == ""){
-				return false;
-			}
-			$lock_query = "LOCK TABLES " . $table_name;
-			if($type == "w"){
-				$lock_query .= " WRITE";
-			}
-			else{
-				$lock_query .= " READ";
-			}
-
-		}
-
-		if($lock_query != ""){
-			if(@mysql_query($lock_query, $this->link)){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
+		if(empty($tables)){
 			return false;
 		}
+		
+		$lockQuery = "LOCK TABLES ";
+		if(is_array($tables)){
+			$lockQueriesArr = array();
+			foreach($tables as $table_name => $current_type){
+				$query .= $table_name . " ";
+				if($current_type == "w"){
+					$query .= " WRITE";
+				}
+				else{
+					$query .= " READ";
+				}
+				array_push($lockQueriesArr, $query);
+			}
+			$lockQuery .= implode(", ", $lockQueriesArr);
+		}
+		elseif(is_string($tables)){
+			$lockQuery .= $tables;
+			if($type == "w"){
+				$lockQuery .= " WRITE";
+			}
+			else{
+				$lockQuery .= " READ";
+			}
+
+		}
+
+		return $this->link->query($lockQuery);
 	}
 
 
@@ -358,12 +263,7 @@ class MySqlDatabase extends Model
 	 * @return boolean
 	*/
 	public function unlockTables(){
-		if(@mysql_query('UNLOCK TABLES', $this->link)){
-			return true;
-		}
-		else{
-			return false;
-		}
+		return $this->link->query('UNLOCK TABLES');
 	}
 
 
@@ -371,61 +271,44 @@ class MySqlDatabase extends Model
 	/**
 	 * Drops table or tables
 	 *
-	 * @param array $tables
+	 * @param array $tableName
 	 *
 	 * or
 	 *
-	 * @param string $table
+	 * @param string $tableName
 	 *
 	 * @access public
 	 * @return boolean
 	*/
-	public function dropTables($table_name){
-		if(is_array($table_name)){
-			$tables = $table_name;
-			$drop_query = "DROP TABLE ";
-
-			foreach ($tables as $name){
-				$drop_query .= $name . ", ";
-			}
-
-			$drop_query = substr($drop_query, 0, strlen($drop_query)-3);
-		}
-		elseif(is_string($table_name)){
-			$drop_query = "DROP TABLE $table_name";
-		}
-
-		if($drop_query != ""){
-			if(@mysql_query($drop_query, $this->link)){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
+	public function dropTables($tableName){
+		if(empty($tableName)){
 			return false;
 		}
+		
+		$dropQuery = "DROP TABLE ";
+		if(is_array($tableName)){
+			$dropQuery .= implode(",", $tableName);
+		}
+		elseif(is_string($tableName)){
+			$dropQuery .= $tableName;
+		}
+
+		return $this->link->query($dropQuery);
 	}
 
 
 	/**
 	 * Renames table
 	 *
-	 * @param string $table_name
-	 * @param string $new_name
+	 * @param string $oldName
+	 * @param string $newName
 	 *
 	 * @access public
 	 * @return boolean
 	*/
-	public function renameTable($table_name, $new_name){
-		if($table_name != "" && $new_name != ""){
-			if(@mysql_query("RENAME TABLE $table_name TO $new_name", $this->link)){
-				return true;
-			}
-			else{
-				return false;
-			}
+	public function renameTable($oldName, $newName){
+		if(!empty($oldName) && !empty($newName)){
+			return $this->link->query("RENAME TABLE $oldName TO $newName");
 		}
 		else{
 			return false;

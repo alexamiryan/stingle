@@ -71,12 +71,12 @@ class Controller
 						include ($includePath . "common.php");
 					}
 					
-					if(is_dir($includePath . $nav->$levels[$i+1]) && is_file($includePath . $nav->$levels[$i+1] . ".php")){
-						throw new RuntimeException("You can't have both folder and file with same name. Path: $includePath, colliding filename: {$nav->$levels[$i+1]}");
+					if(is_dir($includePath . $nav->{$levels[$i+1]}) && is_file($includePath . $nav->{$levels[$i+1]} . ".php")){
+						throw new RuntimeException("You can't have both folder and file with same name. Path: $includePath, colliding filename: " . $nav->{$levels[$i+1]});
 					}
 					
 					// Check if on next level we don't have directory anymore stop here
-					if(!isset($levels[$i+2]) or (isset($levels[$i+1]) and !is_dir($includePath . $nav->$levels[$i+1]))){
+					if(!isset($levels[$i+2]) or (isset($levels[$i+1]) and !is_dir($includePath . $nav->{$levels[$i+1]}))){
 						break;
 					}
 				}

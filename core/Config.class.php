@@ -77,11 +77,14 @@ class Config{
 	 */
 	private function parseConfig(array $configArray){
 		foreach($configArray as $key=>$value){
+			if(is_numeric($key)){
+				//$key = 'd' . $key;
+			}
 			if(is_array($value)){
-				$this->$key = new Config($configArray[$key]);
+				$this->{$key} = new Config($value);
 			}
 			else{
-				$this->$key = $value;
+				$this->{$key} = $value;
 			}
 		}
 	}

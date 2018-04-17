@@ -838,7 +838,7 @@ class SmartyWrapper extends Smarty {
 			$level = $levels[$i];
 			if(isset($nav->$level) and !empty($nav->$level)){
 				$this->includePath .= $nav->$level . '/';
-				if(isset($levels[$i+1]) and !is_dir($this->getFilePathFromTemplate($this->includePath . $nav->$levels[$i+1], true))){
+				if(isset($levels[$i+1]) and !is_dir($this->getFilePathFromTemplate($this->includePath . $nav->{$levels[$i+1]}, true))){
 					break;
 				}
 			}

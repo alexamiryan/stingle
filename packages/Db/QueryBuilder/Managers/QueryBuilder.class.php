@@ -721,7 +721,7 @@ class QueryBuilder
     public function where($predicates)
     {
         if ( ! (func_num_args() == 1 && $predicates instanceof Composite)) {
-           // $predicates = new Andx(func_get_args());
+            $predicates = new Andx(func_get_args());
         }
 
         return $this->add('where', $predicates);
@@ -745,17 +745,17 @@ class QueryBuilder
      */
     public function andWhere($where)
     {
-        $where = $this->getSQLPart('where');
+        $existingWhere = $this->getSQLPart('where');
         $args = func_get_args();
 
-        if ($where instanceof Andx) {
-            $where->addMultiple($args);
+        if ($existingWhere instanceof Andx || $existingWhere instanceof Orx) {
+            $existingWhere->addMultiple($args);
         } else {
-            array_unshift($args, $where);
-            $where = new Andx($args);
+            //array_unshift($args, $where);
+            $existingWhere = new Andx($args);
         }
 
-        return $this->add('where', $where, true);
+        return $this->add('where', $existingWhere, true);
     }
 
     /**

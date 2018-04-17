@@ -1,4 +1,5 @@
 <?php
+
 /*
  *  $Id$
  *
@@ -30,51 +31,54 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class Join extends QBpart
-{
-    const INNER_JOIN = 'INNER';
-    const LEFT_JOIN  = 'LEFT';
-    const RIGHT_JOIN  = 'RIGHT';
-    const OUTER_JOIN  = 'OUTER';
+class Join extends QBpart {
 
-    const ON   = 'ON';
-    const WITH = 'WITH';
+	const INNER_JOIN = 'INNER';
+	const LEFT_JOIN = 'LEFT';
+	const RIGHT_JOIN = 'RIGHT';
+	const OUTER_JOIN = 'OUTER';
+	const ON = 'ON';
+	const WITH = 'WITH';
 
-    private $_joinType;
-    private $_join;
-    private $_alias;
-    private $_condition;
-    private $_indexBy;
+	private $_joinType;
+	private $_join;
+	private $_alias;
+	private $_condition;
+	private $_indexBy;
 
-    public function __construct($joinType, $join, $alias = null, $condition = null, $indexBy = null)
-    {
-        $this->_joinType       = $joinType;
-        $this->_join           = $join;
-        $this->_alias          = $alias;
-        $this->_condition      = $condition;
-        $this->_indexBy        = $indexBy;
-    }
+	public function __construct($joinType, $join, $alias = null, $condition = null, $indexBy = null) {
+		$this->_joinType = $joinType;
+		$this->_join = $join;
+		$this->_alias = $alias;
+		$this->_condition = $condition;
+		$this->_indexBy = $indexBy;
+	}
 
-    public function getAlias()
-    {
-    	return $this->_alias;
-    }
-    
-    public function __toString()
-    {
-        $returnString = strtoupper($this->_joinType) . ' JOIN ';
-        
-		if($this->_join instanceof QueryBuilder or $this->_join instanceof Unionx){
-			$returnString .= "($this->_join)";
-		}
-		else{
-			$returnString .= "`$this->_join`";
-		}
+	public function getAlias() {
+		return $this->_alias;
+	}
+
+	public function getString() {
+		$returnString = strtoupper($this->_joinType) . ' JOIN ';
+
+		$join = Base::getStringFromPart($this->_join);
+		$condition = Base::getStringFromPart($this->_condition);
+		$indexBy = Base::getStringFromPart($this->_indexBy);
+		$alias = Base::getStringFromPart($this->_alias);
 		
-		$returnString .= ($this->_alias ? ' as `' . $this->_alias . '`' : '')
-             	. ($this->_condition ? ' ON (' . $this->_condition . ')' : '')
-             	. ($this->_indexBy ? ' INDEX BY ' . $this->_indexBy : '');
 		
+		if ($this->_join instanceof QueryBuilder or $this->_join instanceof Unionx) {
+			$returnString .= "(" . $join . ")";
+		}
+		else {
+			$returnString .= "`$join`";
+		}
+
+		$returnString .= ($this->_alias ? ' as `' . $alias . '`' : '')
+			. ($this->_condition ? ' ON (' . $condition . ')' : '')
+			. ($this->_indexBy ? ' INDEX BY ' . $indexBy : '');
+
 		return $returnString;
-    }
+	}
+
 }

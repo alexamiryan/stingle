@@ -14,13 +14,13 @@ class Field extends Base{
 		$this->_fieldAalias = $fieldAlias;
 	}
 	
-	public function __toString(){
+	public function getString(){
 		$field = $this->_field;
 		if($this->_field != "*" and !is_a($this->_field, 'QBPart') and !is_a($this->_field, 'QueryBuilder')){
 			$field = "`$this->_field`";
 		}
 		
-		$returnString = $field;
+		$returnString = Base::getStringFromPart($field);
 		
 		if($this->_tableAlias !== null){
 			$returnString = "`$this->_tableAlias`.$field";

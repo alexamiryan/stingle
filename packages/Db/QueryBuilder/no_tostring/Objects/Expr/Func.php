@@ -20,7 +20,7 @@
  */
 
 /**
- * Expression class for SQL from
+ * Expression class for generating SQL functions
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,51 +30,39 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class Join extends QBpart
+class Func extends QBpart
 {
-    const INNER_JOIN = 'INNER';
-    const LEFT_JOIN  = 'LEFT';
-    const RIGHT_JOIN  = 'RIGHT';
-    const OUTER_JOIN  = 'OUTER';
-
-    const ON   = 'ON';
-    const WITH = 'WITH';
-
-    private $_joinType;
-    private $_join;
+    private $_name;
+    private $_arguments = array();
     private $_alias;
-    private $_condition;
-    private $_indexBy;
 
-    public function __construct($joinType, $join, $alias = null, $condition = null, $indexBy = null)
+    public function __construct($name, $arguments = null, $alias = null)
     {
-        $this->_joinType       = $joinType;
-        $this->_join           = $join;
-        $this->_alias          = $alias;
-        $this->_condition      = $condition;
-        $this->_indexBy        = $indexBy;
+        $this->_name = $name;
+        if($arguments != null){
+        	if(is_array($arguments)){
+       			$this->_arguments = $arguments;
+        	}
+        	else{
+        		$this->_arguments = array($arguments);
+        	}
+        }
+        $this->_alias = $alias;
     }
 
-    public function getAlias()
+    public function getString()
     {
-    	return $this->_alias;
-    }
-    
-    public function __toString()
-    {
-        $returnString = strtoupper($this->_joinType) . ' JOIN ';
+    	$finalArguments = $this->_arguments;
+    	foreach($finalArguments as &$arg){
+    		$arg = Base::getStringFromPart(Expr::quoteLiteral($arg));
+    	}
+    	
+        $returnStr = $this->_name . '(' . implode(', ', $finalArguments) . ')';
         
-		if($this->_join instanceof QueryBuilder or $this->_join instanceof Unionx){
-			$returnString .= "($this->_join)";
-		}
-		else{
-			$returnString .= "`$this->_join`";
-		}
-		
-		$returnString .= ($this->_alias ? ' as `' . $this->_alias . '`' : '')
-             	. ($this->_condition ? ' ON (' . $this->_condition . ')' : '')
-             	. ($this->_indexBy ? ' INDEX BY ' . $this->_indexBy : '');
-		
-		return $returnString;
+        if($this->_alias != null){
+        	$returnStr .= " as `". $this->_alias ."`";
+        }
+        
+        return $returnStr;
     }
 }

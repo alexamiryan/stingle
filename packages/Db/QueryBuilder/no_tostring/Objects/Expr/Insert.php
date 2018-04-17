@@ -54,16 +54,16 @@ class Insert extends QBpart
     	$this->fields = $fields;
     }
     
-    public function __tostring(){
+    public function getString(){
     	$returnStr = $this->_getType();
     	
     	$returnStr .= "INTO `{$this->tableName}` ";
     	if($this->fields !== null and is_array($this->fields)){
-    		$returnStr .= "(`" . implode("`,`", $this->fields) . "`) ";
+    		$returnStr .= "(`" . Base::implodeParts("`,`", $this->fields) . "`) ";
     	}
     	
     	if(isset($this->values[0][0]) and $this->values[0][0] instanceof QueryBuilder and $this->values[0][0]->getType() == QueryBuilder::SELECT){
-    		$returnStr .= "({$this->values[0][0]})";
+    		$returnStr .= "(" . Base::getStringFromPart($this->values[0][0]) . ")";
     	}
     	else{
     		if(($this->fields !== null and is_array($this->fields)) or (isset($this->values[0]) and !isAssoc($this->values[0]))){
@@ -86,7 +86,7 @@ class Insert extends QBpart
     private function _getValues($values){
     	$returnStr = "";
     	foreach($values as $value){
-   			$returnStr .= Expr::quoteLiteral($value) . ",";
+   			$returnStr .= Base::getStringFromPart(Expr::quoteLiteral($value)) . ",";
     	}
     	
     	return trim($returnStr, ",");

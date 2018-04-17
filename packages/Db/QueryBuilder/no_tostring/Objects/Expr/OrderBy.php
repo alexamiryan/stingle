@@ -1,4 +1,5 @@
 <?php
+
 /*
  *  $Id$
  *
@@ -20,7 +21,7 @@
  */
 
 /**
- * Expression class for SQL from
+ * Expression class for building SQL Order By parts
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link    www.doctrine-project.org
@@ -30,51 +31,40 @@
  * @author  Jonathan Wage <jonwage@gmail.com>
  * @author  Roman Borschel <roman@code-factory.org>
  */
-class Join extends QBpart
-{
-    const INNER_JOIN = 'INNER';
-    const LEFT_JOIN  = 'LEFT';
-    const RIGHT_JOIN  = 'RIGHT';
-    const OUTER_JOIN  = 'OUTER';
+class OrderBy extends QBpart {
 
-    const ON   = 'ON';
-    const WITH = 'WITH';
+	const ASC = 'ASC';
+	const DESC = 'DESC';
 
-    private $_joinType;
-    private $_join;
-    private $_alias;
-    private $_condition;
-    private $_indexBy;
+	protected $_preSeparator = '';
+	protected $_separator = ', ';
+	protected $_postSeparator = '';
+	protected $_allowedClasses = array();
+	private $_parts = array();
 
-    public function __construct($joinType, $join, $alias = null, $condition = null, $indexBy = null)
-    {
-        $this->_joinType       = $joinType;
-        $this->_join           = $join;
-        $this->_alias          = $alias;
-        $this->_condition      = $condition;
-        $this->_indexBy        = $indexBy;
-    }
-
-    public function getAlias()
-    {
-    	return $this->_alias;
-    }
-    
-    public function __toString()
-    {
-        $returnString = strtoupper($this->_joinType) . ' JOIN ';
-        
-		if($this->_join instanceof QueryBuilder or $this->_join instanceof Unionx){
-			$returnString .= "($this->_join)";
+	public function __construct($sort = null, $order = null) {
+		if (!empty($order) and $order != self::ASC and $order != self::DESC) {
+			throw new InvalidArgumentException("\$order have to be ASC or DESC");
 		}
-		else{
-			$returnString .= "`$this->_join`";
+
+		if ($sort) {
+			$this->add($sort, $order);
 		}
-		
-		$returnString .= ($this->_alias ? ' as `' . $this->_alias . '`' : '')
-             	. ($this->_condition ? ' ON (' . $this->_condition . ')' : '')
-             	. ($this->_indexBy ? ' INDEX BY ' . $this->_indexBy : '');
-		
-		return $returnString;
-    }
+	}
+
+	public function add($sort, $order = null) {
+		if (!$sort instanceof Func) {
+			$order = !$order ? 'ASC' : $order;
+		}
+		$this->_parts[] = Base::getStringFromPart($sort) . ' ' . $order;
+	}
+
+	public function count() {
+		return count($this->_parts);
+	}
+
+	public function getString() {
+		return $this->_preSeparator . Base::implodeParts($this->_separator, $this->_parts) . $this->_postSeparator;
+	}
+
 }

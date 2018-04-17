@@ -1,0 +1,112 @@
+<?php
+
+/*
+ *  $Id$
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * This software consists of voluntary contributions made by many individuals
+ * and is licensed under the LGPL. For more information, see
+ * <http://www.doctrine-project.org>.
+ */
+
+/**
+ * Abstract base Expr class for building SQL parts
+ *
+ * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
+ * @link    www.doctrine-project.org
+ * @since   2.0
+ * @version $Revision$
+ * @author  Guilherme Blanco <guilhermeblanco@hotmail.com>
+ * @author  Jonathan Wage <jonwage@gmail.com>
+ * @author  Roman Borschel <roman@code-factory.org>
+ */
+abstract class Base extends QBpart {
+
+	protected $_preSeparator = '(';
+	protected $_separator = ', ';
+	protected $_postSeparator = ')';
+	protected $_allowedClasses = array();
+	protected $_parts = array();
+
+	public function __construct($args = array()) {
+		$this->addMultiple($args);
+	}
+
+	public function addMultiple($args = array()) {
+		foreach ((array) $args as $arg) {
+			$this->add($arg);
+		}
+
+		return $this;
+	}
+
+	public function add($arg) {
+		if ($arg !== null || ($arg instanceof self && $arg->count() > 0)) {
+			// If we decide to keep Base instances, we can use this check
+			if (!is_string($arg)) {
+				$class = get_class($arg);
+
+				if (!in_array($class, $this->_allowedClasses)) {
+					throw new \InvalidArgumentException("Expression of type '$class' not allowed in this context (" . get_class($this) . ").");
+				}
+			}
+
+			$this->_parts[] = $arg;
+		}
+
+		return $this;
+	}
+
+	public function getParts() {
+		return $this->_parts;
+	}
+
+	public function count() {
+		return count($this->_parts);
+	}
+
+	public static function implodeParts($separator, $parts) {
+		$partStr = "";
+		if (is_array($parts)) {
+			foreach ($parts as $i => $part) {
+				$partStr .= self::getStringFromPart($part);
+				if ($i < count($parts) - 1) {
+					$partStr .= $separator;
+				}
+			}
+		}
+		else {
+			$partStr = self::getStringFromPart($parts);
+		}
+		
+		return $partStr;
+	}
+	
+	public static function getStringFromPart($part){
+		if(is_object($part) && method_exists($part, 'getString')){
+			return $part->getString();
+		}
+		
+		return $part;
+	}
+
+	public function getString() {
+		if ($this->count() == 1) {
+			return self::getStringFromPart($this->_parts[0]);
+		}
+
+		return $this->_preSeparator . self::implodeParts($this->_separator, $this->_parts) . $this->_postSeparator;
+	}
+
+}

@@ -19,6 +19,11 @@ class SmartyWrapper extends Smarty {
 	private $overridedFileToDisplay;
 	
 	/**
+	 *
+	 * @var Config 
+	 */
+	private $config = null;
+	/**
 	 * Template which will be used
 	 * @var string
 	 */
@@ -194,6 +199,7 @@ class SmartyWrapper extends Smarty {
 			throw new RuntimeException("Smarty is already initilized");
 		}
 
+		$this->config = $config;
 		$this->loadConfig($config);
 
 		$this->registerPlugin('modifier', 'filePath', array(&$this, 'getFilePathFromTemplate'));
@@ -256,8 +262,8 @@ class SmartyWrapper extends Smarty {
 	 * @throws RuntimeException
 	 */
 	public function setTemplate($template){
-		if(!is_dir($this->getTemplateDir(0)."templates/".$template)){
-			throw new InvalidArgumentException("Specified templates directory (".$this->getTemplateDir(0)."templates/".$template.") doesn't exist");
+		if(!is_dir($this->config->templateDir."templates/".$template)){
+			throw new InvalidArgumentException("Specified templates directory (".$this->config->templateDir."templates/".$template.") doesn't exist");
 		}
 		
 		if(!isset($this->templatesConfig->templates->$template)){
@@ -290,9 +296,9 @@ class SmartyWrapper extends Smarty {
 	 * @throws RuntimeException
 	 */
 	public function getFilePathFromTemplate($filename, $withAbsolutePath = false){
-		$templatePathPrefix = $this->getTemplateDir(0) . $this->defaultRelativeTemplatesPath;
+		$templatePathPrefix = $this->config->templateDir . $this->defaultRelativeTemplatesPath;
 		if($withAbsolutePath){
-			$returnTemplatePathPrefix = $this->getTemplateDir(0) . $this->defaultRelativeTemplatesPath;
+			$returnTemplatePathPrefix = $this->config->templateDir . $this->defaultRelativeTemplatesPath;
 		}
 		else{
 			$returnTemplatePathPrefix = $this->defaultRelativeTemplatesPath;
@@ -324,7 +330,7 @@ class SmartyWrapper extends Smarty {
 	 *  @return string
 	 */
 	public function findFilePath($fileName, $alternatePath = null){
-		$templatePathPrefix = $this->getTemplateDir(0) . $this->defaultRelativeTemplatesPath;
+		$templatePathPrefix = $this->config->templateDir . $this->defaultRelativeTemplatesPath;
 		$currentTemplate = $this->template;
 		$nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
 		
@@ -404,7 +410,7 @@ class SmartyWrapper extends Smarty {
 		if(file_exists($this->getFilePathFromTemplate('layouts/' . $layout . '.tpl', true))){
 			$this->layoutPath = $this->getFilePathFromTemplate('layouts/' . $layout . '.tpl');
 		}
-		elseif(file_exists($this->getTemplateDir(0) . "system/layouts/" . $layout . '.tpl')){
+		elseif(file_exists($this->config->templateDir . "system/layouts/" . $layout . '.tpl')){
 			$this->layoutPath = "system/layouts/" . $layout . '.tpl';
 		}
 		else{
@@ -722,8 +728,8 @@ class SmartyWrapper extends Smarty {
 		$this->assign ( '__CustomHeadTags', $this->CustomHeadTags );
 		
 		// Template Paths
-		$this->assign ( '__ViewDirPath', $this->getTemplateDir(0) );
-		$this->assign ( '__TemplatePath', $this->getTemplateDir(0) . $this->defaultRelativeTemplatesPath );
+		$this->assign ( '__ViewDirPath', $this->config->templateDir );
+		$this->assign ( '__TemplatePath', $this->config->templateDir . $this->defaultRelativeTemplatesPath );
 		$this->assign ( '__PagesPath', $this->pagesPath );
 	}
 	

@@ -48,17 +48,6 @@ class MySqlQuery extends Model {
 		$this->link = $db->getLink();
 	}
 
-	/**
-	 * Class destructor
-	 *
-	 */
-	public function __destruct() {
-		if (is_object($this->result)) {
-			$this->result->free();
-			$this->result = null;
-		}
-	}
-
 	public function setLogger(Logger $logger) {
 		$this->logger = $logger;
 	}

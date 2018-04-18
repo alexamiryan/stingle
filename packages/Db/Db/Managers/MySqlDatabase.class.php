@@ -118,18 +118,20 @@ class MySqlDatabase extends Model
 	*/
 	public function startTransaction($withSnapshot = false, $name = null){
 		if(!$this->transaction_started){
-			if($this->link->begin_transaction(($withSnapshot ? MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT : null), $name)){
-				$this->transaction_started = true;
-				return true;
+			if($name !== null){
+				if($this->link->begin_transaction(($withSnapshot ? MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT : null), $name)){
+					$this->transaction_started = true;
+					return true;
+				}
 			}
 			else{
-				return false;
+				if($this->link->begin_transaction(($withSnapshot ? MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT : null))){
+					$this->transaction_started = true;
+					return true;
+				}
 			}
 		}
-		else{
-			return false;
-		}
-
+		return false;
 	}
 
 	/**

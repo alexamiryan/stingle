@@ -1,11 +1,12 @@
 <?php
+
 /**
  * Mail Class
  * @author Aram Gevorgyan
  *
  */
-class Mail{
-	
+class Mail {
+
 	/**
 	 * 
 	 * Send to array
@@ -13,146 +14,172 @@ class Mail{
 	 * @access protected
 	 * @var Array
 	 */
-	protected $to			 = array();
-	
+	protected $to = array();
+
 	/**
 	 * Reply mail to
 	 * @example array( "to@domainName.com", "toName")
 	 * @access protected
 	 * @var Array
 	 */
-	protected $replyTo 		 = array();
+	protected $replyTo = array();
 	
 	/**
-     * From email address
-     * @example "fromMail@domainName.com"
-     * @access public
-     * @var string
-     */
-  	public $from              = '';
+	 * Custom headers
+	 * @var Array 
+	 */
+	protected $customHeaders = array();
 
-  	/**
-   	 * From email name
-   	 * @example Name
-   	 * @access public
-     * @var string
-     */
-  	public $fromName          = '';
+	/**
+	 * From email address
+	 * @example "fromMail@domainName.com"
+	 * @access public
+	 * @var string
+	 */
+	public $from = '';
+
+	/**
+	 * From email name
+	 * @example Name
+	 * @access public
+	 * @var string
+	 */
+	public $fromName = '';
+
+	/**
+	 * Sets the HTML body
+	 * @access public
+	 * @var string
+	 */
+	public $htmlBody = '';
 	
 	/**
-   	 * Sets the Body type.  This can be either an HTML or text body.
-   	 * If HTML then run IsHTML(true).
-   	 * @example "body of mail."
-   	 * @access public
-   	 * @var string
-   	 */
-  	public $body              = '';
+	 * Sets the plain text body
+	 * @access public
+	 * @var string
+	 */
+	public $textBody = '';
 	
+	/**
+	 * Charset of the email
+	 * 
+	 * @var String
+	 */
+	public $charSet = 'utf-8';
+
 	/**
 	 * Sets the Subject of the mail.
 	 * @example "subject of mail"
 	 * @access public
 	 * @var string
 	 */
-  	public $subject           = '';
-	
-	/**
-	 * Sets the Content-type of the message.
-	 * @example 'text/html'
-	 * @access public
-	 * @var string
-	 */
-	public $contentType       = 'text/plain';
-	
-    /**
-     * Add To address and optional name of to address
-     * @param String $address
-     * @param String $name
-     * @example addTo("to@domain.com", "toName");
-     * @access public
-     * @throws MailException
-     * @return Boolean
-     */
-    public function addTo($address, $name = '', $checkValidity = true){
-    	$address = trim($address);
-   	$name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
-    	if ($checkValidity and !valid_email($address)) {
-    		throw new MailException("to mail adress is not valid!");
-    	}
-	if (!array_key_exists(strtolower($address), $this->to)) {
-	    $this->to[strtolower($address)] = array($address, $name);
-	    return true;
-    	}
-    	return false;
-    }
+	public $subject = '';
 
-    /**
-     * Add replyTo address, optional name of reply-to address
-     * @param String $address
-     * @param String $name
-     * @example addReplyTo("replyto@domain.com", "replytoName");
-     * @throws MailException
-     * @return Boolean
-     */
-    public function addReplyTo($address, $name = '', $checkValidity = true){
-    	$address = trim($address);
-   	$name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
-    	if ($checkValidity and !valid_email($address)) {
-    		throw new MailException("Reply to adress is not valid!");
-    	}
-	if (!array_key_exists(strtolower($address), $this->replyTo)) {
-	    $this->replyTo[strtolower($address)] = array($address, $name);
-	    return true;
-    	}
-    	return false;	
-    }
-    
-    /**
-     * Get To addresses array
-     * @access public
-     * @return Array     
-     */
-    public function getToAddress(){
-    	return $this->to;
-    }
-    
-    /**
-     * Get ReplyTo addresses array
-     * @access public
-     * @return Array
-     */
-    public function getReplyTos(){
-    	return $this->replyTo;
-    }
-	
-    /**
-     * Remove all To addresses
-     * @access public
-     */
-	public function clearAddresses(){
-		$this->to = array();
+	/**
+	 * Add To address and optional name of to address
+	 * @param String $address
+	 * @param String $name
+	 * @example addTo("to@domain.com", "toName");
+	 * @access public
+	 * @throws MailException
+	 * @return Boolean
+	 */
+	public function addTo($address, $name = '', $checkValidity = false) {
+		$address = trim($address);
+		$name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
+		if ($checkValidity and ! valid_email($address)) {
+			throw new MailException("to mail adress is not valid!");
+		}
+		if (!array_key_exists(strtolower($address), $this->to)) {
+			array_push($this->to, array('address' => $address, 'name' => $name));
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Add replyTo address, optional name of reply-to address
+	 * @param String $address
+	 * @param String $name
+	 * @example addReplyTo("replyto@domain.com", "replytoName");
+	 * @throws MailException
+	 * @return Boolean
+	 */
+	public function addReplyTo($address, $name = '', $checkValidity = false) {
+		$address = trim($address);
+		$name = trim(preg_replace('/[\r\n]+/', '', $name)); //Strip breaks and trim
+		if ($checkValidity and ! valid_email($address)) {
+			throw new MailException("Reply to adress is not valid!");
+		}
+		if (!array_key_exists(strtolower($address), $this->replyTo)) {
+			array_push($this->replyTo, array('address' => $address, 'name' => $name));
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Add custom header
+	 * 
+	 * @param string $name
+	 * @param string $value
+	 * @return boolean
+	 */
+	public function addCustomHeader($name, $value){
+		if(!empty($name)){
+			array_push($this->customHeaders, array('name' => $name, 'value'=>$value));
+			return true;
+		}
+		return false;
 	}
 	
+	/**
+	 * Clear custom headers
+	 */
+	public function clearCustomHeaders(){
+		$this->customHeaders = array();
+	}
+	
+	/**
+	 * Get Custom headers array
+	 * 
+	 * @return Array
+	 */
+	public function getCustomHeaders(){
+		return $this->customHeaders;
+	}
+	
+	/**
+	 * Get To addresses array
+	 * @access public
+	 * @return Array     
+	 */
+	public function getToAddresses() {
+		return $this->to;
+	}
+
+	/**
+	 * Get ReplyTo addresses array
+	 * @access public
+	 * @return Array
+	 */
+	public function getReplyToAddresses() {
+		return $this->replyTo;
+	}
+
+	/**
+	 * Remove all To addresses
+	 * @access public
+	 */
+	public function clearAddresses() {
+		$this->to = array();
+	}
+
 	/**
 	 * Remove all replyTos addresses
 	 * @access public
 	 */
 	public function clearReplyTos() {
-    	$this->replyTo = array();
-  	}
-	
-	/**
-	 * Sets message type to HTML.
-	 * @param bool $ishtml
-	 * @access public
-	 * @return void
-	 */
-	public function isHTML($ishtml = true){
-		if($ishtml){
-			$this->contentType = 'text/html';
-		}
-		else{
-			$this->contentType = 'text/plain';
-		}
+		$this->replyTo = array();
 	}
 }

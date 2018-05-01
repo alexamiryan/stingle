@@ -435,7 +435,7 @@ class MySqlQuery extends Model {
 		if ($this->lastFetchType == self::FETCH_TYPE_FIELD) {
 			$resultLastPosition = $this->lastFieldPosition;
 		}
-		elseif ($this->last_fetch_type == self::FETCH_TYPE_RECORD) {
+		elseif ($this->lastFetchType == self::FETCH_TYPE_RECORD) {
 			$resultLastPosition = $this->lastRecordPosition;
 		}
 		else {

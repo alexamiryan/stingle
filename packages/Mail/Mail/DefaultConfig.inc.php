@@ -6,7 +6,8 @@ $defaultConfig = array(
 			'fromMail' => 'no-reply@example.com',
 			'fromName' => 'My Website',
 			'replyToMail' => 'contact@example.com',
-			'replyToName' => 'My Website Support'
+			'replyToName' => 'My Website Support',
+			'returnPath' => null
 		),
 		'DKIM' => array(
 			'enabled' => false,

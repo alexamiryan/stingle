@@ -59,14 +59,26 @@ class MailSender {
 			}
 		}
 
-		$phpMailer->setFrom($mail->from, $mail->fromName);
+		$returnPath = (!empty($mail->returnPath) ? $mail->returnPath : $config->mailParams->returnPath);
+		if(!empty($returnPath)){
+			$phpMailer->Sender = $returnPath;
+		}
+		
+		$fromMail = (!empty($mail->from) ? $mail->from : $config->mailParams->fromMail);
+		$fromName = (!empty($mail->fromName) ? $mail->fromName : $config->mailParams->fromName);
+		$phpMailer->setFrom($fromMail, $fromName);
 
 		foreach ($mail->getToAddresses() as $address) {
 			$phpMailer->addAddress($address['address'], $address['name']);
 		}
 
-		foreach ($mail->getReplyToAddresses() as $address) {
-			$phpMailer->addReplyTo($address['address'], $address['name']);
+		if(count($mail->getReplyToAddresses())){
+			foreach ($mail->getReplyToAddresses() as $address) {
+				$phpMailer->addReplyTo($address['address'], $address['name']);
+			}
+		}
+		else{
+			$phpMailer->addReplyTo($config->mailParams->replyToMail, $config->mailParams->replyToName);
 		}
 
 		foreach ($mail->getCustomHeaders() as $header) {

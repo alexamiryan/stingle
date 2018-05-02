@@ -47,6 +47,13 @@ class Mail {
 	public $fromName = '';
 
 	/**
+	 * @example bounces@example.com
+	 * @access public
+	 * @var type String
+	 */
+	public $returnPath = null;
+	
+	/**
 	 * Sets the HTML body
 	 * @access public
 	 * @var string

@@ -88,6 +88,7 @@ class MailSender {
 		$phpMailer->Subject = $mail->subject;
 		$phpMailer->isHTML(true);
 		$phpMailer->CharSet = $mail->charSet;
+		$phpMailer->Encoding = $mail->encoding;
 
 		$phpMailer->Body = $mail->htmlBody;
 		if (!empty($mail->textBody)) {

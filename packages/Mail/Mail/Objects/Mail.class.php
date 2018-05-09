@@ -75,6 +75,14 @@ class Mail {
 	public $charSet = 'utf-8';
 
 	/**
+	 * Encoding of the mail
+	 * Options: "8bit", "7bit", "binary", "base64", and "quoted-printable".
+	 * 
+	 * @var type String
+	 */
+	public $encoding = 'quoted-printable';
+	
+	/**
 	 * Sets the Subject of the mail.
 	 * @example "subject of mail"
 	 * @access public

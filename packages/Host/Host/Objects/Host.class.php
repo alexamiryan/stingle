@@ -41,9 +41,10 @@ class Host{
 	public static function setData($data, Host $host){
 		$host->id = $data["id"];
 		$host->host = $data["host"];
+		$host->https = $data["https"];
+
 		if(!empty($data["subdomain"])){
 			$host->subdomain = $data["subdomain"];
-			$host->https = $data["https"];
 			
 			$baseDomainPosition = strpos($data["host"], $data["subdomain"]) + strlen($data["subdomain"]);
 			$host->baseDomain = substr($data["host"], $baseDomainPosition+1);

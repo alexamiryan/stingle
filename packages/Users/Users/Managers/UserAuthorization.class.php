@@ -128,7 +128,7 @@ class UserAuthorization extends DbAccessor{
 	 */
 	public function doLogout(){
 		unset($_SESSION[$this->config->sessionVarName]);
-		setcookie($this->config->loginCookieName, null, null, '/');
+		setcookie($this->config->loginCookieName, null, null, '/', "", true, true);
 	}
 	
 	/**
@@ -195,7 +195,7 @@ class UserAuthorization extends DbAccessor{
 		$expTime = $dateInfo[0] + (60 * 60 * 24 * $this->config->rememberDaysCount);
 		$cookieValue = AES256::encrypt($usr->id . ":" . hash('sha256', $usr->login . ":" . $usr->password));
 		
-		setcookie($this->config->loginCookieName, $cookieValue, $expTime, '/');
+		setcookie($this->config->loginCookieName, $cookieValue, $expTime, '/', "", true, true);
 	}
 	
 	/**

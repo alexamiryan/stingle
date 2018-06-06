@@ -49,3 +49,13 @@ function getAllGetParams(array $excludeArray = array()){
 
 	return $returnString;
 }
+
+/**
+ * Shortcut for glink function
+ * 
+ * @param String $url
+ * @return String
+ */
+function glink($url){
+		return Reg::get('rewriteURL')->glink($url);
+}

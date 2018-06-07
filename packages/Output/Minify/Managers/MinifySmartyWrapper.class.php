@@ -19,7 +19,7 @@ class MinifySmartyWrapper extends SmartyWrapper {
 		$this->addJsAtPosSmart($fileName, static::SECONDARY, $fromTop);
 	}
 	
-	public function addJsAtPos($fileName, $position = null, $fromTop = false) {
+	public function addJsAtPos($fileName, $position = null, $fromTop = false, $isSmart = false) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
@@ -31,8 +31,12 @@ class MinifySmartyWrapper extends SmartyWrapper {
 			$this->jsFiles[$position] = array();
 		}
 	
-		$item = array('type'=> self::TYPE_JS, 'path'=>$this->getCurrentPagePath(), 'src' => $fileName);
-		
+		$item = array(
+			'type'=> self::TYPE_JS, 
+			'path'=>$this->getCurrentPagePath(), 
+			'src' => $fileName, 
+			'isSmart'=>$isSmart
+		);
 	
 		if($fromTop){
 			array_splice($this->jsFiles[$position], 0, 0, $item);
@@ -42,7 +46,7 @@ class MinifySmartyWrapper extends SmartyWrapper {
 		}
 	}
 	
-	public function addJsAtPosSmart($fileName, $position = null, $fromTop = false){
+	public function addJsAtPosSmart($fileName, $position = null, $fromTop = false, $isSmart = false){
 		if(empty($fileName)){
 			throw new InvalidArgumentException("JS filename is not specified");
 		}
@@ -54,7 +58,12 @@ class MinifySmartyWrapper extends SmartyWrapper {
 			$this->jsFiles[$position] = array();
 		}
 
-		$item = array('type'=> self::TYPE_JS_SMART, 'path'=>$this->getCurrentPagePath(), 'src' => $fileName);
+		$item = array(
+			'type'=> self::TYPE_JS_SMART, 
+			'path'=>$this->getCurrentPagePath(), 
+			'src' => $fileName,
+			'isSmart'=>$isSmart
+		);
 		
 		if($fromTop){
 			array_splice($this->jsFiles[$position], 0, 0, $item);
@@ -72,7 +81,7 @@ class MinifySmartyWrapper extends SmartyWrapper {
 		$this->addCssAtPosSmart($fileName, static::SECONDARY, $fromTop);
 	}
 	
-	public function addCssAtPos($fileName, $position = null, $fromTop = false) {
+	public function addCssAtPos($fileName, $position = null, $fromTop = false, $isSmart = false) {
 		if(empty($fileName)){
 			throw new InvalidArgumentException("CSS filename is not specified");
 		}
@@ -84,7 +93,12 @@ class MinifySmartyWrapper extends SmartyWrapper {
 			$this->cssFiles[$position] = array();
 		}
 	
-		$item = array('type'=> self::TYPE_CSS, 'path'=>$this->getCurrentPagePath(), 'src' => $fileName);
+		$item = array(
+			'type'=> self::TYPE_CSS, 
+			'path'=>$this->getCurrentPagePath(), 
+			'src' => $fileName,
+			'isSmart'=>$isSmart
+		);
 		
 		if($fromTop){
 			array_splice($this->cssFiles[$position], 0, 0, $item);
@@ -94,7 +108,7 @@ class MinifySmartyWrapper extends SmartyWrapper {
 		}
 	}
 	
-	public function addCssAtPosSmart($fileName, $position = null, $fromTop = false){
+	public function addCssAtPosSmart($fileName, $position = null, $fromTop = false, $isSmart = false){
 		if(empty($fileName)){
 			throw new InvalidArgumentException("CSS filename is not specified");
 		}
@@ -106,7 +120,12 @@ class MinifySmartyWrapper extends SmartyWrapper {
 			$this->cssFiles[$position] = array();
 		}
 		
-		$item = array('type'=> self::TYPE_CSS_SMART, 'path'=>$this->getCurrentPagePath(), 'src' => $fileName);
+		$item = array(
+			'type'=> self::TYPE_CSS_SMART, 
+			'path'=>$this->getCurrentPagePath(), 
+			'src' => $fileName,
+			'isSmart'=>$isSmart
+		);
 		
 		if($fromTop){
 			array_splice($this->cssFiles[$position], 0, 0, $item);

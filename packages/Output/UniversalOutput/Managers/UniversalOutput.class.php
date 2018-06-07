@@ -12,6 +12,7 @@ class UniversalOutput extends Model{
 	
 	const TYPE_HTML = 0;
 	const TYPE_JSON = 1;
+	const TYPE_BARE = 2;
 
 	private $outputType = null;
 	
@@ -22,9 +23,9 @@ class UniversalOutput extends Model{
 	private $cssSmartFiles = array();
 	
 	private $parts = array();
-	private $vars = array();
 	
 	private $redirectUrl = null;
+	private $redirectPageUrl = null;
 	
 	private $disableContentOutput = false;
 	private $disableAutoMainPart = false;
@@ -90,6 +91,10 @@ class UniversalOutput extends Model{
 		Reg::get('smarty')->assign($var, $value);
 	}
 	
+	public function setWrapper($wrapper){
+		Reg::get('smarty')->setWrapper($wrapper);
+	}
+	
 	public function redirect($url, $doGlink = false){
 		if($doGlink){
 			$rewriteUrl = Reg::get(ConfigManager::getConfig('RewriteURL', 'RewriteURL')->Objects->rewriteURL);
@@ -97,6 +102,16 @@ class UniversalOutput extends Model{
 		}
 		else{
 			$this->redirectUrl = $url;
+		}
+	}
+	
+	public function redirectPage($url, $doGlink = false){
+		if($doGlink){
+			$rewriteUrl = Reg::get(ConfigManager::getConfig('RewriteURL', 'RewriteURL')->Objects->rewriteURL);
+			$this->redirectPageUrl = $rewriteUrl->glink($url);
+		}
+		else{
+			$this->redirectPageUrl = $url;
 		}
 	}
 	
@@ -122,6 +137,10 @@ class UniversalOutput extends Model{
 		$this->outputType = self::TYPE_JSON;
 	}
 	
+	public function setBareOutput(){
+		$this->outputType = self::TYPE_BARE;
+	}
+	
 	public function output(){
 		if($this->outputType == self::TYPE_JSON or ($this->outputType == null && isset($_GET['ajax']) && $_GET['ajax'] == 1)){
 			$output = array();
@@ -131,6 +150,9 @@ class UniversalOutput extends Model{
 			if($this->redirectUrl !== null){
 				$output['redirect'] = $this->redirectUrl;
 			}
+			elseif($this->redirectPageUrl !== null){
+				$output['redirectPage'] = $this->redirectPageUrl;
+			}
 			else{
 				$output['infos'] = Reg::get('info')->getAll();
 				$output['errors'] = Reg::get('error')->getAll();
@@ -139,7 +161,7 @@ class UniversalOutput extends Model{
 					foreach($this->parts as $partName => $partValue){
 						$output['parts'][$partName] = $partValue;
 					}
-					if(!isset($output['parts']['main']) and !$this->disableAutoMainPart){
+					if(!isset($this->parts['main']) and !$this->disableAutoMainPart){
 						try{
 							$main = Reg::get('smarty')->output(true);
 							if($main != null){
@@ -168,12 +190,17 @@ class UniversalOutput extends Model{
 			}
 			JSON::jsonOutput($output);
 		}
+		elseif($this->outputType == self::TYPE_BARE or ($this->outputType == null && isset($_GET['ajaxm']) && $_GET['ajaxm'] == 1)){
+			echo Reg::get('smarty')->output(true);
+		}
 		else{
 			if($this->redirectUrl !== null){
 				redirect($this->redirectUrl);
 			}
-			
-			if(!$this->disableContentOutput){
+			elseif($this->redirectPageUrl !== null){
+				redirect($this->redirectPageUrl);
+			}
+			elseif(!$this->disableContentOutput){
 				foreach($this->parts as $partName => $partValue){
 					Reg::get('smarty')->assign($partName, $partValue);
 				}

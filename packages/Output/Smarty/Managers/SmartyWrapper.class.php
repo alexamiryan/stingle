@@ -486,12 +486,18 @@ class SmartyWrapper extends Smarty {
 			$filePath = $this->getCssFilePath($fileName);
 		}
 		
+		$item = array(
+			'path' => $filePath,
+			'pagePath' => base64_encode($this->getCurrentPagePath()),
+			'isSmart'=>$isSmart
+		);
+		
 		if(!empty($filePath) and $filePath != '/'){
 			if($fromTop){
-				array_splice($this->cssFiles[$position], 0, 0, array('path' => $filePath, 'isSmart'=>$isSmart));
+				array_splice($this->cssFiles[$position], 0, 0, $item);
 			}
 			else{
-				array_push($this->cssFiles[$position], array('path' => $filePath, 'isSmart'=>$isSmart));
+				array_push($this->cssFiles[$position], $item);
 			}
 		}
 		else{
@@ -565,17 +571,38 @@ class SmartyWrapper extends Smarty {
 			$filePath = $this->getJsFilePath($fileName);
 		}
 		
+		$item = array(
+			'path' => $filePath,
+			'pagePath' => base64_encode($this->getCurrentPagePath()),
+			'isSmart'=>$isSmart
+		);
+		
 		if(!empty($filePath) and $filePath != '/'){
 			if($fromTop){
-				array_splice($this->jsFiles[$position], 0, 0, array('path' => $filePath, 'isSmart'=>$isSmart));
+				array_splice($this->jsFiles[$position], 0, 0, $item);
 			}
 			else{
-				array_push($this->jsFiles[$position], array('path' => $filePath, 'isSmart'=>$isSmart));
+				array_push($this->jsFiles[$position], $item);
 			}
 		}
 		else{
 			throw new SmartyException("Can't find JS file $fileName in current template or ony parent templates");
 		}
+	}
+	
+	protected function getCurrentPagePath(){
+		$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
+		$pagePath = $this->pagesPath;
+		for($i = 0; $i < count($levels); $i++){
+			$level = $levels[$i];
+			if(isset(Reg::get('nav')->{$level}) and !empty(Reg::get('nav')->{$level})){
+				$pagePath .= Reg::get('nav')->{$level} . '/';
+			}
+			if(isset($levels[$i+1]) and !is_dir($this->getFilePathFromTemplate($pagePath . Reg::get('nav')->$levels[$i+1], true))){
+				break;
+			}
+		}
+		return $pagePath;
 	}
 	
 	public function addInlineJs($jsCode){

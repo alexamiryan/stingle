@@ -757,6 +757,7 @@ class SmartyWrapper extends Smarty {
 		// Template Paths
 		$this->assign ( '__ViewDirPath', $this->config->templateDir );
 		$this->assign ( '__TemplatePath', $this->config->templateDir . $this->defaultRelativeTemplatesPath );
+		$this->assign ( '__CurrentTemplate', $this->template );
 		$this->assign ( '__PagesPath', $this->pagesPath );
 	}
 	

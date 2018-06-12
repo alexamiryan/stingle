@@ -598,7 +598,7 @@ class SmartyWrapper extends Smarty {
 			if(isset(Reg::get('nav')->{$level}) and !empty(Reg::get('nav')->{$level})){
 				$pagePath .= Reg::get('nav')->{$level} . '/';
 			}
-			if(isset($levels[$i+1]) and !is_dir($this->getFilePathFromTemplate($pagePath . Reg::get('nav')->$levels[$i+1], true))){
+			if(isset($levels[$i+1]) and !is_dir($this->getFilePathFromTemplate($pagePath . Reg::get('nav')->{$levels[$i+1]}, true))){
 				break;
 			}
 		}

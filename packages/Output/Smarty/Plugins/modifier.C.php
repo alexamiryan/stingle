@@ -4,13 +4,6 @@
  * @return string
  */
 
-function smarty_modifier_C($constantName){
-	$value = "";
-//	try{
-		$value = Reg::get('lm')->getValueOf($constantName);
-	/*}
-	catch(Exception $e){
-		$value = constant($constantName);
-	}*/
-	return $value;
+function smarty_modifier_C($string){
+	return Reg::get('lm')->getValueOf($string);
 }

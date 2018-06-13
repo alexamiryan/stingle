@@ -4,6 +4,7 @@ class LoaderLanguage extends Loader{
 		stingleInclude ('Objects/Language.class.php');
 		stingleInclude ('Objects/Constant.class.php');
 		stingleInclude ('Managers/LanguageManager.class.php');
+		stingleInclude ('Helpers/helpers.inc.php');
 	}
 	
 	protected function customInitBeforeObjects(){

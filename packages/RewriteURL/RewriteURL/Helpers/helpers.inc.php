@@ -1,13 +1,14 @@
 <?php
-function getCurrentUrl($exclude = array()){
+
+function getCurrentUrl($exclude = array()) {
 	$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
 
 	$levelUrlParts = array();
-	foreach($levels as $level){
-		if(isset($_GET[$level]) and !empty($_GET[$level])){
+	foreach ($levels as $level) {
+		if (isset($_GET[$level]) and ! empty($_GET[$level])) {
 			array_push($levelUrlParts, $_GET[$level]);
 		}
-		else{
+		else {
 			break;
 		}
 	}
@@ -24,24 +25,24 @@ function getCurrentUrl($exclude = array()){
 /**
  * Build the string of GET parameters
  *
- * @param array $exclude_array
+ * @param array $excludeArray
  * @return string
  */
-function getAllGetParams(array $excludeArray = array()){
+function getAllGetParams(array $excludeArray = array()) {
 	$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
 	$returnString = '';
 
-	foreach($excludeArray as &$exclude){
+	foreach ($excludeArray as &$exclude) {
 		$exclude = trim($exclude);
 	}
 
-	if(is_array($_GET) && (sizeof($_GET) > 0)){
+	if (is_array($_GET) && (sizeof($_GET) > 0)) {
 		reset($_GET);
-		while((list($key, $value) = each($_GET)) != false){
-			if(in_array($key, $levels)){
+		while ((list($key, $value) = each($_GET)) != false) {
+			if (in_array($key, $levels)) {
 				continue;
 			}
-			if(!in_array(trim($key), $excludeArray)){
+			if (!in_array(trim($key), $excludeArray)) {
 				$returnString .= $key . ':' . rawurlencode($value) . '/';
 			}
 		}
@@ -56,6 +57,6 @@ function getAllGetParams(array $excludeArray = array()){
  * @param String $url
  * @return String
  */
-function glink($url){
-		return Reg::get('rewriteURL')->glink($url);
+function glink($url) {
+	return Reg::get(ConfigManager::getConfig('RewriteURL', 'RewriteURL')->Objects->rewriteURL)->glink($url);
 }

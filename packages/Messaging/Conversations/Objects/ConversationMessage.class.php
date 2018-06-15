@@ -12,5 +12,6 @@ class ConversationMessage {
 	public $deleted;
 	public $hasAttachment = 0;
 	public $attachments = array();
+	public $data = null;
 	public $system;
 }

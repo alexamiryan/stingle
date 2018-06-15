@@ -7,10 +7,9 @@ class Conversation{
 	public $interlocutorId;
 	public $interlocutor;
 	public $lastMsgDate;
-	public $read = 1;
+	public $read = ConversationManager::STATUS_READ_READ;
 	public $unreadCount = 0;
-	public $trashed = 0;
+	public $trashed = ConversationManager::STATUS_TRASHED_NOT_TRAHSED;
 	public $fetchFrom = null;
-	public $hasAttachment = 0;
-	public $system = 0;
+	public $hasAttachment = ConversationManager::STATUS_HAS_ATTACHMENT_NO;
 }

@@ -1,6 +1,7 @@
 <?php
 class LoaderMemcache extends Loader{
 	protected function includes(){
+		stingleInclude ('Exceptions/MemcacheException.class.php');
 		stingleInclude ('Managers/MemcacheWrapper.class.php');
 		stingleInclude ('Managers/MySqlQueryMemcache.class.php');
 	}

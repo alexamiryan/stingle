@@ -21,7 +21,7 @@ class MemcacheWrapper {
 		if (is_null($this->memcache) || (!is_object($this->memcache))) {
 			$this->memcache = new Memcache();
 			if (!$this->memcache->pconnect($memcache_host, $memcache_port)) {
-				throw new Exception("Error in object initialization", 2);
+				throw new MemcacheException("Error in object initialization", 2);
 			}
 		}
 	}
@@ -51,7 +51,7 @@ class MemcacheWrapper {
 		}
 
 		if (!$this->memcache->set($key, $value, $flag, $expire)) {
-			throw new RuntimeException("Unable to set data to Memcache");
+			throw new MemcacheException("Unable to set data to Memcache");
 		}
 	}
 

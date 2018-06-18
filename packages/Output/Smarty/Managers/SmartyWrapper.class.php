@@ -223,13 +223,6 @@ class SmartyWrapper extends Smarty {
 		$this->setCompileCheck($config->compileCheck);
 		$this->setUseSubDirs(true);
 		
-		if($config->memcacheSupport){
-			Reg::get('packageMgr')->usePlugin("Db", "Memcache");
-			if(ConfigManager::getConfig("Db", "Memcache")->AuxConfig->enabled){
-				$this->caching_type = 'memcache';
-			}
-		}
-
 		$this->defaultRelativeTemplatesPath = $config->defaultRelativeTemplatesPath;
 		$this->defaultRelativeTplPath = $config->defaultRelativeTplPath;
 		

@@ -10,7 +10,6 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 												'caching' => 0,
 												'defaultCacheTime' => 3600, // In Seconds
 												'compileCheck' => true,
-												'memcacheSupport' => false,
 												
 												'errorPage' => "error/error",
 												'error404Page' => "error/404",
@@ -31,8 +30,7 @@ $defaultConfig = array(	'AuxConfig' => array(	'compileDir' => "cache/templates_c
 											'AfterPluginInit' => 'CollectSmartyPluginsDir',
 											'AfterPackagesLoad' => 'RegisterSmartyPlugins',
 											'AfterRequestParser' => 'SmartyInit', 
-											'Output' => 'MainOutput',
-											'ClearUserCache' => 'ClearUserSmartyCache'
+											'Output' => 'MainOutput'
 								  )
 				
 					);

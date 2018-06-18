@@ -18,13 +18,16 @@ class ConversationManager extends DbAccessor{
 	const STATUS_HAS_ATTACHMENT_NO		= 0;
 	const STATUS_HAS_ATTACHMENT_YES		= 1;
 	
+	const IS_SYSTEM_NO					= '0';
+	const IS_SYSTEM_YES					= '1';
+	
 	public function __construct($dbInstanceKey = null){
 		parent::__construct($dbInstanceKey);
 	}
 	
-	public function sendMessage($senderId, $receiverId, $message, $systemMessage = false){
+	public function sendMessage($senderId, $receiverId, $message){
 		if(!$this->isConversationExists($senderId, $receiverId)){
-			$this->openConversation($senderId, $receiverId, $systemMessage);
+			$this->openConversation($senderId, $receiverId);
 		}
 		
 		$filter = new ConversationFilter();
@@ -38,7 +41,7 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		return $this->addMessageToConversation($uuid, $senderId, $message, $systemMessage);
+		return $this->addMessageToConversation($uuid, $senderId, $message);
 	}
 	
 	public function sendMessageByUUID($uuid, $senderId, $message){
@@ -55,6 +58,61 @@ class ConversationManager extends DbAccessor{
 		}
 		
 		return $this->addMessageToConversation($uuid, $senderId, $message);
+	}
+	
+	public function sendSystemMessage($uuid, $message){
+		if(empty($uuid) or !is_numeric($uuid)){
+			throw InvalidArgumentException("UUID have to be non zero integer.");
+		}
+		
+		// Get Conversation
+		$filter = new ConversationFilter();
+		$filter->setUUID($uuid);
+		$filter->setLimit(1);
+		$conversation = $this->getConversation($filter, true);
+		
+		// Insert new message into DB
+		$qb = new QueryBuilder();
+		$qb->insert(Tbl::get('TBL_CONVERSATION_MESSAGES'))
+			->values(
+					array(
+						'uuid' => $uuid, 
+						'message' => $message,
+						'system' => self::IS_SYSTEM_YES
+						)
+					);
+		
+		$this->query->exec($qb->getSQL());
+		$messageId = $this->query->getLastInsertId();
+		
+		// Get Interlocutors Conversation
+		$interFilter = new ConversationFilter();
+		$interFilter->setUUID($uuid);
+		$interFilter->setUserId($conversation->interlocutorId);
+		$interConv = $this->getConversation($interFilter, true);
+		
+		// Mark conversation as unread for both parties
+		$this->markConversationAsUnread($conversation->userId, $uuid);
+		$this->markConversationAsUnread($conversation->interlocutorId, $uuid);
+		
+		// Increment unreads count for both parties
+		$this->incrementConversationUnreadCount($conversation);
+		$this->incrementConversationUnreadCount($interConv);
+		
+		// Restore conversation if it is trashed or deleted for user
+		if($conversation->trashed != self::STATUS_TRASHED_NOT_TRAHSED){
+			$this->restoreConversation($conversation->userId, $uuid);
+		}
+		
+		// Restore conversation if it is trashed or deleted for interlocutor
+		if($interConv->trashed != self::STATUS_TRASHED_NOT_TRAHSED){
+			$this->restoreConversation($conversation->interlocutorId, $uuid);
+		}
+		
+		// Update Conversation last message date
+		$this->updateConversationLastMsgDate($uuid);
+		
+		return $messageId;
 	}
 	
 	public function markConversationAsRead($userId, $uuid){
@@ -224,7 +282,7 @@ class ConversationManager extends DbAccessor{
 		else{
 			$this->query->exec($sqlQuery);
 		}
-		
+
 		$messageRows = $this->query->fetchRecords();
 	
 		foreach ($messageRows as $messageRow){
@@ -673,7 +731,7 @@ class ConversationManager extends DbAccessor{
 		HookManager::callHook("ConversationUpdate", $hookParams);
 	}
 	
-	protected function addMessageToConversation($uuid, $senderId, $message, $systemMessage = false){
+	protected function addMessageToConversation($uuid, $senderId, $message){
 		if(empty($uuid) or !is_numeric($uuid)){
 			throw InvalidArgumentException("UUID have to be non zero integer.");
 		}
@@ -695,8 +753,7 @@ class ConversationManager extends DbAccessor{
 						'uuid' => $uuid, 
 						'sender_id' => $senderId,
 						'receiver_id' => $conversation->interlocutorId,
-						'message' => $message,
-						'system' => ($systemMessage) ? '1' : '0' 
+						'message' => $message
 						)
 					);
 		
@@ -704,10 +761,10 @@ class ConversationManager extends DbAccessor{
 		$messageId = $this->query->getLastInsertId();
 		
 		// Get Interlocutors Conversation
-		$filter = new ConversationFilter();
-		$filter->setUUID($uuid);
-		$filter->setUserId($conversation->interlocutorId);
-		$interConv = $this->getConversation($filter, true);
+		$interFilter = new ConversationFilter();
+		$interFilter->setUUID($uuid);
+		$interFilter->setUserId($conversation->interlocutorId);
+		$interConv = $this->getConversation($interFilter, true);
 		
 		// Mark conversation as unread for interlocutor
 		$this->markConversationAsUnread($interConv->userId, $uuid);
@@ -751,7 +808,7 @@ class ConversationManager extends DbAccessor{
 		return $this->query->exec($sqlQuery)->fetchField('maxId');
 	}
 	
-	public function openConversation($userId1, $userId2, $systemMessage = false){
+	public function openConversation($userId1, $userId2){
 		if(empty($userId1) or !is_numeric($userId1)){
 			throw new InvalidIntegerArgumentException("\$userId1 have to be non zero integer.");
 		}
@@ -772,8 +829,7 @@ class ConversationManager extends DbAccessor{
 					array(
 						'uuid' => $newUUID, 
 						'user_id' => $userId1, 
-						'interlocutor_id' => $userId2,
-						'system' => ($systemMessage) ? '1' : '0' 
+						'interlocutor_id' => $userId2
 						)
 					);
 		
@@ -784,8 +840,7 @@ class ConversationManager extends DbAccessor{
 					array(
 						'uuid' => $newUUID,
 						'user_id' => $userId2,
-						'interlocutor_id' => $userId1,
-						'system' => ($systemMessage) ? '1' : '0'
+						'interlocutor_id' => $userId1
 						)
 					);
 		
@@ -843,7 +898,6 @@ class ConversationManager extends DbAccessor{
 		$conversation->trashed = $conversationRow['trashed'];
 		$conversation->fetchFrom = $conversationRow['fetch_from'];
 		$conversation->hasAttachment = $conversationRow['has_attachment'];
-		$conversation->system = $conversationRow['system'];
 		
 		
 		return $conversation;
@@ -861,15 +915,21 @@ class ConversationManager extends DbAccessor{
 			$UserManager = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManager);
 			
 			try{
-				$message->sender = $UserManager->getUserById($messageRow['sender_id']);
-				$message->receiver = $UserManager->getUserById($messageRow['receiver_id']);
+				if(!empty($messageRow['sender_id'])){
+					$message->sender = $UserManager->getUserById($messageRow['sender_id']);
+				}
+				if(!empty($messageRow['receiver_id'])){
+					$message->receiver = $UserManager->getUserById($messageRow['receiver_id']);
+				}
 			}
 			catch(UserNotFoundException $e){ }
+			catch(InvalidArgumentException $e){ }
 		}
 		$message->message = $messageRow['message'];
 		$message->read = $messageRow['read'];
 		$message->deleted = $messageRow['deleted'];
 		$message->hasAttachment = $messageRow['has_attachment'];
+		$message->data = $messageRow["data"];
 		$message->system = $messageRow["system"];
 		
 		if(!$reduced and $message->hasAttachment == '1'){

@@ -1,6 +1,7 @@
 <?php
 class LoaderHost extends Loader{
 	protected function includes(){
+		stingleInclude ('Exceptions/NoSuchHostException.class.php');
 		stingleInclude ('Objects/Host.class.php');
 		stingleInclude ('Managers/HostManager.class.php');
 	}

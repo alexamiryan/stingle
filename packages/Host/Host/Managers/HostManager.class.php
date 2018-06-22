@@ -109,7 +109,7 @@ class HostManager{
 				
 				return self::getHostByName($hostName, false, $cacheMinutes);
 			}
-			throw new RuntimeException("There is no such host (".$originalHostName.")");
+			throw new NoSuchHostException("There is no such host (".$originalHostName.")");
 		}
 		
 	}

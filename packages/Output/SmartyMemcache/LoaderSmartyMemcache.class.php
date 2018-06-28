@@ -7,10 +7,8 @@ class LoaderSmartyMemcache extends Loader {
 	}
 	
 	protected function customInitBeforeObjects(){
-		if($this->config->AuxConfig->memcacheSupport){
-			if(ConfigManager::getConfig("Db", "Memcache")->AuxConfig->enabled){
-				Reg::get(ConfigManager::getConfig("Output", "Smarty")->Objects->Smarty)->caching_type = 'memcache';
-			}
+		if(ConfigManager::getConfig("Db", "Memcache")->AuxConfig->enabled){
+			Reg::get(ConfigManager::getConfig("Output", "Smarty")->Objects->Smarty)->caching_type = 'memcache';
 		}
 	}
 

@@ -1,7 +1,7 @@
 <?php
 
 $defaultConfig = array('AuxConfig' => array(
-				'memcacheSupport' => false
+				'memcacheSupport' => true
 		),
 		'Hooks' => array(
 				'ClearUserCache' => 'ClearUserSmartyCache'

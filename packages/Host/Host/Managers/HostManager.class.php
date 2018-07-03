@@ -4,6 +4,9 @@ class HostManager{
 	const HTTPS_YES = 'y';
 	const HTTPS_NO = 'n';
 	
+	const WWW_YES = 'y';
+	const WWW_NO = 'n';
+	
 	public static function updateHost(Host $host){
 		if(empty($host->id)){
 			throw new InvalidArgumentException("HostId is empty!");
@@ -52,7 +55,11 @@ class HostManager{
 		if(empty($host->host)){
 			throw new InvalidArgumentException("Host name is empty!");
 		}
-		$values = array( "host" => $host->host, "https" => $host->https);
+		$values = array( 
+				"host" => $host->host, 
+				"https" => $host->https,
+				"www" => $host->www
+		);
 		if(!empty($host->subdomain)){
 			$values["subdomain"] = $host->subdomain;
 		}
@@ -228,7 +235,7 @@ class HostManager{
 			$host_address .= "http://";
 		}
 		
-		if($host->subdomain == null){
+		if($host->www == self::WWW_YES){
 			$host_address .= 'www.';
 		}
 		$host_address .= $host->host; 

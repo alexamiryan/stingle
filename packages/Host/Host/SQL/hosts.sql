@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `hosts` (
   `host` varchar(100) NOT NULL COMMENT 'host name',
   `subdomain` varchar(256) DEFAULT NULL,
   `https` enum('y','n') NOT NULL DEFAULT 'n',
+  `www` enum('y','n') NOT NULL DEFAULT 'y'
   PRIMARY KEY (`id`),
   UNIQUE KEY `host` (`host`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='known hosts';

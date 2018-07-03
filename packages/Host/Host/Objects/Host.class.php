@@ -5,6 +5,7 @@ class Host{
 	public $host;
 	public $subdomain = null;
 	public $https  = HostManager::HTTPS_NO;
+	public $www  = HostManager::WWW_YES;
 	public $baseDomain = null;
 	public $wildcardOf = null;
 
@@ -42,6 +43,7 @@ class Host{
 		$host->id = $data["id"];
 		$host->host = $data["host"];
 		$host->https = $data["https"];
+		$host->www = $data["www"];
 
 		if(!empty($data["subdomain"])){
 			$host->subdomain = $data["subdomain"];

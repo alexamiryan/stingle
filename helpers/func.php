@@ -359,3 +359,6 @@ function stingleInclude($file, $precompileCode = null, $postcompileCode = null, 
 	}
 }
 
+function printr($var){
+	echo "<pre>" . print_r($var, true) . "</pre>";
+}

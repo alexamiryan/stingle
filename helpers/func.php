@@ -359,6 +359,11 @@ function stingleInclude($file, $precompileCode = null, $postcompileCode = null, 
 	}
 }
 
+/**
+ * Same as print_r but outputs in browser friendly way
+ * 
+ * @param mixed $var
+ */
 function printr($var){
 	echo "<pre>" . print_r($var, true) . "</pre>";
 }

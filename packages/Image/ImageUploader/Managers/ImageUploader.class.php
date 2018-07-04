@@ -41,6 +41,7 @@ class ImageUploader
 	    
 	    // Check if we are able to create image resource from this file.
 	    $image = new Image($file['tmp_name']);
+		$image->fixOrientation();
 	    
 	    $format = null;
 	    if(isset($imageUploaderConfig->saveFormat) and $imageUploaderConfig->saveFormat != null){

@@ -1,28 +1,26 @@
 <?php
-class Image extends Model
-{
+
+class Image extends Model {
+
 	private $info = null;
-	private $imageRes;
-	
+	private $imageRes = null;
+	private $imageExif = null;
 	public $fileName;
 	public $filePath;
-	
-	const IMAGE_TYPE_JPEG 	= 'jpeg';
-	const IMAGE_TYPE_PNG 	= 'png';
-	const IMAGE_TYPE_GIF 	= 'gif';
-	
-	const DIMENSIONS_EQUAL 									= 1;
-	const DIMENSIONS_SMALLER 								= 2;
-	const DIMENSIONS_LARGER 								= 3;
-	const DIMENSIONS_WIDTH_LARGER_HEIGHT_SMALLER 			= 4;
-	const DIMENSIONS_HEIGHT_LARGER__WIDTH_SMALLER 			= 5;
 
-	const CORNER_TOP_LEFT 		= 1;
-	const CORNER_TOP_RIGHT 		= 2;
-	const CORNER_BOTTOM_LEFT 	= 3;
-	const CORNER_BOTTOM_RIGHT 	= 4;
-	
-	
+	const IMAGE_TYPE_JPEG = 'jpeg';
+	const IMAGE_TYPE_PNG = 'png';
+	const IMAGE_TYPE_GIF = 'gif';
+	const DIMENSIONS_EQUAL = 1;
+	const DIMENSIONS_SMALLER = 2;
+	const DIMENSIONS_LARGER = 3;
+	const DIMENSIONS_WIDTH_LARGER_HEIGHT_SMALLER = 4;
+	const DIMENSIONS_HEIGHT_LARGER__WIDTH_SMALLER = 5;
+	const CORNER_TOP_LEFT = 1;
+	const CORNER_TOP_RIGHT = 2;
+	const CORNER_BOTTOM_LEFT = 3;
+	const CORNER_BOTTOM_RIGHT = 4;
+
 	/**
 	 * Image manipulation
 	 * Supports jpg, gif, png
@@ -30,24 +28,26 @@ class Image extends Model
 	 * @param string $filename
 	 * @param wInfo $error
 	 */
-	public function __construct($filePath){
-		if(empty($filePath)){
+	public function __construct($filePath) {
+		if (empty($filePath)) {
 			throw new InvalidArgumentException("\$filename is empty!");
 		}
-		if(!file_exists($filePath)){
+		if (!file_exists($filePath)) {
 			throw new RuntimeException("Given file $filePath does not exists.");
 		}
-		
+
 		$this->imageRes = $this->createImageRes($filePath);
-		
+		$this->imageExif = exif_read_data($filePath);
+
 		$this->filePath = $filePath;
 		$this->fileName = basename($filePath);
 	}
+
 	/**
 	 * Destructor
 	 */
-	public function __destruct(){
-		unset ($this->imageRes);
+	public function __destruct() {
+		unset($this->imageRes);
 	}
 
 	/**
@@ -55,30 +55,29 @@ class Image extends Model
 	 *
 	 * @param string $filename
 	 */
-	private function createImageRes($filePath){
-		if(($this->info=@getimagesize($filePath)) == false or !in_array($this->info[2], array(IMAGETYPE_JPEG, IMAGETYPE_GIF, IMAGETYPE_PNG))){
+	private function createImageRes($filePath) {
+		if (($this->info = @getimagesize($filePath)) == false or ! in_array($this->info[2], array(IMAGETYPE_JPEG, IMAGETYPE_GIF, IMAGETYPE_PNG))) {
 			throw new RuntimeException("Given file is not a image!");
 		}
-		switch ($this->info[2]){
+		switch ($this->info[2]) {
 			case IMAGETYPE_JPEG:
-				$imageRes=@imagecreatefromjpeg($filePath);
+				$imageRes = @imagecreatefromjpeg($filePath);
 				break;
 			case IMAGETYPE_GIF:
-				$imageRes=@imagecreatefromgif($filePath);
+				$imageRes = @imagecreatefromgif($filePath);
 				break;
 			case IMAGETYPE_PNG:
-				$imageRes=@imagecreatefrompng($filePath);
+				$imageRes = @imagecreatefrompng($filePath);
 				break;
 		}
-		if(!is_resource($imageRes)){
+		if (!is_resource($imageRes)) {
 			throw new RuntimeException("Unable to create resource from image!");
 		}
 		return $imageRes;
 	}
 
-	
-	public function getType(){
-		switch ($this->info[2]){
+	public function getType() {
+		switch ($this->info[2]) {
 			case IMAGETYPE_JPEG:
 				return self::IMAGE_TYPE_JPEG;
 			case IMAGETYPE_GIF:
@@ -89,15 +88,15 @@ class Image extends Model
 				throw new RuntimeException("Invalid image or object is not initialized!");
 		}
 	}
-	
-	public function getWidth(){
+
+	public function getWidth() {
 		return $this->info[0];
 	}
-	
-	public function getHeight(){
+
+	public function getHeight() {
 		return $this->info[0];
 	}
-	
+
 	/**
 	 * Resize image
 	 *
@@ -108,87 +107,87 @@ class Image extends Model
 	 * 
 	 * Only one of the width or height can be 0
 	 */
-	public function resize($width=0, $height=0, $preserve_aspect_ratio=true){
-		if(!self::checkMemAvailbleForResize($width, $height)){
+	public function resize($width = 0, $height = 0, $preserve_aspect_ratio = true) {
+		if (!self::checkMemAvailbleForResize($width, $height)) {
 			throw new RuntimeException("Memory is not enough for resize operation!");
 		}
-		
-		if($preserve_aspect_ratio){
-			$mode=0;
 
-			if($width==0 and $height==0){
+		if ($preserve_aspect_ratio) {
+			$mode = 0;
+
+			if ($width == 0 and $height == 0) {
 				return;
 			}
 
-			if($width==0){
-				$mode=2;
+			if ($width == 0) {
+				$mode = 2;
 			}
-			elseif($height==0){
-				$mode=1;
+			elseif ($height == 0) {
+				$mode = 1;
 			}
-			else{
-				$future_width=ceil($this->info[0]*$height/$this->info[1]);
-				$future_height=ceil($this->info[1]*$width/$this->info[0]);
-				if($this->info[0]>=$width or $this->info[1]>=$height){
-					if($this->info[0]>=$this->info[1]){
-						if ($future_height<=$height) {
-							$mode=1;
+			else {
+				$future_width = ceil($this->info[0] * $height / $this->info[1]);
+				$future_height = ceil($this->info[1] * $width / $this->info[0]);
+				if ($this->info[0] >= $width or $this->info[1] >= $height) {
+					if ($this->info[0] >= $this->info[1]) {
+						if ($future_height <= $height) {
+							$mode = 1;
 						}
-						else{
-							$mode=2;
-						}
-					}
-					elseif($this->info[0]<$this->info[1]){
-						if ($future_width<=$width) {
-							$mode=2;
-						}
-						else{
-							$mode=1;
+						else {
+							$mode = 2;
 						}
 					}
+					elseif ($this->info[0] < $this->info[1]) {
+						if ($future_width <= $width) {
+							$mode = 2;
+						}
+						else {
+							$mode = 1;
+						}
+					}
 				}
 			}
-			if($mode==1){
-				$resized_image = imagecreatetruecolor($width, ceil($this->info[1]*$width/$this->info[0]));
-				$this->makeImageTransparent($resized_image, $width, ceil($this->info[1]*$width/$this->info[0]));
-				
-				if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $width, ceil($this->info[1]*$width/$this->info[0]), $this->info[0], $this->info[1])){
+			if ($mode == 1) {
+				$resized_image = imagecreatetruecolor($width, ceil($this->info[1] * $width / $this->info[0]));
+				$this->makeImageTransparent($resized_image, $width, ceil($this->info[1] * $width / $this->info[0]));
+
+				if (!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $width, ceil($this->info[1] * $width / $this->info[0]), $this->info[0], $this->info[1])) {
 					throw new RuntimeException("Unable to resize image!");
 				}
-				else{
-					$this->info[1]=$this->info[1]*$width/$this->info[0];
-					$this->info[0]=$width;
+				else {
+					$this->info[1] = $this->info[1] * $width / $this->info[0];
+					$this->info[0] = $width;
 				}
 			}
-			elseif($mode==2){
-				$resized_image = imagecreatetruecolor(ceil($this->info[0]*$height/$this->info[1]), $height);
-				$this->makeImageTransparent($resized_image, ceil($this->info[0]*$height/$this->info[1]), $height);
-				
-				if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, ceil($this->info[0]*$height/$this->info[1]), $height, $this->info[0], $this->info[1])){
+			elseif ($mode == 2) {
+				$resized_image = imagecreatetruecolor(ceil($this->info[0] * $height / $this->info[1]), $height);
+				$this->makeImageTransparent($resized_image, ceil($this->info[0] * $height / $this->info[1]), $height);
+
+				if (!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, ceil($this->info[0] * $height / $this->info[1]), $height, $this->info[0], $this->info[1])) {
 					throw new RuntimeException("Unable to resize image!");
 				}
-				else{
-					$this->info[0]=$this->info[0]*$height/$this->info[1];
-					$this->info[1]=$height;
+				else {
+					$this->info[0] = $this->info[0] * $height / $this->info[1];
+					$this->info[1] = $height;
 				}
 			}
-			else{
-				$resized_image=$this->imageRes;
+			else {
+				$resized_image = $this->imageRes;
 			}
 		}
-		else{
+		else {
 			$resized_image = imagecreatetruecolor($width, $height);
 			$this->makeImageTransparent($resized_image, $width, $height);
-			
-			if(!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $width, $height, $this->info[0], $this->info[1])){
+
+			if (!imagecopyresampled($resized_image, $this->imageRes, 0, 0, 0, 0, $width, $height, $this->info[0], $this->info[1])) {
 				throw new RuntimeException("Unable to resize image!");
 			}
-			else{
-				$this->info[0]=$width;
-				$this->info[1]=$height;
+			else {
+				$this->info[0] = $width;
+				$this->info[1] = $height;
 			}
 		}
-		$this->imageRes=$resized_image;
+		$this->imageRes = $resized_image;
 	}
 
 	/**
@@ -199,17 +198,17 @@ class Image extends Model
 	 * @param int $quality (0-100)
 	 * @return bool
 	 */
-	public function writeJpeg($filePath=null, $progrssive_jpeg=0, $quality=100){
-		if($progrssive_jpeg){
+	public function writeJpeg($filePath = null, $progrssive_jpeg = 0, $quality = 100) {
+		if ($progrssive_jpeg) {
 			@imageinterlace($this->imageRes, 1);
 		}
-		if($progrssive_jpeg){
+		if ($progrssive_jpeg) {
 			@imageinterlace($this->imageRes, 0);
 		}
-		if(!imagejpeg($this->imageRes, $filePath, $quality)){
+		if (!imagejpeg($this->imageRes, $filePath, $quality)) {
 			throw new RuntimeException("Unable to write image file!");
 		}
-		
+
 		$this->filePath = $filePath;
 		$this->fileName = basename($filePath);
 	}
@@ -220,11 +219,11 @@ class Image extends Model
 	 * @param string $filePath (If is null, gif will be outputed directly)
 	 * @return bool
 	 */
-	public function writeGif($filePath=null){
-		if(!imagegif($this->imageRes, $filePath)){
+	public function writeGif($filePath = null) {
+		if (!imagegif($this->imageRes, $filePath)) {
 			throw new RuntimeException("Unable to write image file!");
 		}
-		
+
 		$this->filePath = $filePath;
 		$this->fileName = basename($filePath);
 	}
@@ -235,14 +234,14 @@ class Image extends Model
 	 * @param string $filePath (If is null, png will be outputed directly)
 	 * @return bool
 	 */
-	public function writePng($filePath=null){
-		imagealphablending( $this->imageRes, false );
-		imagesavealpha( $this->imageRes, true );
-		
-		if(!imagepng($this->imageRes, $filePath)){
+	public function writePng($filePath = null) {
+		imagealphablending($this->imageRes, false);
+		imagesavealpha($this->imageRes, true);
+
+		if (!imagepng($this->imageRes, $filePath)) {
 			throw new RuntimeException("Unable to write image file!");
 		}
-		
+
 		$this->filePath = $filePath;
 		$this->fileName = basename($filePath);
 	}
@@ -255,35 +254,35 @@ class Image extends Model
 	 * @param int $alpha (0-100)
 	 * @return bool
 	 */
-	public function makeStamp($backgroundImagePath, $corner=self::CORNER_BOTTOM_RIGHT, $alpha=60){
-		if(!in_array($corner, $this->getConstsArray('CORNER'))){
+	public function makeStamp($backgroundImagePath, $corner = self::CORNER_BOTTOM_RIGHT, $alpha = 60) {
+		if (!in_array($corner, $this->getConstsArray('CORNER'))) {
 			throw new InvalidArgumentException("Invalid corner identifier given!");
 		}
-		if(!($alpha>=0 and $alpha<=100)){
+		if (!($alpha >= 0 and $alpha <= 100)) {
 			throw new InvalidArgumentException("Alpha needs to be between 0 and 100!");
 		}
 
-		$img_res=$this->createImageRes($backgroundImagePath);
-		$img_info=getimagesize($backgroundImagePath);
-		
-		switch ($corner){
+		$img_res = $this->createImageRes($backgroundImagePath);
+		$img_info = getimagesize($backgroundImagePath);
+
+		switch ($corner) {
 			case self::CORNER_TOP_LEFT:
-				if(!imagecopymerge ($this->imageRes, $img_res, 0, 0, 0, 0, $img_info[0], $img_info[1], $alpha)){
+				if (!imagecopymerge($this->imageRes, $img_res, 0, 0, 0, 0, $img_info[0], $img_info[1], $alpha)) {
 					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
 			case self::CORNER_TOP_RIGHT:
-				if(!imagecopymerge ($this->imageRes, $img_res, $this->info[0]-$img_info[0], 0, 0, 0, $img_info[0], $img_info[1], $alpha)){
+				if (!imagecopymerge($this->imageRes, $img_res, $this->info[0] - $img_info[0], 0, 0, 0, $img_info[0], $img_info[1], $alpha)) {
 					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
 			case self::CORNER_BOTTOM_LEFT:
-				if(!imagecopymerge ($this->imageRes, $img_res, 0, $this->info[1]-$img_info[1], 0, 0, $img_info[0], $img_info[1], $alpha)){
+				if (!imagecopymerge($this->imageRes, $img_res, 0, $this->info[1] - $img_info[1], 0, 0, $img_info[0], $img_info[1], $alpha)) {
 					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
 			case self::CORNER_BOTTOM_RIGHT:
-				if(!imagecopymerge ($this->imageRes, $img_res, $this->info[0]-$img_info[0], $this->info[1]-$img_info[1], 0, 0, $img_info[0], $img_info[1], $alpha)){
+				if (!imagecopymerge($this->imageRes, $img_res, $this->info[0] - $img_info[0], $this->info[1] - $img_info[1], 0, 0, $img_info[0], $img_info[1], $alpha)) {
 					throw new RuntimeException("Unable to make stamp!");
 				}
 				break;
@@ -295,28 +294,28 @@ class Image extends Model
 	 *
 	 * @param string $background_filename
 	 */
-	public function addBackround($backgroundFilePath){
-		$img_res=$this->createImageRes($backgroundFilePath);
-		$img_info=getimagesize($backgroundFilePath);
-		
-		$checkResult = $this->checkDimensions($img_info[0],$img_info[1]);
-		
-		if($checkResult == self::DIMENSIONS_LARGER){
+	public function addBackround($backgroundFilePath) {
+		$img_res = $this->createImageRes($backgroundFilePath);
+		$img_info = getimagesize($backgroundFilePath);
+
+		$checkResult = $this->checkDimensions($img_info[0], $img_info[1]);
+
+		if ($checkResult == self::DIMENSIONS_LARGER) {
 			throw new RuntimeException("Unable to add background because background is smaller than main image!");
 		}
-		
-		$newImg=imagecreatetruecolor($img_info[0],$img_info[1]);
-		$this->makeImageTransparent($newImg, $img_info[0],$img_info[1]);
 
-		if(!imagecopy ($newImg, $img_res,0,0,0,0,$img_info[0],$img_info[1])){
+		$newImg = imagecreatetruecolor($img_info[0], $img_info[1]);
+		$this->makeImageTransparent($newImg, $img_info[0], $img_info[1]);
+
+		if (!imagecopy($newImg, $img_res, 0, 0, 0, 0, $img_info[0], $img_info[1])) {
 			throw new RuntimeException("Unable to add background!");
 		}
-		
-		if(!imagecopy ($newImg, $this->imageRes, ($img_info[0]-$this->info[0])/2,($img_info[1]-$this->info[1])/2,0,0,$this->info[0],$this->info[1])){
+
+		if (!imagecopy($newImg, $this->imageRes, ($img_info[0] - $this->info[0]) / 2, ($img_info[1] - $this->info[1]) / 2, 0, 0, $this->info[0], $this->info[1])) {
 			throw new RuntimeException("Unable to add background!");
 		}
 		unset($this->imageRes);
-		$this->imageRes=$newImg;
+		$this->imageRes = $newImg;
 	}
 
 	/**
@@ -328,24 +327,24 @@ class Image extends Model
 	 * @param int $height
 	 * @return bool
 	 */
-	public function crop($x, $y, $width, $height){
-		if(!is_numeric($x) or !is_numeric($y) or !is_numeric($width) or !is_numeric($height)){
+	public function crop($x, $y, $width, $height) {
+		if (!is_numeric($x) or ! is_numeric($y) or ! is_numeric($width) or ! is_numeric($height)) {
 			throw new InvalidArgumentException("Some of the parameters are not numeric!");
 		}
-		
-		if(!self::checkMemAvailbleForResize($width, $height)){
+
+		if (!self::checkMemAvailbleForResize($width, $height)) {
 			throw new RuntimeException("Memory is not enough for crop operation!");
 		}
-		
+
 		$cropped_image = imagecreatetruecolor($width, $height);
 		$this->makeImageTransparent($cropped_image, $width, $height);
-		
-		if(!imagecopyresampled($cropped_image, $this->imageRes, 0, 0, $x, $y, $width, $height, $width, $height)){
+
+		if (!imagecopyresampled($cropped_image, $this->imageRes, 0, 0, $x, $y, $width, $height, $width, $height)) {
 			throw new RuntimeException("Unable to crop!");
 		}
-		
+
 		@imagedestroy($this->imageRes);
-		$this->imageRes=$cropped_image;
+		$this->imageRes = $cropped_image;
 		$this->info[0] = $width;
 		$this->info[1] = $height;
 	}
@@ -357,18 +356,18 @@ class Image extends Model
 	 * @param integer $height
 	 * @return integer 
 	 */
-	public function checkDimensions($width, $height){
-		if($this->info[0] == $width and $this->info[1] == $height){
+	public function checkDimensions($width, $height) {
+		if ($this->info[0] == $width and $this->info[1] == $height) {
 			return self::DIMENSIONS_EQUAL;
 		}
-		elseif($this->info[0] >= $width or $this->info[1] >= $height){
-				return self::DIMENSIONS_LARGER;
+		elseif ($this->info[0] >= $width or $this->info[1] >= $height) {
+			return self::DIMENSIONS_LARGER;
 		}
-		else{
+		else {
 			return self::DIMENSIONS_SMALLER;
 		}
 	}
-	
+
 	/**
 	 * Check if image meets requirements for minimal size.
 	 *
@@ -376,16 +375,16 @@ class Image extends Model
 	 * @param integer $smallSideMinSize
 	 * @return boolean 
 	 */
-	public function isSizeMeetRequirements($largeSideMinSize, $smallSideMinSize){
+	public function isSizeMeetRequirements($largeSideMinSize, $smallSideMinSize) {
 		$width = $this->info[0];
 		$height = $this->info[1];
-		if($width >= $height){
-			if($width >= $largeSideMinSize and $height >= $smallSideMinSize){
+		if ($width >= $height) {
+			if ($width >= $largeSideMinSize and $height >= $smallSideMinSize) {
 				return true;
 			}
 		}
-		else{
-			if($height >= $largeSideMinSize and $width >= $smallSideMinSize){
+		else {
+			if ($height >= $largeSideMinSize and $width >= $smallSideMinSize) {
 				return true;
 			}
 		}
@@ -397,10 +396,10 @@ class Image extends Model
 	 * 
 	 * @return array
 	 */
-	public function getDimensions(){
+	public function getDimensions() {
 		return array($this->info[0], $this->info[1]);
 	}
-	
+
 	/**
 	 * Rotate image
 	 *
@@ -410,52 +409,72 @@ class Image extends Model
 	 * @param int $bg_blue
 	 * @return bool
 	 */
-	public function rotate($angle, $bg_red=255, $bg_green=255, $bg_blue=255){
-		if(!is_numeric($angle)){
+	public function rotate($angle, $bg_red = 255, $bg_green = 255, $bg_blue = 255) {
+		if (!is_numeric($angle)) {
 			throw new InvalidArgumentException("\$angle have to have numeric value!");
 		}
-		if(!($bg_red>=0 and $bg_red<=255)){
+		if (!($bg_red >= 0 and $bg_red <= 255)) {
 			throw new InvalidArgumentException("\$bg_red needs to be between 0 and 255!");
 		}
-		if(!($bg_green>=0 and $bg_green<=255)){
+		if (!($bg_green >= 0 and $bg_green <= 255)) {
 			throw new InvalidArgumentException("\$bg_green needs to be between 0 and 255!");
 		}
-		if(!($bg_blue>=0 and $bg_blue<=255)){
+		if (!($bg_blue >= 0 and $bg_blue <= 255)) {
 			throw new InvalidArgumentException("\$bg_blue needs to be between 0 and 255!");
 		}
-		if(!($rotated_image=imagerotate($this->imageRes, 360 - $angle, imagecolorexact($this->imageRes, $bg_red, $bg_green, $bg_blue)))){
+		if (!($rotated_image = imagerotate($this->imageRes, 360 - $angle, imagecolorexact($this->imageRes, $bg_red, $bg_green, $bg_blue)))) {
 			throw new RuntimeException("Unable to rotate!");
 		}
 
 		@imagedestroy($this->imageRes);
-		$this->imageRes=$rotated_image;
-		
+		$this->imageRes = $rotated_image;
+
 		$tmp = $this->info[0];
 		$this->info[0] = $this->info[1];
 		$this->info[1] = $tmp;
 	}
-	
-	public static function checkMemAvailbleForResize($width, $height, $returnRequiredMem = false, $gdBloat = 1.68) {
-	    $maxMem = ((int) ini_get('memory_limit') * 1024) * 1024;
-	    
-	    $GDBytes = ceil((($width * $height) * 3) * $gdBloat);
-	    
-	    $totalMemRequired = $GDBytes + memory_get_usage();
-	    
-	    if ($returnRequiredMem){
-	    	return $GDBytes;
-	    }
-	    
-	    if ($totalMemRequired > $maxMem){
-	    	return false;
-	    }
-	    
-	    return true;
+
+	public function fixOrientation() {
+		if (!empty($this->imageExif) and !empty($this->imageExif['Orientation'])) {
+			DBLogger::logCustom("qaq", $this->imageExif['Orientation']);
+			switch ($this->imageExif['Orientation']) {
+				case 3:
+					$this->rotate(180);
+					break;
+
+				case 6:
+					$this->rotate(90);
+					break;
+
+				case 8:
+					$this->rotate(270);
+					break;
+			}
+		}
 	}
-	
-	private function makeImageTransparent($imgRes, $width, $height){
+
+	public static function checkMemAvailbleForResize($width, $height, $returnRequiredMem = false, $gdBloat = 1.68) {
+		$maxMem = ((int) ini_get('memory_limit') * 1024) * 1024;
+
+		$GDBytes = ceil((($width * $height) * 3) * $gdBloat);
+
+		$totalMemRequired = $GDBytes + memory_get_usage();
+
+		if ($returnRequiredMem) {
+			return $GDBytes;
+		}
+
+		if ($totalMemRequired > $maxMem) {
+			return false;
+		}
+
+		return true;
+	}
+
+	private function makeImageTransparent($imgRes, $width, $height) {
 		imagealphablending($imgRes, false);
-		imagesavealpha($imgRes,true);
+		imagesavealpha($imgRes, true);
 		imagefilledrectangle($imgRes, 0, 0, $width, $height, imagecolorallocatealpha($imgRes, 255, 255, 255, 127));
 	}
+
 }

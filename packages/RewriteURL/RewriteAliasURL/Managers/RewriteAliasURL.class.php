@@ -46,7 +46,7 @@ class RewriteAliasURL extends RewriteURL{
 		return $linkWithAlias;
 	}
 	
-	public function glink($strUrl){
+	public function glink($strUrl = ''){
 		$strUrl = parent::glink($strUrl);
 		return $this->addAliasToLink($strUrl);
 	}

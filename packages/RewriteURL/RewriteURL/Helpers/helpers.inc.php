@@ -57,6 +57,6 @@ function getAllGetParams(array $excludeArray = array()) {
  * @param String $url
  * @return String
  */
-function glink($url) {
+function glink($url = '') {
 	return Reg::get(ConfigManager::getConfig('RewriteURL', 'RewriteURL')->Objects->rewriteURL)->glink($url);
 }

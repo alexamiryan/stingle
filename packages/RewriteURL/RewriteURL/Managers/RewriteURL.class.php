@@ -49,7 +49,7 @@ class RewriteURL{
 		}
 	}
 
-	public function glink($strUrl){
+	public function glink($strUrl = ''){
 		if($strUrl != '/'){
 			$strUrl = $this->config->sitePath . $strUrl;
 		}

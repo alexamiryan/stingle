@@ -86,7 +86,12 @@ class Insert extends QBpart
     private function _getValues($values){
     	$returnStr = "";
     	foreach($values as $value){
-   			$returnStr .= Expr::quoteLiteral($value) . ",";
+			if($value === null){
+				$returnStr .= "NULL,";
+			}
+			else{
+				$returnStr .= Expr::quoteLiteral($value) . ",";
+			}
     	}
     	
     	return trim($returnStr, ",");

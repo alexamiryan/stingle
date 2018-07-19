@@ -53,7 +53,13 @@ class Comparison extends QBpart
     public function __toString()
     {
     	$leftExpr = Expr::quoteLiteral($this->_leftExpr);
-    	$rightExpr = Expr::quoteLiteral($this->_rightExpr);
+    	
+		if($this->_rightExpr === null){
+			$rightExpr = new Literal('NULL');
+		}
+		else{
+			$rightExpr = Expr::quoteLiteral($this->_rightExpr);
+		}
     	
     	if ($leftExpr instanceof Math or $leftExpr instanceof QueryBuilder) {
     		$leftExpr = '(' . $leftExpr . ')';

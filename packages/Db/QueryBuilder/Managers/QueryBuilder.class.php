@@ -688,8 +688,7 @@ class QueryBuilder
      * @param string $value The value, expression, placeholder, etc.
      * @return QueryBuilder This QueryBuilder instance.
      */
-    public function set(Field $key, $value)
-    {
+    public function set(Field $key, $value){
         return $this->add('set', new Comparison($key, Comparison::EQ, $value), true);
     }
 

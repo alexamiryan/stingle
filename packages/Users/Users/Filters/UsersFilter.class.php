@@ -187,6 +187,51 @@ class UsersFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setLastLoginDate($date){
+		if(empty($date)){
+			throw new InvalidArgumentException("\$date have to be non empty string");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('last_login_date', $this->primaryTableAlias), $date));
+		return $this;
+	}
+	
+	public function setLastLoginDateGreater($date){
+		if(empty($date)){
+			throw new InvalidArgumentException("\$date have to be non empty string");
+		}
+		
+		$this->qb->andWhere($this->qb->expr()->greater(new Field('last_login_date', $this->primaryTableAlias), $date));
+		return $this;
+	}
+	
+	public function setLastLoginDateLess($date){
+		if(empty($date)){
+			throw new InvalidArgumentException("\$date have to be non empty string");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->less(new Field('last_login_date', $this->primaryTableAlias), $date));
+		return $this;
+	}
+	
+	public function setLastLoginDateGreaterEqual($date){
+		if(empty($date)){
+			throw new InvalidArgumentException("\$date have to be non empty string");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->greaterEqual(new Field('last_login_date', $this->primaryTableAlias), $date));
+		return $this;
+	}
+	
+	public function setLastLoginDateLessEqual($date){
+		if(empty($date)){
+			throw new InvalidArgumentException("\$date have to be non empty string");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->lessEqual(new Field('last_login_date', $this->primaryTableAlias), $date));
+		return $this;
+	}
+	
 	public function setOrderCreationDateAsc(){
 		$this->setOrder(new Field('creation_date', 'users'), MySqlDatabase::ORDER_ASC);
 	}

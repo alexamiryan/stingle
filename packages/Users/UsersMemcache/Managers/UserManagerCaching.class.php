@@ -23,7 +23,6 @@ class UserManagerCaching extends UserManager{
 			$cache = $this->memcache->get($key);
 			
 			if($cache !== false and !empty($cache) and is_a($cache, "User") and isset($cache->id) and !empty($cache->id)){
-				echo "GET $userId\n";
 				return $cache;
 			}
 			
@@ -35,7 +34,6 @@ class UserManagerCaching extends UserManager{
 			elseif($objectCacheMinutes == -1){
 				$memcache_expire_time = 0;
 			}
-			echo "SET $userId\n";
 			$this->memcache->set($key, $user, $memcache_expire_time);
 			
 			return $user;

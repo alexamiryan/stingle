@@ -63,7 +63,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 	 * @param int $cacheMinutes (in minutes) -1 - Unlimited, 0 - Turned off, >0 for given amount of minutes
 	 * @return MySqlQueryMemcache
 	 */
-	public function exec($sqlStatement, $cacheMinutes = null, $cacheTag = null){
+	public function exec($sqlStatement, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null){
 		if($cacheMinutes === null){
 			$cacheMinutes = $this->findDefaultMemcacheConfig(); 
 		}

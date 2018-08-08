@@ -3,5 +3,7 @@ $defaultConfig = array(
 		'Objects' => array(	
 				'UserManagerCaching' => 'userMgr'
 				),
-		'AuxConfig' => array(	)
+		'AuxConfig' => array( 
+			'objectCacheMinutes' => 360
+		)
 );

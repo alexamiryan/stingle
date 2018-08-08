@@ -14,23 +14,33 @@ class UserManagerCaching extends UserManager{
 		$this->memcache = $this->query->memcache;
 	}
 	
-	public function getUserById($userId, $initObjects = self::INIT_ALL, $cacheMinutes = 0, $cacheTag = null){
-		if($this->memcache != null){
+	public function getUserById($userId, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null, $objectCacheMinutes = null){
+		if($this->memcache != null and $objectCacheMinutes !== MemcacheWrapper::MEMCACHE_OFF){
 			$key = $this->memcache->getNamespacedKey(self::USER_TAG . $userId);
 			$cache = $this->memcache->get($key);
 			
 			if($cache !== false and !empty($cache) and is_a($cache, "User") and isset($cache->id) and !empty($cache->id)){
 				return $cache;
 			}
-		
-			$user = parent::getUserById($userId, self::INIT_ALL);
 			
-			$this->memcache->set($key, $user, 0);
+			$user = parent::getUserById($userId, self::INIT_ALL, $cacheMinutes, $cacheTag);
+			
+			if($objectCacheMinutes === null){
+				$objectCacheMinutes = ConfigManager::getConfig("Users", "UsersMemcache")->AuxConfig->objectCacheMinutes;
+			}
+			
+			if($objectCacheMinutes > 0){
+				$memcache_expire_time = time() + ($objectCacheMinutes * 60);
+			}
+			elseif($objectCacheMinutes == -1){
+				$memcache_expire_time = 0;
+			}
+			$this->memcache->set($key, $user, $memcache_expire_time);
 			
 			return $user;
 		}
 		else{
-			return parent::getUserById($userId, $initObjects);
+			return parent::getUserById($userId, $initObjects, $cacheMinutes, $cacheTag);
 		}
 	}
 	

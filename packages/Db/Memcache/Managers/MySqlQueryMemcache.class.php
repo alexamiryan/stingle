@@ -33,17 +33,18 @@ class MySqlQueryMemcache extends MySqlQuery{
 
 	private function findDefaultMemcacheConfig(){
 		$backtrace = debug_backtrace();
-		$calling_class = $backtrace[2]['class'];
-		
-		$current_class = $calling_class;
-		while($current_class !== false){
-			if(isset($this->memcacheConfig->Time->$current_class)){
-				return $this->memcacheConfig->Time->$current_class;
+		if(!empty($backtrace) and count($backtrace)>=3 and !empty($backtrace[2]['class'])){
+			$calling_class = $backtrace[2]['class'];
+
+			$current_class = $calling_class;
+			while($current_class !== false){
+				if(isset($this->memcacheConfig->Time->$current_class)){
+					return $this->memcacheConfig->Time->$current_class;
+				}
+				$current_class = get_parent_class($current_class);
 			}
-			$current_class = get_parent_class($current_class);
 		}
-		
-		return 0;
+		return MemcacheWrapper::MEMCACHE_OFF;
 	}
 	
 	protected function getMemcacheKey($sqlQuery, $tag = null){
@@ -62,13 +63,14 @@ class MySqlQueryMemcache extends MySqlQuery{
 	 * @param int $cacheMinutes (in minutes) -1 - Unlimited, 0 - Turned off, >0 for given amount of minutes
 	 * @return MySqlQueryMemcache
 	 */
-	public function exec($sqlStatement, $cacheMinutes = 0, $cacheTag = null){
+	public function exec($sqlStatement, $cacheMinutes = null, $cacheTag = null){
 		if($cacheMinutes === null){
 			$cacheMinutes = $this->findDefaultMemcacheConfig(); 
 		}
 
 		$this->is_result_cached = false;
-		if($this->memcache !== null and $cacheMinutes != 0){
+		if($this->memcache !== null and $cacheMinutes != MemcacheWrapper::MEMCACHE_OFF){
+			
 			$cache = $this->memcache->get($this->getMemcacheKey($sqlStatement, $cacheTag));
 			
 			if($cache !== false and is_array($cache)){
@@ -90,7 +92,6 @@ class MySqlQueryMemcache extends MySqlQuery{
 				elseif($cacheMinutes == -1){
 					$memcache_expire_time = 0;
 				}
-				
 				$this->memcache->set( $this->getMemcacheKey($sqlStatement, $cacheTag), $resultset, $memcache_expire_time );
 				
 				return $this;

@@ -45,7 +45,7 @@ class UserManager extends DbAccessor{
 	 * @param integer $initObjects For ex. INIT_PROPERTIES | INIT_PERMISSIONS
 	 * @param integer $cacheMinutes
 	 */
-	public function getUsersList(UsersFilter $filter = null, MysqlPager $pager = null, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null, $extra = null){
+	public function getUsersList(UsersFilter $filter = null, MysqlPager $pager = null, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null){
 		if($filter == null){
 			$filter = new UsersFilter();
 		}
@@ -62,7 +62,7 @@ class UserManager extends DbAccessor{
 		$users = array();
 		if($sql->countRecords()){
 			while(($userId = $sql->fetchField('id')) != false){
-				array_push($users, $this->getUserById($userId, $initObjects, $cacheMinutes, $cacheTag, $extra));
+				array_push($users, $this->getUserById($userId, $initObjects, $cacheMinutes, $cacheTag));
 			}
 		}
 
@@ -98,8 +98,8 @@ class UserManager extends DbAccessor{
 	 * @throws UserNotFoundException
 	 * @return User
 	 */
-	public function getUser(UsersFilter $filter, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null, $extra = null){
-		$users = $this->getUsersList($filter, null, $initObjects, $cacheMinutes, $cacheTag, $extra);
+	public function getUser(UsersFilter $filter, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null){
+		$users = $this->getUsersList($filter, null, $initObjects, $cacheMinutes, $cacheTag);
 		if(count($users) !== 1){
 			throw new UserNotFoundException("There is no such user or user is not unique.");
 		}
@@ -117,7 +117,7 @@ class UserManager extends DbAccessor{
 	 * @throws UserNotFoundException
 	 * @return User
 	 */
-	public function getUserById($userId, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null, $extra = null){
+	public function getUserById($userId, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null){
 		if(empty($userId) or !is_numeric($userId)){
 			throw new InvalidArgumentException("\$userId have to be non zero integer");
 		}

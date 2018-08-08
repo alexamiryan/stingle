@@ -4,6 +4,7 @@ $defaultConfig = array(
 				'UserManagerCaching' => 'userMgr'
 				),
 		'AuxConfig' => array( 
+			'enabled' => true,
 			'objectCacheMinutes' => 360
 		)
 );

@@ -67,13 +67,14 @@ class MySqlQueryMemcache extends MySqlQuery{
 		if($cacheMinutes === null){
 			$cacheMinutes = $this->findDefaultMemcacheConfig(); 
 		}
-
+		$enabledStatus = ConfigManager::getConfig("Db", "Memcache")->AuxConfig->enabled;
+		
 		$this->is_result_cached = false;
-		if($this->memcache !== null and $cacheMinutes != MemcacheWrapper::MEMCACHE_OFF){
-			
+		if($enabledStatus and $this->memcache !== null and $cacheMinutes != MemcacheWrapper::MEMCACHE_OFF){
 			$cache = $this->memcache->get($this->getMemcacheKey($sqlStatement, $cacheTag));
 			
 			if($cache !== false and is_array($cache)){
+				echo "GET - $sqlStatement\n";
 				$this->result = $cache;
 				$this->is_result_cached = true;
 				
@@ -92,6 +93,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 				elseif($cacheMinutes == -1){
 					$memcache_expire_time = 0;
 				}
+				echo "SET - $sqlStatement\n";
 				$this->memcache->set( $this->getMemcacheKey($sqlStatement, $cacheTag), $resultset, $memcache_expire_time );
 				
 				return $this;

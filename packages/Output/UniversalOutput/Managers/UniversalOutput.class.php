@@ -14,6 +14,10 @@ class UniversalOutput extends Model{
 	const TYPE_JSON = 1;
 	const TYPE_BARE = 2;
 
+	private $smarty = null;
+	private $error = null;
+	private $info = null;
+	
 	private $outputType = null;
 	
 	private $jsFiles = array();
@@ -32,6 +36,11 @@ class UniversalOutput extends Model{
 	
 	private $status = self::STATUS_OK;
 	
+	public function __construct() {
+		$this->smarty = Reg::get(ConfigManager::getConfig('Output', 'Smarty')->Objects->Smarty);
+		$this->error = Reg::get(ConfigManager::getConfig('Info', 'Info')->Objects->Error);
+		$this->info = Reg::get(ConfigManager::getConfig('Info', 'Info')->Objects->Info);
+	}
 	
 	public function setStatusOk(){
 		$this->setStatus(self::STATUS_OK);
@@ -88,11 +97,11 @@ class UniversalOutput extends Model{
 	}
 	
 	public function assign($var, $value){
-		Reg::get('smarty')->assign($var, $value);
+		$this->smarty->assign($var, $value);
 	}
 	
 	public function setWrapper($wrapper){
-		Reg::get('smarty')->setWrapper($wrapper);
+		$this->smarty->setWrapper($wrapper);
 	}
 	
 	public function redirect($url, $doGlink = false){
@@ -154,8 +163,8 @@ class UniversalOutput extends Model{
 				$output['redirectPage'] = $this->redirectPageUrl;
 			}
 			else{
-				$output['infos'] = Reg::get('info')->getAll();
-				$output['errors'] = Reg::get('error')->getAll();
+				$output['infos'] = $this->info->getAll();
+				$output['errors'] = $this->error->getAll();
 			
 				if(!$this->disableContentOutput){
 					foreach($this->parts as $partName => $partValue){
@@ -163,27 +172,32 @@ class UniversalOutput extends Model{
 					}
 					if(!isset($this->parts['main']) and !$this->disableAutoMainPart){
 						try{
-							$main = Reg::get('smarty')->output(true);
+							$main = $this->smarty->output(true);
+							$inlineJs = $this->smarty->getInlineJs();
 							if($main != null){
-								$output['parts']['main'] = $main;
+								$output['parts']['main'] = $main . "\n" . $inlineJs;
 							}
 						}
 						catch(TemplateFileNotFoundException $e){
-							Reg::get('error')->add($e->getMessage());
+							$this->error->add($e->getMessage());
 						}
 					}
+					elseif(!empty($this->parts['main'])){
+						$output['parts']['main'] .= "\n" . $this->smarty->getInlineJs();
+					}
+					
 					$output['scripts'] = array();
 					$output['scriptsSmart'] = array();
 					$output['css'] = array();
 					$output['cssSmart'] = array();
 					foreach($this->jsFiles as $fileName){
-						array_push($output['scripts'], Reg::get('smarty')->getJsPath($fileName));
+						array_push($output['scripts'], $this->smarty->getJsPath($fileName));
 					}
 					foreach($this->jsSmartFiles as $fileName){
 						array_push($output['scriptsSmart'], base64_encode($fileName));
 					}
 					foreach($this->cssFiles as $fileName){
-						array_push($output['css'], Reg::get('smarty')->getCssPath($fileName));
+						array_push($output['css'], $this->smarty->getCssPath($fileName));
 					}
 					foreach($this->cssSmartFiles as $fileName){
 						array_push($output['cssSmart'], base64_encode($fileName));
@@ -193,7 +207,7 @@ class UniversalOutput extends Model{
 			JSON::jsonOutput($output);
 		}
 		elseif($this->outputType == self::TYPE_BARE or ($this->outputType == null && isset($_GET['ajaxm']) && $_GET['ajaxm'] == 1)){
-			echo Reg::get('smarty')->output(true);
+			echo $this->smarty->output(true) . "\n" . $this->smarty->getInlineJs();
 		}
 		else{
 			if($this->redirectUrl !== null){
@@ -204,23 +218,23 @@ class UniversalOutput extends Model{
 			}
 			elseif(!$this->disableContentOutput){
 				foreach($this->parts as $partName => $partValue){
-					Reg::get('smarty')->assign($partName, $partValue);
+					$this->smarty->assign($partName, $partValue);
 				}
 				
 				foreach($this->jsFiles as $fileName){
-					Reg::get('smarty')->addJs($fileName);
+					$this->smarty->addJs($fileName);
 				}
 				foreach($this->jsSmartFiles as $fileName){
-					Reg::get('smarty')->addJsSmart($fileName);
+					$this->smarty->addJsSmart($fileName);
 				}
 				foreach($this->cssFiles as $fileName){
-					Reg::get('smarty')->addCss($fileName);
+					$this->smarty->addCss($fileName);
 				}
 				foreach($this->cssSmartFiles as $fileName){
-					Reg::get('smarty')->addCssSmart($fileName);
+					$this->smarty->addCssSmart($fileName);
 				}
 				
-				Reg::get('smarty')->output();
+				$this->smarty->output();
 			}
 		}
 	}

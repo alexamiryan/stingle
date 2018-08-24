@@ -173,16 +173,18 @@ class UniversalOutput extends Model{
 					if(!isset($this->parts['main']) and !$this->disableAutoMainPart){
 						try{
 							$main = $this->smarty->output(true);
-							$inlineJs = $this->smarty->getInlineJs();
 							if($main != null){
-								$output['parts']['main'] = $main . "\n" . $inlineJs;
+								$output['parts']['main'] = $main;
+								if(is_string($main)){
+									$output['parts']['main'] .= "\n" . $this->smarty->getInlineJs();
+								}
 							}
 						}
 						catch(TemplateFileNotFoundException $e){
 							$this->error->add($e->getMessage());
 						}
 					}
-					elseif(!empty($this->parts['main'])){
+					elseif(!empty($this->parts['main']) and is_string($this->parts['main'])){
 						$output['parts']['main'] .= "\n" . $this->smarty->getInlineJs();
 					}
 					

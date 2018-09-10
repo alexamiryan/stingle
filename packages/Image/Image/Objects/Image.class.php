@@ -37,7 +37,10 @@ class Image extends Model {
 		}
 
 		$this->imageRes = $this->createImageRes($filePath);
-		$this->imageExif = exif_read_data($filePath);
+		try{
+			$this->imageExif = exif_read_data($filePath);
+		}
+		catch (Exception $e){}
 
 		$this->filePath = $filePath;
 		$this->fileName = basename($filePath);
@@ -387,6 +390,22 @@ class Image extends Model {
 			if ($height >= $largeSideMinSize and $width >= $smallSideMinSize) {
 				return true;
 			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Check if image meets requirements for given minimum width and height.
+	 *
+	 * @param integer $minWidth
+	 * @param integer $minHeight
+	 * @return boolean 
+	 */
+	public function isWidthHeightMeetRequirements($minWidth, $minHeight) {
+		$width = $this->info[0];
+		$height = $this->info[1];
+		if ($width >= $minWidth and $height >= $minHeight) {
+			return true;
 		}
 		return false;
 	}

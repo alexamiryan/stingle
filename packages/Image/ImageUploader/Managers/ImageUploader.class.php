@@ -64,6 +64,14 @@ class ImageUploader
 	    		throw new ImageUploaderException("Given image is smaller than specified minimum size.", static::EXCEPTION_IMAGE_IS_SMALL);
 	    	}
 	    }
+		
+		if(isset($imageUploaderConfig->minimumSizeStreight)){
+	    	$checkResult = $image->isWidthHeightMeetRequirements($imageUploaderConfig->minimumSizeStreight->minWidth, 
+	    													$imageUploaderConfig->minimumSizeStreight->minHeight);
+	    	if(!$checkResult){
+	    		throw new ImageUploaderException("Given image is smaller than specified minimum size.", static::EXCEPTION_IMAGE_IS_SMALL);
+	    	}
+	    }
 	    
 		switch($format){
 			case Image::IMAGE_TYPE_JPEG:

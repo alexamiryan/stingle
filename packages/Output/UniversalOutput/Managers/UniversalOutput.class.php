@@ -170,12 +170,13 @@ class UniversalOutput extends Model{
 					foreach($this->parts as $partName => $partValue){
 						$output['parts'][$partName] = $partValue;
 					}
-					$inlineJs = $this->smarty->getInlineJs();
+					
 					if(!isset($this->parts['main']) and !$this->disableAutoMainPart){
 						try{
 							$main = $this->smarty->output(true);
 							if($main != null){
 								$output['parts']['main'] = $main;
+								$inlineJs = $this->smarty->getInlineJs();
 								if(is_string($main) and !empty($inlineJs)){
 									$output['parts']['main'] .= "\n" . $inlineJs;
 								}
@@ -185,10 +186,12 @@ class UniversalOutput extends Model{
 							$this->error->add($e->getMessage());
 						}
 					}
-					elseif(!empty($this->parts['main']) and is_string($this->parts['main']) and !empty($inlineJs)){
-						$output['parts']['main'] .= "\n" . $inlineJs;
+					elseif(!empty($this->parts['main']) and is_string($this->parts['main'])){
+						$inlineJs = $this->smarty->getInlineJs();
+						if(!empty($inlineJs)){
+							$output['parts']['main'] .= "\n" . $inlineJs;
+						}
 					}
-					
 					$output['scripts'] = array();
 					$output['scriptsSmart'] = array();
 					$output['css'] = array();

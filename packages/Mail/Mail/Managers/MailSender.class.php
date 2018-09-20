@@ -1,6 +1,6 @@
 <?php
 
-class MailSender {
+class MailSender extends Model {
 
 	/**
 	 * 

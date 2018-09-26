@@ -18,7 +18,7 @@ class UniversalOutput extends Model{
 	private $error = null;
 	private $info = null;
 	
-	private $outputType = null;
+	private $outputType = self::TYPE_HTML;
 	
 	private $jsFiles = array();
 	private $jsSmartFiles = array();
@@ -150,8 +150,12 @@ class UniversalOutput extends Model{
 		$this->outputType = self::TYPE_BARE;
 	}
 	
+	public function getOutputType(){
+		return $this->outputType;
+	}
+	
 	public function output(){
-		if($this->outputType == self::TYPE_JSON or ($this->outputType == null && isset($_GET['ajax']) && $_GET['ajax'] == 1)){
+		if($this->outputType == self::TYPE_JSON){
 			$output = array();
 			$output['parts'] = array();
 			

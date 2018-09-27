@@ -185,6 +185,7 @@ class UserManager extends DbAccessor{
 					));
 		
 		$newUserId = $this->query->exec($qb->getSQL())->getLastInsertId();
+		$user->id = $newUserId;
 		
 		if($user->props != null){
 			$qb = new QueryBuilder();
@@ -192,7 +193,12 @@ class UserManager extends DbAccessor{
 			$values = array();		
 			foreach($this->config->userPropertiesMap as $objectKey => $dbKey){
 				if(isset($user->props->$objectKey)){
-					$values[$dbKey] = $user->props->$objectKey;
+					if($user->props->$objectKey === '' or $user->props->$objectKey === null){
+						$values[$dbKey] = new Literal("NULL");
+					}
+					else{
+						$values[$dbKey] = $user->props->$objectKey;
+					}
 				}
 			}
 			

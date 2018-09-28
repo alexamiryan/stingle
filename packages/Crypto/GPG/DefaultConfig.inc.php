@@ -1,7 +1,10 @@
 <?php
-$defaultConfig = array(	
-						'AuxConfig' => array(	'defaultKey' => null,
-												'defaultKeyPasswd' => null,
-												'gpgHomeDir' => '/var/www/.gnupg' 	
-											)
-					);
+
+$defaultConfig = array(
+		'AuxConfig' => array(
+				'defaultPublicKey' => null,
+				'defaultKey' => null,
+				'defaultKeyPasswd' => null,
+				'gpgHomeDir' => '/var/www/.gnupg'
+		)
+);

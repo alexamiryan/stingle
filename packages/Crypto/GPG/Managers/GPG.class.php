@@ -14,9 +14,14 @@ class GPG
 	 * @param bollean $armour
 	 * @return string
 	 */
-	public static function encrypt($string, $encryptKeyID, $armour = true){
-		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
-		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
+	public static function encrypt($string, $encryptKeyID = null, $armour = true){
+		$config = ConfigManager::getConfig("Crypto","GPG")->AuxConfig;
+
+		$gpg = new Crypt_GPG(array('homedir' => $config->gpgHomeDir));
+		
+		if($encryptKeyID === null){
+			$encryptKeyID = $config->defaultPublicKey;
+		}
 		
 		if(is_array($encryptKeyID)){
 			foreach($encryptKeyID as $keyId){
@@ -39,15 +44,16 @@ class GPG
 	 * @return string
 	 */
 	public static function decrypt($string, $keyPassword = null, $keyID = null){
-		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
-		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
+		$config = ConfigManager::getConfig("Crypto","GPG")->AuxConfig;
+
+		$gpg = new Crypt_GPG(array('homedir' => $config->gpgHomeDir));
 		
 		if($keyID === null){
-			$keyID = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->defaultKey;
+			$keyID = $config->defaultKey;
 		}
 		
 		if($keyPassword === null){
-			$keyPassword = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->defaultKeyPasswd;
+			$keyPassword = $config->defaultKeyPasswd;
 		}
 	
 		$gpg->addDecryptKey($keyID, $keyPassword);
@@ -66,19 +72,20 @@ class GPG
 	 * @return string
 	 */
 	public static function sign($string, $keyPassword = null, $keyID = null, $mode = null, $armor = true){
-		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
-		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
+		$config = ConfigManager::getConfig("Crypto","GPG")->AuxConfig;
+
+		$gpg = new Crypt_GPG(array('homedir' => $config->gpgHomeDir));
 
 		if($mode === null){
 			$mode = Crypt_GPG::SIGN_MODE_CLEAR;
 		}
 		
 		if($keyID === null){
-			$keyID = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->defaultKey;
+			$keyID = $config->defaultKey;
 		}
 		
 		if($keyPassword === null){
-			$keyPassword = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->defaultKeyPasswd;
+			$keyPassword = $config->defaultKeyPasswd;
 		}
 		
 		$gpg->addSignKey($keyID, $keyPassword);
@@ -117,19 +124,20 @@ class GPG
 	 * @return string
 	 */
 	public static function encryptAndSign($string, $encryptKeyID, $signkeyPassword = null, $signkeyID = null, $mode = null, $armor = true){
-		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
-		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
+		$config = ConfigManager::getConfig("Crypto","GPG")->AuxConfig;
+
+		$gpg = new Crypt_GPG(array('homedir' => $config->gpgHomeDir));
 
 		if($mode === null){
 			$mode = Crypt_GPG::SIGN_MODE_CLEAR;
 		}
 		
 		if($signkeyID === null){
-			$signkeyID = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->defaultKey;
+			$signkeyID = $config->defaultKey;
 		}
 		
 		if($signkeyPassword === null){
-			$signkeyPassword = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->defaultKeyPasswd;
+			$signkeyPassword = $config->defaultKeyPasswd;
 		}
 		
 		$gpg->addSignKey($signkeyID, $signkeyPassword);
@@ -154,15 +162,16 @@ class GPG
 	 * @return array|false
 	 */
 	public static function decryptAndVerify($string, $keyPassword = null, $keyID = null){
-		$homeDir = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->gpgHomeDir;
-		$gpg = new Crypt_GPG(array('homedir'=>$homeDir));
+		$config = ConfigManager::getConfig("Crypto","GPG")->AuxConfig;
+		
+		$gpg = new Crypt_GPG(array('homedir' => $config->gpgHomeDir));
 		
 		if($keyID === null){
-			$keyID = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->defaultKey;
+			$keyID = $config->defaultKey;
 		}
 		
 		if($keyPassword === null){
-			$keyPassword = ConfigManager::getConfig("Crypto","GPG")->AuxConfig->defaultKeyPasswd;
+			$keyPassword = $config->defaultKeyPasswd;
 		}
 	
 		$gpg->addDecryptKey($keyID, $keyPassword);

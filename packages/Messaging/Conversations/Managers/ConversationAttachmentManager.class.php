@@ -71,6 +71,7 @@ class ConversationAttachmentManager extends DbAccessor{
 		$qb = new QueryBuilder();
 		
 		$qb->update(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS'))
+			->set(new Field('uuid'), $message->uuid)
 			->set(new Field('message_id'), $message->id)
 			->where($qb->expr()->equal(new Field('id'), $attachmentId));
 	
@@ -208,6 +209,7 @@ class ConversationAttachmentManager extends DbAccessor{
 		$attachment = new ConversationAttachment();
 	
 		$attachment->id = $attachmentRow['id'];
+		$attachment->uuid = $attachmentRow['uuid'];
 		$attachment->messageId = $attachmentRow['message_id'];
 		$attachment->systemFilename = $attachmentRow['system_filename'];
 		$attachment->filename = $attachmentRow['filename'];

@@ -73,6 +73,8 @@ class ConversationAttachmentManager extends DbAccessor{
 		$qb->update(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS'))
 			->set(new Field('uuid'), $message->uuid)
 			->set(new Field('message_id'), $message->id)
+			->set(new Field('sender_id'), $message->senderId)
+			->set(new Field('receiver_id'), $message->receiverId)
 			->where($qb->expr()->equal(new Field('id'), $attachmentId));
 	
 		MySqlDbManager::getDbObject()->startTransaction();
@@ -96,7 +98,7 @@ class ConversationAttachmentManager extends DbAccessor{
 	 * @param array $file e.g. $_FILES['photo']
 	 * @return ConversationAttachment
 	 */
-	public function addAttachment($file){
+	public function addAttachment($file, $flag = 0){
 		$systemFilename = self::findNewFileName($this->config->uploadDir);
 		
 		$attachsImgUpConfig = $this->config->imageUploaderConfig;
@@ -114,7 +116,8 @@ class ConversationAttachmentManager extends DbAccessor{
 			->values(array(
 					'system_filename' => $systemFilename,
 					'filename' => $file['name'],
-					'mime_type' => $file['type']));
+					'mime_type' => $file['type'],
+					'flag' => $flag));
 		
 		$attachmentId = $this->query->exec($qb->getSQL())->getLastInsertId();
 		
@@ -211,11 +214,14 @@ class ConversationAttachmentManager extends DbAccessor{
 		$attachment->id = $attachmentRow['id'];
 		$attachment->uuid = $attachmentRow['uuid'];
 		$attachment->messageId = $attachmentRow['message_id'];
+		$attachment->senderId = $attachmentRow['sender_id'];
+		$attachment->receiverId = $attachmentRow['receiver_id'];
 		$attachment->systemFilename = $attachmentRow['system_filename'];
 		$attachment->filename = $attachmentRow['filename'];
 		$attachment->mimeType = $attachmentRow['mime_type'];
 		$attachment->isImage = in_array($attachment->mimeType, $this->config->imageUploaderConfig->acceptedMimeTypes->toArray());
 		$attachment->date = $attachmentRow['date'];
+		$attachment->flag = $attachmentRow['flag'];
 	
 		return $attachment;
 	}

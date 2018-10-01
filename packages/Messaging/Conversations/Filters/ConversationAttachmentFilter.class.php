@@ -35,6 +35,42 @@ class ConversationAttachmentFilter extends Filter {
 		return $this;
 	}
 	
+	public function setSenderId($senderId){
+		if(empty($senderId) or !is_numeric($senderId)){
+			throw new InvalidIntegerArgumentException("\$senderId have to be non zero integer.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("sender_id", "attach"), $senderId));
+		return $this;
+	}
+	
+	public function setReceiverId($receiverId){
+		if(empty($receiverId) or !is_numeric($receiverId)){
+			throw new InvalidIntegerArgumentException("\$receiverId have to be non zero integer.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("receiver_id", "attach"), $receiverId));
+		return $this;
+	}
+	
+	public function setFlag($flag){
+		if(!is_numeric($flag)){
+			throw new InvalidIntegerArgumentException("\$flag have to be integer.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("flag", "attach"), $flag));
+		return $this;
+	}
+	
+	public function setFlagIn($flags){
+		if(!is_array($flags)){
+			throw new InvalidIntegerArgumentException("\$flags have to be array.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field("flag", "attach"), $flags));
+		return $this;
+	}
+	
 	public function setFilename($filename){
 		if(empty($filename)){
 			throw new InvalidIntegerArgumentException("\$uuid have to be non empty string.");

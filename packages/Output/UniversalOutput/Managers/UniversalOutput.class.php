@@ -112,6 +112,10 @@ class UniversalOutput extends Model{
 		else{
 			$this->redirectUrl = $url;
 		}
+		
+		if($this->getOutputType() == self::TYPE_HTML){
+			redirect($this->redirectUrl);
+		}
 	}
 	
 	public function redirectPage($url, $doGlink = false){

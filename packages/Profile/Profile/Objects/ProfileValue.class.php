@@ -8,4 +8,6 @@ class ProfileValue{
 	public $custValue = null;
 	public $sortId;
 	
+	public $key = null;
+	
 }

@@ -28,7 +28,7 @@ class ProfileManager extends DbAccessor{
 	}
 	
 	
-	public function getProfile($userId = null, $group = null, $cacheMinutes = 0, $cacheTag = null){
+	public function getProfile($userId = null, $group = null, $type=null, $cacheMinutes = 0, $cacheTag = null){
 		$profile = new Profile();
 		
 		$userSaves = null;
@@ -44,6 +44,15 @@ class ProfileManager extends DbAccessor{
 			}
 			else{
 				$keysFilter->setGroup($group);
+			}
+		}
+		
+		if(!empty($type)){
+			if(is_array($type)){
+				$keysFilter->setKeyTypes($type);
+			}
+			else{
+				$keysFilter->setKeyType($type);
 			}
 		}
 		
@@ -181,7 +190,7 @@ class ProfileManager extends DbAccessor{
 		return false;
 	}
 	
-	public function getValues(ProfileValueFilter $filter = null, $cacheMinutes = MemcacheWrapper::MEMCACHE_UNLIMITED, $cacheTag = null){
+	public function getValues(ProfileValueFilter $filter = null, $initKeyObject = false, $cacheMinutes = MemcacheWrapper::MEMCACHE_UNLIMITED, $cacheTag = null){
 		if(empty($filter)){
 			$filter = new ProfileValueFilter();
 		}
@@ -200,6 +209,11 @@ class ProfileManager extends DbAccessor{
 				$value->childKeyId = $valueDbRow['child_key_id'];
 				$value->name = $valueDbRow['name'];
 				$value->sortId = $valueDbRow['sort_id'];
+				
+				if($initKeyObject){
+					$value->key = $this->getKeyById($value->keyId);
+				}
+				
 				$values[$valueDbRow['id']] = $value;
 			}
 		}

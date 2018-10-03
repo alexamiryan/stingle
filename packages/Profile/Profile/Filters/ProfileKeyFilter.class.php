@@ -34,6 +34,21 @@ class ProfileKeyFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setKeyTypes($values){
+		if(!is_array($values)){
+			throw new InvalidArgumentException("\$values have to be array");
+		}
+		
+		foreach($values as $value){
+			if(!in_array($value, ProfileManager::getConstsArray("KEY_TYPE"))){
+				throw new InvalidIntegerArgumentException("Invalid \$value given");
+			}
+		}
+		
+		$this->qb->andWhere($this->qb->expr()->in(new Field('type', $this->primaryTableAlias), $values));
+		return $this;
+	}
+	
 	public function setGroup($value){
 		if(empty($value)){
 			throw new InvalidIntegerArgumentException("\$value have to be not empty string");

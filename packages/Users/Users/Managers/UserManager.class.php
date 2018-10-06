@@ -46,6 +46,28 @@ class UserManager extends DbAccessor{
 	 * @param integer $cacheMinutes
 	 */
 	public function getUsersList(UsersFilter $filter = null, MysqlPager $pager = null, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null){
+		$sql = $this->getUsersListQueryObject($filter, $pager, $cacheMinutes, $cacheTag);
+		
+		$users = array();
+		if($sql->countRecords()){
+			while(($userId = $sql->fetchField('id')) != false){
+				array_push($users, $this->getUserById($userId, $initObjects, $cacheMinutes, $cacheTag));
+			}
+		}
+
+		return $users;
+	}
+	
+	/**
+	 * Get users list query object to manually get user ids
+	 * 
+	 * @param UsersFilter $filter
+	 * @param MysqlPager $pager
+	 * @param integer $cacheMinutes
+	 * @param string $cacheTag
+	 * @return MysqlQuery
+	 */
+	public function getUsersListQueryObject(UsersFilter $filter = null, MysqlPager $pager = null, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null){
 		if($filter == null){
 			$filter = new UsersFilter();
 		}
@@ -59,14 +81,7 @@ class UserManager extends DbAccessor{
 			$sql->exec($sqlQuery, $cacheMinutes, $cacheTag);
 		}
 		
-		$users = array();
-		if($sql->countRecords()){
-			while(($userId = $sql->fetchField('id')) != false){
-				array_push($users, $this->getUserById($userId, $initObjects, $cacheMinutes, $cacheTag));
-			}
-		}
-
-		return $users;
+		return $sql;
 	}
 	
 	/**

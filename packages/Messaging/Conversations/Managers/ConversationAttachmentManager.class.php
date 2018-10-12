@@ -127,13 +127,17 @@ class ConversationAttachmentManager extends DbAccessor{
 		return $this->getAttachment($filter);
 	}
 	
-	public function outputAttachmentContents(ConversationAttachment $attachment){
+	public function outputAttachmentContents(ConversationAttachment $attachment, $forceDownload = false){
 		$filename = $this->config->uploadDir . $attachment->systemFilename;
 		
-		if (in_array($attachment->mimeType, $this->config->imageUploaderConfig->acceptedMimeTypes->toArray())){
+		if (!$forceDownload and in_array($attachment->mimeType, $this->config->imageUploaderConfig->acceptedMimeTypes->toArray())){
 			header("Content-Disposition: filename={$attachment->filename}");
 		}
 		else{
+			header('Content-Description: File Transfer');
+			header('Content-Transfer-Encoding: binary');
+			header('Pragma: public');
+			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 			header("Content-Disposition: attachment; filename={$attachment->filename}");
 		}
 		header("Content-Type: {$attachment->mimeType}");

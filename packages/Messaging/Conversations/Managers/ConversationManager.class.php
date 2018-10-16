@@ -488,7 +488,7 @@ class ConversationManager extends DbAccessor{
 		$this->query->exec($qb->getSQL());
 		$messageId = $this->query->getLastInsertId();
 		
-		$newMessage = $this->getConversationMessage((new ConversationMessagesFilter())->setId($messageId), self::INIT_NONE);
+		$newMessage = $this->getConversationMessage((new ConversationMessagesFilter())->setId($messageId), null, self::INIT_NONE);
 		
 		foreach($conversation->participantIds as $participantId){
 			$readStatus = self::STATUS_READ_UNREAD;

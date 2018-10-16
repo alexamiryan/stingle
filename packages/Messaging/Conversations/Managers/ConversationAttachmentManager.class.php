@@ -73,7 +73,7 @@ class ConversationAttachmentManager extends DbAccessor{
 		$qb->update(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS'))
 			->set(new Field('uuid'), $message->uuid)
 			->set(new Field('message_id'), $message->id)
-			->set(new Field('sender_id'), $message->senderId)
+			->set(new Field('sender_id'), $message->userId)
 			->where($qb->expr()->equal(new Field('id'), $attachmentId));
 	
 		MySqlDbManager::getDbObject()->startTransaction();

@@ -75,8 +75,7 @@ class MySqlDbManager {
 	 * @return MySqlQuery
 	 */
 	public static function getQueryObject($instanceKey = null) {
-		$db = static::getDbObject($instanceKey);
-		return new static::$queryClassName($db);
+		return new static::$queryClassName(static::getDbObject($instanceKey));
 	}
 
 	/**

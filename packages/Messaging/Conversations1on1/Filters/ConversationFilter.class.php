@@ -35,6 +35,15 @@ class ConversationFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setInterlocutorId($interlocutorId){
+		if(empty($interlocutorId) or !is_numeric($interlocutorId)){
+			throw new InvalidIntegerArgumentException("\$interlocutorId have to be non zero integer.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("interlocutor_id", $this->primaryTableAlias), $interlocutorId));
+		return $this;
+	}
+	
 	public function setReadStatus($status){
 		if(!is_numeric($status)){
 			throw new InvalidIntegerArgumentException("\$status have to be integer.");

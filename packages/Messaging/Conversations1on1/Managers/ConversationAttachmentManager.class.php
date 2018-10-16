@@ -74,6 +74,7 @@ class ConversationAttachmentManager extends DbAccessor{
 			->set(new Field('uuid'), $message->uuid)
 			->set(new Field('message_id'), $message->id)
 			->set(new Field('sender_id'), $message->senderId)
+			->set(new Field('receiver_id'), $message->receiverId)
 			->where($qb->expr()->equal(new Field('id'), $attachmentId));
 	
 		MySqlDbManager::getDbObject()->startTransaction();
@@ -218,6 +219,7 @@ class ConversationAttachmentManager extends DbAccessor{
 		$attachment->uuid = $attachmentRow['uuid'];
 		$attachment->messageId = $attachmentRow['message_id'];
 		$attachment->senderId = $attachmentRow['sender_id'];
+		$attachment->receiverId = $attachmentRow['receiver_id'];
 		$attachment->systemFilename = $attachmentRow['system_filename'];
 		$attachment->filename = $attachmentRow['filename'];
 		$attachment->mimeType = $attachmentRow['mime_type'];

@@ -2,11 +2,22 @@
 
 class ConversationMessagesFilter extends MergeableFilter {
 
-	public function __construct() {
-		parent::__construct(Tbl::get('TBL_CONVERSATION_MESSAGES', 'ConversationManager'), "conv_msgs", "user_id");
+	protected $userId = null;
+	
+	public function __construct($userId = null) {
+		parent::__construct(Tbl::get('TBL_CONVERSATION_MESSAGES', 'ConversationManager'), "conv_msgs", "id");
 
-		$this->qb->select(new Field("*"))
+		$this->qb->select(new Field("*", "conv_msgs"))
 				->from($this->primaryTable, $this->primaryTableAlias);
+		
+		if(!empty($userId)){
+			$this->joinConversationMessagesPropsTable();
+			$this->qb->addSelect(new Field("read", "msg_props"));
+			$this->qb->addSelect(new Field("deleted", "msg_props"));
+			$this->qb->andWhere($this->qb->expr()->equal(new Field("user_id", "msg_props"), $userId));
+			
+			$this->userId = $userId;
+		}
 	}
 
 	public function setId($id) {
@@ -54,51 +65,24 @@ class ConversationMessagesFilter extends MergeableFilter {
 		return $this;
 	}
 
-	public function setSenderId($senderId) {
-		if (empty($senderId) or ! is_numeric($senderId)) {
-			throw new InvalidIntegerArgumentException("\$senderId have to be non zero integer.");
+	public function setUserId($userId) {
+		if (empty($userId) or ! is_numeric($userId)) {
+			throw new InvalidIntegerArgumentException("\$userId have to be non zero integer.");
 		}
 
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("sender_id", "conv_msgs"), $senderId));
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("user_id", "conv_msgs"), $userId));
 		return $this;
 	}
 
-	public function setSenderIdIn($senderIds) {
-		if (empty($senderIds) or ! is_array($senderIds)) {
-			throw new InvalidIntegerArgumentException("\$senderIds have to be non empty array");
+	public function setUserIdIn($userIds) {
+		if (empty($userIds) or ! is_array($userIds)) {
+			throw new InvalidIntegerArgumentException("\$userIds have to be non empty array");
 		}
 
-		$this->qb->andWhere($this->qb->expr()->in(new Field("sender_id", "conv_msgs"), $senderIds));
+		$this->qb->andWhere($this->qb->expr()->in(new Field("user_id", "conv_msgs"), $userIds));
 		return $this;
 	}
-
-	public function setReceiverId($receiverId) {
-		if (empty($receiverId) or ! is_numeric($receiverId)) {
-			throw new InvalidIntegerArgumentException("\$receiverId have to be non zero integer.");
-		}
-
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("receiver_id", "conv_msgs"), $receiverId));
-		return $this;
-	}
-
-	public function setReceiverdIn($receiverds) {
-		if (empty($receiverds) or ! is_array($receiverds)) {
-			throw new InvalidIntegerArgumentException("\$receiverds have to be non empty array");
-		}
-
-		$this->qb->andWhere($this->qb->expr()->in(new Field("receiver_id", "conv_msgs"), $receiverds));
-		return $this;
-	}
-
-	public function setReadStatus($status) {
-		if (!is_numeric($status)) {
-			throw new InvalidIntegerArgumentException("\$status have to be integer.");
-		}
-
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("read", "conv_msgs"), $status));
-		return $this;
-	}
-
+	
 	public function setHasAttachment($status) {
 		if (!is_numeric($status)) {
 			throw new InvalidIntegerArgumentException("\$status have to be integer.");
@@ -108,73 +92,30 @@ class ConversationMessagesFilter extends MergeableFilter {
 		return $this;
 	}
 
-	public function setDeletedStatus($status, $myUserId) {
+	public function setReadStatus($status) {
+		if (!is_numeric($status)) {
+			throw new InvalidIntegerArgumentException("\$status have to be integer.");
+		}
+		if(empty($this->userId)){
+			throw new RuntimeException('ConversationMessages filter is initialized without userId parameter');
+		}
+
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("read", "msg_props"), $status));
+		return $this;
+	}
+
+	public function setDeletedStatus($status) {
 		if (!is_numeric($status) or ! in_array($status, ConversationManager::getConstsArray("STATUS_DELETED"))) {
 			throw new InvalidIntegerArgumentException("Invalid \$status specified.");
 		}
-		if (empty($myUserId) or ! is_numeric($myUserId)) {
-			throw new InvalidIntegerArgumentException("\$myUserId have to be non zero integer.");
+		if(empty($this->userId)){
+			throw new RuntimeException('ConversationMessages filter is initialized without userId parameter');
 		}
-
-		switch ($status) {
-			case ConversationManager::STATUS_DELETED_NO:
-				$this->qb->andWhere($this->qb->expr()->in(new Field("deleted", "conv_msgs"), array(0, $myUserId)));
-				break;
-			case ConversationManager::STATUS_DELETED_YES:
-				$this->qb->andWhere($this->qb->expr()->notIn(new Field("deleted", "conv_msgs"), array(0, $myUserId)));
-				break;
-		}
-
+		
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("deleted", "msg_props"), $status));
 		return $this;
 	}
 
-	public function setDeletedStatusEqual($status) {
-		if (!is_numeric($status) or ! in_array($status, ConversationManager::getConstsArray("STATUS_DELETED"))) {
-			throw new InvalidIntegerArgumentException("Invalid \$status specified.");
-		}
-
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("deleted", "conv_msgs"), $status));
-
-		return $this;
-	}
-
-	public function setDeletedStatusIn($statuses) {
-		if (empty($statuses) or ! is_array($statuses)) {
-			throw new InvalidIntegerArgumentException("\$statuses have to be non empty array");
-		}
-
-		$this->qb->andWhere($this->qb->expr()->in(new Field("deleted", "conv_msgs"), $statuses));
-
-		return $this;
-	}
-
-	public function setIsSystem() {
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("system", "conv_msgs"), '1'));
-
-		return $this;
-	}
-
-	public function setIsNotSystem() {
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("system", "conv_msgs"), '0'));
-
-		return $this;
-	}
-
-	public function setDeletedStatusNotEqual($status) {
-		if (!is_numeric($status) or ! in_array($status, ConversationManager::getConstsArray("STATUS_DELETED"))) {
-			throw new InvalidIntegerArgumentException("Invalid \$status specified.");
-		}
-
-		$this->qb->andWhere($this->qb->expr()->notEqual(new Field("deleted", "conv_msgs"), $status));
-
-		return $this;
-	}
-
-	public function setDeletedStatusNotDeleted() {
-		$this->qb->andWhere($this->qb->expr()->greaterEqual(new Field("deleted", "conv_msgs"), 0));
-
-		return $this;
-	}
 
 	public function setOrderIdAsc() {
 		$this->setOrder(new Field('id', 'conv_msgs'), MySqlDatabase::ORDER_ASC);
@@ -198,7 +139,7 @@ class ConversationMessagesFilter extends MergeableFilter {
 	 * @throws InvalidIntegerArgumentException
 	 */
 	public function setDateGreater($date) {
-		$this->qb->andWhere($this->qb->expr()->greater(new Field('date'), $date));
+		$this->qb->andWhere($this->qb->expr()->greater(new Field('date', "conv_msgs"), $date));
 		return $this;
 	}
 
@@ -208,8 +149,16 @@ class ConversationMessagesFilter extends MergeableFilter {
 	 * @throws InvalidIntegerArgumentException
 	 */
 	public function setDateLess($date) {
-		$this->qb->andWhere($this->qb->expr()->less(new Field('date'), $date));
+		$this->qb->andWhere($this->qb->expr()->less(new Field('date', "conv_msgs"), $date));
 		return $this;
+	}
+	
+	protected function joinConversationMessagesPropsTable(){
+		$this->qb->leftJoin(
+			Tbl::get('TBL_CONVERSATION_MESSAGES_PROPS', 'ConversationManager'),	
+			'msg_props',
+			$this->qb->expr()->equal(new Field('id', 'conv_msgs'), new Field('message_id', 'msg_props'))
+		);
 	}
 
 }

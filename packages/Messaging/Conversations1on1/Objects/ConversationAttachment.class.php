@@ -4,6 +4,7 @@ class ConversationAttachment {
 	public $uuid;
 	public $messageId;
 	public $senderId;
+	public $receiverId;
 	public $systemFilename;
 	public $filename;
 	public $mimeType;

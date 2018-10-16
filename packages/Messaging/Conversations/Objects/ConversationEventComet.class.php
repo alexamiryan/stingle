@@ -4,7 +4,8 @@ class ConversationEventComet extends CometEventHandler{
 	protected $name = "conv";
 	
 	public function isAnyData($params){
-		if(!empty($params) and isset($this->params['uuid']) and is_numeric($this->params['uuid'])){
+		if(!empty($params) and !empty($this->params['uuid']) and is_numeric($this->params['uuid'])
+				 and !empty($this->params['userId']) and is_numeric($this->params['userId'])){
 			if(isset($params['uuid']) and $params['uuid'] == $this->params['uuid']){
 				return true;
 			}
@@ -14,7 +15,7 @@ class ConversationEventComet extends CometEventHandler{
 	
 	public function getDataArray($params){
 		$messages = array();
-		if(count($params) and isset($this->params['uuid'])){
+		if(count($params) and !empty($this->params['uuid']) and !empty($this->params['userId'])){
 			$msgIds = array();
 			foreach($params as $paramSet){
 				if(isset($paramSet['msgId']) and is_numeric($paramSet['msgId'])){
@@ -24,7 +25,7 @@ class ConversationEventComet extends CometEventHandler{
 			
 			$msgsCount = count($msgIds);
 			if($msgsCount > 0){
-				$filter = new ConversationMessagesFilter();
+				$filter = new ConversationMessagesFilter($this->params['userId']);
 				
 				if($msgsCount == 1){
 					$filter->setId($msgIds[0]);
@@ -36,7 +37,7 @@ class ConversationEventComet extends CometEventHandler{
 				$filter->setUUID($this->params['uuid']);
 					
 				try{
-					$messages = $this->getMessagesArray($filter);
+					$messages = Reg::get('convMgr')->getConversationMessages($filter, $this->params['userId']);
 				}
 				catch(ConversationNotUniqueException $e){ }
 			}
@@ -49,9 +50,5 @@ class ConversationEventComet extends CometEventHandler{
 		}
 		
 		return $responseArray;
-	}
-	
-	protected function getMessagesArray($filter){
-		return Reg::get('convMgr')->getConversationMessages($filter);
 	}
 }

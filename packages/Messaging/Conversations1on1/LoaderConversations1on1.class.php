@@ -1,9 +1,8 @@
 <?php
-class LoaderConversations extends Loader{
+class LoaderConversations1on1 extends Loader{
 	protected function includes(){
 		stingleInclude ('Objects/Conversation.class.php');
 		stingleInclude ('Objects/ConversationMessage.class.php');
-		stingleInclude ('Objects/ConversationMessageProps.class.php');
 		stingleInclude ('Objects/ConversationAttachment.class.php');
 		stingleInclude ('Objects/ConversationComet.class.php');
 		stingleInclude ('Objects/ConversationEventComet.class.php');

@@ -3,12 +3,15 @@ class ConversationMessage {
 	public $id;
 	public $uuid;
 	public $date;
-	public $userId;
+	public $senderId;
+	public $sender;
+	public $receiverId;
+	public $receiver;
 	public $message;
+	public $read;
+	public $deleted;
 	public $hasAttachment = 0;
-	public $data = null;
-	
-	public $props = null;
-	public $user = null;
 	public $attachments = array();
+	public $data = null;
+	public $system;
 }

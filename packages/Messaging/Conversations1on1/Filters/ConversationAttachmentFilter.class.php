@@ -1,22 +1,11 @@
 <?php
 class ConversationAttachmentFilter extends Filter {
 	
-	protected $userId = null;
-	
-	public function __construct($userId = null){
+	public function __construct(){
 		parent::__construct();
 		
-		$this->qb->select(new Field("*", "attach"))
+		$this->qb->select(new Field("*"))
 			->from(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS', 'ConversationAttachmentManager'), "attach");
-		
-		if(!empty($userId)){
-			$this->joinConversationMessagesPropsTable();
-			$this->qb->addSelect(new Field("read", "msg_props"));
-			$this->qb->addSelect(new Field("deleted", "msg_props"));
-			$this->qb->andWhere($this->qb->expr()->equal(new Field("user_id", "msg_props"), $userId));
-			
-			$this->userId = $userId;
-		}
 	}
 	
 	public function setId($id){
@@ -55,6 +44,15 @@ class ConversationAttachmentFilter extends Filter {
 		return $this;
 	}
 	
+	public function setReceiverId($receiverId){
+		if(empty($receiverId) or !is_numeric($receiverId)){
+			throw new InvalidIntegerArgumentException("\$receiverId have to be non zero integer.");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->equal(new Field("receiver_id", "attach"), $receiverId));
+		return $this;
+	}
+	
 	public function setFlag($flag){
 		if(!is_numeric($flag)){
 			throw new InvalidIntegerArgumentException("\$flag have to be integer.");
@@ -82,30 +80,6 @@ class ConversationAttachmentFilter extends Filter {
 		return $this;
 	}
 	
-	public function setDeletedStatus($status) {
-		if (!is_numeric($status) or ! in_array($status, ConversationManager::getConstsArray("STATUS_DELETED"))) {
-			throw new InvalidIntegerArgumentException("Invalid \$status specified.");
-		}
-		if(empty($this->userId)){
-			throw new RuntimeException('ConversationMessages filter is initialized without userId parameter');
-		}
-		
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("deleted", "msg_props"), $status));
-		return $this;
-	}
-	
-	public function setReadStatus($status) {
-		if (!is_numeric($status)) {
-			throw new InvalidIntegerArgumentException("\$status have to be integer.");
-		}
-		if(empty($this->userId)){
-			throw new RuntimeException('ConversationMessages filter is initialized without userId parameter');
-		}
-
-		$this->qb->andWhere($this->qb->expr()->equal(new Field("read", "msg_props"), $status));
-		return $this;
-	}
-	
 	public function setIdAsc() {
 		$this->setOrder(new Field('id', 'attach'), MySqlDatabase::ORDER_ASC);
 	}
@@ -120,10 +94,5 @@ class ConversationAttachmentFilter extends Filter {
 
 	public function setDateDesc() {
 		$this->setOrder(new Field('date', 'attach'), MySqlDatabase::ORDER_DESC);
-	}
-	
-	protected function joinConversationMessagesPropsTable(){
-		$this->qb->leftJoin(Tbl::get('TBL_CONVERSATION_MESSAGES_PROPS', 'ConversationManager'),	'msg_props',
-				$this->qb->expr()->equal(new Field('message_id', 'attach'), new Field('message_id', 'msg_props')));
 	}
 }

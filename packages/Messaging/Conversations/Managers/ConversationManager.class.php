@@ -349,7 +349,7 @@ class ConversationManager extends DbAccessor{
 	}
 	
 	public function markMessageAsRead(ConversationMessage $msg){
-		if($msg->props->read == self::STATUS_READ_UNREAD){
+		if(!empty($msg->props) and $msg->props->read == self::STATUS_READ_UNREAD){
 			$msg->props->read = self::STATUS_READ_READ;
 			$this->updateConversationMessage($msg);
 
@@ -361,13 +361,18 @@ class ConversationManager extends DbAccessor{
 				}
 				$this->updateConversation($conv);
 			}
+			return true;
 		}
+		return false;
 	}
 	
 	public function deleteConversationMessage(ConversationMessage $msg){
-		$this->markMessageAsRead($msg);
-		$msg->props->deleted = self::STATUS_DELETED_YES;
-		return $this->updateConversationMessage($msg);
+		if(!empty($msg->props)){
+			$this->markMessageAsRead($msg);
+			$msg->props->deleted = self::STATUS_DELETED_YES;
+			return $this->updateConversationMessage($msg);
+		}
+		return false;
 	}
 	
 	public function undeleteConversationMessage(ConversationMessage $msg){
@@ -653,9 +658,6 @@ class ConversationManager extends DbAccessor{
 	}
 	
 	
-	
-	
-	
 	public function wipeConversationMessage(ConversationMessage $msg){
 		$qb = new QueryBuilder();
 		$qb->delete(Tbl::get('TBL_CONVERSATION_MESSAGES'))
@@ -691,7 +693,7 @@ class ConversationManager extends DbAccessor{
 				$conv->read = self::STATUS_READ_READ;
 			}
 			else{
-				$conv->read = self::STATUS_READ_UHREAD;
+				$conv->read = self::STATUS_READ_UNREAD;
 			}
 			$conv->unreadCount = $unreadsCount;
 			$this->updateConversation($conv);

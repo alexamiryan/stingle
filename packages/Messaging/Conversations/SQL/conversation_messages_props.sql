@@ -16,25 +16,22 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `conversation_messages`
+-- Table structure for table `conversation_messages_props`
 --
 
-DROP TABLE IF EXISTS `conversation_messages`;
+DROP TABLE IF EXISTS `conversation_messages_props`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `conversation_messages` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID of the message',
-  `uuid` int(11) unsigned NOT NULL COMMENT 'UUID of conversation',
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Message sent datetime',
-  `user_id` int(10) unsigned DEFAULT NULL COMMENT 'User ID of sender',
-  `message` text CHARACTER SET utf8 NOT NULL COMMENT 'Message body',
-  `has_attachment` tinyint(1) NOT NULL DEFAULT '0',
-  `data` varchar(255) DEFAULT NULL,
+CREATE TABLE `conversation_messages_props` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `uuid` int(10) unsigned NOT NULL,
+  `message_id` int(10) unsigned NOT NULL,
+  `user_id` int(10) unsigned NOT NULL,
+  `read` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `deleted` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `uuid` (`uuid`),
-  KEY `sender_id` (`user_id`),
-  KEY `date` (`date`),
-  KEY `system_date` (`date`)
+  KEY `msg_usr` (`message_id`,`user_id`),
+  CONSTRAINT `conversation_messages_props_ibfk_1` FOREIGN KEY (`message_id`) REFERENCES `conversation_messages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -47,4 +44,4 @@ CREATE TABLE `conversation_messages` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-10-29 17:56:26
+-- Dump completed on 2018-10-29 17:57:05

@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.6.29, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.23, for Linux (x86_64)
 --
--- Host: localhost    Database: edesirs
+-- Host: localhost    Database: fotorder
 -- ------------------------------------------------------
--- Server version	5.6.29
+-- Server version       5.7.23
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -25,15 +25,15 @@ DROP TABLE IF EXISTS `profile_values`;
 CREATE TABLE `profile_values` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `key_id` int(10) unsigned NOT NULL,
-  `child_key_id` int(10) unsigned DEFAULT NULL,
+  `subgroup` varchar(32) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `sort_id` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `sort_id` (`sort_id`),
   KEY `key_id` (`key_id`),
-  KEY `child_key_id` (`child_key_id`),
-  CONSTRAINT `profile_values_ibfk_1` FOREIGN KEY (`key_id`) REFERENCES `profile_keys` (`id`),
-  CONSTRAINT `profile_values_ibfk_2` FOREIGN KEY (`child_key_id`) REFERENCES `profile_keys` (`id`)
+  KEY `subgroup` (`subgroup`) USING BTREE,
+  KEY `key_subgroup` (`key_id`,`subgroup`) USING BTREE,
+  CONSTRAINT `profile_values_ibfk_1` FOREIGN KEY (`key_id`) REFERENCES `profile_keys` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -46,5 +46,4 @@ CREATE TABLE `profile_values` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-06-14 20:53:34
-
+-- Dump completed on 2018-10-29 17:54:11

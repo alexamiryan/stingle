@@ -3,6 +3,7 @@ class ProfileKey{
 	
 	public $id;
 	public $name;
+	public $altName;
 	public $type;
 	public $rangeMin = null;
 	public $rangeMax = null;

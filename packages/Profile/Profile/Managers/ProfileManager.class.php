@@ -18,17 +18,27 @@ class ProfileManager extends DbAccessor{
 	// Init flags needs to be powers of 2 (1, 2, 4, 8, 16, 32, ...)
 	const INIT_KEYS = 1;
 	const INIT_VALUES = 2;
-	const INIT_ALL_WITHOUT_CHILDREN = 4;
 	
 	// INIT_ALL Should be next power of 2 minus 1
-	const INIT_ALL = 7;
+	const INIT_ALL = 3;
 	
 	public function __construct($dbInstanceKey = null){
 		parent::__construct($dbInstanceKey);
 	}
 	
 	
-	public function getProfile($userId = null, $group = null, $type=null, $cacheMinutes = 0, $cacheTag = null){
+	/**
+	 * Get profile
+	 * 
+	 * @param type $userId
+	 * @param type $group
+	 * @param type $subgroup (Array(keyName => subgroup(s)))
+	 * @param type $type
+	 * @param type $cacheMinutes
+	 * @param type $cacheTag
+	 * @return \Profile
+	 */
+	public function getProfile($userId = null, $group = null, $subgroup = null, $type=null, $cacheMinutes = 0, $cacheTag = null){
 		$profile = new Profile();
 		
 		$userSaves = null;
@@ -66,6 +76,9 @@ class ProfileManager extends DbAccessor{
 			
 			$valuesFilter = new ProfileValueFilter();
 			$valuesFilter->setKeyId($key->id);
+			if(!empty($subgroup) and isset($subgroup[$key->name]) and !empty($subgroup[$key->name])){
+				$valuesFilter->setSubgroup($subgroup[$key->name]);
+			}
 			
 			$keyValue->values = $this->getValues($valuesFilter);
 			
@@ -164,6 +177,7 @@ class ProfileManager extends DbAccessor{
 				$key = new ProfileKey();
 				$key->id = $keyDbRow['id'];
 				$key->name = $keyDbRow['name'];
+				$key->altName = $keyDbRow['alt_name'];
 				$key->type = $keyDbRow['type'];
 				$key->rangeMin = $keyDbRow['range_min'];
 				$key->rangeMax = $keyDbRow['range_max'];
@@ -206,7 +220,7 @@ class ProfileManager extends DbAccessor{
 				$value = new ProfileValue();
 				$value->id = $valueDbRow['id'];
 				$value->keyId = $valueDbRow['key_id'];
-				$value->childKeyId = $valueDbRow['child_key_id'];
+				$value->subgroup = $valueDbRow['subgroup'];
 				$value->name = $valueDbRow['name'];
 				$value->sortId = $valueDbRow['sort_id'];
 				

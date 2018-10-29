@@ -36,12 +36,17 @@ class ProfileValueFilter extends MergeableFilter{
 		return $this;
 	}
 	
-	public function setChildKeyId($value){
-		if(empty($value) or !is_numeric($value)){
-			throw new InvalidIntegerArgumentException("\$value have to be not empty integer");
+	public function setSubgroup($subgroup){
+		if(empty($subgroup)){
+			throw new InvalidIntegerArgumentException("\$subgroup have to be not empty integer");
 		}
 		
-		$this->qb->andWhere($this->qb->expr()->equal(new Field('child_key_id', $this->primaryTableAlias), $value));
+		if(is_array($subgroup)){
+			$this->qb->andWhere($this->qb->expr()->in(new Field('subgroup', $this->primaryTableAlias), $subgroup));
+		}
+		else{
+			$this->qb->andWhere($this->qb->expr()->equal(new Field('subgroup', $this->primaryTableAlias), $subgroup));
+		}
 		return $this;
 	}
 	

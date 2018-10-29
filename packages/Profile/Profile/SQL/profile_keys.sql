@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.6.29, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.23, for Linux (x86_64)
 --
--- Host: localhost    Database: edesirs
+-- Host: localhost    Database: fotorder
 -- ------------------------------------------------------
--- Server version	5.6.29
+-- Server version       5.7.23
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -25,15 +25,16 @@ DROP TABLE IF EXISTS `profile_keys`;
 CREATE TABLE `profile_keys` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
-  `type` enum('single','multi','range','custom') NOT NULL,
+  `alt_name` varchar(255) DEFAULT NULL,
+  `type` enum('single','multi','range','custom','customBig') NOT NULL,
   `range_min` int(11) DEFAULT NULL,
   `range_max` int(11) DEFAULT NULL,
   `grp` varchar(32) DEFAULT NULL,
   `sort_id` tinyint(4) NOT NULL DEFAULT '0',
   `is_enabled` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
-  KEY `grp` (`grp`),
-  KEY `sort_id` (`sort_id`)
+  KEY `sort_id` (`sort_id`),
+  KEY `grp` (`grp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -46,4 +47,4 @@ CREATE TABLE `profile_keys` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-
+-- Dump completed on 2018-10-29 17:53:00

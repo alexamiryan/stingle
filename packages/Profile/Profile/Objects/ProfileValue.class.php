@@ -3,7 +3,7 @@ class ProfileValue{
 	
 	public $id;
 	public $keyId;
-	public $childKeyId;
+	public $subgroup;
 	public $name;
 	public $custValue = null;
 	public $sortId;

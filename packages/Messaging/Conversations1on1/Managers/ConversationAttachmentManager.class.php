@@ -62,7 +62,7 @@ class ConversationAttachmentManager extends DbAccessor{
 			throw new InvalidIntegerArgumentException("\$newMessageId have to be non zero integer.");
 		}
 	
-		$convMgr = Reg::get(ConfigManager::getConfig("Messaging", "Conversations")->Objects->ConversationManager);
+		$convMgr = Reg::get(ConfigManager::getConfig("Messaging", "Conversations1on1")->Objects->ConversationManager);
 		
 		$filter = new ConversationMessagesFilter();
 		$filter->setId($newMessageId);

@@ -933,7 +933,7 @@ class ConversationManager extends DbAccessor{
 		$message->system = $messageRow["system"];
 		
 		if(!$reduced and $message->hasAttachment == '1'){
-			$attachMgr = Reg::get(ConfigManager::getConfig("Messaging", "Conversations")->Objects->ConversationAttachmentManager);
+			$attachMgr = Reg::get(ConfigManager::getConfig("Messaging", "Conversations1on1")->Objects->ConversationAttachmentManager);
 			
 			$filter = new ConversationAttachmentFilter();
 			$filter->setMessageId($message->id);

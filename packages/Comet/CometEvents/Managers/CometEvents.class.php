@@ -59,6 +59,17 @@ class CometEvents extends DbAccessor{
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
+	public function cleanEvents($hoursToKeep){
+		$qb = new QueryBuilder();
+
+		$date = new Func('DATE_SUB', array(new Func('NOW'), new Literal("INTERVAL $hoursToKeep HOUR")));
+		
+		$qb->delete(Tbl::get("TBL_COMET_EVENTS"))
+			->where($qb->expr()->less(new Field('date'), $date));
+
+		$this->query->exec($qb->getSQL());
+	}
+	
 	protected function getNewEventObject(){
 		return new CometEvent();
 	}

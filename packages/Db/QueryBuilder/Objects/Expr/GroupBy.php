@@ -34,5 +34,5 @@ class GroupBy extends Base
 {
     protected $_preSeparator = '';
     protected $_postSeparator = '';
-    protected $_allowedClasses = array('Field');
+    protected $_allowedClasses = array('Field', 'Func');
 }

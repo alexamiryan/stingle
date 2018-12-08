@@ -8,110 +8,287 @@ class MailSender extends Model {
 	 * @var Config
 	 */
 	protected $config;
+	
+	const RECEIVE_MAIL_YES = 1;
+	const RECEIVE_MAIL_NO = 0;
+	
+	const RECEIVE_MAIL_FLAG_LENGTH = 8;
+	
+	const EMAIL_ID_LENGTH = 16;
 
+	public $typesMap = array(
+			null => 'general'
+	);
+	
+	protected $stringToInclude = "";
+	
+	protected $transport = null;
+	
 	/**
-	 * Constructor
+	 * Classes constructor
+	 * @access public
 	 * @param Config $config
 	 */
-	public function __construct(Config $config) {
+	public function __construct(Config $config, MailTransportInterface $transport) {
 		$this->config = $config;
+		$this->transport = $transport;
 	}
-
+	
+	public function setTransport(MailTransportInterface $transport){
+		$this->transport = $transport;
+	}
+	
+	public function setIncludeString($string){
+		$this->stringToInclude = $string;
+	}
+	
 	/**
-	 * Send mail by current Mail object
-	 * 
-	 * @param Mail $mail
-	 * @throws MailException
-	 * @access public
-	 * @return bool true if the mail was successfully accepted for delivery, false otherwise.
+	 * Send mail
 	 */
-	public function send(Mail $mail, Config $customConfig = null) {
-		if (empty($mail)) {
-			throw new MailException("Mail object is empty");
+	public function send(Mail $mail, Config $altConfig = null, Config $transportConfig = null) {
+		if (!$this->isMailSendAllowed($mail)) {
+			return true;
 		}
-
+		
 		$config = clone($this->config);
-		if($customConfig){
-			$config = ConfigManager::mergeConfigs($customConfig, $config);
+		if ($altConfig) {
+			$config = ConfigManager::mergeConfigs($altConfig, $config);
 		}
 		
-		$phpMailer = new PHPMailer();
-
-		if ($config->SMTP->enabled) {
-			$phpMailer->isSMTP();
-			$phpMailer->Host = $config->SMTP->host;
-			$phpMailer->Port = $config->SMTP->port;
-			
-			if($config->SMTP->debug){
-				$phpMailer->SMTPDebug = $config->SMTP->debug;
-			}
-			if ($config->SMTP->secureMethod) {
-				$phpMailer->SMTPSecure = $config->SMTP->secureMethod;
-			}
-			if ($config->SMTP->auth->enabled) {
-				$phpMailer->SMTPAuth = true;
-				$phpMailer->Username = $config->SMTP->auth->username;
-				$phpMailer->Password = $config->SMTP->auth->password;
-			}
-			
-			if($config->SMTP->customOptions){
-				$phpMailer->SMTPOptions = $config->SMTP->customOptions->toArray(true);
+		if (!empty($mail->user)) {
+			$unsubscribeUrl = $this->getUnsubscribeUrl($mail, $this->config->unsubscribeFromAll);
+			if (!empty($unsubscribeUrl)) {
+				$returnPath = (!empty($mail->returnPath) ? $mail->returnPath : $config->mailParams->returnPath);
+				$mail->addCustomHeader('List-unsubscribe', '<mailto:' . $returnPath . '>, <' . $this->getUnsubscribeUrl($mail, $this->config->unsubscribeFromAll) . '>');
 			}
 		}
-
-		$returnPath = (!empty($mail->returnPath) ? $mail->returnPath : $config->mailParams->returnPath);
-		if(!empty($returnPath)){
-			$phpMailer->Sender = $returnPath;
+		$mail->addCustomHeader('X-MailId', $mail->emailId);
+		if($this->config->isMailsAreBulk){
+			$mail->addCustomHeader('Precedence', 'bulk');
 		}
 		
-		$fromMail = (!empty($mail->from) ? $mail->from : $config->mailParams->fromMail);
-		$fromName = (!empty($mail->fromName) ? $mail->fromName : $config->mailParams->fromName);
-		$phpMailer->setFrom($fromMail, $fromName);
-
-		foreach ($mail->getToAddresses() as $address) {
-			$phpMailer->addAddress($address['address'], $address['name']);
+		try {
+			$mail->textBody = Html2Text\Html2Text::convert($mail->htmlBody);
+			HookManager::callHook('BeforeEmailSend', $mail);
+			return $this->transport->send($mail, $transportConfig);
 		}
-
-		if(count($mail->getReplyToAddresses())){
-			foreach ($mail->getReplyToAddresses() as $address) {
-				$phpMailer->addReplyTo($address['address'], $address['name']);
-			}
+		catch (Exception $e) {
+			return false;
 		}
-		else{
-			$phpMailer->addReplyTo($config->mailParams->replyToMail, $config->mailParams->replyToName);
-		}
-
-		foreach ($mail->getCustomHeaders() as $header) {
-			$phpMailer->addCustomHeader($header['name'], $header['value']);
-		}
-
-		$phpMailer->Subject = $mail->subject;
-		$phpMailer->isHTML(true);
-		$phpMailer->CharSet = $mail->charSet;
-		$phpMailer->Encoding = $mail->encoding;
-
-		$phpMailer->Body = $mail->htmlBody;
-		if (!empty($mail->textBody)) {
-			$phpMailer->AltBody = $mail->textBody;
-		}
-
-		if ($config->DKIM->enabled) {
-			$phpMailer->DKIM_domain = $config->DKIM->domain;
-			$phpMailer->DKIM_private_string = $config->DKIM->privateKey;
-			$phpMailer->DKIM_selector = $config->DKIM->selector;
-			$phpMailer->DKIM_passphrase = $config->DKIM->password;
-			$phpMailer->DKIM_identity = $phpMailer->From;
-		}
-
-
-		if (!$phpMailer->send()) {
-			$error = $phpMailer->ErrorInfo;
-			if ($config->SMTP->enabled && $config->SMTP->debug){
-				$error .= "\n\nDebug\n\n" . $phpMailer->Debugoutput;
-			}
-			throw new MailException("Error sending email: " . $error);
-		}
-		return true;
 	}
 
+	public function initMail(User $to, $typeId = null, $checkValidity = true, Config $altConfig = null) {
+		$toHost = null;
+		$toLang = null;
+		if (isset($to->props->host) && !empty($to->props->host)) {
+			$toHost = $to->props->host;
+		}
+		else {
+			try {
+				$toHost = new Host($to->props->hostId);
+			}
+			catch (InvalidArgumentException $e) {
+				$toHost = new Host();
+			}
+		}
+		if (isset($to->props->language) && !empty($to->props->language)) {
+			$toLang = $to->props->language;
+		}
+		else {
+			try {
+				$toLang = new Language($to->props->langId);
+			}
+			catch (RuntimeException $e) {
+				$toLang = new Language();
+			}
+		}
+		$this->checkHostLangPair($toHost, $toLang);
+
+		if ($altConfig) {
+			$mailParams = ConfigManager::mergeConfigs($altConfig->mailParams, $this->config->mailParams);
+		}
+		else {
+			$mailParams = $this->config->mailParams;
+		}
+
+		try {
+			$mail = new Mail();
+			$mail->returnPath = $mailParams->returnPath;
+			$mail->from = $mailParams->fromMail;
+			$mail->fromName = (isset($mailParams->fromName)) ? $mailParams->fromName : '';
+			$mail->addReplyTo($mailParams->replyToMail, (isset($mailParams->replyToName)) ? $mailParams->replyToName : '', $checkValidity);
+			$mail->addTo($to->email, $to->login, $checkValidity);
+			$mail->host = $toHost;
+			$mail->language = $toLang;
+			$mail->user = $to;
+			$mail->typeId = $typeId;
+			$mail->type = (isset($this->typesMap[$typeId]) ? $this->typesMap[$typeId] : null);
+			$mail->emailId = generateRandomString(self::EMAIL_ID_LENGTH);
+		}
+		catch (Exception $e) {
+			return false;
+		}
+
+		return $mail;
+	}
+	
+	public function getHTMLBody(Mail $mail, $templateName) {
+
+		Reg::get('smarty')->assign('contentPath', $this->config->mailTemplatesPath . $templateName . '.tpl');
+
+		Reg::get('smarty')->assign('mail', $mail);
+		Reg::get('smarty')->assign('to', $mail->user);
+		Reg::get('smarty')->assign('mailUrl', HostManager::hostToURLAddress($mail->host));
+		
+		$optOutUrl = "";
+		if ($mail->typeId !== null) {
+			$optOutUrl = $this->getUnsubscribeUrl($mail, $this->config->unsubscribeFromAll);
+		}
+		
+		Reg::get('smarty')->assign("optOutUrl", $optOutUrl);
+		
+		$this->localSmartyAssigns($mail->user, $mail);
+		
+		Reg::get('smarty')->assign('toInclude', $this->stringToInclude);
+
+		$defaultTemplateName = ConfigManager::getConfig("Output", "Smarty")->AuxConfig->templatesConfig->defaultTemplateName;
+		$controllerTemplate = HostControllerTemplate::getControllerTemplateByHost($mail->host);
+		if (empty($controllerTemplate)) {
+			$templateByHost = $defaultTemplateName;
+		}
+		else {
+			$templateByHost = $controllerTemplate["template"];
+		}
+
+		$html = "";
+		$oldTemplate = Reg::get('smarty')->getTemplate();
+		try {
+			Reg::get('smarty')->setTemplate($templateByHost);
+			$html = Reg::get('smarty')->getChunk("mails/layout.tpl");
+			Reg::get('smarty')->setTemplate($oldTemplate);
+		}
+		catch (RuntimeException $e) {
+			Reg::get('smarty')->setTemplate($oldTemplate);
+		}
+
+		return $html;
+	}
+	
+	protected function localSmartyAssigns(User $to, Mail $mail){
+		
+	}
+
+	public function isMailSendAllowed(Mail $mail) {
+		if ($mail->typeId == null) {
+			return true;
+		}
+		if($this->isUserAllowedToReceiveMail($mail->user)){
+			return true;
+		}
+		return false;
+	}
+	
+	protected function isUserAllowedToReceiveMail(User $user){
+		if ($user->emailConfirmed == UserManager::STATE_EMAIL_CONFIRMED and
+				$user->enabled == UserManager::STATE_ENABLED_ENABLED) {
+			return true;
+		}
+		return false;
+	}
+
+	public function getReceiveMailsByIds($flags) {
+
+		$receiveMailFlags = array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '0');
+		$availableFlags = self::getConstsArray('RECEIVE_MAIL');
+		if (empty($flags)) {
+			$flags = array();
+		}
+
+		foreach ($flags as $flag) {
+			if (in_array($flag, array_values($availableFlags))) {
+				$receiveMailFlags[$flag] = '1';
+			}
+		}
+
+		return $receiveMailFlags;
+	}
+
+	public function buildFullReceiveMailsFlags() {
+		return $this->buildReceiveMailsFlags(array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '1'));
+	}
+
+	public function buildZeroReceiveMailsFlags() {
+		return $this->buildReceiveMailsFlags(array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '0'));
+	}
+
+	public function buildReceiveMailsFlags($mailIds) {
+		$mailIds = array_reverse($mailIds);
+
+		$finalValue = "9";
+		$finalValue .= implode("", $mailIds);
+
+		return $finalValue;
+	}
+	
+	public function disableEmailReceive(User $user, $isBounced = true){
+		$user->emailConfirmed = 0;
+		return Reg::get('userMgr')->updateUser($user);
+	}
+	
+
+	protected function checkSenderReceiverObjects(User $to, User $from = null) {
+		if (empty($to->email)) {
+			throw new InvalidArgumentException("User mail have to be non empty string!");
+		}
+		if ($from !== null && empty($from->email)) {
+			throw new InvalidArgumentException("From user mail have to be non empty string!");
+		}
+	}
+	
+	function checkHostLangPair(Host &$host, Language &$language) {
+		try {
+			HostLanguageManager::getHostLanguageId($host, $language);
+		}
+		catch (Exception $e) {
+			if (!empty($host->id)) {
+				$language = HostLanguageManager::getHostDefaultLanguage($host);
+			}
+			elseif (!empty($language->id)) {
+				$languageHosts = HostLanguageManager::getLanguageHosts($language);
+				$host = $languageHosts[0];
+			}
+			else {
+				$pairs = HostLanguageManager::getAllPairs();
+				$somePair = array_shift($pairs);
+				$host = $somePair['host'];
+				$language = $somePair['language'];
+			}
+		}
+	}
+
+	protected function getUnsubscribeUrl(Mail $mail, $unsubscribeFromAll = false) {
+		if(empty($mail->user) or empty($mail->typeId)){
+			return "";
+		}
+		$authOTCconfig = new OTCConfig();
+		$authOTCconfig->multiUse = true;
+		$authOTCconfig->paramsArray = array('t' => 'un', 'u' => $mail->user->id);
+		if ($mail->typeId != null) {
+			if ($unsubscribeFromAll) {
+				$authOTCconfig->paramsArray['m'] = 'a';
+			}
+			else {
+				$authOTCconfig->paramsArray['m'] = $mail->typeId;
+			}
+		}
+		if(!empty($mail->emailId)){
+			$authOTCconfig->paramsArray['id'] = $mail->emailId;
+		}
+		$authOTCconfig->validityTime = 60 * 60 * 24 * 31;
+		$authCode = Reg::get('otc')->generate($authOTCconfig);
+
+		return HostManager::hostToURLAddress($mail->host) . SITE_PATH . $this->config->unsubscribePath . "/code:" . $authCode;
+	}
+
+	
 }

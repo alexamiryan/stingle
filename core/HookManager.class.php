@@ -49,7 +49,7 @@ class HookManager{
 	 * @param string $hookName
 	 * @param array $arguments
 	 */
-	public static function callHook($hookName, Array &$arguments = null){
+	public static function callHook($hookName, &$arguments = null){
 		if(static::isAnyHooksRegistered($hookName)){
 			foreach (static::$hooks[$hookName] as $hook){
 				static::executeHook($hook, $arguments);
@@ -63,7 +63,7 @@ class HookManager{
 	 * @param Hook $hook
 	 * @param array $arguments
 	 */
-	public static function executeHook(Hook $hook, Array &$arguments = null){
+	public static function executeHook(Hook $hook, &$arguments = null){
 		$hookMethod = $hook->getMethod();
 		$hookObj = $hook->getObject();
 		

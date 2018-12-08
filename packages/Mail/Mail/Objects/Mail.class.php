@@ -91,6 +91,47 @@ class Mail {
 	public $subject = '';
 
 	/**
+	 * Email type ID
+	 * 
+	 * @var type int
+	 */
+	public $typeId = null;
+	/**
+	 * Email type
+	 * 
+	 * @var type String
+	 */
+	public $type = null;
+	
+	/**
+	 * Email ID
+	 * 
+	 * @var type String
+	 */
+	public $emailId = null;
+	
+	/**
+	 * User ID
+	 * 
+	 * @var type User
+	 */
+	public $user = null;
+	
+	/**
+	 * Sending host
+	 * 
+	 * @var type Host
+	 */
+	public $host = null;
+	
+	/**
+	 * Sending language
+	 * 
+	 * @var type Language
+	 */
+	public $language = null;
+	
+	/**
 	 * Add To address and optional name of to address
 	 * @param String $address
 	 * @param String $name

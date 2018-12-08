@@ -285,7 +285,7 @@ class PackageManager {
 		foreach($dependencyArray["slaves"] as $slaveKey=>$slavePlugin){
 			$exists = $this->checkIfPluginExistsInDependencyChain($dependencyArray, $slaveKey);
 			if($exists === true){
-				throw new RuntimeException("Dependency loop detected!");
+				throw new RuntimeException("Dependency loop detected! - " . print_r($slavePlugin, true));
 			}
 		}
 		return false;

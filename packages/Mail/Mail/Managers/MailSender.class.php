@@ -62,17 +62,22 @@ class MailSender extends Model {
 				$mail->addCustomHeader('List-unsubscribe', '<mailto:' . $returnPath . '>, <' . $this->getUnsubscribeUrl($mail, $this->config->unsubscribeFromAll) . '>');
 			}
 		}
-		$mail->addCustomHeader('X-MailId', $mail->emailId);
+		if(!empty($mail->emailId)){
+			$mail->addCustomHeader('X-MailId', $mail->emailId);
+		}
 		if($this->config->isMailsAreBulk){
 			$mail->addCustomHeader('Precedence', 'bulk');
 		}
 		
 		try {
 			$mail->textBody = Html2Text\Html2Text::convert($mail->htmlBody);
+			
 			HookManager::callHook('BeforeEmailSend', $mail);
+			
 			return $this->transport->send($mail, $transportConfig);
 		}
 		catch (Exception $e) {
+			echo format_exception($e) . "\n";
 			return false;
 		}
 	}
@@ -179,24 +184,26 @@ class MailSender extends Model {
 	}
 
 	public function isMailSendAllowed(Mail $mail) {
-		if ($mail->typeId == null) {
+		if ($mail->typeId === null or $mail->user === null) {
 			return true;
 		}
-		if($this->isUserAllowedToReceiveMail($mail->user)){
+		if($mail->user->enabled == UserManager::STATE_ENABLED_DISABLED){
+			return false;
+		}
+		if($this->isUserAllowedToReceiveMail($mail)){
 			return true;
 		}
 		return false;
 	}
 	
-	protected function isUserAllowedToReceiveMail(User $user){
-		if ($user->emailConfirmed == UserManager::STATE_EMAIL_CONFIRMED and
-				$user->enabled == UserManager::STATE_ENABLED_ENABLED) {
+	protected function isUserAllowedToReceiveMail(Mail $mail){
+		if (!empty($mail->user) and $mail->user->emailConfirmed == UserManager::STATE_EMAIL_CONFIRMED) {
 			return true;
 		}
 		return false;
 	}
 
-	public function getReceiveMailsByIds($flags) {
+	public function convertArrayToMailFlags($flags) {
 
 		$receiveMailFlags = array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '0');
 		$availableFlags = self::getConstsArray('RECEIVE_MAIL');
@@ -210,18 +217,41 @@ class MailSender extends Model {
 			}
 		}
 
+		return $this->buildReceiveMailsFlagsFromArray($receiveMailFlags);
+	}
+	
+	public function convertMailFlagsToArray($receiveMail) {
+		if (empty($receiveMail)) {
+			return array();
+		}
+
+		$receiveMailFlags = str_split($receiveMail);
+		unset($receiveMailFlags[0]);
+		$receiveMailFlags = array_reverse($receiveMailFlags);
 		return $receiveMailFlags;
+	}
+	
+	public function disableReceiveMailFlag($receiveMail, $mailId) {
+		if ($mailId < 0 or $mailId >= self::RECEIVE_MAIL_FLAG_LENGTH) {
+			throw new InvalidArgumentException("Incorrect mail ID: $mailId");
+		}
+		$mailIds = $this->convertMailFlagsToArray($receiveMail);
+		if (isset($mailIds[$mailId])) {
+			$mailIds[$mailId] = '0';
+			return $this->buildReceiveMailsFlagsFromArray($mailIds);
+		}
+		return false;
 	}
 
 	public function buildFullReceiveMailsFlags() {
-		return $this->buildReceiveMailsFlags(array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '1'));
+		return $this->buildReceiveMailsFlagsFromArray(array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '1'));
 	}
 
 	public function buildZeroReceiveMailsFlags() {
-		return $this->buildReceiveMailsFlags(array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '0'));
+		return $this->buildReceiveMailsFlagsFromArray(array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '0'));
 	}
 
-	public function buildReceiveMailsFlags($mailIds) {
+	public function buildReceiveMailsFlagsFromArray($mailIds) {
 		$mailIds = array_reverse($mailIds);
 
 		$finalValue = "9";
@@ -232,8 +262,11 @@ class MailSender extends Model {
 	
 	public function disableEmailReceive(User $user, $isBounced = true){
 		$user->emailConfirmed = 0;
+		$this->additionalEmailDisableActions($user, $isBounced);
 		return Reg::get('userMgr')->updateUser($user);
 	}
+	
+	protected function additionalEmailDisableActions(User $user, $isBounced = true){ }
 	
 
 	protected function checkSenderReceiverObjects(User $to, User $from = null) {

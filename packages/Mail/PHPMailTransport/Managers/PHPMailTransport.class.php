@@ -14,7 +14,7 @@ class PHPMailTransport implements MailTransportInterface {
 		if (empty($mail)) {
 			throw new MailException("Mail object is empty");
 		}
-
+		
 		$config = clone(ConfigManager::getConfig('Mail', 'PHPMailTransport')->AuxConfig);
 		if($customConfig){
 			$config = ConfigManager::mergeConfigs($customConfig, $config);
@@ -44,32 +44,26 @@ class PHPMailTransport implements MailTransportInterface {
 			}
 		}
 
-		$returnPath = (!empty($mail->returnPath) ? $mail->returnPath : $config->mailParams->returnPath);
-		if(!empty($returnPath)){
-			$phpMailer->Sender = $returnPath;
+		if(!empty($mail->returnPath)){
+			$phpMailer->Sender = $mail->returnPath;
 		}
 		
-		$fromMail = (!empty($mail->from) ? $mail->from : $config->mailParams->fromMail);
-		$fromName = (!empty($mail->fromName) ? $mail->fromName : $config->mailParams->fromName);
-		$phpMailer->setFrom($fromMail, $fromName);
+		$phpMailer->setFrom($mail->from, $mail->fromName);
 
 		foreach ($mail->getToAddresses() as $address) {
 			$phpMailer->addAddress($address['address'], $address['name']);
 		}
-
+		
 		if(count($mail->getReplyToAddresses())){
 			foreach ($mail->getReplyToAddresses() as $address) {
 				$phpMailer->addReplyTo($address['address'], $address['name']);
 			}
 		}
-		else{
-			$phpMailer->addReplyTo($config->mailParams->replyToMail, $config->mailParams->replyToName);
-		}
 
 		foreach ($mail->getCustomHeaders() as $header) {
 			$phpMailer->addCustomHeader($header['name'], $header['value']);
 		}
-
+		
 		$phpMailer->Subject = $mail->subject;
 		$phpMailer->isHTML(true);
 		$phpMailer->CharSet = $mail->charSet;
@@ -87,7 +81,7 @@ class PHPMailTransport implements MailTransportInterface {
 			$phpMailer->DKIM_passphrase = $config->DKIM->password;
 			$phpMailer->DKIM_identity = $phpMailer->From;
 		}
-
+		
 		if (!$phpMailer->send()) {
 			$error = $phpMailer->ErrorInfo;
 			if ($config->SMTP->enabled && $config->SMTP->debug){

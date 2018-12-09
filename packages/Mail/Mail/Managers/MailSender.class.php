@@ -70,14 +70,15 @@ class MailSender extends Model {
 		}
 		
 		try {
-			$mail->textBody = Html2Text\Html2Text::convert($mail->htmlBody);
+			if(empty($mail->textBody)){
+				$mail->textBody = Html2Text\Html2Text::convert($mail->htmlBody);
+			}
 			
 			HookManager::callHook('BeforeEmailSend', $mail);
 			
 			return $this->transport->send($mail, $transportConfig);
 		}
 		catch (Exception $e) {
-			echo format_exception($e) . "\n";
 			return false;
 		}
 	}

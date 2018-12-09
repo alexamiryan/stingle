@@ -54,6 +54,20 @@ class Mail {
 	public $returnPath = null;
 	
 	/**
+	 * Is this email is in HTML format
+	 * 
+	 * @var type boolean
+	 */
+	public $isHtml = true;
+	
+	/**
+	 * If email is in HTML format, should we generate text version automatically?
+	 * 
+	 * @var type boolean
+	 */
+	public $autogenerateTextVersion = true;
+	
+	/**
 	 * Sets the HTML body
 	 * @access public
 	 * @var string

@@ -70,7 +70,7 @@ class MailSender extends Model {
 		}
 		
 		try {
-			if(empty($mail->textBody)){
+			if($mail->isHtml and $mail->autogenerateTextVersion){
 				$mail->textBody = Html2Text\Html2Text::convert($mail->htmlBody);
 			}
 			

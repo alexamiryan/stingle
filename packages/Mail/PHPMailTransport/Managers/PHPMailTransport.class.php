@@ -65,12 +65,17 @@ class PHPMailTransport implements MailTransportInterface {
 		}
 		
 		$phpMailer->Subject = $mail->subject;
-		$phpMailer->isHTML(true);
+		$phpMailer->isHTML($mail->isHtml);
 		$phpMailer->CharSet = $mail->charSet;
 		$phpMailer->Encoding = $mail->encoding;
 
-		$phpMailer->Body = $mail->htmlBody;
-		if (!empty($mail->textBody)) {
+		if($mail->isHtml){
+			$phpMailer->Body = $mail->htmlBody;
+		}
+		else{
+			$phpMailer->Body = $mail->textBody;
+		}
+		if ($mail->isHtml and !empty($mail->textBody)) {
 			$phpMailer->AltBody = $mail->textBody;
 		}
 

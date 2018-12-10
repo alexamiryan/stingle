@@ -45,14 +45,9 @@ class MailSender extends Model {
 	/**
 	 * Send mail
 	 */
-	public function send(Mail $mail, Config $altConfig = null, Config $transportAltConfig = null) {
+	public function send(Mail $mail, Config $transportAltConfig = null) {
 		if (!$this->isMailSendAllowed($mail)) {
 			return true;
-		}
-		
-		$config = clone($this->config);
-		if ($altConfig) {
-			$config = ConfigManager::mergeConfigs($altConfig, $config);
 		}
 		
 		if (!empty($mail->user)) {

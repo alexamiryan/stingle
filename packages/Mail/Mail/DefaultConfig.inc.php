@@ -4,8 +4,8 @@ $defaultConfig = array(
 		'mailParams' => array(
 			'fromMail' => 'no-reply@example.com',
 			'fromName' => 'My Website',
-			'replyToMail' => 'contact@example.com',
-			'replyToName' => 'My Website Support',
+			'replyToMail' => '',
+			'replyToName' => '',
 			'returnPath' => null
 		),
 		'mailTemplatesPath' => 'mails/contents/',

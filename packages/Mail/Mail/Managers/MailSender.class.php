@@ -45,7 +45,7 @@ class MailSender extends Model {
 	/**
 	 * Send mail
 	 */
-	public function send(Mail $mail, Config $altConfig = null, Config $transportConfig = null) {
+	public function send(Mail $mail, Config $altConfig = null, Config $transportAltConfig = null) {
 		if (!$this->isMailSendAllowed($mail)) {
 			return true;
 		}
@@ -56,10 +56,19 @@ class MailSender extends Model {
 		}
 		
 		if (!empty($mail->user)) {
+			$unsubscribeArr = array();
+			
+			if(!empty($mail->returnPath)){
+				array_push($unsubscribeArr, '<mailto:' . $mail->returnPath . '>');
+			}
+			
 			$unsubscribeUrl = $this->getUnsubscribeUrl($mail, $this->config->unsubscribeFromAll);
 			if (!empty($unsubscribeUrl)) {
-				$returnPath = (!empty($mail->returnPath) ? $mail->returnPath : $config->mailParams->returnPath);
-				$mail->addCustomHeader('List-unsubscribe', '<mailto:' . $returnPath . '>, <' . $this->getUnsubscribeUrl($mail, $this->config->unsubscribeFromAll) . '>');
+				array_push($unsubscribeArr, '<' . $unsubscribeUrl . '>');
+			}
+			
+			if(!empty($unsubscribeArr)){
+				$mail->addCustomHeader('List-unsubscribe', implode(', ', $unsubscribeArr));
 			}
 		}
 		if(!empty($mail->emailId)){
@@ -76,14 +85,14 @@ class MailSender extends Model {
 			
 			HookManager::callHook('BeforeEmailSend', $mail);
 			
-			return $this->transport->send($mail, $transportConfig);
+			return $this->transport->send($mail, $transportAltConfig);
 		}
 		catch (Exception $e) {
 			return false;
 		}
 	}
 
-	public function initMail(User $to, $typeId = null, $checkValidity = true, Config $altConfig = null) {
+	public function initMail(User $to, $typeId = null, $checkValidity = true, Config $mailAltConfig = null) {
 		$toHost = null;
 		$toLang = null;
 		if (isset($to->props->host) && !empty($to->props->host)) {
@@ -110,8 +119,8 @@ class MailSender extends Model {
 		}
 		$this->checkHostLangPair($toHost, $toLang);
 
-		if ($altConfig) {
-			$mailParams = ConfigManager::mergeConfigs($altConfig->mailParams, $this->config->mailParams);
+		if ($mailAltConfig) {
+			$mailParams = ConfigManager::mergeConfigs($mailAltConfig->mailParams, $this->config->mailParams);
 		}
 		else {
 			$mailParams = $this->config->mailParams;
@@ -122,7 +131,8 @@ class MailSender extends Model {
 			$mail->returnPath = $mailParams->returnPath;
 			$mail->from = $mailParams->fromMail;
 			$mail->fromName = (isset($mailParams->fromName)) ? $mailParams->fromName : '';
-			$mail->addReplyTo($mailParams->replyToMail, (isset($mailParams->replyToName)) ? $mailParams->replyToName : '', $checkValidity);
+			$mail->addReplyTo($mailParams->replyToMail, $mailParams->replyToName, $checkValidity);
+			$mail->returnPath = $mailParams->returnPath;
 			$mail->addTo($to->email, $to->login, $checkValidity);
 			$mail->host = $toHost;
 			$mail->language = $toLang;

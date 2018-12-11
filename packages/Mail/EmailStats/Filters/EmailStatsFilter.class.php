@@ -12,10 +12,45 @@ class EmailStatsFilter extends MergeableFilter{
 			->from($this->primaryTable, $this->primaryTableAlias);
 	}
 	
-	public function getStats(){
+	public function getStats($item = 'day', $byWhichDate = 'sent'){
+		
+		
+		$groupField = null;
+		if($byWhichDate == 'sent'){
+			$groupField = 'date';
+		}
+		elseif($byWhichDate == 'read'){
+			$groupField = 'date_read';
+		}
+		elseif($byWhichDate == 'click'){
+			$groupField = 'date_clicked';
+		}
+		elseif($byWhichDate == 'activate'){
+			$groupField = 'date_activated';
+		}
+		elseif($byWhichDate == 'unsubscribe'){
+			$groupField = 'date_unsubscribed';
+		}
+		elseif($byWhichDate == 'bounce'){
+			$groupField = 'date_bounced';
+		}
+		else{
+			throw new InvalidArgumentException('$byWhichDate should be either sent,read,click,activate,unsubscribe,bounce');
+		}
+		
+		if($item == 'day'){
+			$this->qb->groupBy(new Func('DATE', new Field($groupField)));
+		}
+		elseif($item == 'hour'){
+			$this->qb->groupBy(new Func('DATE_FORMAT', array(new Field($groupField), '%Y%m%d%H')));
+		}
+		else{
+			throw new InvalidArgumentException('$item should be either day or hour');
+		}
+		
 		$this->qb->select(
 			array(
-				new Func('DATE', new Field('date'), 'date'),
+				($item == 'day' ? new Func('DATE', new Field($groupField), 'date') : new Field($groupField, null, 'date')),
 				new Func('COUNT', '*', 'count'),
 				new Func('SUM', new Field('is_read'), 'read_count'),
 				new Func('SUM', new Field('is_clicked'), 'clicked_count'),
@@ -26,9 +61,8 @@ class EmailStatsFilter extends MergeableFilter{
 				new Func('SUM', new Field('is_bounced_block'), 'bounced_block_count'),
 			)
 		);
-		//date_format( your_date_column, '%Y%m%d%H' )
-		$this->qb->groupBy(new Func('DATE', new Field('date')));
-		//$this->qb->groupBy(new Func('DATE_FORMAT', array(new Field('date'), '%Y%m%d%H')));
+		
+		
 	}
 	
 	public function getAvailableFroms(){

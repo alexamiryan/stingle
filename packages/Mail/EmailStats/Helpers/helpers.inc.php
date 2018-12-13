@@ -12,6 +12,5 @@ function mglink($url = '', $mail = null) {
 			throw new RuntimeException('$mail is not assigned in Smarty');
 		}
 	}
-	
-	return glink($clickUrl . "id:" . $mail->emailId . '/r:' . base64_encode(glink($url)));
+	return glink($clickUrl . "id:" . $mail->emailId . '/r:' . base64_url_encode(glink($url)));
 }

@@ -933,7 +933,12 @@ function bmhDSNRules($dsn_msg, $dsn_report, $debug_mode = false)
 		elseif (preg_match('/suspicious.*very low reputation of the sending/is', $diag_code)) {
           $result['rule_cat'] = 'antispam';
           $result['rule_no'] = '0223';
-        } /* rule: internal_error
+        } 
+		elseif (preg_match('/block list/is', $diag_code)) {
+          $result['rule_cat'] = 'antispam';
+          $result['rule_no'] = '0224';
+        } 
+		/* rule: internal_error
          * sample:
          *   Diagnostic-Code: SMTP; 451 Temporary local problem - please try later
          */

@@ -71,6 +71,15 @@ class UsersFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setLoginIn($logins){
+		if(empty($logins) or ! is_array($logins)){
+			throw new InvalidArgumentException("\$logins have to be non empty array");
+		}
+	
+		$this->qb->andWhere($this->qb->expr()->in(new Field('login', $this->primaryTableAlias), $logins));
+		return $this;
+	}
+	
 	public function setEmail($email){
 		if(empty($email)){
 			throw new InvalidArgumentException("\$email have to be non empty string");

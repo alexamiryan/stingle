@@ -3,17 +3,19 @@
 $defaultConfig = array(
 	'AuxConfig' => array(
 		'IMAP' => array(
-			'host' => false,
-			'port' => null,
-			'username' => null,
-			'password' => null
+			'default' => array(
+				'isDefault' => false,
+				'host' => false,
+				'port' => null,
+				'username' => null,
+				'password' => null
+			)
 		),
 		'deleteBouncedEmails' => true,
 		'bounceLogging' => true,
-		'bounceEchoOutput' => true,	
-		
+		'bounceEchoOutput' => true
 	),
 	'Objects' => array(
 		'BounceHandler' => 'bounceHandler',
-    )
+	)
 );

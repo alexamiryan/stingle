@@ -2,11 +2,14 @@
 $defaultConfig = array(
 	'AuxConfig' => array(
 		'mailParams' => array(
-			'fromMail' => 'no-reply@example.com',
-			'fromName' => 'My Website',
-			'replyToMail' => '',
-			'replyToName' => '',
-			'returnPath' => null
+			'default' => array(
+				'isDefault' => false,
+				'fromMail' => 'no-reply@example.com',
+				'fromName' => 'My Website',
+				'replyToMail' => '',
+				'replyToName' => '',
+				'returnPath' => null
+			)
 		),
 		'mailTemplatesPath' => 'mails/contents/',
 		'unsubscribePath' => 'action:unsubscribe',

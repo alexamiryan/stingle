@@ -2,5 +2,5 @@
 
 interface MailTransportInterface
 {
-    public function send(Mail $mail, Config $customConfig = null);
+    public function send(Mail $mail, $configName = null);
 }

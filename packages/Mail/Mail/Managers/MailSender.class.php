@@ -42,10 +42,31 @@ class MailSender extends Model {
 		$this->stringToInclude = $string;
 	}
 	
+	public function getDefaultMailParams(){
+		foreach($this->config->mailParams->toArray() as $config){
+			if($config->isDefault){
+				return $config;
+			}
+		}
+		throw new RuntimeException("There is no default mail config defined");
+	}
+	
+	public function getMailParamsByName($name){
+		if(empty($name)){
+			throw new InvalidArgumentException("name is empty");
+		}
+		if(isset($this->config->mailParams->$name)){
+			return $this->config->mailParams->$name;
+		}
+		else{
+			return $this->getDefaultMailParams();
+		}
+	}
+	
 	/**
 	 * Send mail
 	 */
-	public function send(Mail $mail, Config $transportAltConfig = null) {
+	public function send(Mail $mail, $transportConfigName = null) {
 		if (!$this->isMailSendAllowed($mail)) {
 			return true;
 		}
@@ -80,14 +101,14 @@ class MailSender extends Model {
 			
 			HookManager::callHook('BeforeEmailSend', $mail);
 			
-			return $this->transport->send($mail, $transportAltConfig);
+			return $this->transport->send($mail, $transportConfigName);
 		}
 		catch (Exception $e) {
 			return false;
 		}
 	}
 
-	public function initMail(User $to, $typeId = null, $checkValidity = true, Config $mailAltConfig = null) {
+	public function initMail(User $to, $typeId = null, $checkValidity = true, $mailAltConfigName = null) {
 		$toHost = null;
 		$toLang = null;
 		if (isset($to->props->host) && !empty($to->props->host)) {
@@ -114,11 +135,12 @@ class MailSender extends Model {
 		}
 		$this->checkHostLangPair($toHost, $toLang);
 
-		if ($mailAltConfig) {
-			$mailParams = ConfigManager::mergeConfigs($mailAltConfig->mailParams, $this->config->mailParams);
+		$mailParams = null;
+		if (!empty($mailAltConfigName)) {
+			$mailParams = $this->getMailParamsByName($mailAltConfigName);
 		}
 		else {
-			$mailParams = $this->config->mailParams;
+			$mailParams = $this->getDefaultMailParams();
 		}
 
 		try {

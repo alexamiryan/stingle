@@ -12,7 +12,7 @@ class MailSender extends Model {
 	const RECEIVE_MAIL_YES = 1;
 	const RECEIVE_MAIL_NO = 0;
 	
-	const RECEIVE_MAIL_FLAG_LENGTH = 8;
+	protected $receiveMailFlagsLength = 0;
 	
 	const EMAIL_ID_LENGTH = 16;
 
@@ -211,7 +211,7 @@ class MailSender extends Model {
 
 	public function convertArrayToMailFlags($flags) {
 
-		$receiveMailFlags = array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '0');
+		$receiveMailFlags = array_fill(0, $this->receiveMailFlagsLength, '0');
 		$availableFlags = self::getConstsArray('RECEIVE_MAIL');
 		if (empty($flags)) {
 			$flags = array();
@@ -238,7 +238,7 @@ class MailSender extends Model {
 	}
 	
 	public function disableReceiveMailFlag($receiveMail, $mailId) {
-		if ($mailId < 0 or $mailId >= self::RECEIVE_MAIL_FLAG_LENGTH) {
+		if ($mailId < 0 or $mailId >= $this->receiveMailFlagsLength) {
 			throw new InvalidArgumentException("Incorrect mail ID: $mailId");
 		}
 		$mailIds = $this->convertMailFlagsToArray($receiveMail);
@@ -250,11 +250,11 @@ class MailSender extends Model {
 	}
 
 	public function buildFullReceiveMailsFlags() {
-		return $this->buildReceiveMailsFlagsFromArray(array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '1'));
+		return $this->buildReceiveMailsFlagsFromArray(array_fill(0, $this->receiveMailFlagsLength, '1'));
 	}
 
 	public function buildZeroReceiveMailsFlags() {
-		return $this->buildReceiveMailsFlagsFromArray(array_fill(0, self::RECEIVE_MAIL_FLAG_LENGTH, '0'));
+		return $this->buildReceiveMailsFlagsFromArray(array_fill(0, $this->receiveMailFlagsLength, '0'));
 	}
 
 	public function buildReceiveMailsFlagsFromArray($mailIds) {

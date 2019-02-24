@@ -5,5 +5,6 @@ class DependencyUserPhotos extends Dependency
 		$this->addPlugin("Db", "Db");
 		$this->addPlugin("Db", "QueryBuilder");
 		$this->addPlugin("Image", "ImageUploader");
+		$this->addPlugin("Image", "ImageModificator");
 	}
 }

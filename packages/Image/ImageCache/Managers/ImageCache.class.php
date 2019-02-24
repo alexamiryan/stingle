@@ -43,6 +43,8 @@ class ImageCache
 			}
 		}
 		
+		unset($image);
+		gc_collect_cycles();
 		return $resultingFilePath;
 	}
 	

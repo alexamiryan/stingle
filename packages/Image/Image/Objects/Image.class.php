@@ -191,6 +191,7 @@ class Image extends Model {
 			}
 		}
 		$this->imageRes = $resized_image;
+		unset($resized_image);
 	}
 
 	/**

@@ -21,7 +21,7 @@ class UserPhotoManager extends DbAccessor
 		$this->config = $config;
 	}
 	
-	public function uploadPhoto($file, $userId, $uploadDir = null){
+	public function uploadPhoto($file, $userId, $uploadDir = null, $uploaderModelName = null){
 		if(empty($userId)){
 			throw new InvalidArgumentException("\$userId is empty!");
 		}
@@ -37,14 +37,21 @@ class UserPhotoManager extends DbAccessor
 			}
 		}
 		
+		$imageUploaderConfig = null;
+		if(empty($uploaderModelName) and !empty($this->config->imageModificatorDefaultModel)){
+			$uploaderModelName = $this->config->imageModificatorDefaultModel;
+		}
+		if(!empty($uploaderModelName)){
+			$imageUploaderConfig = ImageModificator::getUploaderConfigForModel($uploaderModelName);
+		}
 		if($uploadDir !== null){
-			$imageUploaderConfig = new Config();
+			if($imageUploaderConfig == null){
+				$imageUploaderConfig = new Config();
+			}
 			$imageUploaderConfig->uploadDir = $uploadDir;
-			$image = ImageUploader::upload($file, null, $imageUploaderConfig);
 		}
-		else{
-			$image = ImageUploader::upload($file);
-		}
+		
+		$image = ImageUploader::upload($file, null, $imageUploaderConfig);
 		
 		$photo = new UserPhoto();
 		$photo->fileName = $image->fileName;

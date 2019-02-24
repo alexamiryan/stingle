@@ -427,7 +427,7 @@ class SmartyWrapper extends Smarty {
 	
 	protected function getCssFilePath($fileName){
 		$resultingFilePath = $fileName;
-		if(strpos($fileName, "http://") === false and substr($fileName,0,1) != "/"){
+		if((strpos($fileName, "https://") === false and strpos($fileName, "http://") === false) and substr($fileName,0,1) != "/"){
 			$resultingFilePath = SITE_PATH . $this->findFilePath('css/' . $fileName);
 			if($resultingFilePath === false){
 				throw new TemplateFileNotFoundException("CSS file '$fileName' not found.");

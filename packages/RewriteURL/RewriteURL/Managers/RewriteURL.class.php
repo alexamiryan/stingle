@@ -49,12 +49,15 @@ class RewriteURL{
 		}
 	}
 
-	public function glink($strUrl = ''){
+	public function glink($strUrl = '', $hash = ''){
 		if($strUrl != '/'){
 			$strUrl = $this->config->sitePath . $strUrl;
 		}
 		
 		self::ensureLastSlash($strUrl);
+		if(!empty($hash)){
+			$strUrl .= '#' . $hash;
+		}
 		return $strUrl;
 	}
 	

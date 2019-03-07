@@ -2,10 +2,11 @@
 class CometEvent{
 	public $id;
 	public $date;
-	public $selfUserId;
-	public $selfUser = null;
+	public $selfUserId = null;
 	public $userId = null;
-	public $user = null;
 	public $name;
 	public $data;
+	
+	public $selfUser = null;
+	public $user = null;
 }

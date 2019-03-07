@@ -30,11 +30,11 @@ class CometEvents extends DbAccessor{
 		return $maxId;
 	}
 	
-	public function addEvent($name, $selfUserId, $userId = null, $data = array()){
+	public function addEvent($name, $selfUserId = null, $userId = null, $data = array()){
 		if(empty($name)){
 			throw new InvalidArgumentException("\$name have to be non empty string");
 		}
-		if(empty($selfUserId) or !is_numeric($selfUserId)){
+		if($selfUserId !== null and (empty($selfUserId) or !is_numeric($selfUserId))){
 			throw new InvalidArgumentException("\$selfUserId have to be non zero integer");
 		}
 		if($userId !== null and (empty($userId) or !is_numeric($userId))){
@@ -48,9 +48,11 @@ class CometEvents extends DbAccessor{
 
 		$values = array(
 						'name' => $name,
-						'self_user_id' => $selfUserId,
 						'data' => serialize($data)
 						);
+		if($selfUserId !== null){
+			$values['self_user_id'] = $selfUserId;
+		}
 		if($userId !== null){
 			$values['user_id'] = $userId;
 		}
@@ -82,7 +84,9 @@ class CometEvents extends DbAccessor{
 		$event->userId = $eventRow['user_id'];
 		if(!$reduced){
 			$UserManager = Reg::get(ConfigManager::getConfig("Users","Users")->Objects->UserManager);
-			$event->selfUser = $UserManager->getUserById($eventRow['self_user_id']);
+			if(!empty($eventRow['self_user_id'])){
+				$event->selfUser = $UserManager->getUserById($eventRow['self_user_id']);
+			}
 			if(!empty($eventRow['user_id'])){
 				$event->user = $UserManager->getUserById($eventRow['user_id']);
 			}

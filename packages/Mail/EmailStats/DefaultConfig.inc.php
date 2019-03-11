@@ -1,7 +1,8 @@
 <?php
 $defaultConfig = array(
 	'AuxConfig'=>array(
-		'clickUrl' => 'mail/click/'
+		'clickUrl' => 'mail/click/',
+		'shortenLinks' => false
 	),
     'Objects' => array(
 		'EmailStats' => 'emailStats'

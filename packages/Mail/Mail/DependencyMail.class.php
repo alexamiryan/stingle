@@ -5,5 +5,6 @@ class DependencyMail extends Dependency
 		$this->addPlugin("Users", "Users");
 		$this->addPlugin("Security", "OneTimeCodes");
 		$this->addPlugin("Output", "Smarty");
+		$this->addPlugin("Crypto", "Crypto");
 	}
 }

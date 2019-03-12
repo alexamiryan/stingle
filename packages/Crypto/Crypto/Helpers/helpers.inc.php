@@ -12,6 +12,7 @@ const RANDOM_STRING_SYMBOLS = 3;
  */
 function generateRandomString($tokenLength = 12, $alphabetMode = array(RANDOM_STRING_LOWERCASE, RANDOM_STRING_UPPERCASE, RANDOM_STRING_DIGITS)){
     $token = "";
+	
     //Combination of character, number and special character...
     $combinationString = "";
 	

@@ -127,7 +127,7 @@ class LinkShortener extends DbAccessor {
 		
 		$link = new Link();
 		
-		$link->linkId = $this->generateRandomString(self::LINK_ID_LENGTH);
+		$link->linkId = generateRandomString(self::LINK_ID_LENGTH, array(RANDOM_STRING_LOWERCASE, RANDOM_STRING_DIGITS));
 		$link->url = $url;
 		
 		if(!empty($expires) and $expires !== self::EXPIRES_NEVER){
@@ -173,13 +173,4 @@ class LinkShortener extends DbAccessor {
 		return $link;
 	}
 	
-	protected function generateRandomString($length) {
-		$characters = '0123456789abcdefghijklmnopqrstuvwxyz';
-		$charactersLength = strlen($characters);
-		$randomString = '';
-		for ($i = 0; $i < $length; $i++) {
-			$randomString .= $characters[rand(0, $charactersLength - 1)];
-		}
-		return $randomString;
-	}
 }

@@ -156,7 +156,7 @@ class MailSender extends Model {
 			$mail->user = $to;
 			$mail->typeId = $typeId;
 			$mail->type = (isset($this->typesMap[$typeId]) ? $this->typesMap[$typeId] : null);
-			$mail->emailId = generateRandomString(self::EMAIL_ID_LENGTH);
+			$mail->emailId = generateRandomString(self::EMAIL_ID_LENGTH, array(RANDOM_STRING_LOWERCASE, RANDOM_STRING_DIGITS));
 		}
 		catch (Exception $e) {
 			return false;

@@ -144,8 +144,8 @@ class LinkShortener extends DbAccessor {
 	
 	public function handleLink($linkId){
 		$link = $this->getLinkById($linkId);
-		$this->setLinkAsClicked($link);
 		if(!empty($link)){
+			$this->setLinkAsClicked($link);
 			redirect($link->url);
 		}
 		return false;

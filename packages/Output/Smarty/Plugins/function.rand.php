@@ -8,9 +8,9 @@
 
 function smarty_function_rand($params, &$smarty){
 	$length = null;
-	$type = null;
+	$alphabet = array(RANDOM_STRING_LOWERCASE, RANDOM_STRING_UPPERCASE, RANDOM_STRING_DIGITS);
 	
 	extract($params);
 	
-	return generateRandomString($length, $type);
+	return generateRandomString($length, $alphabet);
 }

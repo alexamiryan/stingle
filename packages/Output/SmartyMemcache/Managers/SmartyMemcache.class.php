@@ -28,9 +28,7 @@ class Smarty_CacheResource_Memcache extends Smarty_CacheResource_KeyValueStore {
 			throw new RuntimeException("Memcache key prefix can't contain colon \":\"!");
 		}
 		
-		if($this->memcacheConfig->enabled){
-			$this->memcache = new MemcacheWrapper($this->memcacheConfig->host, $this->memcacheConfig->port);
-		}
+		$this->memcache = Reg::get('memcache');
 	}
 
 	/**

@@ -3,6 +3,8 @@ class UserPhotoManager extends DbAccessor
 {
 	const TBL_USERS_PHOTOS = 'users_photos';
 	
+	const MEMCACHE_PHOTO_TAG = 'UserPhoto:';
+	
 	const MODERATION_STATUS_APPROVED	= 'approved';
 	const MODERATION_STATUS_NEW 		= 'new';
 	const MODERATION_STATUS_DECLINED   = 'declined';
@@ -125,7 +127,7 @@ class UserPhotoManager extends DbAccessor
 			if(count($userPhotos)){
 				// Set as default first of the user's approved photos
 				$this->setAsDefault($userPhotos[0]);
-				
+				Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_PHOTO_TAG . $userPhotos[0]->id);
 				return $userPhotos[0];
 			}
 		}
@@ -206,6 +208,7 @@ class UserPhotoManager extends DbAccessor
 			->limit(1);
 
 		$this->query->exec($qb->getSQL());	
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_PHOTO_TAG . $photo->id);
 	}
 	
 	public function deletePhoto(UserPhoto $photo, $uploadDir = null){
@@ -229,8 +232,8 @@ class UserPhotoManager extends DbAccessor
 				deleteCropSettings($photo->fileName);
 		}
 		
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_PHOTO_TAG . $photo->id);
 		return $this->deletPhotoFromDB($photo);
-		
 	}
 	
 	public function deletPhotoFromDB(UserPhoto $photo){
@@ -248,6 +251,7 @@ class UserPhotoManager extends DbAccessor
 		
 		$this->query->exec($qb->getSQL());
 		
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_PHOTO_TAG . $photo->id);
 		return $this->correctDefaultPhoto($photo->userId);
 	}
 	
@@ -269,6 +273,7 @@ class UserPhotoManager extends DbAccessor
 		$this->query->exec($qb->getSQL());	
 		
 		$this->correctDefaultPhoto($photo->userId);
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_PHOTO_TAG . $photo->id);
 	}
 	
 	public function declinePhoto(UserPhoto $photo){
@@ -287,6 +292,8 @@ class UserPhotoManager extends DbAccessor
 		$this->query->exec($qb->getSQL());	
 		
 		$this->correctDefaultPhoto($photo->userId);
+		
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_PHOTO_TAG . $photo->id);
 	}
 	
 	public function getPhotos(UserPhotosFilter $filter, MysqlPager $pager = null, $cacheMinutes = null, $reduced = true){
@@ -307,20 +314,28 @@ class UserPhotoManager extends DbAccessor
 		$userPhotos = array();
 		if($this->query->countRecords()){
 			while(($row = $this->query->fetchRecord()) != false){
-				array_push($userPhotos, static::getFilledUserPhoto($row, $reduced));
+				$photo = static::getFilledUserPhoto($row, $reduced);
+				array_push($userPhotos, $photo);
 			}
 		}
-
+		
 		return $userPhotos;
 	}
 	
 	public function getPhoto($photoId, $cacheMinutes = null, $reduced = true){
+		$photo = Reg::get('memcache')->getObject(self::MEMCACHE_PHOTO_TAG . $photoId);
+		
+		if(!empty($photo)){
+			return $photo;
+		}
+		
 		$filter = new UserPhotosFilter();
 		$filter->setPhotoId($photoId);
 		
 		$photos = $this->getPhotos($filter, null, $cacheMinutes, $reduced);
 		
 		if(count($photos)){
+			Reg::get('memcache')->setObject(self::MEMCACHE_PHOTO_TAG . $photos[0]->id, "", $photos[0], MemcacheWrapper::MEMCACHE_UNLIMITED);
 			return $photos[0];
 		}
 		return false;

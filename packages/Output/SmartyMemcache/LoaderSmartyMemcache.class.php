@@ -14,11 +14,7 @@ class LoaderSmartyMemcache extends Loader {
 
 	public function hookClearUserSmartyCache($params) {
 		if (isset($params["userId"]) && !empty($params["userId"]) && is_numeric($params["userId"])) {
-			$memcacheConfig = ConfigManager::getConfig('Db', 'Memcache')->AuxConfig;
-			if (!empty($memcacheConfig) and $memcacheConfig->enabled == true) {
-				$memcached = new MemcacheWrapper($memcacheConfig->host, $memcacheConfig->port);
-				$memcached->invalidateCacheByTag("smrt:u" . $params["userId"]);
-			}
+			Reg::get('memcache')->invalidateCacheByTag("smrt:u" . $params["userId"]);
 		}
 	}
 

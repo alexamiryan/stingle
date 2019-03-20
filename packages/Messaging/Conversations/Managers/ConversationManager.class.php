@@ -5,6 +5,9 @@ class ConversationManager extends DbAccessor{
 	const TBL_CONVERSATION_MESSAGES			= "conversation_messages";
 	const TBL_CONVERSATION_MESSAGES_PROPS 	= "conversation_messages_props";
 	
+	const MEMCACHE_CONV_TAG = 'conv:uuid';
+	const MEMCACHE_CONV_MSG_TAG = 'convmsg:uuid';
+	
 	const STATUS_READ_UNREAD 			= 0;
 	const STATUS_READ_READ 				= 1;
 	
@@ -70,11 +73,20 @@ class ConversationManager extends DbAccessor{
 	}
 	
 	public function getConversationByUUID($uuid, $userId, $initObjects = self::INIT_ALL){
-		$filter = new ConversationFilter();
-		$filter->setUUID($uuid);
-		$filter->setUserId($userId);
+		$conv = Reg::get('memcache')->getObject(self::MEMCACHE_CONV_TAG . $uuid, $userId . '-' . $initObjects);
 		
-		return $this->getConversation($filter, $initObjects);
+		if(!empty($conv)){
+			return $conv;
+		}
+		else{
+			$filter = new ConversationFilter();
+			$filter->setUUID($uuid);
+			$filter->setUserId($userId);
+
+			$conv = $this->getConversation($filter, $initObjects);
+			Reg::get('memcache')->setObject(self::MEMCACHE_CONV_TAG . $uuid, $userId . '-' . $initObjects, $conv, MemcacheWrapper::MEMCACHE_UNLIMITED);
+			return $conv;
+		}
 	}
 	
 	public function getConversationsCount(ConversationFilter $filter){
@@ -100,7 +112,12 @@ class ConversationManager extends DbAccessor{
 
 		if ($sql->countRecords()) {
 			while (($dbRow = $sql->fetchRecord()) != false) {
-				array_push($messages, $this->getConversationMessageObject($dbRow, $userId, $initObjects));
+				$msg = Reg::get('memcache')->getObject(self::MEMCACHE_CONV_MSG_TAG . $dbRow['uuid'], $dbRow['id'] . '-' . $userId . '-' . $initObjects);
+				if(empty($msg)){
+					$msg = $this->getConversationMessageObject($dbRow, $userId, $initObjects);
+					Reg::get('memcache')->setObject(self::MEMCACHE_CONV_MSG_TAG . $msg->uuid, $msg->id . '-' . $userId . '-' . $initObjects, $msg, MemcacheWrapper::MEMCACHE_UNLIMITED);
+				}
+				array_push($messages, $msg);
 			}
 		}
 		
@@ -163,7 +180,7 @@ class ConversationManager extends DbAccessor{
 			throw new InvalidArgumentException("\$receivers have to be non empty array");
 		}
 		
-		$uuids = findExistingConversationUUIDs(array_merge(array($senderId), $receivers));
+		$uuids = $this->findExistingConversationUUIDs(array_merge(array($senderId), $receivers));
 		
 		if(count($uuids) === 0){
 			throw new ConversationNotUniqueException("Conversation with selected participants doesn't exist");
@@ -235,7 +252,12 @@ class ConversationManager extends DbAccessor{
 			->set(new Field('has_attachment'), $conv->hasAttachment)
 			->where($qb->expr()->equal(new Field('id'), $conv->id));
 		
-		return $this->query->exec($qb->getSQL())->affected();
+		$this->query->exec($qb->getSQL());
+		
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_TAG . $conv->uuid);
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_MSG_TAG . $conv->uuid);
+		
+		return $this->query->affected();
 	}
 	
 	public function updateConversationMessage(ConversationMessage $msg){
@@ -253,7 +275,11 @@ class ConversationManager extends DbAccessor{
 			$this->updateConversationMessageProps($msg->props);
 		}
 		
-		return $this->query->exec($qb->getSQL())->affected();
+		$this->query->exec($qb->getSQL());
+		
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_MSG_TAG . $msg->uuid);
+		
+		return $this->query->affected();
 	}
 	
 	public function updateConversationMessageProps(ConversationMessageProps $props){
@@ -267,7 +293,11 @@ class ConversationManager extends DbAccessor{
 			->set(new Field('deleted'), $props->deleted)
 			->where($qb->expr()->equal(new Field('id'), $props->id));
 		
-		return $this->query->exec($qb->getSQL())->affected();
+		$this->query->exec($qb->getSQL());
+		
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_MSG_TAG . $props->uuid);
+		
+		return $this->query->affected();
 	}
 	
 	
@@ -312,7 +342,10 @@ class ConversationManager extends DbAccessor{
 		$qb->delete(Tbl::get('TBL_CONVERSATIONS'))
 			->where($qb->expr()->equal(new Field('uuid'), $conv->uuid));
 
-		return $this->query->exec($qb->getSQL())->affected();
+		$this->query->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_TAG . $conv->uuid);
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_MSG_TAG . $conv->uuid);
+		return $this->query->affected();
 	}
 	
 	public function wipeAllConversationMessages($uuid){
@@ -333,7 +366,10 @@ class ConversationManager extends DbAccessor{
 		$qb->delete(Tbl::get('TBL_CONVERSATION_MESSAGES'))
 			->where($qb->expr()->equal(new Field('uuid'), $uuid));
 			
-		return $this->query->exec($qb->getSQL())->affected();
+		$this->query->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_TAG . $uuid);
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_MSG_TAG . $uuid);
+		return $this->query->affected();
 	}
 	
 	public function wipeAllConversationMessageProps($uuid){
@@ -345,7 +381,10 @@ class ConversationManager extends DbAccessor{
 		$qb->delete(Tbl::get('TBL_CONVERSATION_MESSAGES_PROPS'))
 			->where($qb->expr()->equal(new Field('uuid'), $uuid));
 			
-		return $this->query->exec($qb->getSQL())->affected();
+		$this->query->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_TAG . $uuid);
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_MSG_TAG . $uuid);
+		return $this->query->affected();
 	}
 	
 	public function markMessageAsRead(ConversationMessage $msg){
@@ -391,7 +430,10 @@ class ConversationManager extends DbAccessor{
 			->set(new Field('read'), self::STATUS_READ_READ)
 			->where($qb->expr()->equal(new Field('uuid'), $conv->uuid))
 			->andWhere($qb->expr()->equal(new Field('user_id'), $conv->userId));
-		return $this->query->exec($qb->getSQL())->affected();
+		
+		$this->query->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_MSG_TAG . $conv->uuid);
+		return $this->query->affected();
 	}
 	
 	public function markAllMessagesAsDeleted(Conversation $conv){
@@ -401,7 +443,10 @@ class ConversationManager extends DbAccessor{
 			->set(new Field('deleted'), self::STATUS_DELETED_YES)
 			->where($qb->expr()->equal(new Field('uuid'), $conv->uuid))
 			->andWhere($qb->expr()->equal(new Field('user_id'), $conv->userId));
-		return $this->query->exec($qb->getSQL())->affected();
+		$this->query->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_TAG . $conv->uuid);
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_MSG_TAG . $conv->uuid);
+		return $this->query->affected();
 	}
 	
 	public function isConversationExists($uuid){
@@ -467,6 +512,7 @@ class ConversationManager extends DbAccessor{
 		}
 		
 		$this->query->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_TAG . $uuid);
 	}
 	
 	protected function addMessageToConversation($uuid, $userId, $message){
@@ -588,6 +634,9 @@ class ConversationManager extends DbAccessor{
 			->where($qb->expr()->equal(new Field('user_id'), $user->id))
 			->andWhere($qb->expr()->equal(new Field('uuid'), $conv->uuid));
 		$this->query->exec($qb->getSQL());
+		
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_TAG . $conv->uuid);
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_CONV_MSG_TAG . $conv->uuid);
 	}
 	
 	public function getMaxUUID(){
@@ -729,10 +778,6 @@ class ConversationManager extends DbAccessor{
 			$this->updateConversation($conv);
 		}
 	}
-	
-	
-	
-	
 	
 	
 	protected function getConversationObject($conversationRow, $initObjects = self::INIT_ALL){

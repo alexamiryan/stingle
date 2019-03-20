@@ -19,7 +19,7 @@ class RequestLimiter extends DbAccessor {
 	 * @param string $ip
 	 * @throws InvalidArgumentException
 	 */
-	public function isBlacklistedIp($ip = null){
+	public function isBlacklistedIp($ip = null, $cacheMinutes = null){
 		if(isset($_SERVER['REMOTE_ADDR'])){
 			if($ip === null){
 				$ip = $_SERVER['REMOTE_ADDR'];
@@ -29,7 +29,7 @@ class RequestLimiter extends DbAccessor {
 				->from(Tbl::get("TBL_SECURITY_FLOODER_IPS"))
 				->where($qb->expr()->equal(new Field('ip'), $ip));
 				
-			$this->query->exec($qb->getSQL());
+			$this->query->exec($qb->getSQL(), $cacheMinutes);
 			
 			$count = $this->query->fetchField("count");
 			
@@ -104,6 +104,7 @@ class RequestLimiter extends DbAccessor {
 		$qb->insert(Tbl::get('TBL_SECURITY_FLOODER_IPS'))
 			->values(array('ip' => $ip));
 		$this->query->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag('RequestLimiter');
 	}
 	
 	/**
@@ -118,5 +119,6 @@ class RequestLimiter extends DbAccessor {
 		$qb->delete(Tbl::get('TBL_SECURITY_FLOODER_IPS'))
 			->where($qb->expr()->equal(new Field("ip"), $ip));	
 		$this->query->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag('RequestLimiter');
 	}
 }

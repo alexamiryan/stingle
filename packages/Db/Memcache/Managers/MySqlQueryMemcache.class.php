@@ -7,7 +7,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 	
 	public $memcache = null;
 	private $memcacheConfig;
-	private $is_result_cached = false;
+	private $isResultCached = false;
 
 	/**
 	 * Class constructor
@@ -26,9 +26,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 			throw new RuntimeException("Memcache key prefix can't contain colon \":\"!");
 		}
 		
-		if($this->memcacheConfig->enabled){
-			$this->memcache = new MemcacheWrapper($this->memcacheConfig->host, $this->memcacheConfig->port);
-		}
+		$this->memcache = Reg::get('memcache');
 	}
 
 	private function findDefaultMemcacheConfig(){
@@ -69,13 +67,13 @@ class MySqlQueryMemcache extends MySqlQuery{
 		}
 		$enabledStatus = ConfigManager::getConfig("Db", "Memcache")->AuxConfig->enabled;
 		
-		$this->is_result_cached = false;
+		$this->isResultCached = false;
 		if($enabledStatus and $this->memcache !== null and $cacheMinutes != MemcacheWrapper::MEMCACHE_OFF){
 			$cache = $this->memcache->get($this->getMemcacheKey($sqlStatement, $cacheTag));
 			
 			if($cache !== false and is_array($cache)){
 				$this->result = $cache;
-				$this->is_result_cached = true;
+				$this->isResultCached = true;
 				
 				$this->last_fetch_type='';
 				$this->last_field_position=0;
@@ -108,7 +106,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 	 * @return int $number
 	 */
 	public function countRecords(){
-		if($this->is_result_cached){
+		if($this->isResultCached){
 			return count($this->result);
 		}
 		else{
@@ -122,7 +120,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 	 * @return int $number
 	 */
 	public function countFields(){
-		if($this->is_result_cached){
+		if($this->isResultCached){
 			return count($this->result[0]);
 		}
 		else{
@@ -137,7 +135,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 	 * @return array
 	 */
 	public function fetchRecord($type=1){
-		if($this->is_result_cached){
+		if($this->isResultCached){
 			if(!isset($this->result[$this->last_record_position])){
 				return array();
 			}
@@ -158,7 +156,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 	 * @return string
 	 */
 	public function fetchField($field_identifier, $is_numeric=0){
-		if($this->is_result_cached){
+		if($this->isResultCached){
 			if(!isset($this->result[$this->last_record_position])){
 				return null;
 			}
@@ -190,7 +188,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 	 * @return array
 	 */
 	public function fetchRecords($offset=0, $len=0, $fields_type=1, $rows_type=0, $rows_type_field=''){
-		if($this->is_result_cached){
+		if($this->isResultCached){
 			if ($rows_type == 1 and !empty($rows_type_field)){
 				$array_to_return = array();
 				foreach ($this->result as $key=>$val){
@@ -217,7 +215,7 @@ class MySqlQueryMemcache extends MySqlQuery{
 	 * @return array
 	 */
 	public function fetchFields($field_identifier, $is_numeric_identifier=false, $offset=0, $len=0){
-		if($this->is_result_cached){
+		if($this->isResultCached){
 			$array_to_return = array();
 			foreach ($this->result as $key=>$val){
 				if($is_numeric_identifier){

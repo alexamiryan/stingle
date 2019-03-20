@@ -14,7 +14,7 @@ class LoaderLanguage extends Loader{
 	}
 	
 	protected function loadLanguageManager(){
-		$this->register(new LanguageManager());
+		$this->register(new LanguageManager($this->config));
 	}
 	
 	public function hookGetLanguageObj(){

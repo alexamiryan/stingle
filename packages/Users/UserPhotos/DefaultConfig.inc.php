@@ -6,5 +6,7 @@ $defaultConfig = array(
 		'preModeration' => true,
 		'imageModificatorDefaultModel' => 'usersMedium'
 	),
-	'Objects' => array('UserPhotoManager' => 'photoMgr')
+	'Objects' => array(
+		'UserPhotoManager' => 'photoMgr'
+	)
 );

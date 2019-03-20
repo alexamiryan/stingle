@@ -88,6 +88,9 @@ class MySqlQuery extends Model {
 	 * @return MysqlQuery
 	 */
 	public function exec($sqlStatement) {
+		//$backtrace = debug_backtrace();
+		//printr($backtrace);
+		//echo "<br>" . $sqlStatement . "<br><br><br>";
 		$queryStr = '';
 		if (empty($sqlStatement)) {
 			if (!empty($this->sqlStatement)) {

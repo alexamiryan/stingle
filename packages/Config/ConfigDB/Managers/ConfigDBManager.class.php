@@ -2,6 +2,7 @@
 class ConfigDBManager{
 	
 	const TBL_CONFIGS = "configs";
+	const MEMCACHE_TAG = "dbconfs";
 	
 	/**
 	 * Get configs from DB and merge them with global config
@@ -14,9 +15,16 @@ class ConfigDBManager{
 			$filter->setCommon();
 		}
 		
-		$sql = MySqlDbManager::getQueryObject();
-		$sql->exec($filter->getSQL(), $cacheMinutes);
-		$dbConfig = static::parseDBRowsToConfig($sql->fetchRecords());
+		$cacheKey = md5($filter->getSQL());
+		
+		$dbConfig = Reg::get('memcache')->getObject(self::MEMCACHE_TAG, $cacheKey);
+		
+		if(empty($dbConfig)){
+			$sql = MySqlDbManager::getQueryObject();
+			$sql->exec($filter->getSQL(), $cacheMinutes);
+			$dbConfig = static::parseDBRowsToConfig($sql->fetchRecords());
+			Reg::get('memcache')->setObject(self::MEMCACHE_TAG, $cacheKey, $dbConfig);
+		}
 		
 		ConfigManager::setGlobalConfig(ConfigManager::mergeConfigs($dbConfig, ConfigManager::getGlobalConfig()));
 	}
@@ -62,6 +70,7 @@ class ConfigDBManager{
 			->values($arrayValues);
 		
 		$sql->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_TAG);
 	}
 	
 	/**
@@ -105,6 +114,7 @@ class ConfigDBManager{
 		$qb->andWhere($qb->expr()->equal(new Field('name'), $config->name));
 		
 		$sql->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_TAG);
 	}
 	
 	/**
@@ -164,6 +174,7 @@ class ConfigDBManager{
 			$qb->andWhere($qb->expr()->isNull(new Field("host_lang_id")));
 		}
 		$sql->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_TAG);
 	}
 	
 	/**
@@ -284,6 +295,7 @@ class ConfigDBManager{
 		$sql = MySqlDbManager::getQueryObject();
 		
 		$sql->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_TAG);
 	}
 	
 	/**
@@ -314,6 +326,7 @@ class ConfigDBManager{
 			->values($arrayValues);
 		$sql = MySqlDbManager::getQueryObject();
 		$sql->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_TAG);
 	}
 	
 	/**
@@ -340,6 +353,7 @@ class ConfigDBManager{
 		$sql = MySqlDbManager::getQueryObject();
 		
 		$sql->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_TAG);
 	}
 	
 	/**

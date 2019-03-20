@@ -1,11 +1,24 @@
 <?php
 class LanguageManager extends DbAccessor {
 
+	const MEMCACHE_TAG = 'lmv';
+	const MEMCACHE_NOT_FOUND_VALUE = '--NF--';
+	
+	protected $isMemcacheEnabled = false; //Language object
+	protected $throwExceptionOnNotFound = false; //Language object
 	protected $language; //Language object
 
 	public function __construct(Language $language=null, $dbInstanceKey = null){
 
 		parent::__construct($dbInstanceKey);
+		
+		$lmConfig = ConfigManager::getConfig('Language', 'Language')->AuxConfig;
+		
+		if($lmConfig->memcacheEnabled and ConfigManager::getConfig('Db', 'Memcache')->AuxConfig->enabled){
+			$this->isMemcacheEnabled = true;
+		}
+		
+		$this->throwExceptionOnNotFound = $lmConfig->throwExceptionOnNotFound;
 		
 		if($language === null){
 			$shortName = false;
@@ -294,6 +307,18 @@ class LanguageManager extends DbAccessor {
 			$language = $this->language;
 		}
 		
+		$cacheKey = md5($key . $language->id);
+		
+		if($this->isMemcacheEnabled){
+			$value = Reg::get('memcache')->getObject(self::MEMCACHE_TAG, $cacheKey);
+			if(!empty($value)){
+				if($value === self::MEMCACHE_NOT_FOUND_VALUE and !$this->throwExceptionOnNotFound){
+					return $key;
+				}
+				return $value;
+			}
+		}
+		
 		$qb = new QueryBuilder();
 		$qb->select(new Field('value', 'cv'))
 			->from(Tbl::get("TBL_CONSTANTS", "Constant"), 'lc')
@@ -302,11 +327,22 @@ class LanguageManager extends DbAccessor {
 			->andWhere($qb->expr()->equal(new Field('lang_id', 'cv'), $language->id));
 		
 		$this->query->exec($qb->getSQL(), $cacheMinutes);
-
+		
 		if($this->query->countRecords()){
-			return $this->query->fetchField('value');
+			$value = $this->query->fetchField('value');
+			if($this->isMemcacheEnabled){
+				Reg::get('memcache')->setObject(self::MEMCACHE_TAG, $cacheKey, $value, MemcacheWrapper::MEMCACHE_UNLIMITED);
+			}
+			return $value;
 		}
-		throw new RuntimeException("'$key'"." doesn't exists for given language and even for default language.");
+		
+		if($this->throwExceptionOnNotFound){
+			throw new RuntimeException("'$key'"." doesn't exists for given language and even for default language.");
+		}
+		else{
+			Reg::get('memcache')->setObject(self::MEMCACHE_TAG, $cacheKey, self::MEMCACHE_NOT_FOUND_VALUE, MemcacheWrapper::MEMCACHE_UNLIMITED);
+		}
+		return $key;
 	}
 
 	/**

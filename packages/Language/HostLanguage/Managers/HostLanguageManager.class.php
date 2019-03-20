@@ -119,7 +119,8 @@ class HostLanguageManager extends LanguageManager {
 				'default' => $default
 		));
 	
-		$this->query->exec($qb->getSQL());	
+		$this->query->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag("HostLanguageManager");
 		return $this->query->getLastInsertId();
 	}
 
@@ -299,6 +300,7 @@ class HostLanguageManager extends LanguageManager {
 			->andWhere($qb->expr()->equal(new Field('lang_id'), $language->id));
 		
 		$sql->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag("HostLanguageManager");
 	}
 	
 	public static function deleteHostsLanguage(Host $host, Language $language){
@@ -310,5 +312,6 @@ class HostLanguageManager extends LanguageManager {
 			->andWhere($qb->expr()->equal(new Field('lang_id'), $language->id));
 	
 		$sql->exec($qb->getSQL());
+		Reg::get('memcache')->invalidateCacheByTag("HostLanguageManager");
 	}
 }

@@ -6,6 +6,10 @@ class LoaderMemcache extends Loader{
 		stingleInclude ('Managers/MySqlQueryMemcache.class.php');
 	}
 	
+	protected function loadMemcache(){
+		$this->register(new MemcacheWrapper($this->config->AuxConfig));
+	}
+	
 	protected function loadQuery(){
 		MySqlDbManager::setQueryClassName("MySqlQueryMemcache");
 		$query = new MySqlQueryMemcache(Reg::get(ConfigManager::getConfig("Db","Db")->Objects->Db));

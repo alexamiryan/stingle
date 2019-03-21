@@ -326,7 +326,7 @@ class LanguageManager extends DbAccessor {
 			->where($qb->expr()->equal(new Field('key', 'lc'), $key))
 			->andWhere($qb->expr()->equal(new Field('lang_id', 'cv'), $language->id));
 		
-		$this->query->exec($qb->getSQL(), $cacheMinutes);
+		$this->query->exec($qb->getSQL(), MemcacheWrapper::MEMCACHE_OFF);
 		
 		if($this->query->countRecords()){
 			$value = $this->query->fetchField('value');

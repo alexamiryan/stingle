@@ -32,42 +32,57 @@ set_exception_handler("default_exception_handler");
 set_error_handler("default_error_handler");
 
 Reg::register('packageMgr', new PackageManager());
-$configCacheFilename = $sysconfig->Stingle->CoreCachePath . 'configs';
-$isGetConfigFromCache = false;
-if($sysconfig->Stingle->BootCompiler === true and file_exists($configCacheFilename)){
-	try{
-		$config = unserialize(file_get_contents($configCacheFilename));
-		
-		ConfigManager::setCache($config);
-		ConfigManager::setGlobalConfig($config);
-		$isGetConfigFromCache = true;
+
+$globalConfig = null;
+if($sysconfig->Stingle->BootCompiler === true){
+	if(extension_loaded('apcu')){
+		$globalConfig = apcu_fetch('globalConfig');
+		if($globalConfig === false){
+			$globalConfig = ConfigManager::mergeConfigs(new Config($CONFIG), $sysconfig);
+			apcu_store('globalConfig', $globalConfig);
+		}
 	}
-	catch(Exception $e){
-		unlink($configCacheFilename);
+	else{
+		$configCacheFilename = $sysconfig->Stingle->CoreCachePath . 'configs';
+		if(file_exists($configCacheFilename)){
+			try{
+				$globalConfig = unserialize(file_get_contents($configCacheFilename));
+			}
+			catch(Exception $e){
+				unlink($configCacheFilename);
+				//$globalConfig = ConfigManager::mergeConfigs(new Config($CONFIG), $sysconfig);
+			}
+		}
+		else{
+			$globalConfig = ConfigManager::mergeConfigs(new Config($CONFIG), $sysconfig);
+			file_put_contents($configCacheFilename, serialize($globalConfig));
+		}
 	}
 }
 else{
-	$config = ConfigManager::mergeConfigs(new Config($CONFIG), $sysconfig);
-	ConfigManager::setGlobalConfig($config);
+	$globalConfig = ConfigManager::mergeConfigs(new Config($CONFIG), $sysconfig);
 }
+ConfigManager::setGlobalConfig($globalConfig);
+ConfigManager::initCache();
 
-if(isset($config->site->error_reporting)){
-	error_reporting($config->site->error_reporting);
+
+if(isset($globalConfig->site->error_reporting)){
+	error_reporting($globalConfig->site->error_reporting);
 }
-if(isset($config->site->site_id)){
-	session_name($config->site->site_id);
+if(isset($globalConfig->site->site_id)){
+	session_name($globalConfig->site->site_id);
 }
 
 session_start();
 ob_start('stingleOutputHandler');
 
 Cgi::setMode(defined("IS_CGI"));
-Debug::setMode($config->Debug->enabled);
-SiteMode::set($config->SiteMode->mode);
+Debug::setMode($globalConfig->Debug->enabled);
+SiteMode::set($globalConfig->SiteMode->mode);
 
 // Register User Hooks
-if(isset($config->Hooks)){
-	foreach(get_object_vars($config->Hooks) as $hookName => $funcName){
+if(isset($globalConfig->Hooks)){
+	foreach(get_object_vars($globalConfig->Hooks) as $hookName => $funcName){
 		if(is_object($funcName)){
 			foreach (get_object_vars($funcName) as $regFuncName){
 				HookManager::registerHook(new Hook($hookName, $regFuncName));
@@ -82,8 +97,8 @@ if(isset($config->Hooks)){
 // Init packages/plugins
 HookManager::callHook("BeforePackagesLoad");
 
-$classesCacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'classes.php';
-if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
+$classesCacheFilename = $globalConfig->Stingle->CoreCachePath . 'classes.php';
+if($globalConfig->Stingle->BootCompiler === true){
 	if(file_exists($classesCacheFilename)){
 		$GLOBALS['doNotIncludeClasses'] = true;
 		require_once ($classesCacheFilename);
@@ -93,7 +108,7 @@ if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
 	}
 }
 
-foreach(get_object_vars($config->Packages) as $package){
+foreach(get_object_vars($globalConfig->Packages) as $package){
 	$package = get_object_vars($package);
 	if(!isset($package[1])){
 		$package[1] = array();
@@ -154,10 +169,10 @@ HookManager::callHook("Output");
 
 HookManager::callHook("AfterOutput");
 
-if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
+/*if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
 	if(!file_exists($configCacheFilename) and !$isGetConfigFromCache){
 		file_put_contents($configCacheFilename, serialize(ConfigManager::mergeConfigs(ConfigManager::getGlobalConfig(), ConfigManager::getCache())));
 	}
-}
+}*/
 //echo "out - " . (microtime(true) - $time) . "<br>";
 // Finish

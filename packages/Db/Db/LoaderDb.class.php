@@ -11,6 +11,7 @@ class LoaderDb extends Loader{
 	}
 	
 	protected function loadDb(){
+		Tbl::restoreCachedData();
 		MySqlDbManager::createInstance(	$this->config->AuxConfig->host, 
 										$this->config->AuxConfig->user, 
 										$this->config->AuxConfig->password, 
@@ -25,4 +26,10 @@ class LoaderDb extends Loader{
 		$query = MySqlDbManager::getQueryObject();
 		$this->register($query);
 	}
+	
+	
+	public function hookStoreTblCache(){
+		Tbl::cacheData();
+	}
+	
 }

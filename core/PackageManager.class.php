@@ -169,17 +169,27 @@ class PackageManager {
 	private function buildAllowanceTables($pluginsToLoad){
 		$pluginsToLoadHash = md5(json_encode(array_merge($this->loadedPackages, $pluginsToLoad)));
 		if(ConfigManager::getGlobalConfig()->Stingle->AllowanceTablesCache === true){
-			$cacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'allowanceTables-' . $pluginsToLoadHash;
-			if(file_exists($cacheFilename)){
-				try{
-					$allowanceTables = unserialize(file_get_contents($cacheFilename));
-					if(is_array($allowanceTables) and isset($allowanceTables['objectAllowanceTable']) and isset($allowanceTables['hookAllowanceTable'])){
-						$this->objectAllowanceTable = $allowanceTables['objectAllowanceTable'];
-						$this->hookAllowanceTable = $allowanceTables['hookAllowanceTable'];
-						return;
-					}
+			if(extension_loaded('apcu')){
+				$allowanceTables = apcu_fetch('AT-' . $pluginsToLoadHash);
+				if(is_array($allowanceTables) and isset($allowanceTables['objectAllowanceTable']) and isset($allowanceTables['hookAllowanceTable'])){
+					$this->objectAllowanceTable = $allowanceTables['objectAllowanceTable'];
+					$this->hookAllowanceTable = $allowanceTables['hookAllowanceTable'];
+					return;
 				}
-				catch(Exception $e){ }
+			}
+			else{
+				$cacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'allowanceTables-' . $pluginsToLoadHash;
+				if(file_exists($cacheFilename)){
+					try{
+						$allowanceTables = unserialize(file_get_contents($cacheFilename));
+						if(is_array($allowanceTables) and isset($allowanceTables['objectAllowanceTable']) and isset($allowanceTables['hookAllowanceTable'])){
+							$this->objectAllowanceTable = $allowanceTables['objectAllowanceTable'];
+							$this->hookAllowanceTable = $allowanceTables['hookAllowanceTable'];
+							return;
+						}
+					}
+					catch(Exception $e){ }
+				}
 			}
 		}
 		
@@ -269,10 +279,13 @@ class PackageManager {
 			}
 		}
 		if(ConfigManager::getGlobalConfig()->Stingle->AllowanceTablesCache === true){
-			$cacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'allowanceTables-' . $pluginsToLoadHash;
-			$cacheContents = array('objectAllowanceTable' => $this->objectAllowanceTable, 'hookAllowanceTable' => $this->hookAllowanceTable);
-			
-			file_put_contents($cacheFilename, serialize($cacheContents));
+			if(extension_loaded('apcu')){
+				apcu_store('AT-' . $pluginsToLoadHash, array('objectAllowanceTable' => $this->objectAllowanceTable, 'hookAllowanceTable' => $this->hookAllowanceTable));
+			}
+			else{
+				$cacheFilename = ConfigManager::getGlobalConfig()->Stingle->CoreCachePath . 'allowanceTables-' . $pluginsToLoadHash;
+				file_put_contents($cacheFilename, serialize(array('objectAllowanceTable' => $this->objectAllowanceTable, 'hookAllowanceTable' => $this->hookAllowanceTable)));
+			}
 		}
 	}
 	
@@ -526,6 +539,9 @@ class PackageManager {
 	 * @param string $packageName
 	 */
 	public function checkPluginExistance($packageName, $pluginName){
+		if(extension_loaded('apcu') && apcu_fetch('exist-' . $packageName . '-' . $pluginName) === 'yes'){
+			return;
+		}
 		$this->checkPackageExistance($packageName);
 		if(empty($pluginName)){
 			throw new InvalidArgumentException("\$pluginName is empty.");
@@ -533,6 +549,9 @@ class PackageManager {
 		if(!is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/") and 
 			!is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/")){
 			throw new RuntimeException("There is no plugin $pluginName in $packageName package.");
+		}
+		if(extension_loaded('apcu')){
+			apcu_store('exist-' . $packageName . '-' . $pluginName, 'yes');
 		}
 	}
 	

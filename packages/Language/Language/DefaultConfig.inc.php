@@ -17,6 +17,7 @@ $defaultConfig = array(
 		'AfterPackagesLoad' => 'DefineAllConstants'
 	),
 	'Memcache' => array(
-		'Language' => -1
+		'Language' => -1,
+		'LanguageManager' => -1
 	)
 );

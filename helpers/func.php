@@ -367,3 +367,23 @@ function stingleInclude($file, $precompileCode = null, $postcompileCode = null, 
 function printr($var){
 	echo "<pre>" . print_r($var, true) . "</pre>";
 }
+
+
+function apcuGet($key){
+	if(extension_loaded('apcu')){
+		return apcu_fetch($key);
+	}
+	return false;
+}
+
+function apcuStore($key, $value){
+	if(extension_loaded('apcu')){
+		apcu_store($key, $value);
+	}
+}
+
+function clearApcuCache(){
+	if(extension_loaded('apcu')){
+		apcu_clear_cache();
+	}
+}

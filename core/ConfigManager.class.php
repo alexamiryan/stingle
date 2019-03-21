@@ -50,12 +50,33 @@ class ConfigManager
 		}
 	}
 	
+	public static function initCache(){
+		if(extension_loaded('apcu')){
+			$cache = apcu_fetch('configCache');
+			if($cache !== false){
+				static::$cache = $cache;
+			}
+		}
+	}
+	
 	public static function setCache(Config $config){
 		static::$cache = $config;
 	}
 	
 	public static function getCache(){
 		return static::$cache;
+	}
+	
+	public static function storeCache(){
+		if(extension_loaded('apcu')){
+			apcu_store('configCache', static::$cache);
+		}
+	}
+	
+	public static function flushCache(){
+		if(extension_loaded('apcu')){
+			apcu_delete('configCache');
+		}
 	}
 	
 	/**
@@ -73,10 +94,6 @@ class ConfigManager
 			$pluginName = $packageName;
 		}
 		
-		if(!is_object(static::$cache)){
-			static::$cache = new Config();
-		}
-		
 		if(isset(static::$globalConfig->$packageName) and isset(static::$globalConfig->$packageName->$pluginName)){
 			$globalConfig = static::$globalConfig->$packageName->$pluginName;
 		}
@@ -84,11 +101,13 @@ class ConfigManager
 			$globalConfig = new Config();
 		}
 		
-		if(!$ignoreCache and isset(static::$cache->$packageName) and isset(static::$cache->$packageName->$pluginName)){
-			return static::mergeConfigs($globalConfig, static::$cache->$packageName->$pluginName);
+		if(!is_object(static::$cache)){
+			static::$cache = $globalConfig;
 		}
 		
-		//echo "$packageName - $pluginName<br>\n";
+		if(!$ignoreCache and isset(static::$cache->$packageName) and isset(static::$cache->$packageName->$pluginName)){
+			return static::$cache->$packageName->$pluginName;
+		}
 		
 		if(file_exists(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/DefaultConfig.inc.php")){
 			include(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/DefaultConfig.inc.php");
@@ -106,7 +125,8 @@ class ConfigManager
 		if(!isset(static::$cache->$packageName)){
 			static::$cache->$packageName = new Config();
 		}
-		static::$cache->$packageName->$pluginName = $defaultConfigObj;
+		static::$cache->$packageName->$pluginName = $result;
+		static::storeCache();
 		
 		return $result;
 	}
@@ -155,15 +175,17 @@ class ConfigManager
 	 * @param string $value
 	 */
 	public static function addConfig($where, $key, $value){
-		$currentObj = &static::$globalConfig;
+		$currentObj = &static::$cache;
 		
-		foreach ($where as $this_where){
-			if(!isset($currentObj->$this_where)){
-				$currentObj->$this_where = new Config();
+		foreach ($where as $thisWhere){
+			if(!isset($currentObj->$thisWhere)){
+				$currentObj->$thisWhere = new Config();
 			}
-			$currentObj = &$currentObj->$this_where;
+			$currentObj = &$currentObj->$thisWhere;
 		}
 		$currentObj->$key = $value;
+		
+		//static::storeCache();
 	}
 	
 	/**
@@ -177,7 +199,7 @@ class ConfigManager
 			throw new InvalidArgumentException("Given argument must be array");
 		}
 		if($sourceConfig == null){
-			$currentObj = &static::$globalConfig;
+			$currentObj = &static::$cache;
 		}
 		else{
 			$currentObj = &$sourceConfig;

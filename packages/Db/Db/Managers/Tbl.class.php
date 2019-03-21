@@ -1,10 +1,27 @@
 <?php
 class Tbl
 {
-	private static $tableNames;
+	private static $tableNames = array();
 	private static $tableSQLFiles = array();
+	private static $isDataLoadedFromCache = false;
 	
 	const TABLE_NAMES_BEGIN = 'TBL_';
+	
+	public static function cacheData(){
+		apcuStore('TblTableNames', self::$tableNames);
+		apcuStore('TblSQLFiles', self::$tableSQLFiles);
+	}
+	
+	public static function restoreCachedData(){
+		$tableNames = apcuGet('TblTableNames');
+		$tableSQLFiles = apcuGet('TblSQLFiles');
+
+		if($tableNames !== false && $tableSQLFiles !== false){
+			self::$tableNames = $tableNames;
+			self::$tableSQLFiles = $tableSQLFiles;
+			self::$isDataLoadedFromCache = true;
+		}
+	}
 	
 	/**
 	 * 
@@ -45,6 +62,9 @@ class Tbl
 	 * @param string $dbInstanceKey
 	 */
 	public static function registerTableNames($className = null, $dbInstanceKey = null){
+		if(self::$isDataLoadedFromCache){
+			return;
+		}
 		if($className === null){
 			$className = self::getCallerClassName();
 		}

@@ -51,7 +51,7 @@ class ConfigManager
 	}
 	
 	public static function initCache(){
-		if(extension_loaded('apcu')){
+		if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 			$cache = apcu_fetch('configCache');
 			if($cache !== false){
 				static::$cache = $cache;
@@ -68,13 +68,13 @@ class ConfigManager
 	}
 	
 	public static function storeCache(){
-		if(extension_loaded('apcu')){
+		if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 			apcu_store('configCache', static::$cache);
 		}
 	}
 	
 	public static function flushCache(){
-		if(extension_loaded('apcu')){
+		if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 			apcu_delete('configCache');
 		}
 	}

@@ -3,8 +3,7 @@
 $defaultConfig = array(
 	'AuxConfig' => array(
 		'maxPhotosCount' => 5,
-		'preModeration' => true,
-		'imageModificatorDefaultModel' => 'usersMedium'
+		'preModeration' => true
 	),
 	'Objects' => array(
 		'UserPhotoManager' => 'photoMgr'

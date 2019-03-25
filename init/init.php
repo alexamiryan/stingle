@@ -35,7 +35,7 @@ Reg::register('packageMgr', new PackageManager());
 
 $globalConfig = null;
 if($sysconfig->Stingle->BootCompiler === true){
-	if(extension_loaded('apcu')){
+	if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 		$globalConfig = apcu_fetch('globalConfig');
 		if($globalConfig === false){
 			$globalConfig = ConfigManager::mergeConfigs(new Config($CONFIG), $sysconfig);

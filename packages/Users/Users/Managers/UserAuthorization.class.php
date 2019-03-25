@@ -154,6 +154,7 @@ class UserAuthorization extends DbAccessor{
 		
 					if($correctHashFotUser === $hash){
 						$this->checkIfLoginIsAllowed($usr);
+						$this->saveUserIdInSession($usr);
 						return $usr;
 					}
 				}

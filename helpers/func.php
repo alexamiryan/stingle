@@ -21,6 +21,7 @@ function ensurePathLastSlash(&$path){
 	if(substr($path, strlen($path)-1) != '/'){
 		$path .= '/';
 	}
+	return $path;
 }
 
 /**
@@ -370,20 +371,20 @@ function printr($var){
 
 
 function apcuGet($key){
-	if(extension_loaded('apcu')){
+	if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 		return apcu_fetch($key);
 	}
 	return false;
 }
 
 function apcuStore($key, $value){
-	if(extension_loaded('apcu')){
+	if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 		apcu_store($key, $value);
 	}
 }
 
 function clearApcuCache(){
-	if(extension_loaded('apcu')){
+	if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 		apcu_clear_cache();
 	}
 }

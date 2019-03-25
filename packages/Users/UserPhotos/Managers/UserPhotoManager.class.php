@@ -16,6 +16,8 @@ class UserPhotoManager extends DbAccessor
 	const EXCEPTION_UNAPROVED_TO_DEFAULT = 2;
 	const EXCEPTION_DECLINED_TO_DEFAULT = 3;
 	
+	const IMAGE_TYPE_NAME = 'users';
+	
 	private $config;
 	
 	public function __construct($config, $dbInstanceKey = null){
@@ -23,7 +25,7 @@ class UserPhotoManager extends DbAccessor
 		$this->config = $config;
 	}
 	
-	public function uploadPhoto($file, $userId, $uploadDir = null, $uploaderModelName = null){
+	public function uploadPhoto($file, $userId, $uploaderModelName = null){
 		if(empty($userId)){
 			throw new InvalidArgumentException("\$userId is empty!");
 		}
@@ -39,24 +41,14 @@ class UserPhotoManager extends DbAccessor
 			}
 		}
 		
-		$imageUploaderConfig = null;
-		if(empty($uploaderModelName) and !empty($this->config->imageModificatorDefaultModel)){
-			$uploaderModelName = $this->config->imageModificatorDefaultModel;
-		}
-		if(!empty($uploaderModelName)){
-			$imageUploaderConfig = ImageModificator::getUploaderConfigForModel($uploaderModelName);
-		}
-		if($uploadDir !== null){
-			if($imageUploaderConfig == null){
-				$imageUploaderConfig = new Config();
-			}
-			$imageUploaderConfig->uploadDir = $uploadDir;
+		if($uploaderModelName === null){
+			$uploaderModelName = self::IMAGE_TYPE_NAME;
 		}
 		
-		$image = ImageUploader::upload($file, null, $imageUploaderConfig);
+		$fileName = ImageManager::upload($file, $uploaderModelName);
 		
 		$photo = new UserPhoto();
-		$photo->fileName = $image->fileName;
+		$photo->fileName = $fileName;
 		$photo->userId = $userId;
 		$photo->status = self::MODERATION_STATUS_NEW;
 		
@@ -211,7 +203,7 @@ class UserPhotoManager extends DbAccessor
 		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_PHOTO_TAG . $photo->id);
 	}
 	
-	public function deletePhoto(UserPhoto $photo, $uploadDir = null){
+	public function deletePhoto(UserPhoto $photo, $uploaderModelName = null){
 		if(empty($photo->id)){
 			throw new InvalidArgumentException("UserPhoto object has no id!");
 		}
@@ -219,18 +211,11 @@ class UserPhotoManager extends DbAccessor
 			$photo = $this->getPhoto($photo->id);
 		}
 		
-		ImageUploader::deleteImage($photo->fileName, $uploadDir);
-		
-		
-		if(Reg::get('packageMgr')->isPluginLoaded("Image", "ImageCache")){
-			Reg::get(ConfigManager::getConfig("Image", "ImageCache")->Objects->ImageCache)->
-				clearImageCache($photo->fileName);
+		if($uploaderModelName === null){
+			$uploaderModelName = self::IMAGE_TYPE_NAME;
 		}
 		
-		if(Reg::get('packageMgr')->isPluginLoaded("Image", "ImageModificator")){
-			Reg::get(ConfigManager::getConfig("Image", "ImageModificator")->Objects->ImageModificator)->
-				deleteCropSettings($photo->fileName);
-		}
+		ImageManager::deleteImage($photo->fileName, $uploaderModelName);
 		
 		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_PHOTO_TAG . $photo->id);
 		return $this->deletPhotoFromDB($photo);

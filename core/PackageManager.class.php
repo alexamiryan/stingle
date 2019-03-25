@@ -29,14 +29,14 @@ class PackageManager {
 			$pluginName = $packageName;
 		}
 		
+		if(!$loadAgain and $this->isPluginLoaded($packageName, $pluginName)){
+			return;
+		}
+		
 		$this->checkPluginExistance($packageName, $pluginName);
 		
 		if(!isset($this->loadedPackages[$packageName])){
 			$this->loadedPackages[$packageName] = array();
-		}
-		
-		if(!$loadAgain and $this->isPluginLoaded($packageName, $pluginName)){
-			return;
 		}
 		
 		$backtrace = debug_backtrace();
@@ -169,7 +169,7 @@ class PackageManager {
 	private function buildAllowanceTables($pluginsToLoad){
 		$pluginsToLoadHash = md5(json_encode(array_merge($this->loadedPackages, $pluginsToLoad)));
 		if(ConfigManager::getGlobalConfig()->Stingle->AllowanceTablesCache === true){
-			if(extension_loaded('apcu')){
+			if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 				$allowanceTables = apcu_fetch('AT-' . $pluginsToLoadHash);
 				if(is_array($allowanceTables) and isset($allowanceTables['objectAllowanceTable']) and isset($allowanceTables['hookAllowanceTable'])){
 					$this->objectAllowanceTable = $allowanceTables['objectAllowanceTable'];
@@ -279,7 +279,7 @@ class PackageManager {
 			}
 		}
 		if(ConfigManager::getGlobalConfig()->Stingle->AllowanceTablesCache === true){
-			if(extension_loaded('apcu')){
+			if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 				apcu_store('AT-' . $pluginsToLoadHash, array('objectAllowanceTable' => $this->objectAllowanceTable, 'hookAllowanceTable' => $this->hookAllowanceTable));
 			}
 			else{
@@ -539,7 +539,7 @@ class PackageManager {
 	 * @param string $packageName
 	 */
 	public function checkPluginExistance($packageName, $pluginName){
-		if(extension_loaded('apcu') && apcu_fetch('exist-' . $packageName . '-' . $pluginName) === 'yes'){
+		if(!defined('DISABLE_APCU') && extension_loaded('apcu') && apcu_fetch('exist-' . $packageName . '-' . $pluginName) === 'yes'){
 			return;
 		}
 		$this->checkPackageExistance($packageName);
@@ -550,7 +550,7 @@ class PackageManager {
 			!is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/")){
 			throw new RuntimeException("There is no plugin $pluginName in $packageName package.");
 		}
-		if(extension_loaded('apcu')){
+		if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 			apcu_store('exist-' . $packageName . '-' . $pluginName, 'yes');
 		}
 	}

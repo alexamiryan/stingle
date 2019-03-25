@@ -1,138 +1,144 @@
 <?php
-class ConversationAttachmentManager extends DbAccessor{
+
+class ConversationAttachmentManager extends DbAccessor {
+
+	const TBL_CONVERSATION_ATTACHEMENTS = "conversation_attachments";
 	
-	const TBL_CONVERSATION_ATTACHEMENTS		= "conversation_attachments";
+	const CONV_IMAGE_TYPE_NAME = 'conv';
 	
 	protected $config;
-	
-	public function __construct(Config $config, $dbInstanceKey = null){
+
+	public function __construct(Config $config, $dbInstanceKey = null) {
 		parent::__construct($dbInstanceKey);
-		
+
 		$this->config = $config;
 	}
-	
-	public function getAttachments(ConversationAttachmentFilter $filter, MysqlPager $pager = null){
+
+	public function getAttachments(ConversationAttachmentFilter $filter, MysqlPager $pager = null) {
 		$attachments = array();
-		
+
 		$sqlQuery = $filter->getSQL();
-		
-		if($pager !== null){
+
+		if ($pager !== null) {
 			$this->query = $pager->executePagedSQL($sqlQuery);
 		}
-		else{
+		else {
 			$this->query->exec($sqlQuery);
 		}
-		
+
 		$attachmentRows = $this->query->fetchRecords();
-		
-		foreach ($attachmentRows as $attachmentRow){
+
+		foreach ($attachmentRows as $attachmentRow) {
 			array_push($attachments, $this->getAttachmentObject($attachmentRow));
 		}
-		
+
 		return $attachments;
 	}
-	
+
 	/**
 	 * 
 	 * @param ConversationAttachmentFilter $filter
 	 * @throws ConversationNotUniqueException
 	 * @return ConversationAttachment
 	 */
-	public function getAttachment(ConversationAttachmentFilter $filter){
+	public function getAttachment(ConversationAttachmentFilter $filter) {
 		$attachments = $this->getAttachments($filter);
-		if(count($attachments) !== 1){
+		if (count($attachments) !== 1) {
 			throw new ConversationNotUniqueException("There is no such attachemnt or it is not unique.");
 		}
 		return $attachments[0];
 	}
-	
-	public function getAttachmentsCount(ConversationAttachmentFilter $filter){
+
+	public function getAttachmentsCount(ConversationAttachmentFilter $filter) {
 		$filter->setSelectCount();
-		
+
 		$sqlQuery = $filter->getSQL();
 
 		return $this->query->exec($sqlQuery)->fetchField("cnt");
 	}
-	
-	public function updateAttachmentMessageId($attachmentId, $newMessageId){
-		if(empty($attachmentId) or !is_numeric($attachmentId)){
+
+	public function updateAttachmentMessageId($attachmentId, $newMessageId) {
+		if (empty($attachmentId) or ! is_numeric($attachmentId)) {
 			throw new InvalidIntegerArgumentException("\$attachmentId have to be non zero integer.");
 		}
-		if(empty($newMessageId) or !is_numeric($newMessageId)){
+		if (empty($newMessageId) or ! is_numeric($newMessageId)) {
 			throw new InvalidIntegerArgumentException("\$newMessageId have to be non zero integer.");
 		}
-	
+
 		$convMgr = Reg::get(ConfigManager::getConfig("Messaging", "Conversations")->Objects->ConversationManager);
-		
+
 		$filter = new ConversationMessagesFilter();
 		$filter->setId($newMessageId);
 		$message = $convMgr->getConversationMessage($filter);
-		
+
 		$qb = new QueryBuilder();
-		
+
 		$qb->update(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS'))
 			->set(new Field('uuid'), $message->uuid)
 			->set(new Field('message_id'), $message->id)
 			->set(new Field('sender_id'), $message->userId)
 			->where($qb->expr()->equal(new Field('id'), $attachmentId));
-	
+
 		MySqlDbManager::getDbObject()->startTransaction();
-		try{
+		try {
 			$convMgr->setMessageHasAttachment($message);
-			
+
 			$affected = $this->query->exec($qb->getSQL())->affected();
-			
-			if(!MySqlDbManager::getDbObject()->commit()){
+
+			if (!MySqlDbManager::getDbObject()->commit()) {
 				MySqlDbManager::getDbObject()->rollBack();
 			}
 		}
-		catch(Exception $e){
+		catch (Exception $e) {
 			MySqlDbManager::getDbObject()->rollBack();
 			throw $e;
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param array $file e.g. $_FILES['photo']
 	 * @return ConversationAttachment
 	 */
-	public function addAttachment($file, $flag = 0){
-		$systemFilename = self::findNewFileName($this->config->uploadDir);
-		
-		$attachsImgUpConfig = $this->config->imageUploaderConfig;
-		$attachsImgUpConfig->uploadDir = $this->config->uploadDir;
-		if (in_array($file["type"], $attachsImgUpConfig->acceptedMimeTypes->toArray())){
-			ImageUploader::upload($file, $systemFilename, $attachsImgUpConfig);
+	public function addAttachment($file, $flag = 0) {
+		$systemFilename = '';
+
+		if (in_array($file["type"], $this->config->imageMimeTypes->toArray())) {
+			$systemFilename = ImageManager::upload($file, self::CONV_IMAGE_TYPE_NAME);
 		}
-		else{
-			FileUploader::upload($file, $systemFilename, $this->config->uploadDir);
+		else {
+			$systemFilename = self::findNewFileName($this->config->uploadDir);
+			$config = [
+				'uploadDir' => $this->config->uploadDir,
+				'storageProvider' => $this->config->storageProvider,
+				'S3Config' => $this->config->S3Config
+			];
+			FileUploader::upload($file, $systemFilename, new Config($config));
 		}
-		
+
 		$qb = new QueryBuilder();
-		
+
 		$qb->insert(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS'))
-			->values(array(
-					'system_filename' => $systemFilename,
-					'filename' => $file['name'],
-					'mime_type' => $file['type'],
-					'flag' => $flag));
-		
+			->values([
+				'system_filename' => $systemFilename,
+				'filename' => $file['name'],
+				'mime_type' => $file['type'],
+				'flag' => $flag
+		]);
+
 		$attachmentId = $this->query->exec($qb->getSQL())->getLastInsertId();
-		
+
 		$filter = new ConversationAttachmentFilter();
 		$filter->setId($attachmentId);
-		
+
 		return $this->getAttachment($filter);
 	}
-	
-	public function outputAttachmentContents(ConversationAttachment $attachment, $forceDownload = false){
-		$filename = $this->config->uploadDir . $attachment->systemFilename;
-		
-		if (!$forceDownload and in_array($attachment->mimeType, $this->config->imageUploaderConfig->acceptedMimeTypes->toArray())){
+
+	public function outputAttachmentContents(ConversationAttachment $attachment, $forceDownload = false) {
+		if (!$forceDownload and in_array($attachment->mimeType, $this->config->imageUploaderConfig->acceptedMimeTypes->toArray())) {
 			header("Content-Disposition: filename={$attachment->filename}");
 		}
-		else{
+		else {
 			header('Content-Description: File Transfer');
 			header('Content-Transfer-Encoding: binary');
 			header('Pragma: public');
@@ -140,80 +146,94 @@ class ConversationAttachmentManager extends DbAccessor{
 			header("Content-Disposition: attachment; filename={$attachment->filename}");
 		}
 		header("Content-Type: {$attachment->mimeType}");
-		header("Content-Length: " . filesize($filename));
-		readfile($filename);
+		
+		$config = [
+			'uploadDir' => $this->config->uploadDir,
+			'storageProvider' => $this->config->storageProvider,
+			'S3Config' => $this->config->S3Config
+		];
+		$file = FileUploader::getFileContents($attachment->systemFilename, new Config($config));
+		
+		header("Content-Length: " . $file['length']);
+		echo $file['body'];
 	}
-	
-	public function deleteAttachment(ConversationAttachment $attachment){
-		if(empty($attachment->id) or !is_numeric($attachment->id)){
+
+	public function deleteAttachment(ConversationAttachment $attachment) {
+		if (empty($attachment->id) or ! is_numeric($attachment->id)) {
 			throw new InvalidIntegerArgumentException("\$attachment have to be filled ConversationAttachment object.");
 		}
-		if(empty($attachment->systemFilename)){
+		if (empty($attachment->systemFilename)) {
 			throw new InvalidIntegerArgumentException("\$attachment have to be filled ConversationAttachment object.");
 		}
-		
+
 		$qb = new QueryBuilder();
-		
+
 		$qb->delete(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS'))
 			->where($qb->expr()->equal(new Field('id'), $attachment->id));
+
+		$config = [
+			'uploadDir' => $this->config->uploadDir,
+			'storageProvider' => $this->config->storageProvider,
+			'S3Config' => $this->config->S3Config
+		];
 		
-		@unlink($this->config->uploadDir . $attachment->systemFilename);
-		
+		FileUploader::deleteFile($attachment->systemFilename, new Config($config));
+
 		return $this->query->exec($qb->getSQL())->affected();
 	}
-	
-	public function clearGarbage(){
+
+	public function clearGarbage() {
 		$db = MySqlDbManager::getDbObject();
-		
+
 		$db->startTransaction();
-		
+
 		$qb = new QueryBuilder();
-	
+
 		$qb->select(new Field("system_filename"))
 			->from(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS', 'ConversationAttachmentManager'))
 			->where($qb->expr()->isNull(new Field('message_id')))
-			->andWhere($qb->expr()->greater($qb->expr()->diff(new Func("NOW"), new Field('date')), 60*60*24 * $this->config->attachmentsClearTimeout));
-		
+			->andWhere($qb->expr()->greater($qb->expr()->diff(new Func("NOW"), new Field('date')), 60 * 60 * 24 * $this->config->attachmentsClearTimeout));
+
 		$this->query->exec($qb->getSQL());
-		while(($row = $this->query->fetchRecord()) != null){
-			try{
-				@unlink($this->config->uploadDir . $row['system_filename']);
+		while (($row = $this->query->fetchRecord()) != null) {
+			try {
+				FileUploader::deleteFile($row['system_filename'], new Config(['storageProvider' => $this->config->storageProvider,'S3Config' => $this->config->S3Config]));
 			}
-			catch (ErrorException $e){ }
+			catch (Exception $e) { }
 		}
-		
+
 		$qb = new QueryBuilder();
-	
+
 		$qb->delete(Tbl::get('TBL_CONVERSATION_ATTACHEMENTS', 'ConversationAttachmentManager'))
 			->where($qb->expr()->isNull(new Field('message_id')))
-			->andWhere($qb->expr()->greater($qb->expr()->diff(new Func("NOW"), new Field('date')), 60*60*24 * $this->config->attachmentsClearTimeout));
-		
+			->andWhere($qb->expr()->greater($qb->expr()->diff(new Func("NOW"), new Field('date')), 60 * 60 * 24 * $this->config->attachmentsClearTimeout));
+
 		$deletedCount = $this->query->exec($qb->getSQL())->affected();
-		
-		if(!$db->commit()){
+
+		if (!$db->commit()) {
 			$db->rollBack();
 			return 0;
 		}
-		
+
 		return $deletedCount;
 	}
-	
-	private static function findNewFileName($uploadDir){
+
+	private static function findNewFileName($uploadDir) {
 		$fileName = generateRandomString(32);
-		while(true){
-			if(file_exists($uploadDir . $fileName)){
+		while (true) {
+			if (file_exists($uploadDir . $fileName)) {
 				$fileName = $fileName = generateRandomString(32);
 			}
-			else{
+			else {
 				break;
 			}
 		}
 		return $fileName;
 	}
-	
-	protected function getAttachmentObject($attachmentRow){
+
+	protected function getAttachmentObject($attachmentRow) {
 		$attachment = new ConversationAttachment();
-	
+
 		$attachment->id = $attachmentRow['id'];
 		$attachment->uuid = $attachmentRow['uuid'];
 		$attachment->messageId = $attachmentRow['message_id'];
@@ -221,10 +241,11 @@ class ConversationAttachmentManager extends DbAccessor{
 		$attachment->systemFilename = $attachmentRow['system_filename'];
 		$attachment->filename = $attachmentRow['filename'];
 		$attachment->mimeType = $attachmentRow['mime_type'];
-		$attachment->isImage = in_array($attachment->mimeType, $this->config->imageUploaderConfig->acceptedMimeTypes->toArray());
+		$attachment->isImage = in_array($attachment->mimeType, $this->config->imageMimeTypes->toArray());
 		$attachment->date = $attachmentRow['date'];
 		$attachment->flag = $attachmentRow['flag'];
-	
+
 		return $attachment;
 	}
+
 }

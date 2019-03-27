@@ -28,9 +28,8 @@ class Tbl
 	 * @param string $className
 	 * @param string $tableName
 	 * @param string $tableNameValue
-	 * @param string $dbInstanceKey
 	 */
-	public static function setTableName($tableName, $tableNameValue, $className = null, $dbInstanceKey = null){
+	public static function setTableName($tableName, $tableNameValue, $className = null){
 		if(empty($tableName)){
 			throw new InvalidArgumentException("\$tableName is empty!");
 		}
@@ -41,37 +40,26 @@ class Tbl
 		if($className === null){
 			$className = self::getCallerClassName();
 		}
-		if($dbInstanceKey === null){
-			$dbInstanceKey = self::getCallerDbInstanceKey();
+		
+		if(!isset(self::$tableNames[$className]) or !is_array(self::$tableNames[$className])){
+			self::$tableNames[$className] = array();
 		}
 		
-		if(!isset(self::$tableNames[$dbInstanceKey]) or !is_array(self::$tableNames[$dbInstanceKey])){
-			self::$tableNames[$dbInstanceKey] = array();
-		}
-		
-		if(!isset(self::$tableNames[$dbInstanceKey][$className]) or !is_array(self::$tableNames[$dbInstanceKey][$className])){
-			self::$tableNames[$dbInstanceKey][$className] = array();
-		}
-		
-		self::$tableNames[$dbInstanceKey][$className][$tableName] = $tableNameValue;
+		self::$tableNames[$className][$tableName] = $tableNameValue;
 	}
 	
 	/**
 	 * 
 	 * @param string $className
-	 * @param string $dbInstanceKey
 	 */
-	public static function registerTableNames($className = null, $dbInstanceKey = null){
-		if(self::$isDataLoadedFromCache){
+	public static function registerTableNames($className = null){
+		if(self::$isDataLoadedFromCache && isset(self::$tableNames[$className])){
 			return;
 		}
 		if($className === null){
 			$className = self::getCallerClassName();
 		}
-		if($dbInstanceKey === null){
-			$dbInstanceKey = self::getCallerDbInstanceKey();
-		}
-		
+				
 		$sqlFiles = self::getCallerSQLFiles();
 		self::$tableSQLFiles = array_merge(self::$tableSQLFiles, $sqlFiles);
 		
@@ -82,8 +70,8 @@ class Tbl
 		$reflection = new ReflectionClass($className);
 		foreach($reflection->getConstants() as $key=>$value){
 			if(substr($key, 0, strlen(self::TABLE_NAMES_BEGIN)) == self::TABLE_NAMES_BEGIN){
-				if(!self::isSetTableName($key, $className, $dbInstanceKey)){
-					self::setTableName($key, $value, $className, $dbInstanceKey);
+				if(!self::isSetTableName($key, $className)){
+					self::setTableName($key, $value, $className);
 				}
 			}
 		}
@@ -93,18 +81,14 @@ class Tbl
 	 * 
 	 * @param string $className
 	 * @param string $tableName
-	 * @param string $dbInstanceKey
 	 * @return bool
 	 */
-	public static function isSetTableName($tableName, $className = null, $dbInstanceKey = null){
+	public static function isSetTableName($tableName, $className = null){
 		if($className === null){
 			$className = self::getCallerClassName();
 		}
-		if($dbInstanceKey === null){
-			$dbInstanceKey = self::getCallerDbInstanceKey();
-		}
-		
-		if(isset(self::$tableNames[$dbInstanceKey][$className][$tableName]) and !empty(self::$tableNames[$dbInstanceKey][$className][$tableName])){
+				
+		if(isset(self::$tableNames[$className][$tableName]) and !empty(self::$tableNames[$className][$tableName])){
 			return true;
 		}
 		return false;
@@ -114,22 +98,18 @@ class Tbl
 	 * 
 	 * @param string $tableName
 	 * @param string $className
-	 * @param string $dbInstanceKey
 	 * @return string
 	 */
-	public static function get($tableName, $className = null, $dbInstanceKey = null){
+	public static function get($tableName, $className = null){
 		if($className === null){
 			$className = self::getCallerClassName();
 		}
-		if($dbInstanceKey === null){
-			$dbInstanceKey = self::getCallerDbInstanceKey();
-		}
-		
-		if(empty($dbInstanceKey) or empty($className)){
+				
+		if(empty($className)){
 			throw new RuntimeException("Something went wrong. Can't get all necessary parameters. I think you called this method from incorrect place.");
 		}
 		
-		return self::$tableNames[$dbInstanceKey][$className][$tableName];
+		return self::$tableNames[$className][$tableName];
 	}
 	
 	public static function getTableSQLFilePath($tableName){
@@ -181,20 +161,10 @@ class Tbl
 	
 	private static function getCallerObject(){
 		$backtrace = debug_backtrace();
-		if(!empty($backtrace[2]['object']) and method_exists($backtrace[2]['object'], 'getDbInstanceKey')){
+		if(!empty($backtrace[2]['object'])){
 			return $backtrace[2]['object'];
 		}
 		return null;
-	}
-	
-	private static function getCallerDbInstanceKey(){
-		$backtrace = debug_backtrace();
-		if(!empty($backtrace[2]['object']) and method_exists($backtrace[2]['object'], 'getDbInstanceKey')){
-			return $backtrace[2]['object']->getDbInstanceKey();
-		}
-		else{
-			return MySqlDbManager::getDefaultInstanceKey();
-		}
 	}
 	
 	private static function getCallerSQLFiles(){

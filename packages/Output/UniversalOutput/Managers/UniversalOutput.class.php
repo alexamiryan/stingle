@@ -208,13 +208,13 @@ class UniversalOutput extends Model{
 						array_push($output['scripts'], $this->smarty->getJsPath($fileName));
 					}
 					foreach($this->jsSmartFiles as $fileName){
-						array_push($output['scriptsSmart'], base64_encode($fileName));
+						array_push($output['scriptsSmart'], base64_url_encode($fileName));
 					}
 					foreach($this->cssFiles as $fileName){
 						array_push($output['css'], $this->smarty->getCssPath($fileName));
 					}
 					foreach($this->cssSmartFiles as $fileName){
-						array_push($output['cssSmart'], base64_encode($fileName));
+						array_push($output['cssSmart'], base64_url_encode($fileName));
 					}
 				}
 			}

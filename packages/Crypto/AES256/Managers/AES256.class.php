@@ -13,6 +13,9 @@ class AES256
 			$iv = $config->iv;
 		}
 		
+		$cacheKey = md5($key.$salt.$iv);
+		$key = apcuGet($cacheKey);
+		
 		$td = mcrypt_module_open('rijndael-128', '', MCRYPT_MODE_CBC, '');
 
 		$ks = mcrypt_enc_get_key_size($td);
@@ -21,7 +24,10 @@ class AES256
 		$iv = substr(hash("sha256", $iv), 0, $bs);
 		
 		// Create key
-		$key = Crypto::pbkdf2("sha512", $key, $salt, $config->pbkdfRounds, $ks);
+		if(empty($key)){
+			$key = Crypto::pbkdf2("sha512", $key, $salt, $config->pbkdfRounds, $ks);
+			apcuStore($cacheKey, $key);
+		}
 
 		// Intialize encryption
 		mcrypt_generic_init($td, $key, $iv);
@@ -48,6 +54,9 @@ class AES256
 			$iv = $config->iv;
 		}
 		
+		$cacheKey = md5($key.$salt.$iv);
+		$key = apcuGet($cacheKey);
+		
 		$td = mcrypt_module_open('rijndael-128', '', MCRYPT_MODE_CBC, '');
 		
 		$ks = mcrypt_enc_get_key_size($td);
@@ -56,7 +65,10 @@ class AES256
 		$iv = substr(hash("sha256", $iv), 0, $bs);
 		
 		// Create key
-		$key = Crypto::pbkdf2("sha512", $key, $salt, $config->pbkdfRounds, $ks);
+		if(empty($key)){
+			$key = Crypto::pbkdf2("sha512", $key, $salt, $config->pbkdfRounds, $ks);
+			apcuStore($cacheKey, $key);
+		}
 		
 		// Initialize encryption module for decryption
 		mcrypt_generic_init($td, $key, $iv);

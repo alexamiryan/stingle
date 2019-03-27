@@ -472,7 +472,7 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		if($isSmart){
-			$filePath = base64_encode($fileName);
+			$filePath = base64_url_encode($fileName);
 			$this->addCacheCounterToPath($filePath, true);
 		}
 		else{
@@ -481,7 +481,7 @@ class SmartyWrapper extends Smarty {
 		
 		$item = array(
 			'path' => $filePath,
-			'pagePath' => base64_encode($this->getCurrentPagePath()),
+			'pagePath' => base64_url_encode($this->getCurrentPagePath()),
 			'isSmart'=>$isSmart
 		);
 		
@@ -557,7 +557,7 @@ class SmartyWrapper extends Smarty {
 		}
 		
 		if($isSmart){
-			$filePath = base64_encode($fileName);
+			$filePath = base64_url_encode($fileName);
 			$this->addCacheCounterToPath($filePath, true);
 		}
 		else{
@@ -566,7 +566,7 @@ class SmartyWrapper extends Smarty {
 		
 		$item = array(
 			'path' => $filePath,
-			'pagePath' => base64_encode($this->getCurrentPagePath()),
+			'pagePath' => base64_url_encode($this->getCurrentPagePath()),
 			'isSmart'=>$isSmart
 		);
 		

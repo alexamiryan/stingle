@@ -720,6 +720,15 @@ class SmartyWrapper extends Smarty {
 	public function disableOutput(){
 		$this->isOutputDisabled = true;
 	}
+	
+	/**
+	 * Get current template path
+	 * 
+	 * @return string
+	 */
+	public function getCurrentTemplatePath(){
+		return SITE_PATH . $this->config->templateDir . $this->defaultRelativeTemplatesPath . $this->template . '/';
+	}
 
 	protected function defaultAssingns(){
 		
@@ -751,6 +760,7 @@ class SmartyWrapper extends Smarty {
 		$this->assign ( '__ViewDirPath', $this->config->templateDir );
 		$this->assign ( '__TemplatePath', $this->config->templateDir . $this->defaultRelativeTemplatesPath );
 		$this->assign ( '__CurrentTemplate', $this->template );
+		$this->assign ( '__CurrentTemplatePath', $this->getCurrentTemplatePath() );
 		$this->assign ( '__PagesPath', $this->pagesPath );
 	}
 	

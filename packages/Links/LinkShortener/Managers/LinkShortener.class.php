@@ -156,7 +156,7 @@ class LinkShortener extends DbAccessor {
 		
 		$qb->delete(Tbl::get('TBL_LINKS'))
 			->where($qb->expr()->less(new Field('expires'), new Func('NOW')));
-		echo $qb->getSQL();exit;
+		
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 	

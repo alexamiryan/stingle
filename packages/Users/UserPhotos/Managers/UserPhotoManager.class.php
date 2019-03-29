@@ -308,7 +308,8 @@ class UserPhotoManager extends DbAccessor
 	}
 	
 	public function getPhoto($photoId, $cacheMinutes = null, $reduced = true){
-		$photo = Reg::get('memcache')->getObject(self::MEMCACHE_PHOTO_TAG . $photoId);
+		$cacheName = ($reduced ? 'red' : 'nred');
+		$photo = Reg::get('memcache')->getObject(self::MEMCACHE_PHOTO_TAG . $photoId, $cacheName);
 		
 		if(!empty($photo)){
 			return $photo;
@@ -320,7 +321,7 @@ class UserPhotoManager extends DbAccessor
 		$photos = $this->getPhotos($filter, null, $cacheMinutes, $reduced);
 		
 		if(count($photos)){
-			Reg::get('memcache')->setObject(self::MEMCACHE_PHOTO_TAG . $photos[0]->id, "", $photos[0], MemcacheWrapper::MEMCACHE_UNLIMITED);
+			Reg::get('memcache')->setObject(self::MEMCACHE_PHOTO_TAG . $photos[0]->id, $cacheName, $photos[0], MemcacheWrapper::MEMCACHE_UNLIMITED);
 			return $photos[0];
 		}
 		return false;

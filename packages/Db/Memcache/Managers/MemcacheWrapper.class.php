@@ -33,11 +33,30 @@ class MemcacheWrapper {
 		$this->config = $config;
 
 		$this->isEnabled = $this->config->enabled;
+		
+		if(strpos($this->config->keyPrefix, ":")){
+			throw new RuntimeException("Memcache key prefix can't contain colon \":\"!");
+		}
 
 		if ($this->isEnabled) {
-			$this->memcache = new Memcache();
-			if (!$this->memcache->pconnect($this->config->host, $this->config->port)) {
-				throw new MemcacheException("Error in object initialization", 2);
+			$this->memcache = new Memcached();
+			//$this->memcache = new Memcached($this->config->keyPrefix);
+			//$this->memcache = new Memcached(rand(1,$this->config->poolSize));
+			if ($this->memcache->isPristine()){
+				$this->memcache->setOption(Memcached::OPT_LIBKETAMA_COMPATIBLE, true);
+				/*$this->memcache->setOptions([
+					Memcached::OPT_NO_BLOCK => true,
+					Memcached::OPT_BUFFER_WRITES => true,
+					Memcached::OPT_BINARY_PROTOCOL => true,
+					Memcached::OPT_LIBKETAMA_COMPATIBLE => true,
+					Memcached::OPT_DISTRIBUTION => Memcached::DISTRIBUTION_CONSISTENT,
+					Memcached::OPT_TCP_NODELAY => true
+				]);*/
+			}
+			if (!count($this->memcache->getServerList())) {
+				if (!$this->memcache->addServer($this->config->host, $this->config->port)){
+					throw new MemcacheException("Error in object initialization", 2);
+				}
 			}
 		}
 	}
@@ -58,10 +77,9 @@ class MemcacheWrapper {
 	 * @param string $key
 	 * @param mixed $value
 	 * @param int $expire the number of seconds after which cached item expires
-	 * @param int $flag
 	 * @return bool true if successful false otherwise
 	 */
-	public function set($key, $value, $expire = 0, $flag = 0) {
+	public function set($key, $value, $expire = 0) {
 		if (empty($key)) {
 			throw new InvalidArgumentException("\$key can't be empty");
 		}
@@ -69,7 +87,7 @@ class MemcacheWrapper {
 			return false;
 		}
 
-		if (!$this->memcache->set($key, $value, $flag, $expire)) {
+		if (!$this->memcache->set($key, $value, $expire)) {
 			throw new MemcacheException("Unable to set data to Memcache");
 		}
 	}
@@ -200,7 +218,7 @@ class MemcacheWrapper {
 		if (!$this->isEnabled) {
 			return false;
 		}
-		return $this->memcache->getExtendedStats();
+		return $this->memcache->getStats();
 	}
 
 	/**
@@ -237,27 +255,7 @@ class MemcacheWrapper {
 			return false;
 		}
 
-		$list = array();
-		$allSlabs = $this->memcache->getExtendedStats('slabs');
-		$items = $this->memcache->getExtendedStats('items');
-		foreach ($allSlabs as $server => $slabs) {
-			foreach ($slabs as $slabId => $slabMeta) {
-				if (!is_numeric($slabId)) {
-					continue;
-				}
-				$cdump = $this->memcache->getExtendedStats('cachedump', (int) $slabId, 1000000);
-				foreach ($cdump as $server => $entries) {
-					if ($entries) {
-						foreach ($entries as $eName => $eData) {
-							array_push($list, $eName);
-						}
-					}
-				}
-			}
-		}
-		ksort($list);
-
-		return $list;
+		return $this->memcache->getAllKeys();
 	}
 
 	public function getNamespacedKey($tag = null) {

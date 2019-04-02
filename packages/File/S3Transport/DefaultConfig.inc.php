@@ -8,10 +8,13 @@ $defaultConfig = array(
 					'key' => '',
 					'secret' => '',
 				),
-				'region' => 'sfo2',
-				'endpoint' => 'https://sfo2.digitaloceanspaces.com',
-				'baseUrl' => 'digitaloceanspaces.com',
-				'bucket' => ''
+				'region' => '',
+				'regionForLink' => '',
+				'endpoint' => '',
+				'baseUrl' => '',
+				'bucket' => '',
+				'cloudFrontEnabled' => false,
+				'cloudFrontUrl' => ''
 			)
 		)
 	)

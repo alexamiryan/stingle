@@ -14,15 +14,21 @@ class S3Transport {
 	}
 	
 	public static function getS3Client($config){
-		return new Aws\S3\S3Client([
+		
+		$params = [
 			'version' => 'latest',
-			'region' => $config->region,
-			'endpoint' => $config->endpoint,
 			'credentials' => [
 				'key' => $config->credentials->key,
 				'secret' => $config->credentials->secret
 			]
-		]);
+		];
+		if(!empty($config->region)){
+			$params['region'] = $config->region;
+		}
+		if(!empty($config->endpoint)){
+			$params['endpoint'] = $config->endpoint;
+		}
+		return new Aws\S3\S3Client($params);
 	}
 
 	public static function upload($filePath, $uploadPath, $acl = self::ACL_PUBLIC_READ, $configName = 'default', $bucketName = null) {
@@ -77,7 +83,12 @@ class S3Transport {
 			$bucketName = $config->bucket;
 		}
 		
-		return 'https://' . $bucketName . '.' . $config->region . '.' . $config->baseUrl . '/' . $filePath;
+		if($config->cloudFrontEnabled && !empty($config->cloudFrontUrl)){
+			return $config->cloudFrontUrl . $filePath;
+		}
+		else{
+			return 'https://' . $bucketName . '.' . (!empty($config->regionForLink) ? $config->regionForLink . '.' : '')  . $config->baseUrl . '/' . $filePath;
+		}
 	}
 	
 	public static function fileExists($filePath, $configName = 'default', $bucketName = null) {

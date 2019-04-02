@@ -18,16 +18,9 @@ class Smarty_CacheResource_Memcache extends Smarty_CacheResource_KeyValueStore {
 	 */
 	const TAG = 'smrt';
 	
-	protected $memcacheConfig = null;
 	protected $memcache = null;
 
 	public function __construct(){
-		$this->memcacheConfig = ConfigManager::getConfig("Db", "Memcache")->AuxConfig;
-		
-		if(strpos($this->memcacheConfig->keyPrefix, ":")){
-			throw new RuntimeException("Memcache key prefix can't contain colon \":\"!");
-		}
-		
 		$this->memcache = Reg::get('memcache');
 	}
 

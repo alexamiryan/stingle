@@ -122,7 +122,7 @@ class ImageManager {
 		}
 	}
 
-	public static function getImageUrl($fileName, $typeName, $modelName) {
+	public static function getImageUrl($fileName, $typeName, $modelName, $hostNameForFilesystem = null) {
 		try{
 			$config = static::initConfigs($typeName, $modelName);
 		}
@@ -135,7 +135,7 @@ class ImageManager {
 			if (!file_exists($path)) {
 				static::generateCache($fileName, $typeName, $modelName);
 			}
-			return SITE_PATH . $path;
+			return (!empty($hostNameForFilesystem) ? $hostNameForFilesystem : SITE_PATH) . $path;
 		}
 		elseif ($config['storageProvider'] == self::STORAGE_PROVIDER_S3) {
 			$path = ensurePathLastSlash($config['s3Config']->cachePath) . $config['cacheModelName'] . '/' . $fileName;

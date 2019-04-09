@@ -146,6 +146,20 @@ class Mail {
 	public $language = null;
 	
 	/**
+	 * Transport class name
+	 * 
+	 * @var string 
+	 */
+	public $transport = null;
+	
+	/**
+	 * Config name of the transport
+	 * 
+	 * @var string 
+	 */
+	public $transportConfigName = null;
+	
+	/**
 	 * Add To address and optional name of to address
 	 * @param String $address
 	 * @param String $name

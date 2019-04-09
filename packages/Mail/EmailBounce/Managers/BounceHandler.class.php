@@ -99,60 +99,26 @@ class BounceHandler extends Model {
 	 * @return boolean
 	 */
 	function callbackAction($msgnum, $bounceType, $email, $subject, $xheader, $remove, $ruleNo = false, $ruleCat = false, $totalFetched = 0, $body = '', $headerFull = '', $bodyFull = '') {
-		Reg::get('packageMgr')->usePlugin("Mail", "EmailLog");
-		
 		$displayData = $this->prepData($email, $bounceType, $remove);
 		$bounceType = $displayData['bounce_type'];
 		$emailName = $displayData['emailName'];
 		$emailAddy = $displayData['emailAddy'];
 		$remove = $displayData['remove'];
-		$workerEmail = ConfigManager::getGlobalConfig()->site->workerUserMail;
 
-		$emailId = null;
 		$logins = "";
-		if (!empty($email) and $email != $workerEmail) {
+		if (!empty($email)) {
 			
-			
+			$mailId = null;
+			$matches = array();
+			if(preg_match('/^X-MailId:\s(.+)$/m', $bodyFull, $matches) && !empty($matches[1])){
+				$mailId = trim($matches[1]);
+			}
 			$hookParams = array(
 				'email' => $email,
-				'emailName'=>$emailName,
-				'bounceType' => $bounceType,
-				'ruleNo' => $ruleNo,
-				'ruleCat' => $ruleCat,
-				'headerFull' => $headerFull,
-				'bodyFull' => $bodyFull,
-				'remove'=>$remove,
-				'emailAddy'=>$emailAddy,
+				'mailId' => $mailId,
+				'bounceType' => $bounceType
 			);
 			HookManager::callHook('EmailBounce', $hookParams);
-			
-			$filter = new UsersFilter();
-			$filter->setEmail(Reg::get('sql')->escapeString($email));
-
-			$users = Reg::get('userMgr')->getUsersList($filter);
-			foreach ($users as $user) {
-				if($bounceType == 'hard'){
-					Reg::get('mail')->disableEmailReceive($user, true);
-					if($this->config->bounceLogging){
-						DBLogger::logCustom("bounce_remove", $email . ' - ' . $user->id);
-					}
-				}
-				$logins .= $user->login . " - ";
-				
-				$userHookParams = array(
-					'user' => $user,
-					'email' => $email,
-					'emailName'=>$emailName,
-					'bounceType' => $bounceType,
-					'ruleNo' => $ruleNo,
-					'ruleCat' => $ruleCat,
-					'headerFull' => $headerFull,
-					'bodyFull' => $bodyFull,
-					'remove'=>$remove,
-					'emailAddy'=>$emailAddy,
-				);
-				HookManager::callHook('EmailBounceByUser', $userHookParams);
-			}
 		}
 		if($this->config->bounceLogging){
 			DBLogger::logCustom("bounce_remove_sum", $msgnum . ': ' . $ruleNo . ' | ' . $bounceType . ' | ' . $remove . ' | ' . $email . ' | ' . $emailName . ' | ' . $emailAddy . ' | ' . $logins . "\n\n" .

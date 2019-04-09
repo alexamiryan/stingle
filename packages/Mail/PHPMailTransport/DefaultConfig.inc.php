@@ -3,7 +3,6 @@
 $defaultConfig = array(
 	'AuxConfig' => array(
 		'default' => array(
-			'isDefault' => false,
 			'DKIM' => array(
 				'enabled' => false,
 				'publicKey' => null,

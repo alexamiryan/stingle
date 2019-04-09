@@ -10,5 +10,9 @@
     ],
     "require": {
 		"php": ">=5.3.0"
+    },
+	"suggest": {
+		"aws/aws-sdk-php": "For S3 and SES related plugins",
+		"aws/aws-php-sns-message-validator": "For handling bounce notifications from Amazon SNS"
     }
 }

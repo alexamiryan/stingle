@@ -2,48 +2,18 @@
 
 class PHPMailTransport implements MailTransportInterface {
 
-	public static function getDefaultConfig() {
-		$configs = ConfigManager::getConfig('Mail', 'PHPMailTransport')->AuxConfig;
-		foreach ($configs->toArray() as $config) {
-			if ($config->isDefault) {
-				return $config;
-			}
-		}
-		throw new RuntimeException("There is no default PHPMailTransport config defined");
-	}
-
-	public static function getConfigByName($name) {
-		$config = ConfigManager::getConfig('Mail', 'PHPMailTransport')->AuxConfig;
-		if (empty($name)) {
-			throw new InvalidArgumentException("name is empty");
-		}
-		if (isset($config->$name)) {
-			return $config->$name;
-		}
-		else {
-			return self::getDefaultConfig();
-		}
-	}
-
 	/**
-	 * Send mail by current Mail object
+	 * Set PHPMailer params using Mail object
 	 * 
 	 * @param Mail $mail
+	 * @param string $configName
 	 * @throws MailException
 	 * @access public
-	 * @return bool true if the mail was successfully accepted for delivery, false otherwise.
+	 * @return PHPMailer
 	 */
-	public function send(Mail $mail, $configName = null) {
+	public function setPHPMailerParams(Mail $mail, Config $config){
 		if (empty($mail)) {
 			throw new MailException("Mail object is empty");
-		}
-
-		$config = null;
-		if ($configName) {
-			$config = self::getConfigByName($configName);
-		}
-		else{
-			$config = self::getDefaultConfig();
 		}
 
 		$phpMailer = new PHPMailer();
@@ -112,6 +82,41 @@ class PHPMailTransport implements MailTransportInterface {
 			$phpMailer->DKIM_passphrase = $config->DKIM->password;
 			$phpMailer->DKIM_identity = $phpMailer->From;
 		}
+		
+		return $phpMailer;
+	}
+	
+	/**
+	 * Get RAW email without sending
+	 * 
+	 * @param Mail $mail
+	 * @param string $configName
+	 * @return boolean
+	 * @throws MailException
+	 */
+	public function getMailRaw(Mail $mail, $configName) {
+		$config = ConfigManager::getConfig('Mail', 'PHPMailTransport')->AuxConfig->$configName;
+		$phpMailer = $this->setPHPMailerParams($mail, $config);
+		$phpMailer->preSend();
+		
+		return $phpMailer->getSentMIMEMessage();
+	}
+	
+	/**
+	 * Send mail by current Mail object
+	 * 
+	 * @param Mail $mail
+	 * @param string $configName
+	 * @throws MailException
+	 * @access public
+	 * @return bool true if the mail was successfully accepted for delivery, false otherwise.
+	 */
+	public function send(Mail $mail, $configName = null) {
+		if(empty($configName)){
+			throw InvalidArgumentException("configName is mandatory for PHPMailSender");
+		}
+		$config = ConfigManager::getConfig('Mail', 'PHPMailTransport')->AuxConfig->$configName;
+		$phpMailer = $this->setPHPMailerParams($mail, $config);
 
 		if (!$phpMailer->send()) {
 			$error = $phpMailer->ErrorInfo;

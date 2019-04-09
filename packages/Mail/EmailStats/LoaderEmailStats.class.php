@@ -26,22 +26,19 @@ class LoaderEmailStats extends Loader{
 	}
 	
 	public function hookRecordBounce($args){
-		$matches = array();
-		if(preg_match('/^X-MailId:\s(.+)$/m', $args['bodyFull'], $matches)){
-			if(!empty($matches[1])){
-				$emailId = trim($matches[1]);
-				$stat = Reg::get('emailStats')->getEmailStatById($emailId);
-				if($stat){
-					if($args['bounceType'] == 'blocked'){
-						Reg::get('emailStats')->setEmailAsBouncedBlock($stat->emailId);
-					}
-					elseif($args['bounceType'] == 'hard'){
-						Reg::get('emailStats')->setEmailAsBouncedHard($stat->emailId);
-					}
-					else{
-						Reg::get('emailStats')->setEmailAsBouncedSoft($stat->emailId);
-					}
-				}
+		if(empty($args['mailId'])){
+			return;
+		}
+		$stat = Reg::get('emailStats')->getEmailStatById($args['mailId']);
+		if($stat){
+			if($args['bounceType'] == MailSender::BOUNCE_TYPE_BLOCKED){
+				Reg::get('emailStats')->setEmailAsBouncedBlock($stat->emailId);
+			}
+			elseif($args['bounceType'] == MailSender::BOUNCE_TYPE_HARD){
+				Reg::get('emailStats')->setEmailAsBouncedHard($stat->emailId);
+			}
+			else{
+				Reg::get('emailStats')->setEmailAsBouncedSoft($stat->emailId);
 			}
 		}
 	}

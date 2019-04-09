@@ -94,7 +94,7 @@ class ImageManager {
 		return S3Transport::delete($path, $s3ConfigName);
 	}
 
-	public static function generateCache($fileName, $typeName, $modelName) {
+	public static function generateCache($fileName, $typeName, $modelName, $deleteLocalFileAfterGeneration = false) {
 		$config = static::initConfigs($typeName, $modelName);
 		if ($config['cacheEnabled'] === false) {
 			return;
@@ -119,6 +119,9 @@ class ImageManager {
 
 		if ($config['storageProvider'] == self::STORAGE_PROVIDER_S3) {
 			static::storeInS3($config['cacheDir'] . $config['cacheModelName'] . '/' . $fileName, ensurePathLastSlash($config['s3Config']->cachePath) . $config['cacheModelName'] . '/' . $fileName, $config['s3Config']->cacheFileACL, $config['s3Config']->configName);
+			if($deleteLocalFileAfterGeneration){
+				unlink($originalImagePath);
+			}
 		}
 	}
 

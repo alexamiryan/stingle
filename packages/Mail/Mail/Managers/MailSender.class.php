@@ -12,6 +12,10 @@ class MailSender extends Model {
 	const RECEIVE_MAIL_YES = 1;
 	const RECEIVE_MAIL_NO = 0;
 	
+	const BOUNCE_TYPE_SOFT = 'soft';
+	const BOUNCE_TYPE_HARD = 'hard';
+	const BOUNCE_TYPE_BLOCKED = 'blocked';
+	
 	protected $receiveMailFlagsLength = 0;
 	
 	const EMAIL_ID_LENGTH = 16;
@@ -29,9 +33,15 @@ class MailSender extends Model {
 	 * @access public
 	 * @param Config $config
 	 */
-	public function __construct(Config $config, MailTransportInterface $transport) {
+	public function __construct(Config $config, MailTransportInterface $transport = null) {
 		$this->config = $config;
-		$this->transport = $transport;
+		if($transport !== null){
+			$this->transport = $transport;
+		}
+		else{
+			$defaultTransportClassName = $this->config->mailParams->{$this->config->defaultMailConfig}->transport;
+			$this->transport = new $defaultTransportClassName();
+		}
 	}
 	
 	public function setTransport(MailTransportInterface $transport){
@@ -40,27 +50,6 @@ class MailSender extends Model {
 	
 	public function setIncludeString($string){
 		$this->stringToInclude = $string;
-	}
-	
-	public function getDefaultMailParams(){
-		foreach($this->config->mailParams->toArray() as $config){
-			if($config->isDefault){
-				return $config;
-			}
-		}
-		throw new RuntimeException("There is no default mail config defined");
-	}
-	
-	public function getMailParamsByName($name){
-		if(empty($name)){
-			throw new InvalidArgumentException("name is empty");
-		}
-		if(isset($this->config->mailParams->$name)){
-			return $this->config->mailParams->$name;
-		}
-		else{
-			return $this->getDefaultMailParams();
-		}
 	}
 	
 	/**
@@ -94,9 +83,18 @@ class MailSender extends Model {
 			$mail->addCustomHeader('Precedence', 'bulk');
 		}
 		
+		if($transportConfigName === null && $mail->transportConfigName !== null){
+			$transportConfigName = $mail->transportConfigName;
+		}
+		
 		try {
 			if($mail->isHtml and $mail->autogenerateTextVersion){
 				$mail->textBody = Html2Text\Html2Text::convert($mail->htmlBody);
+			}
+			
+			if(!empty($mail->transport) && $mail->transport !== get_class($this->transport)){
+				$transportClassName = $mail->transport;
+				$this->transport = new $transportClassName();
 			}
 			
 			HookManager::callHook('BeforeEmailSend', $mail);
@@ -137,10 +135,10 @@ class MailSender extends Model {
 
 		$mailParams = null;
 		if (!empty($mailAltConfigName)) {
-			$mailParams = $this->getMailParamsByName($mailAltConfigName);
+			$mailParams = $this->config->mailParams->$mailAltConfigName;
 		}
 		else {
-			$mailParams = $this->getDefaultMailParams();
+			$mailParams = $this->config->mailParams->{$this->config->defaultMailConfig};
 		}
 
 		try {
@@ -157,6 +155,8 @@ class MailSender extends Model {
 			$mail->typeId = $typeId;
 			$mail->type = (isset($this->typesMap[$typeId]) ? $this->typesMap[$typeId] : null);
 			$mail->emailId = generateRandomString(self::EMAIL_ID_LENGTH, array(RANDOM_STRING_LOWERCASE, RANDOM_STRING_DIGITS));
+			$mail->transport = (!empty($mailParams->transport) ? $mailParams->transport : null);
+			$mail->transportConfigName = (!empty($mailParams->transportConfigName) ? $mailParams->transportConfigName : null);
 		}
 		catch (Exception $e) {
 			return false;
@@ -292,6 +292,30 @@ class MailSender extends Model {
 		$user->emailConfirmed = 0;
 		$this->additionalEmailDisableActions($user, $isBounced);
 		return Reg::get('userMgr')->updateUser($user);
+	}
+	
+	public function handleBounce($email, $bounceType, $mailId = null){
+		$disabledUserIds = [];
+		if($bounceType == MailSender::BOUNCE_TYPE_HARD){
+			$filter = new UsersFilter();
+			$filter->setEmail(Reg::get('sql')->escapeString($email));
+
+			$users = Reg::get('userMgr')->getUsersList($filter);
+			foreach ($users as $user) {
+				$this->disableEmailReceive($user, true);
+				
+				$userHookParams = array(
+					'user' => $user,
+					'mailId' => $mailId,
+					'bounceType' => $bounceType
+				);
+				HookManager::callHook('EmailBounceByUser', $userHookParams);
+				$disabledUserIds[] = $user->id;
+			}
+		}
+		if($this->config->logBounces){
+			DBLogger::logCustom("bounce", $email . ' - ' . implode(', ', $disabledUserIds) . ' - ' . $bounceType . ' - ' . $mailId);
+		}
 	}
 	
 	protected function additionalEmailDisableActions(User $user, $isBounced = true){ }

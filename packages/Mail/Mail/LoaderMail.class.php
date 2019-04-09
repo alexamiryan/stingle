@@ -12,4 +12,7 @@ class LoaderMail extends Loader{
 		$this->register(new MailSender($this->config->AuxConfig));
 	}
 	
+	public function hookEmailBounce($args){
+		Reg::get('mail')->handleBounce($args['email'], $args['bounceType'], $args['mailId']);
+	}
 }

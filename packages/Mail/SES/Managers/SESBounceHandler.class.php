@@ -3,31 +3,37 @@
 class SESBounceHandler {
 
 	public static function handleBounce() {
-		
+
 		$message = Aws\Sns\Message::fromRawPostData();
 
 		$validator = new Aws\Sns\MessageValidator();
-		if ($validator->isValid($message)){
-			if($message['Type'] == "Notification" && !empty($message['Message'])) {
-				$notif = json_decode($message['Message']);
+		try {
+			$validator->validate($message);
+		}
+		catch (Exception $e) {
+			http_response_code(404);
+			die();
+		}
+		
+		if ($message['Type'] == "Notification" && !empty($message['Message'])) {
+			$notif = json_decode($message['Message']);
 
-				$mailId = self::findMailId($notif);
+			$mailId = self::findMailId($notif);
 
-				if ($notif->notificationType == 'Bounce' && !empty($notif->bounce)) {
-					self::handleBounceNotification($notif, $mailId);
-				}
-				elseif ($notif->notificationType == 'Complaint' && !empty($notif->complaint)) {
-					self::handleComplaintNotification($notif, $mailId);
-				}
+			if ($notif->notificationType == 'Bounce' && !empty($notif->bounce)) {
+				self::handleBounceNotification($notif, $mailId);
 			}
-			elseif ($message['Type'] === 'SubscriptionConfirmation') {
-				//file_get_contents($message['SubscribeURL']);
-				DBLogger::logCustom('sns_confirm', $message['SubscribeURL']);
+			elseif ($notif->notificationType == 'Complaint' && !empty($notif->complaint)) {
+				self::handleComplaintNotification($notif, $mailId);
 			}
 		}
+		elseif ($message['Type'] === 'SubscriptionConfirmation') {
+			//file_get_contents($message['SubscribeURL']);
+			DBLogger::logCustom('sns_confirm', $message['SubscribeURL']);
+		}
 	}
-	
-	public static function handleBounceNotification($notif, $mailId){
+
+	public static function handleBounceNotification($notif, $mailId) {
 		$config = ConfigManager::getConfig('Mail', 'SES')->AuxConfig;
 		$bounceType = $notif->bounce->bounceType;
 		$bounceSubType = $notif->bounce->bounceSubType;
@@ -47,13 +53,13 @@ class SESBounceHandler {
 				$failedAddresses[] = $failedAddress;
 			}
 
-			if($config->logBounces){
+			if ($config->logBounces) {
 				DBLogger::logCustom("sns_bounce", $bounceType . ' - ' . $bounceSubType . ' - ' . $mailId . ' - ' . implode(', ', $failedAddresses));
 			}
 		}
 	}
-	
-	public static function handleComplaintNotification($notif, $mailId){
+
+	public static function handleComplaintNotification($notif, $mailId) {
 		$config = ConfigManager::getConfig('Mail', 'SES')->AuxConfig;
 
 		$failedAddresses = [];
@@ -71,14 +77,14 @@ class SESBounceHandler {
 				$failedAddresses[] = $failedAddress;
 			}
 
-			if($config->logBounces){
+			if ($config->logBounces) {
 				DBLogger::logCustom("sns_bounce", 'Complaint - ' . $mailId . ' - ' . implode(', ', $failedAddresses));
 			}
 		}
 	}
-	
-	public static function translateBounceType($type){
-		switch ($type){
+
+	public static function translateBounceType($type) {
+		switch ($type) {
 			case 'Permanent':
 				return MailSender::BOUNCE_TYPE_HARD;
 			case 'Transient':
@@ -86,8 +92,8 @@ class SESBounceHandler {
 				return MailSender::BOUNCE_TYPE_SOFT;
 		}
 	}
-	
-	public static function findMailId($notif){
+
+	public static function findMailId($notif) {
 		$mailId = null;
 		if (!empty($notif->mail) && !empty($notif->mail->headers)) {
 			foreach ($notif->mail->headers as $header) {
@@ -99,12 +105,13 @@ class SESBounceHandler {
 		}
 		return $mailId;
 	}
-	
-	public static function filterRecpAddress($email){
+
+	public static function filterRecpAddress($email) {
 		$matches = array();
 		if (preg_match('/<(.+@.+)>/iU', $email, $matches)) {
 			$email = $matches[1];
 		}
 		return $email;
 	}
+
 }

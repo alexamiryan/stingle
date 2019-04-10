@@ -3,11 +3,13 @@
 class SESBounceHandler {
 
 	public static function handleBounce() {
-
-		$message = Aws\Sns\Message::fromRawPostData();
-
-		$validator = new Aws\Sns\MessageValidator();
+		
+		$message = '';
+		
 		try {
+			$message = Aws\Sns\Message::fromRawPostData();
+
+			$validator = new Aws\Sns\MessageValidator();
 			$validator->validate($message);
 		}
 		catch (Exception $e) {

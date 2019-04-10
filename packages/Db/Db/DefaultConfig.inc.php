@@ -1,19 +1,23 @@
 <?php
 
-$defaultConfig = array(
-	'AuxConfig' => array(
-		'host' => ':/var/lib/mysql/mysql.sock',
-		'user' => 'root',
-		'password' => '',
-		'name' => '',
-		'isPersistent' => true,
-		'encoding' => 'UTF8'
-	),
-	'Objects' => array(
+$defaultConfig = [
+	'AuxConfig' => [
+		'hosts' => [
+			'default' => [
+				'host' => ':/var/lib/mysql/mysql.sock',
+				'user' => 'root',
+				'password' => '',
+				'name' => '',
+				'isPersistent' => true,
+				'encoding' => 'UTF8'
+			]
+		]
+	],
+	'Objects' => [
 		'Db' => 'db',
 		'Query' => 'sql'
-	),
-	'Hooks' => array(
+	],
+	'Hooks' => [
 		'AfterPackagesLoad' => 'StoreTblCache'
-	)
-);
+	]
+];

@@ -4,7 +4,6 @@ $defaultConfig = array(
 	'AuxConfig' => array(
 		'IMAP' => array(
 			'default' => array(
-				'isDefault' => false,
 				'host' => false,
 				'port' => null,
 				'username' => null,

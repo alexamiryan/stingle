@@ -18,15 +18,6 @@ class BounceHandler extends Model {
 		$this->config = $config;
 	}
 	
-	public function getDefaultIMAPConfig(){
-		foreach($this->config->IMAP->toArray() as $config){
-			if($config->isDefault){
-				return $config;
-			}
-		}
-		throw new RuntimeException("There is no default imap config defined");
-	}
-	
 	public function getIMAPConfigByName($name){
 		if(empty($name)){
 			throw new InvalidArgumentException("name is empty");
@@ -35,19 +26,13 @@ class BounceHandler extends Model {
 			return $this->config->IMAP->$name;
 		}
 		else{
-			return $this->getDefaultIMAPConfig();
+			throw new InvalidArgumentException("There is no IMAP config with name $name");
 		}
 	}
 	
 	
-	public function handleBounceEmails($imapConfigName = null) {
-		$imapConfig = null;
-		if ($imapConfigName) {
-			$imapConfig = $this->getIMAPConfigByName($imapConfigName);
-		}
-		else{
-			$imapConfig = $this->getDefaultIMAPConfig();
-		}
+	public function handleBounceEmails($imapConfigName) {
+		$imapConfig = $this->getIMAPConfigByName($imapConfigName);
 
 		$bmh = new BounceMailHandler();
 		$bmh->actionFunction = array($this, 'callbackAction'); // default is 'callbackAction'

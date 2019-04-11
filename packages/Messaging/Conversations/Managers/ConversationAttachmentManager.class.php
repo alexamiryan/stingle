@@ -79,18 +79,18 @@ class ConversationAttachmentManager extends DbAccessor {
 			->set(new Field('sender_id'), $message->userId)
 			->where($qb->expr()->equal(new Field('id'), $attachmentId));
 
-		MySqlDbManager::getDbObject()->startTransaction();
+		$this->query->startTransaction();
 		try {
 			$convMgr->setMessageHasAttachment($message);
 
-			$affected = $this->query->exec($qb->getSQL())->affected();
+			$this->query->exec($qb->getSQL());
 
-			if (!MySqlDbManager::getDbObject()->commit()) {
-				MySqlDbManager::getDbObject()->rollBack();
+			if (!$this->query->commit()) {
+				$this->query->rollBack();
 			}
 		}
 		catch (Exception $e) {
-			MySqlDbManager::getDbObject()->rollBack();
+			$this->query->rollBack();
 			throw $e;
 		}
 	}
@@ -183,9 +183,8 @@ class ConversationAttachmentManager extends DbAccessor {
 	}
 
 	public function clearGarbage() {
-		$db = MySqlDbManager::getDbObject();
 
-		$db->startTransaction();
+		$this->query->startTransaction();
 
 		$qb = new QueryBuilder();
 
@@ -210,8 +209,8 @@ class ConversationAttachmentManager extends DbAccessor {
 
 		$deletedCount = $this->query->exec($qb->getSQL())->affected();
 
-		if (!$db->commit()) {
-			$db->rollBack();
+		if (!$this->query->commit()) {
+			$this->query->rollBack();
 			return 0;
 		}
 

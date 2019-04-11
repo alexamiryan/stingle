@@ -816,9 +816,7 @@ class ConversationManager extends DbAccessor{
 			throw new InvalidIntegerArgumentException("\$userId2 have to be non zero integer.");
 		}
 				
-		$db = MySqlDbManager::getDbObject();
-		
-		$db->startTransaction(true);
+		$this->query->startTransaction(true);
 		
 		$newUUID = $this->getMaxUUID() + 1;
 		
@@ -846,8 +844,8 @@ class ConversationManager extends DbAccessor{
 		
 		$this->query->exec($qb->getSQL());
 		
-		if(!$db->commit()){
-			$db->rollBack();
+		if(!$this->query->commit()){
+			$this->query->rollBack();
 			return false;
 		}
 		

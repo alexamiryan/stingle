@@ -10,21 +10,12 @@ class LoaderDb extends Loader{
 		stingleInclude ('Helpers/helpers.inc.php');
 	}
 	
-	protected function loadDb(){
-		Tbl::restoreCachedData();
-		MySqlDbManager::createInstance(	$this->config->AuxConfig->host, 
-										$this->config->AuxConfig->user, 
-										$this->config->AuxConfig->password, 
-										$this->config->AuxConfig->name,
-										$this->config->AuxConfig->isPersistent);
-		$this->db = MySqlDbManager::getDbObject();
-		$this->db->setConnectionEncoding($this->config->AuxConfig->encoding);
-		$this->register($this->db);
-	}
-	
 	protected function loadQuery(){
-		$query = MySqlDbManager::getQueryObject();
-		$this->register($query);
+		Tbl::restoreCachedData();
+		
+		MySqlDbManager::init($this->config->AuxConfig->hosts);
+		
+		$this->register(MySqlDbManager::getQueryObject());
 	}
 	
 	

@@ -17,8 +17,8 @@ class MySqlQueryMemcache extends MySqlQuery{
 	 * @param bool $memcahe_on
 	 *
 	 */
-	public function __construct(MySqlDatabase $db, Logger $logger = null){
-		parent::__construct($db, $logger);
+	public function __construct($instanceName = null, Logger $logger = null){
+		parent::__construct($instanceName, $logger);
 		
 		$this->memcacheConfig = ConfigManager::getConfig("Db", "Memcache")->AuxConfig;
 		

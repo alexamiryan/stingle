@@ -11,9 +11,13 @@ class LoaderMemcache extends Loader{
 	}
 	
 	protected function loadQuery(){
+		Tbl::restoreCachedData();
+		
+		MySqlDbManager::init(ConfigManager::getConfig('Db', 'Db')->AuxConfig->hosts);
+		
 		MySqlDbManager::setQueryClassName("MySqlQueryMemcache");
-		$query = new MySqlQueryMemcache(Reg::get(ConfigManager::getConfig("Db","Db")->Objects->Db));
-		$this->register($query);
+		
+		$this->register(MySqlDbManager::getQueryObject());
 	}
 	
 	public function hookAddMemcacheTimeConfig(Array $params){

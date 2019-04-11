@@ -2,23 +2,17 @@
 
 class MySqlQuery extends Model {
 
-	public $sqlStatement = null;
-
-	/**
-	 *
-	 * @var type mysqli
-	 */
 	protected $link = null;
+	
+	protected $instanceName = MySqlDbManager::DEFAULT_INSTANCE_NAME;
 
-	/**
-	 *
-	 * @var type mysqli_result
-	 */
 	protected $result = null;
+	
 	////////counter vars/////////////
 	protected $lastFetchType = null;
 	protected $lastRecordPosition = 0;
 	protected $lastFieldPosition = 0;
+	protected $isTransactionStarted = false;
 	////////////////////////////////
 
 	protected $logger = null;
@@ -38,14 +32,46 @@ class MySqlQuery extends Model {
 	 * @param Db_MySqlDatabase db
 	 *
 	 */
-	public function __construct(MySqlDatabase $db, Logger $logger = null) {
+	public function __construct($instanceName = null, Logger $logger = null) {
+		if($instanceName !== null){
+			$this->instanceName = $instanceName;
+		}
+		
 		if ($logger === null) {
 			$this->setLogger(new SessionLogger());
 		}
 		else {
 			$this->setLogger($logger);
 		}
-		$this->link = $db->getLink();
+		
+		$this->link = MySqlDbManager::getDbObject($instanceName)->getLink();
+	}
+	
+	protected function chooseDbEndpoint($query){
+		$type = (self::isSelect($query) ? MySqlDbManager::INSTANCE_TYPE_RO : MySqlDbManager::INSTANCE_TYPE_RW);
+		$this->link = MySqlDbManager::getDbObject($this->instanceName, $type)->getLink();
+	}
+	
+	protected function switchToRWEndpoint(){
+		$this->link = MySqlDbManager::getDbObject($this->instanceName, MySqlDbManager::INSTANCE_TYPE_RW)->getLink();
+	}
+	
+	public static function isSelect($query) {
+		// Default trim()'s mask plus left parentheses
+		$ltrimMask = "( \t\n\r\0\x0B";
+
+		return 'SELECT' === strtoupper(
+			substr(
+				ltrim($query, $ltrimMask), 0, 6
+			)
+		);
+	}
+	
+	public function getInstanceName(){
+		return $this->instanceName;
+	}
+	public function setInstanceName($instanceName){
+		$this->instanceName = $instanceName;
 	}
 
 	public function setLogger(Logger $logger) {
@@ -88,27 +114,19 @@ class MySqlQuery extends Model {
 	 * @return MysqlQuery
 	 */
 	public function exec($sqlStatement) {
-		//$backtrace = debug_backtrace();
-		//printr($backtrace);
-		//echo "<br>" . $sqlStatement . "<br><br><br>";
-		$queryStr = '';
-		if (empty($sqlStatement)) {
-			if (!empty($this->sqlStatement)) {
-				$queryStr = $this->sqlStatement;
-			}
-			else {
-				throw new EmptyArgumentException();
-			}
+		if(!$this->isTransactionStarted){
+			$this->chooseDbEndpoint($sqlStatement);
 		}
-		else {
-			$queryStr = $sqlStatement;
+		
+		if (empty($sqlStatement)) {
+			throw new EmptyArgumentException();
 		}
 
 		if ($this->log) {
 			$this->logger->log(static::LOGGER_NAME, $sqlStatement);
 		}
-
-		if (($this->result = $this->link->query($queryStr)) !== false) {
+		
+		if (($this->result = $this->link->query($sqlStatement)) !== false) {
 			$this->lastFetchType = null;
 			$this->lastFieldPosition = 0;
 			$this->lastRecordPosition = 0;
@@ -127,18 +145,17 @@ class MySqlQuery extends Model {
 
 						$sqlFiles = Tbl::getPluginSQLFilePathsByTableName($nonExistantTableName);
 						if ($sqlFiles !== false) {
-							$db = Reg::get(ConfigManager::getConfig("Db", "Db")->Objects->Db);
-							$db->startTransaction();
+							$this->startTransaction();
 							foreach ($sqlFiles as $sqlFilePath) {
-								self::executeSQLFile($sqlFilePath);
+								self::executeSQLFile($sqlFilePath, ';');
 							}
 
-							if ($db->commit()) {
+							if ($this->commit()) {
 								array_push($this->nonExitentTables, $nonExistantTableName);
 								return $this->exec($sqlStatement);
 							}
 							else {
-								$db->rollBack();
+								$this->rollBack();
 							}
 						}
 					}
@@ -585,8 +602,196 @@ class MySqlQuery extends Model {
 	public function escapeString($string){
 		return $this->link->real_escape_string($string);
 	}
+	
+	
+	/**
+	 * Starts a new transaction
+	 *
+	 * @access public
+	 * @throws DB_Exception
+	 * @return boolean
+	 */
+	public function startTransaction($withSnapshot = false, $name = null) {
+		$this->switchToRWEndpoint();
+		if (!$this->isTransactionStarted) {
+			if ($this->link->begin_transaction(($withSnapshot ? MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT : null), $name)) {
+				$this->isTransactionStarted = true;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Commits a last started transaction
+	 *
+	 * @access public
+	 * @return boolean
+	 */
+	public function commit($name = null) {
+		if ($this->isTransactionStarted) {
+			$result = $this->link->commit(null, $name);
+			$this->isTransactionStarted = false;
+			return $result;
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Saves a last started transaction
+	 *
+	 * @param string $identifier savePoint identifier
+	 *
+	 * @access public
+	 * @return boolean
+	 */
+	public function savePoint($identifier) {
+		if ($this->isTransactionStarted && !empty($identifier)) {
+			return $this->link->savepoint($identifier);
+		}
+		else {
+			return false;
+		}
+	}
+
+	/**
+	 * Rolls back to last savePoint
+	 *
+	 * @param string $savepointIdentifier
+	 *
+	 * @access public
+	 * @return boolean
+	 */
+	public function rollBack($savepointIdentifier = null) {
+		if ($this->isTransactionStarted) {
+			$result = $this->link->rollback(null, $savepointIdentifier);
+			$this->isTransactionStarted = false;
+			return $result;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Locks tables from given array
+	 *
+	 * @param array $tables
+	 *
+	 * @example $tables = Array("table_name_1" => "r", "table_name_2" => "w", "table_name_3" => "");
+	 *
+	 * or
+	 *
+	 * @param string $table
+	 * @param string $type
+	 *
+	 * @example $tables = "table", $type = "r" (READ)
+	 * @example $tables = "table", $type = "w" (WRITE)
+	 *
+	 * @access public
+	 * @return boolean
+	 */
+	public function lockTables($tables, $type = "r") {
+		$this->switchToRWEndpoint();
+		
+		if (empty($tables)) {
+			return false;
+		}
+
+		$lockQuery = "LOCK TABLES ";
+		if (is_array($tables)) {
+			$lockQueriesArr = array();
+			foreach ($tables as $table_name => $current_type) {
+				$query .= $table_name . " ";
+				if ($current_type == "w") {
+					$query .= " WRITE";
+				}
+				else {
+					$query .= " READ";
+				}
+				array_push($lockQueriesArr, $query);
+			}
+			$lockQuery .= implode(", ", $lockQueriesArr);
+		}
+		elseif (is_string($tables)) {
+			$lockQuery .= $tables;
+			if ($type == "w") {
+				$lockQuery .= " WRITE";
+			}
+			else {
+				$lockQuery .= " READ";
+			}
+		}
+
+		return $this->link->query($lockQuery);
+	}
+
+	/**
+	 * Unlocks tables that were locked by current thread
+	 *
+	 * @access public
+	 * @return boolean
+	 */
+	public function unlockTables() {
+		$this->switchToRWEndpoint();
+		
+		return $this->link->query('UNLOCK TABLES');
+	}
+
+	/**
+	 * Drops table or tables
+	 *
+	 * @param array $tableName
+	 *
+	 * or
+	 *
+	 * @param string $tableName
+	 *
+	 * @access public
+	 * @return boolean
+	 */
+	public function dropTables($tableName) {
+		if (empty($tableName)) {
+			return false;
+		}
+		$this->switchToRWEndpoint();
+
+		$dropQuery = "DROP TABLE ";
+		if (is_array($tableName)) {
+			$dropQuery .= implode(",", $tableName);
+		}
+		elseif (is_string($tableName)) {
+			$dropQuery .= $tableName;
+		}
+
+		return $this->link->query($dropQuery);
+	}
+
+	/**
+	 * Renames table
+	 *
+	 * @param string $oldName
+	 * @param string $newName
+	 *
+	 * @access public
+	 * @return boolean
+	 */
+	public function renameTable($oldName, $newName) {
+		$this->switchToRWEndpoint();
+		
+		if (!empty($oldName) && !empty($newName)) {
+			return $this->link->query("RENAME TABLE $oldName TO $newName");
+		}
+		else {
+			return false;
+		}
+	}
 
 	public function executeSQLFile($file, $delimiter = ';') {
+		$this->switchToRWEndpoint();
+		
 		$matches = array();
 		$otherDelimiter = false;
 		if (is_file($file) === true) {

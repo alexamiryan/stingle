@@ -2,13 +2,6 @@
 abstract class DbAccessor extends Model{
 	
 	/**
-	 * MySQL database instance
-	 *
-	 * @var MySqlDatabase
-	 */
-	private $db;
-	
-	/**
 	 * MySQL query manager instance
 	 *
 	 * @var MySQLQuery
@@ -20,39 +13,23 @@ abstract class DbAccessor extends Model{
 	 * 
 	 * @var $dbInstanceKey string
 	 */
-	protected $dbInstanceKey;
+	protected $instanceName;
 	
 	
-	public function __construct($dbInstanceKey = null){
-		if($dbInstanceKey === null){
-			$this->dbInstanceKey = MySqlDbManager::getDefaultInstanceKey();
-		}
-		else{
-			$this->dbInstanceKey = $dbInstanceKey;
+	public function __construct($instanceName = null){
+		if($instanceName === null){
+			$this->instanceName = MySqlDbManager::DEFAULT_INSTANCE_NAME;
 		}
 		
-		$this->init();
+		$this->query = MySqlDbManager::getQueryObject($instanceName);
 	}
 	
 	public function __clone(){
 		$this->query = clone $this->query;
 	}
 	
-	public function init(){
-		$this->db = MySqlDbManager::getDbObject($this->dbInstanceKey);
-		$this->query = MySqlDbManager::getQueryObject($this->dbInstanceKey);
-	}
-	
-	public function getDatabase(){
-		return $this->db;
-	}
-	
 	public function getQueryInstance(){
 		return $this->query;
-	}
-	
-	public function getDbInstanceKey(){
-		return $this->dbInstanceKey;
 	}
 	
 	public function setLogger(Logger $logger){

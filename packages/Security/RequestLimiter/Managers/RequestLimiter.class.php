@@ -52,7 +52,7 @@ class RequestLimiter extends DbAccessor {
 	public function parseLogForFloodingIps(){
 		$tablesToLock = array(Tbl::get('TBL_SECURITY_REQUESTS_LOG'),Tbl::get('TBL_SECURITY_FLOODER_IPS'));
 		
-		MySqlDbManager::getDbObject()->startTransaction();
+		$this->query->startTransaction();
 		
 		$qb = new QueryBuilder();
 		$qbSelect = new QueryBuilder();
@@ -68,8 +68,8 @@ class RequestLimiter extends DbAccessor {
 		
 		$this->query->exec("TRUNCATE TABLE `".Tbl::get('TBL_SECURITY_REQUESTS_LOG')."`");
 		
-		if(!MySqlDbManager::getDbObject()->commit()){
-			MySqlDbManager::getDbObject()->rollBack();
+		if(!$this->query->commit()){
+			$this->query->rollBack();
 		}
 	}
 	

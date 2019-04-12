@@ -181,6 +181,8 @@ class UserManager extends DbAccessor{
 	 * @return integer Created User ID
 	 */
 	public function createUser(User $user){
+		$this->query->lockEndpoint();
+		
 		$qb = new QueryBuilder();
 		
 		$user->salt = Crypto::secureRandom(512);
@@ -223,7 +225,9 @@ class UserManager extends DbAccessor{
 			$this->query->exec($qb->getSQL());
 		}
 		
-		return $newUserId;
+		$newUser = $this->getUserById($newUserId);
+		$this->query->unlockEndpoint();
+		return $newUser;
 	}
 	
 	/**

@@ -31,11 +31,11 @@ class UserManagerCaching extends UserManager{
 	}
 	
 	public function createUser(User $user){
-		$newUserId = parent::createUser($user);
+		$newUser = parent::createUser($user);
 		
-		$this->invalidateUserCacheByUserId($newUserId);
+		$this->invalidateUserCacheByUserId($newUser->id);
 		
-		return $newUserId;
+		return $newUser;
 	}
 	
 	public function updateUser(User $user){

@@ -28,11 +28,11 @@
 			$tepmOwnUser->login = $username;
 			$tepmOwnUser->password = $randomPassword;
 						
-			$userId = $um->createUser($tepmOwnUser);
-			if($userId !== false) {
-				$extAuth->addToExtMap($userId, $extUser);
-			}
-			return $userId;
+			$user = $um->createUser($tepmOwnUser);
+			
+			$extAuth->addToExtMap($user->id, $extUser);
+			
+			return $user->id;
 		}
 		
 		/**

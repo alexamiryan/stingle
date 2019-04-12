@@ -4,8 +4,8 @@ class UserAuthorization extends DbAccessor{
 	protected $um;
 	protected $config;
 	
-	public function __construct(Config $config, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct(Config $config, $instanceName = null){
+		parent::__construct($instanceName);
 		
 		$this->config = $config;
 		$this->um = Reg::get(ConfigManager::getConfig("Users", "Users")->Objects->UserManager);

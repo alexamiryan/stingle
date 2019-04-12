@@ -2,26 +2,29 @@
 
 $defaultConfig = [
 	'AuxConfig' => [
-		'hosts' => [
+		'instances' => [
 			'default' => [
-				[
-					'type' => 'rw',
-					'host' => ':/var/lib/mysql/mysql.sock',
-					'user' => 'root',
-					'password' => '',
-					'name' => '',
-					'isPersistent' => false,
-					'encoding' => 'UTF8'
+				/*'endpoints' => [
+					[
+						'type' => 'rw',
+						'host' => ':/var/lib/mysql/mysql.sock',
+						'user' => 'root',
+						'password' => '',
+						'name' => '',
+						'isPersistent' => false,
+						'encoding' => 'UTF8'
+					],
+					[
+						'type' => 'ro',
+						'host' => ':/var/lib/mysql/mysql.sock',
+						'user' => 'root',
+						'password' => '',
+						'name' => '',
+						'isPersistent' => false,
+						'encoding' => 'UTF8'
+					]
 				],
-				[
-					'type' => 'ro',
-					'host' => ':/var/lib/mysql/mysql.sock',
-					'user' => 'root',
-					'password' => '',
-					'name' => '',
-					'isPersistent' => false,
-					'encoding' => 'UTF8'
-				]
+				'readsFromRWEndpoint' => false*/
 			]
 		]
 	],

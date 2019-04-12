@@ -37,11 +37,11 @@ class JobQueueManager extends DbAccessor{
 	
 	
 	/**
-	 * Construcor
-	 * @param string $dbInstanceKey
+	 * Constructor
+	 * @param string $instanceName
 	 */
-	public  function __construct($dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public  function __construct($instanceName = null){
+		parent::__construct($instanceName);
 		
 	}
 	

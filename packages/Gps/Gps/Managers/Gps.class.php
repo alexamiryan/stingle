@@ -13,8 +13,8 @@ class Gps extends DbAccessor
 	const TBL_COUNTRY_ISO = 'wgps_country_iso';
 
 
-	public function __construct($dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct($instanceName = null){
+		parent::__construct($instanceName);
 	}
 
 	/**

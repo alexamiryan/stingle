@@ -8,8 +8,8 @@ class DBLogger extends Logger{
 		static::logCustom($name, $value);
 	}
 	
-	public static function logRequest($dbInstanceKey = null){
-		$sql = MySqlDbManager::getQueryObject($dbInstanceKey);
+	public static function logRequest($instanceName = null){
+		$sql = MySqlDbManager::getQueryObject($instanceName);
 		$qb = new QueryBuilder();
 		$qb->insert(Tbl::get('TBL_REQUEST_LOG'))
 			->values(array(

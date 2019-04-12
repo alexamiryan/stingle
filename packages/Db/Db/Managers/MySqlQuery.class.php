@@ -18,6 +18,8 @@ class MySqlQuery extends Model {
 	protected $logger = null;
 	protected $log = false;
 	protected $nonExitentTables = array();
+	
+	protected $isInstanceLocked = false;
 
 	const FETCH_TYPE_RECORD = 'record';
 	const FETCH_TYPE_FIELD = 'field';
@@ -47,13 +49,29 @@ class MySqlQuery extends Model {
 		$this->link = MySqlDbManager::getDbObject($instanceName)->getLink();
 	}
 	
+	/**
+	 * Switch to RW endpoint and lock on it. This will disable switching
+	 * on RO endpoints if SELECT is executed
+	 */
+	public function lockEndpoint(){
+		$this->switchToRWEndpoint();
+		$this->isInstanceLocked = true;
+	}
+	
+	/**
+	 * Release endpoint lock enable switching to RO endpoints
+	 */
+	public function unlockEndpoint(){
+		$this->isInstanceLocked = false;
+	}
+	
 	protected function chooseDbEndpoint($query){
-		$type = (self::isSelect($query) ? MySqlDbManager::INSTANCE_TYPE_RO : MySqlDbManager::INSTANCE_TYPE_RW);
+		$type = (self::isSelect($query) ? MySqlDbManager::ENDPOINT_TYPE_RO : MySqlDbManager::ENDPOINT_TYPE_RW);
 		$this->link = MySqlDbManager::getDbObject($this->instanceName, $type)->getLink();
 	}
 	
 	protected function switchToRWEndpoint(){
-		$this->link = MySqlDbManager::getDbObject($this->instanceName, MySqlDbManager::INSTANCE_TYPE_RW)->getLink();
+		$this->link = MySqlDbManager::getDbObject($this->instanceName, MySqlDbManager::ENDPOINT_TYPE_RW)->getLink();
 	}
 	
 	public static function isSelect($query) {
@@ -114,7 +132,7 @@ class MySqlQuery extends Model {
 	 * @return MysqlQuery
 	 */
 	public function exec($sqlStatement) {
-		if(!$this->isTransactionStarted){
+		if(!$this->isInstanceLocked && !$this->isTransactionStarted){
 			$this->chooseDbEndpoint($sqlStatement);
 		}
 		
@@ -125,7 +143,7 @@ class MySqlQuery extends Model {
 		if ($this->log) {
 			$this->logger->log(static::LOGGER_NAME, $sqlStatement);
 		}
-		
+
 		if (($this->result = $this->link->query($sqlStatement)) !== false) {
 			$this->lastFetchType = null;
 			$this->lastFieldPosition = 0;
@@ -611,14 +629,26 @@ class MySqlQuery extends Model {
 	 * @throws DB_Exception
 	 * @return boolean
 	 */
-	public function startTransaction($withSnapshot = false, $name = null) {
+	public function startTransaction($withSnapshot = false, $name = NULL) {
+		if ($this->isTransactionStarted) {
+			return false;
+		}
 		$this->switchToRWEndpoint();
-		if (!$this->isTransactionStarted) {
-			if ($this->link->begin_transaction(($withSnapshot ? MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT : null), $name)) {
+		
+		if($name !== null){
+			if($this->link->begin_transaction(($withSnapshot ? MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT : NULL), $name)){
 				$this->isTransactionStarted = true;
 				return true;
 			}
 		}
+		else{
+			if($this->link->begin_transaction(($withSnapshot ? MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT : NULL))){
+				$this->isTransactionStarted = true;
+				return true;
+			}
+		}
+		
+		
 		return false;
 	}
 
@@ -628,15 +658,14 @@ class MySqlQuery extends Model {
 	 * @access public
 	 * @return boolean
 	 */
-	public function commit($name = null) {
-		if ($this->isTransactionStarted) {
-			$result = $this->link->commit(null, $name);
-			$this->isTransactionStarted = false;
-			return $result;
-		}
-		else {
+	public function commit($name = NULL) {
+		if (!$this->isTransactionStarted) {
 			return false;
 		}
+		
+		$result = $this->link->commit(NULL, $name);
+		$this->isTransactionStarted = false;
+		return $result;
 	}
 
 	/**
@@ -648,12 +677,10 @@ class MySqlQuery extends Model {
 	 * @return boolean
 	 */
 	public function savePoint($identifier) {
-		if ($this->isTransactionStarted && !empty($identifier)) {
-			return $this->link->savepoint($identifier);
-		}
-		else {
+		if (!$this->isTransactionStarted || empty($identifier)) {
 			return false;
 		}
+		return $this->link->savepoint($identifier);
 	}
 
 	/**
@@ -664,15 +691,15 @@ class MySqlQuery extends Model {
 	 * @access public
 	 * @return boolean
 	 */
-	public function rollBack($savepointIdentifier = null) {
-		if ($this->isTransactionStarted) {
-			$result = $this->link->rollback(null, $savepointIdentifier);
-			$this->isTransactionStarted = false;
-			return $result;
-		}
-		else {
+	public function rollBack($savepointIdentifier = NULL) {
+		if (!$this->isTransactionStarted) {
 			return false;
 		}
+		
+		$result = $this->link->rollback(NULL, $savepointIdentifier);
+
+		$this->isTransactionStarted = false;
+		return $result;
 	}
 	
 	/**

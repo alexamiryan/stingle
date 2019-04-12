@@ -10,8 +10,8 @@ class ChatInvitationManager extends DbAccessor
 	
 	private $invitationClearTimeout = 5;  // in minutes
 	
-	public function __construct(Config $config, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct(Config $config, $instanceName = null){
+		parent::__construct($instanceName);
 		
 		if(isset($config->invitationClearTimeout)){
 			$this->invitationClearTimeout = $config->invitationClearTimeout;

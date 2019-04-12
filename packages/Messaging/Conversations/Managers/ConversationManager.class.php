@@ -32,8 +32,8 @@ class ConversationManager extends DbAccessor{
 	// INIT_ALL Should be next power of 2 minus 1
 	const INIT_ALL = 31;
 	
-	public function __construct($dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct($instanceName = null){
+		parent::__construct($instanceName);
 	}
 	
 	public function getConversations(ConversationFilter $filter, MysqlPager $pager = null, $initObjects = self::INIT_ALL){
@@ -180,6 +180,8 @@ class ConversationManager extends DbAccessor{
 			throw new InvalidArgumentException("\$receivers have to be non empty array");
 		}
 		
+		$this->query->lockEndpoint();
+		
 		$uuids = $this->findExistingConversationUUIDs(array_merge(array($senderId), $receivers));
 		
 		if(count($uuids) === 0){
@@ -195,10 +197,16 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		return $this->addMessageToConversation($uuid, $senderId, $message);
+		$result = $this->addMessageToConversation($uuid, $senderId, $message);
+		
+		$this->query->unlockEndpoint();
+		
+		return $result;
 	}
 	
 	public function sendMessageByUUID($uuid, $senderId, $message){
+		$this->query->lockEndpoint();
+		
 		if(!$this->isConversationExists($uuid)){
 			throw new ConversationNotExistException("There is no conversation with uuid $uuid");
 		}
@@ -207,7 +215,11 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		return $this->addMessageToConversation($uuid, $senderId, $message);
+		$result = $this->addMessageToConversation($uuid, $senderId, $message);
+		
+		$this->query->unlockEndpoint();
+		
+		return $result;
 	}
 	
 	public function findExistingConversationUUIDs($participants = array()){

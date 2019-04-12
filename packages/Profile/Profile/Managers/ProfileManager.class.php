@@ -22,8 +22,8 @@ class ProfileManager extends DbAccessor{
 	// INIT_ALL Should be next power of 2 minus 1
 	const INIT_ALL = 3;
 	
-	public function __construct($dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct($instanceName = null){
+		parent::__construct($instanceName);
 	}
 	
 	

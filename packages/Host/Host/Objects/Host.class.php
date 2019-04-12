@@ -11,12 +11,12 @@ class Host{
 
 	const TBL_HOSTS = "hosts";
 
-	function __construct($host_id = null, $cacheMinutes = null, $dbInstanceKey = null){
+	function __construct($host_id = null, $cacheMinutes = null, $instanceName = null){
 		if($host_id !== null){
 			if(!is_numeric($host_id)){
 				throw new InvalidIntegerArgumentException("host_id argument should be an integer.");
 			}
-			$sql = MySqlDbManager::getQueryObject($dbInstanceKey);
+			$sql = MySqlDbManager::getQueryObject($instanceName);
 			
 			$qb = new QueryBuilder();
 			$qb->select(new Field('*'))

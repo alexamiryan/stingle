@@ -106,7 +106,7 @@ class MailSender extends Model {
 		}
 	}
 
-	public function initMail(User $to, $typeId = null, $checkValidity = true, $mailAltConfigName = null) {
+	public function initMail(User $to, $typeId = null, $mailAltConfigName = null, $checkValidity = true) {
 		$toHost = null;
 		$toLang = null;
 		if (isset($to->props->host) && !empty($to->props->host)) {
@@ -157,6 +157,47 @@ class MailSender extends Model {
 			$mail->emailId = generateRandomString(self::EMAIL_ID_LENGTH, array(RANDOM_STRING_LOWERCASE, RANDOM_STRING_DIGITS));
 			$mail->transport = (!empty($mailParams->transport) ? $mailParams->transport : null);
 			$mail->transportConfigName = (!empty($mailParams->transportConfigName) ? $mailParams->transportConfigName : null);
+		}
+		catch (Exception $e) {
+			return false;
+		}
+
+		return $mail;
+	}
+	
+	public function initMailSimple($toEmail = null, $subject = null, $mailAltConfigName = null, $checkValidity = true) {
+		$mailParams = null;
+		if (!empty($mailAltConfigName)) {
+			$mailParams = $this->config->mailParams->$mailAltConfigName;
+		}
+		else {
+			$mailParams = $this->config->mailParams->{$this->config->defaultMailConfig};
+		}
+
+		try {
+			$mail = new Mail();
+			$mail->returnPath = $mailParams->returnPath;
+			$mail->from = $mailParams->fromMail;
+			$mail->fromName = (isset($mailParams->fromName)) ? $mailParams->fromName : '';
+			$mail->addReplyTo($mailParams->replyToMail, $mailParams->replyToName, $checkValidity);
+			$mail->returnPath = $mailParams->returnPath;
+			$mail->emailId = generateRandomString(self::EMAIL_ID_LENGTH, array(RANDOM_STRING_LOWERCASE, RANDOM_STRING_DIGITS));
+			$mail->transport = (!empty($mailParams->transport) ? $mailParams->transport : null);
+			$mail->transportConfigName = (!empty($mailParams->transportConfigName) ? $mailParams->transportConfigName : null);
+			
+			if(!empty($toEmail)){
+				if(is_array($toEmail)){
+					foreach($toEmail as $email){
+						$mail->addTo($email, '', $checkValidity);
+					}
+				}
+				else{
+					$mail->addTo($toEmail, '', $checkValidity);
+				}
+			}
+			if(!empty($subject)){
+				$mail->subject = $subject;
+			}
 		}
 		catch (Exception $e) {
 			return false;

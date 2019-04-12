@@ -8,8 +8,8 @@ class ChatMessageManager extends DbAccessor
 	
 	private $logMinutes = 30;  // in minutes
 	
-	public function __construct(Config $config, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct(Config $config, $instanceName = null){
+		parent::__construct($instanceName);
 		
 		if(isset($config->logMinutes)){
 			$this->logMinutes = $config->logMinutes;

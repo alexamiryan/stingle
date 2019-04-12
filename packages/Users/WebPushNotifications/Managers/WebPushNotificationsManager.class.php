@@ -8,8 +8,8 @@ class WebPushNotificationsManager extends DbAccessor{
 	const TBL_PUSH_NOTIFICATIONS = "push_notifications";
 	protected $config = null;
 
-	public function __construct($config, $dbInstanceKey = null) {
-		parent::__construct($dbInstanceKey);
+	public function __construct($config, $instanceName = null) {
+		parent::__construct($instanceName);
 		$this->config = $config;
 	}
 

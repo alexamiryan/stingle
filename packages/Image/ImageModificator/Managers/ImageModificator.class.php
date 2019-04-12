@@ -9,8 +9,8 @@ class ImageModificator extends DbAccessor {
 	const ACTION_RESIZE = 'resize';
 	const ACTION_STAMP = 'stamp';
 
-	public function __construct(Config $config, $dbInstanceKey = null) {
-		parent::__construct($dbInstanceKey);
+	public function __construct(Config $config, $instanceName = null) {
+		parent::__construct($instanceName);
 		$this->config = $config;
 	}
 
@@ -99,8 +99,12 @@ class ImageModificator extends DbAccessor {
 			->where($qb->expr()->equal(new Field('model_name'), $modelName))
 			->andWhere($qb->expr()->equal(new Field('filename'), $fileName));
 
+		$this->query->lockEndpoint();
+		
 		$this->query->exec($qb->getSQL());
-
+		
+		$this->query->unlockEndpoint();
+		
 		if ($this->query->countRecords() == 1) {
 			return new Config($this->query->fetchRecord());
 		}

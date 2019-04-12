@@ -3,8 +3,8 @@ class TextsGroupManager extends DbAccessor{
 	
 	const TBL_TEXTS_GROUPS = "texts_groups";
 	
-	public  function __construct($dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public  function __construct($instanceName = null){
+		parent::__construct($instanceName);
 	}
 	
 	

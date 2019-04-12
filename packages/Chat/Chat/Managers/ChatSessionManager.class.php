@@ -14,8 +14,8 @@ class ChatSessionManager extends DbAccessor
 	
 	private $sessionClearTimeout = 10;  // in minutes
 	
-	public function __construct(Config $config, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct(Config $config, $instanceName = null){
+		parent::__construct($instanceName);
 		
 		if(isset($config->sessionClearTimeout)){
 			$this->sessionClearTimeout = $config->sessionClearTimeout;

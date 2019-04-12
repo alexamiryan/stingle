@@ -13,7 +13,7 @@ class LoaderMemcache extends Loader{
 	protected function loadQuery(){
 		Tbl::restoreCachedData();
 		
-		MySqlDbManager::init(ConfigManager::getConfig('Db', 'Db')->AuxConfig->hosts);
+		MySqlDbManager::init(ConfigManager::getConfig('Db', 'Db')->AuxConfig->instances);
 		
 		MySqlDbManager::setQueryClassName("MySqlQueryMemcache");
 		

@@ -8,9 +8,9 @@ class LanguageManager extends DbAccessor {
 	protected $throwExceptionOnNotFound = false; //Language object
 	protected $language; //Language object
 
-	public function __construct(Language $language=null, $dbInstanceKey = null){
+	public function __construct(Language $language=null, $instanceName = null){
 
-		parent::__construct($dbInstanceKey);
+		parent::__construct($instanceName);
 		
 		$lmConfig = ConfigManager::getConfig('Language', 'Language')->AuxConfig;
 		

@@ -3,8 +3,8 @@ class UserManagerCaching extends UserManager{
 	
 	const USER_TAG = 'uo:usr';
 	
-	public function __construct($config, $dbInstanceKey = null){
-		parent::__construct($config, $dbInstanceKey);
+	public function __construct($config, $instanceName = null){
+		parent::__construct($config, $instanceName);
 	}
 	
 	public function getUserById($userId, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF, $cacheTag = null){

@@ -6,8 +6,8 @@ class PageInfo extends DbAccessor
 	
 	const TBL_PAGE_INFO = "site_pages_info";
 	
-	public  function __construct(Host $host, Language $language, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public  function __construct(Host $host, Language $language, $instanceName = null){
+		parent::__construct($instanceName);
 
 		$this->host = $host;
 		$this->language = $language;

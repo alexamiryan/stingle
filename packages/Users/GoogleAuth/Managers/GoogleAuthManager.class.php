@@ -8,8 +8,8 @@ class GoogleAuthManager extends DbAccessor
 	
 	protected $gAuth;
 	
-	public function __construct($dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct($instanceName = null){
+		parent::__construct($instanceName);
 		
 		$this->gAuth = new GoogleAuthenticator();
 	}

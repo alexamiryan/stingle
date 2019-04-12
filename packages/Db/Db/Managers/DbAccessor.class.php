@@ -9,9 +9,9 @@ abstract class DbAccessor extends Model{
 	protected $query;
 	
 	/**
-	 * Db Instance key that is currently beeing used
+	 * Db Instance name to use for this class
 	 * 
-	 * @var $dbInstanceKey string
+	 * @var $instanceName string
 	 */
 	protected $instanceName;
 	

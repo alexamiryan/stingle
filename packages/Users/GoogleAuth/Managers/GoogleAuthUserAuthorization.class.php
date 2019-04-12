@@ -10,8 +10,8 @@ class GoogleAuthUserAuthorization extends DbAccessor{
 	protected $googleAuthManager;
 	
 	
-	public function __construct(Config $config, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct(Config $config, $instanceName = null){
+		parent::__construct($instanceName);
 		
 		$this->googleAuth = new GoogleAuthenticator();
 		$this->googleAuthManager = new GoogleAuthManager();

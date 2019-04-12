@@ -1,8 +1,8 @@
 <?php
 class IpFilterManager extends DbAccessor {
 	
-	public function __construct ($dbInstanceKey = null) {
-		parent::__construct($dbInstanceKey); 
+	public function __construct ($instanceName = null) {
+		parent::__construct($instanceName); 
 		
 	}
 	

@@ -3,8 +3,8 @@ class TextsAliasManager extends DbAccessor{
 	
 	const TBL_TEXTS_ALIASES = "texts_aliases";
 	
-	public  function __construct($dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public  function __construct($instanceName = null){
+		parent::__construct($instanceName);
 	}
 	
 	public function isAliased(Text $text, $hostLangId, $cacheMinutes = null){

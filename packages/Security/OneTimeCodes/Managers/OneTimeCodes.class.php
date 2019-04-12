@@ -6,8 +6,8 @@ class OneTimeCodes extends DbAccessor {
 	const CODE_MAX_LENGTH = 1024;
 	private $config;
 	
-	public function __construct (Config $config, $dbInstanceKey = null) {
-		parent::__construct($dbInstanceKey); 
+	public function __construct (Config $config, $instanceName = null) {
+		parent::__construct($instanceName); 
 		$this->config = $config;
 	}
 	

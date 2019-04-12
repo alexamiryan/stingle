@@ -21,13 +21,16 @@ class ConversationManager extends DbAccessor{
 	const IS_SYSTEM_NO					= '0';
 	const IS_SYSTEM_YES					= '1';
 	
-	public function __construct($dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct($instanceName = null){
+		parent::__construct($instanceName);
 	}
 	
 	public function sendMessage($senderId, $receiverId, $message){
+		$isNewConvOpened = false;
 		if(!$this->isConversationExists($senderId, $receiverId)){
+			$this->query->lockEndpoint();
 			$this->openConversation($senderId, $receiverId);
+			$isNewConvOpened = true;
 		}
 		
 		$filter = new ConversationFilter();
@@ -41,7 +44,12 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		return $this->addMessageToConversation($uuid, $senderId, $message);
+		$result = $this->addMessageToConversation($uuid, $senderId, $message);
+		if($isNewConvOpened){
+			$this->query->unlockEndpoint();
+		}
+		
+		return $result;
 	}
 	
 	public function sendMessageByUUID($uuid, $senderId, $message){
@@ -816,7 +824,7 @@ class ConversationManager extends DbAccessor{
 			throw new InvalidIntegerArgumentException("\$userId2 have to be non zero integer.");
 		}
 				
-		$this->query->startTransaction(true);
+		$this->query->startTransaction();
 		
 		$newUUID = $this->getMaxUUID() + 1;
 		

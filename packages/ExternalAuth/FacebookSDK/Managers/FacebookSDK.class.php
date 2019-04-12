@@ -35,8 +35,8 @@ class FacebookSDK extends DbAccessor implements ExternalAuth
 	 * Constructor for FacebookAuth class,
 	 * @param Config $config
 	 */
-	public function __construct(Config $config, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct(Config $config, $instanceName = null){
+		parent::__construct($instanceName);
 		$this->config = $config;
 		
 		$this->fbSDK = new Facebook\Facebook([

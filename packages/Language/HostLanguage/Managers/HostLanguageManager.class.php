@@ -9,9 +9,9 @@ class HostLanguageManager extends LanguageManager {
 
 	const TBL_HOST_LANGUAGE = "host_language";
 
-	public function __construct(Host $host, $dbInstanceKey = null){
+	public function __construct(Host $host, $instanceName = null){
 		$this->host = $host;
-		parent::__construct(null, $dbInstanceKey);
+		parent::__construct(null, $instanceName);
 		$this->hostLangs = static::getHostLanguages($this->host);
 		$this->setCurrentHostLangId();
 	}

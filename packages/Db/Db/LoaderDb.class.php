@@ -13,7 +13,7 @@ class LoaderDb extends Loader{
 	protected function loadQuery(){
 		Tbl::restoreCachedData();
 		
-		MySqlDbManager::init($this->config->AuxConfig->hosts);
+		MySqlDbManager::init($this->config->AuxConfig->instances);
 		
 		$this->register(MySqlDbManager::getQueryObject());
 	}

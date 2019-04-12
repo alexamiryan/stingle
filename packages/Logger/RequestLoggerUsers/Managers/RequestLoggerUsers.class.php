@@ -1,8 +1,8 @@
 <?php
 class RequestLoggerUsers extends DBLogger {
 
-	public static function logRequest($dbInstanceKey = null){
-		$sql = MySqlDbManager::getQueryObject($dbInstanceKey);
+	public static function logRequest($instanceName = null){
+		$sql = MySqlDbManager::getQueryObject($instanceName);
 		
 		$userId = "NULL";
 		$userObjectSerialized = "''";

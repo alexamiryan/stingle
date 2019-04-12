@@ -18,8 +18,8 @@ class UserProfile extends ProfileDeprecated{
 	 *
 	 * @param integer $user_id
 	 */
-	public function __construct($userId = 0, $cacheMinutes = 0, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct($userId = 0, $cacheMinutes = 0, $instanceName = null){
+		parent::__construct($instanceName);
 		
 		if(!is_numeric($userId)){
 			throw new InvalidArgumentException("Received invalid user_id");

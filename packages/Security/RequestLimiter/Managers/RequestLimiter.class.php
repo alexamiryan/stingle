@@ -7,8 +7,8 @@ class RequestLimiter extends DbAccessor {
 	
 	private $config;
 	
-	public function __construct(Config $config, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct(Config $config, $instanceName = null){
+		parent::__construct($instanceName);
 		
 		$this->config = $config;
 	}
@@ -50,8 +50,6 @@ class RequestLimiter extends DbAccessor {
 	 * Should be called by cron job every minute.
 	 */
 	public function parseLogForFloodingIps(){
-		$tablesToLock = array(Tbl::get('TBL_SECURITY_REQUESTS_LOG'),Tbl::get('TBL_SECURITY_FLOODER_IPS'));
-		
 		$this->query->startTransaction();
 		
 		$qb = new QueryBuilder();

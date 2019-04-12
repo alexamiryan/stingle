@@ -29,10 +29,10 @@ class UserManager extends DbAccessor{
 	 * Contructor
 	 * 
 	 * @param Config $config
-	 * @param integer $dbInstanceKey
+	 * @param integer $instanceName
 	 */
-	public function __construct(Config $config, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct(Config $config, $instanceName = null){
+		parent::__construct($instanceName);
 		
 		$this->config = $config;
 	}

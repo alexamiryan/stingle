@@ -31,8 +31,8 @@ class MessageManagement extends DbAccessor
 	 * @package PHP Web Messaging System Managment Class
 	 * @version 1.2
 	 */
-	public function __construct($dbInstanceKey = null) {
-		parent::__construct($dbInstanceKey);
+	public function __construct($instanceName = null) {
+		parent::__construct($instanceName);
 	}
 
 	/**

@@ -20,8 +20,8 @@ class UserPhotoManager extends DbAccessor
 	
 	private $config;
 	
-	public function __construct($config, $dbInstanceKey = null){
-		parent::__construct($dbInstanceKey);
+	public function __construct($config, $instanceName = null){
+		parent::__construct($instanceName);
 		$this->config = $config;
 	}
 	
@@ -64,6 +64,8 @@ class UserPhotoManager extends DbAccessor
 			throw new InvalidArgumentException("photo fileName is have to been non empty string!");
 		}
 		
+		$this->query->lockEndpoint();
+		
 		$qb = new QueryBuilder();
 		$qb->insert(Tbl::get('TBL_USERS_PHOTOS'))
 			->values(array(	"user_id" => $photo->userId, 
@@ -83,7 +85,11 @@ class UserPhotoManager extends DbAccessor
 			$this->correctDefaultPhoto($photo->userId);
 		}
 		
-		return $photoId;
+		$newPhotoObj = $this->getPhoto($photoId);
+		
+		$this->query->unlockEndpoint();
+		
+		return $newPhotoObj;
 		
 	}
 	

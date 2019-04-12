@@ -7,8 +7,8 @@ class IpFilter extends DbAccessor {
 	
 	private $remoteIp = null;
 
-	public function __construct ($dbInstanceKey = null) {
-		parent::__construct($dbInstanceKey); 
+	public function __construct ($instanceName = null) {
+		parent::__construct($instanceName); 
 		
 		$this->remoteIp = $_SERVER["REMOTE_ADDR"];
 		if(empty($this->remoteIp) and !Cgi::getMode()){

@@ -265,7 +265,7 @@ class MySqlQuery extends Model {
 	}
 
 	/**
-	 * Fetch one fileld from row
+	 * Fetch one field from row
 	 *
 	 * @param string $fieldName
 	 * @param int $isNumeric (false - $field_identifier is name of the field, true - $field_identifier is number of the field)

@@ -247,6 +247,7 @@ class UserPhotoManager extends DbAccessor
 	}
 	
 	public function approvePhoto(UserPhoto $photo){
+		$this->query->lockEndpoint();
 		if(empty($photo->id)){
 			throw new InvalidArgumentException("UserPhoto object has no id!");
 		}
@@ -265,9 +266,11 @@ class UserPhotoManager extends DbAccessor
 		
 		$this->correctDefaultPhoto($photo->userId);
 		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_PHOTO_TAG . $photo->id);
+		$this->query->unlockEndpoint();
 	}
 	
 	public function declinePhoto(UserPhoto $photo){
+		$this->query->lockEndpoint();
 		if(empty($photo->id)){
 			throw new InvalidArgumentException("UserPhoto object has no id!");
 		}
@@ -285,6 +288,7 @@ class UserPhotoManager extends DbAccessor
 		$this->correctDefaultPhoto($photo->userId);
 		
 		Reg::get('memcache')->invalidateCacheByTag(self::MEMCACHE_PHOTO_TAG . $photo->id);
+		$this->query->unlockEndpoint();
 	}
 	
 	public function getPhotos(UserPhotosFilter $filter, MysqlPager $pager = null, $cacheMinutes = null, $reduced = true){

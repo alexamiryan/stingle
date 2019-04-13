@@ -137,6 +137,8 @@ class UserManager extends DbAccessor{
 			throw new InvalidArgumentException("\$userId have to be non zero integer");
 		}
 		
+		$this->query->lockEndpoint();
+		
 		$qb = new QueryBuilder();
 		$qb->select(new Field('*'))
 			->from(Tbl::get('TBL_USERS'))
@@ -145,7 +147,9 @@ class UserManager extends DbAccessor{
 		$this->query->exec($qb->getSQL(), $cacheMinutes, $cacheTag);
 		
 		if($this->query->countRecords() == 1){
-			return $this->getUserObjectFromData($this->query->fetchRecord(), $initObjects, $cacheMinutes, $cacheTag);
+			$user = $this->getUserObjectFromData($this->query->fetchRecord(), $initObjects, $cacheMinutes, $cacheTag);
+			$this->query->unlockEndpoint();
+			return $user;
 		}
 		
 		throw new UserNotFoundException("There is no such user or user is not unique.");

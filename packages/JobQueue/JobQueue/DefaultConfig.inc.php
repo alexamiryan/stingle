@@ -2,7 +2,7 @@
 
 $defaultConfig = [
 	'AuxConfig' => [
-		'maximumExecutionTime' => 60*30, // In seconds
+		'maximumExecutionTime' => 60, // In seconds
 		'intervalBetweenRuns' => 1, // In seconds
 	],
 	'Objects' => [

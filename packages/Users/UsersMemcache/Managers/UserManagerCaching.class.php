@@ -13,7 +13,8 @@ class UserManagerCaching extends UserManager{
 		$objectCacheMinutes = ConfigManager::getConfig("Users", "UsersMemcache")->AuxConfig->objectCacheMinutes;
 		if($enabledStatus and $enabledUsersCachingStatus and $objectCacheMinutes !== MemcacheWrapper::MEMCACHE_OFF){
 			$key =  self::USER_TAG . $userId;
-			$cache = Reg::get('memcache')->getObject($key);
+			$name = 'i' . $initObjects;
+			$cache = Reg::get('memcache')->getObject($key, $name);
 			
 			if($cache !== false and !empty($cache) and is_a($cache, "User") and isset($cache->id) and !empty($cache->id)){
 				return $cache;
@@ -21,7 +22,7 @@ class UserManagerCaching extends UserManager{
 			
 			$user = parent::getUserById($userId, self::INIT_ALL, $cacheMinutes, $cacheTag);
 			
-			Reg::get('memcache')->setObject($key, '', $user, $objectCacheMinutes);
+			Reg::get('memcache')->setObject($key, $name, $user, $objectCacheMinutes);
 			
 			return $user;
 		}

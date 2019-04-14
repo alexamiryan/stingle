@@ -6,5 +6,6 @@ class DependencyMail extends Dependency
 		$this->addPlugin("Security", "OneTimeCodes");
 		$this->addPlugin("Output", "Smarty");
 		$this->addPlugin("Crypto", "Crypto");
+		$this->addPlugin("JobQueue", "JobQueue");
 	}
 }

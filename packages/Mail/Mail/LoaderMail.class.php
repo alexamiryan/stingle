@@ -6,6 +6,7 @@ class LoaderMail extends Loader{
 		stingleInclude ('Managers/MailSender.class.php');
 		stingleInclude ('Interfaces/MailTransportInterface.php');
 		stingleInclude ('Objects/Mail.class.php');
+		stingleInclude ('Objects/MailJobQueueChunk.class.php');
 	}
 	
 	protected function loadMail(){
@@ -15,4 +16,5 @@ class LoaderMail extends Loader{
 	public function hookEmailBounce($args){
 		Reg::get('mail')->handleBounce($args['email'], $args['bounceType'], $args['mailId']);
 	}
+	
 }

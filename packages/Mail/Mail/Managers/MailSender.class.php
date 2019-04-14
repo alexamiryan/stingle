@@ -105,6 +105,15 @@ class MailSender extends Model {
 			return false;
 		}
 	}
+	
+	public function sendAsync(Mail $mail, $transportConfigName = null) {
+		$params = [
+			'mail' => $mail,
+			'transportConfigName' => $transportConfigName
+		];
+		Reg::get('jobQueue')->addJob(MailJobQueueChunk::$name, $params);
+		return true;
+	}
 
 	public function initMail(User $to, $typeId = null, $mailAltConfigName = null, $checkValidity = true) {
 		$toHost = null;

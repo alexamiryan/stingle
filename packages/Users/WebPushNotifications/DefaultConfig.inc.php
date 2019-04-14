@@ -5,5 +5,7 @@ $defaultConfig = array(
 		'publicKey' => "",
 		'privateKey' => ""
 	),
-	'Objects' => array('WebPushNotificationsManager' => 'pushNotif')
+	'Objects' => array(
+		'WebPushNotificationsManager' => 'pushNotif'
+	)
 );

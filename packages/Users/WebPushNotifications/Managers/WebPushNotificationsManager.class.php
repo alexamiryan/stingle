@@ -93,6 +93,18 @@ class WebPushNotificationsManager extends DbAccessor{
 		return $results;
 	}
 	
+	public function sendNotificationToUserAsync($userId, $title, $body, $url, $icon, $tag = ""){
+		$params = [
+			'userId' => $userId,
+			'title' => $title,
+			'body' => $body,
+			'url' => $url,
+			'icon' => $icon,
+			'tag' => $tag
+		];
+		Reg::get('jobQueue')->addJob(WebPushJobQueueChunk::$name, $params);
+	}
+	
 	public function addOrUpdateSubscription($userId, $endpoint, $p256dh, $auth){
 		if(empty($userId) or empty($endpoint) or empty($p256dh) or empty($auth)){
 			throw new InvalidArgumentException("Invalid arguments");

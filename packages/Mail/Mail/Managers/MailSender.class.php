@@ -118,30 +118,22 @@ class MailSender extends Model {
 	public function initMail(User $to, $typeId = null, $mailAltConfigName = null, $checkValidity = true) {
 		$toHost = null;
 		$toLang = null;
-		if (isset($to->props->host) && !empty($to->props->host)) {
-			$toHost = $to->props->host;
+		try {
+			$toHost = new Host($to->props->hostId);
 		}
-		else {
-			try {
-				$toHost = new Host($to->props->hostId);
-			}
-			catch (InvalidArgumentException $e) {
-				$toHost = new Host();
-			}
+		catch (InvalidArgumentException $e) {
+			$toHost = new Host();
 		}
-		if (isset($to->props->language) && !empty($to->props->language)) {
-			$toLang = $to->props->language;
+		
+		try {
+			$toLang = new Language($to->props->langId);
 		}
-		else {
-			try {
-				$toLang = new Language($to->props->langId);
-			}
-			catch (RuntimeException $e) {
-				$toLang = new Language();
-			}
+		catch (RuntimeException $e) {
+			$toLang = new Language();
 		}
+		
 		$this->checkHostLangPair($toHost, $toLang);
-
+		
 		$mailParams = null;
 		if (!empty($mailAltConfigName)) {
 			$mailParams = $this->config->mailParams->$mailAltConfigName;

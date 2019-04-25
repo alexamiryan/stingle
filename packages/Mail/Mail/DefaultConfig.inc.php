@@ -9,6 +9,7 @@ $defaultConfig = array(
 				'replyToMail' => '',
 				'replyToName' => '',
 				'returnPath' => null,
+				'unsubscribeEmail' => null,
 				'transport' => 'PHPMailTransport',
 				'transportConfigName' => null
 			)

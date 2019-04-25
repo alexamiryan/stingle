@@ -63,7 +63,10 @@ class MailSender extends Model {
 		if (!empty($mail->user)) {
 			$unsubscribeArr = array();
 			
-			if(!empty($mail->returnPath)){
+			if(!empty($mail->unsubscribeEmail)){
+				array_push($unsubscribeArr, '<mailto:' . $mail->unsubscribeEmail . '>');
+			}
+			elseif(!empty($mail->returnPath)){
 				array_push($unsubscribeArr, '<mailto:' . $mail->returnPath . '>');
 			}
 			
@@ -141,14 +144,21 @@ class MailSender extends Model {
 		else {
 			$mailParams = $this->config->mailParams->{$this->config->defaultMailConfig};
 		}
-
+		
 		try {
 			$mail = new Mail();
 			$mail->returnPath = $mailParams->returnPath;
 			$mail->from = $mailParams->fromMail;
 			$mail->fromName = (isset($mailParams->fromName)) ? $mailParams->fromName : '';
-			$mail->addReplyTo($mailParams->replyToMail, $mailParams->replyToName, $checkValidity);
-			$mail->returnPath = $mailParams->returnPath;
+			if(isset($mailParams->replyToMail) && !empty($mailParams->replyToMail)){
+				$mail->addReplyTo($mailParams->replyToMail, $mailParams->replyToName, $checkValidity);
+			}
+			if(isset($mailParams->returnPath) && !empty($mailParams->returnPath)){
+				$mail->returnPath = $mailParams->returnPath;
+			}
+			if(isset($mailParams->unsubscribeEmail) && !empty($mailParams->unsubscribeEmail)){
+				$mail->unsubscribeEmail = $mailParams->unsubscribeEmail;
+			}
 			$mail->addTo($to->email, $to->login, $checkValidity);
 			$mail->host = $toHost;
 			$mail->language = $toLang;
@@ -180,8 +190,15 @@ class MailSender extends Model {
 			$mail->returnPath = $mailParams->returnPath;
 			$mail->from = $mailParams->fromMail;
 			$mail->fromName = (isset($mailParams->fromName)) ? $mailParams->fromName : '';
-			$mail->addReplyTo($mailParams->replyToMail, $mailParams->replyToName, $checkValidity);
-			$mail->returnPath = $mailParams->returnPath;
+			if(isset($mailParams->replyToMail) && !empty($mailParams->replyToMail)){
+				$mail->addReplyTo($mailParams->replyToMail, $mailParams->replyToName, $checkValidity);
+			}
+			if(isset($mailParams->returnPath) && !empty($mailParams->returnPath)){
+				$mail->returnPath = $mailParams->returnPath;
+			}
+			if(isset($mailParams->unsubscribeEmail) && !empty($mailParams->unsubscribeEmail)){
+				$mail->unsubscribeEmail = $mailParams->unsubscribeEmail;
+			}
 			$mail->emailId = generateRandomString(self::EMAIL_ID_LENGTH, array(RANDOM_STRING_LOWERCASE, RANDOM_STRING_DIGITS));
 			$mail->transport = (!empty($mailParams->transport) ? $mailParams->transport : null);
 			$mail->transportConfigName = (!empty($mailParams->transportConfigName) ? $mailParams->transportConfigName : null);

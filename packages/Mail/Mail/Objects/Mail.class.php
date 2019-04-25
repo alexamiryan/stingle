@@ -160,6 +160,13 @@ class Mail {
 	public $transportConfigName = null;
 	
 	/**
+	 * Email address that will appear in List-unsubscribe header
+	 * 
+	 * @var type string
+	 */
+	public $unsubscribeEmail = null;
+	
+	/**
 	 * Add To address and optional name of to address
 	 * @param String $address
 	 * @param String $name

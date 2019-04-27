@@ -26,11 +26,9 @@ class ConversationManager extends DbAccessor{
 	}
 	
 	public function sendMessage($senderId, $receiverId, $message){
-		$isNewConvOpened = false;
+		$this->query->lockEndpoint();
 		if(!$this->isConversationExists($senderId, $receiverId)){
-			$this->query->lockEndpoint();
 			$this->openConversation($senderId, $receiverId);
-			$isNewConvOpened = true;
 		}
 		
 		$filter = new ConversationFilter();
@@ -44,15 +42,16 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		$result = $this->addMessageToConversation($uuid, $senderId, $message);
-		if($isNewConvOpened){
-			$this->query->unlockEndpoint();
-		}
+		$messageId = $this->addMessageToConversation($uuid, $senderId, $message);
 		
-		return $result;
+		$returnArr = ['msg' => $this->getConversationMessageById($messageId), 'conv' => $this->getConversationByUUID($uuid, $senderId)];
+		$this->query->unlockEndpoint();
+		
+		return $returnArr;
 	}
 	
 	public function sendMessageByUUID($uuid, $senderId, $message){
+		$this->query->lockEndpoint();
 		$filter = new ConversationFilter();
 		$filter->setUUID($uuid);
 		
@@ -65,7 +64,11 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		return $this->addMessageToConversation($uuid, $senderId, $message);
+		$messageId = $this->addMessageToConversation($uuid, $senderId, $message);
+		$returnArr = ['msg' => $this->getConversationMessageById($messageId), 'conv' => $this->getConversationByUUID($uuid, $senderId)];
+		$this->query->unlockEndpoint();
+		
+		return $returnArr;
 	}
 	
 	public function sendSystemMessage($uuid, $message){
@@ -271,6 +274,13 @@ class ConversationManager extends DbAccessor{
 		return $conversations[0];
 	}
 	
+	public function getConversationByUUID($uuid, $userId, $reduced = false){
+		$filter = new ConversationFilter();
+		$filter->setUUID($uuid);
+		$filter->setUserId($userId);
+		return $this->getConversation($filter, $reduced);
+	}
+	
 	public function getConversationsCount(ConversationFilter $filter){
 		$filter->setSelectCount();
 		
@@ -313,6 +323,12 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotUniqueException("There is no conversation message or it is not unique.");
 		}
 		return $messages[0];
+	}
+	
+	public function getConversationMessageById($messageId, $reduced = false){
+		$filter = new ConversationMessagesFilter();
+		$filter->setId($messageId);
+		return $this->getConversationMessage($filter, $reduced);
 	}
 	
 	public function getConversationMessagesCount(ConversationMessagesFilter $filter){

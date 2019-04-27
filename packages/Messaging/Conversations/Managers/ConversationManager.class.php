@@ -139,6 +139,12 @@ class ConversationManager extends DbAccessor{
 		return $messages[0];
 	}
 	
+	public function getConversationMessageById($messageId, $userId = null, $initObjects = self::INIT_AL){
+		$filter = new ConversationMessagesFilter($userId);
+		$filter->setId($messageId);
+		return $this->getConversationMessage($filter, $userId, $initObjects);
+	}
+	
 	public function getConversationMessagesCount(ConversationMessagesFilter $filter){
 		$filter->setSelectCount();
 	
@@ -197,11 +203,14 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		$result = $this->addMessageToConversation($uuid, $senderId, $message);
+		$messageId = $this->addMessageToConversation($uuid, $senderId, $message);
+		
+		$newMessage = $this->getConversationMessageById($messageId, $senderId);
+		$conversation = $this->getConversationByUUID($uuid, $senderId);
 		
 		$this->query->unlockEndpoint();
 		
-		return $result;
+		return [ 'msg' => $newMessage, 'conv' => $conversation ];
 	}
 	
 	public function sendMessageByUUID($uuid, $senderId, $message){
@@ -215,11 +224,14 @@ class ConversationManager extends DbAccessor{
 			throw new ConversationNotOwnException("Conversation does not belong to user");
 		}
 		
-		$result = $this->addMessageToConversation($uuid, $senderId, $message);
+		$messageId = $this->addMessageToConversation($uuid, $senderId, $message);
+		
+		$newMessage = $this->getConversationMessageById($messageId, $senderId);
+		$conversation = $this->getConversationByUUID($uuid, $senderId);
 		
 		$this->query->unlockEndpoint();
 		
-		return $result;
+		return [ 'msg' => $newMessage, 'conv' => $conversation ];
 	}
 	
 	public function findExistingConversationUUIDs($participants = array()){

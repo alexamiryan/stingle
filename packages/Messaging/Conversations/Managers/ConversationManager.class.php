@@ -139,7 +139,7 @@ class ConversationManager extends DbAccessor{
 		return $messages[0];
 	}
 	
-	public function getConversationMessageById($messageId, $userId = null, $initObjects = self::INIT_AL){
+	public function getConversationMessageById($messageId, $userId = null, $initObjects = self::INIT_ALL){
 		$filter = new ConversationMessagesFilter($userId);
 		$filter->setId($messageId);
 		return $this->getConversationMessage($filter, $userId, $initObjects);
@@ -225,7 +225,6 @@ class ConversationManager extends DbAccessor{
 		}
 		
 		$messageId = $this->addMessageToConversation($uuid, $senderId, $message);
-		
 		$newMessage = $this->getConversationMessageById($messageId, $senderId);
 		$conversation = $this->getConversationByUUID($uuid, $senderId);
 		

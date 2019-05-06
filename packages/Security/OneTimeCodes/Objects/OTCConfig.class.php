@@ -24,15 +24,6 @@ class OTCConfig extends Config {
 	public $usageLimit = null; 
 	
 	/**
-	 * Is code cleanable by garbage cleaner.
-	 * Default is no, it means it will be cleaned upon 
-	 * expiring clean up time
-	 * 
-	 * @var boolean
-	 */
-	public $notCleanable = false;
-
-	/**
 	 * Time in seconds starting from now of code validity.
 	 * Default is unlimited
 	 * @var integer|null

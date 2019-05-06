@@ -423,7 +423,7 @@ class ImageManager {
 		return $resultingConfig;
 	}
 
-	protected static function tryToMkdir($path, $mode) {
+	public static function tryToMkdir($path, $mode = 0777) {
 		if (!mkdir($path, $mode, true)) {
 			throw new RuntimeException("There is no such folder {$path} and unable to create it!");
 		}

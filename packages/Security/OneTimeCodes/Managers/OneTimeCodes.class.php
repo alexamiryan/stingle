@@ -188,8 +188,7 @@ class OneTimeCodes extends DbAccessor {
 		$orX->add($andX2);
 
 		$qb->delete(Tbl::get('TBL_ONE_TIME_CODES'))->where($orX);
-		echo $qb->getSQL();
-		exit;
+		
 		$this->query->exec($qb->getSQL());
 
 		return $this->query->affected();

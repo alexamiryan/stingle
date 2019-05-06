@@ -107,6 +107,10 @@ class ConversationAttachmentManager extends DbAccessor {
 			$systemFilename = ImageManager::upload($file, self::CONV_IMAGE_TYPE_NAME);
 		}
 		else {
+			if(!file_exists($this->config->uploadDir)){
+				ImageManager::tryToMkdir($this->config->uploadDir);
+			}
+			
 			$systemFilename = self::findNewFileName($this->config->uploadDir);
 			$config = [
 				'uploadDir' => $this->config->uploadDir,

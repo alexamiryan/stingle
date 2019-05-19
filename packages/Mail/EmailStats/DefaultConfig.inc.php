@@ -1,14 +1,17 @@
 <?php
+
 $defaultConfig = array(
-	'AuxConfig'=>array(
+	'AuxConfig' => array(
 		'clickUrl' => 'mail/click/',
-		'shortenLinks' => false
+		'shortenLinks' => false,
+		'doNotSendEmailForSoftBouncedInLastXDays' => 30
 	),
-    'Objects' => array(
+	'Objects' => array(
 		'EmailStats' => 'emailStats'
-    ),
+	),
 	'Hooks' => array(
-			'BeforeEmailSend' => 'AddEmailStat',
-			'EmailBounce' => 'RecordBounce',
+		'BeforeEmailSend' => 'AddEmailStat',
+		'EmailBounce' => 'RecordBounce',
+		'IsMailSendAllowed' => 'IsMailSendAllowed'
 	)
 );

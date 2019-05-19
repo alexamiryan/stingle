@@ -274,13 +274,23 @@ class MailSender extends Model {
 		if ($mail->typeId === null or $mail->user === null) {
 			return true;
 		}
+		
 		if($mail->user->enabled == UserManager::STATE_ENABLED_DISABLED){
 			return false;
 		}
-		if($this->isUserAllowedToReceiveMail($mail)){
-			return true;
+		
+		$hookArgs = ['email' => $mail->user->email, 'isAllowed' => true];
+		HookManager::callHook('IsMailSendAllowed', $hookArgs);
+
+		if(!$hookArgs['isAllowed']){
+			return false;
 		}
-		return false;
+		
+		if(!$this->isUserAllowedToReceiveMail($mail)){
+			return false;
+		}
+		
+		return true;
 	}
 	
 	protected function isUserAllowedToReceiveMail(Mail $mail){

@@ -169,8 +169,18 @@ class EmailStatsFilter extends MergeableFilter{
 		return $this;
 	}
 	
-	public function setIsBounced($isBounced){
-		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_bounced', $this->primaryTableAlias), $isBounced));
+	public function setIsBouncedSoft(){
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_bounced_soft', $this->primaryTableAlias), 1));
+		return $this;
+	}
+	
+	public function setIsBouncedHard(){
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_bounced_hard', $this->primaryTableAlias), 1));
+		return $this;
+	}
+	
+	public function setIsBouncedBlocked(){
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_bounced_block', $this->primaryTableAlias), 1));
 		return $this;
 	}
 	
@@ -205,12 +215,18 @@ class EmailStatsFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setLastXDays($days){
+		// BETWEEN NOW() - INTERVAL 30 DAY AND NOW()
+		$this->qb->andWhere($this->qb->expr()->between(new Field("date_bounced", $this->primaryTableAlias), $this->qb->expr()->diff(new Func('NOW'), new Literal('INTERVAL '.$days.' DAY')), new Func('NOW')));
+		return $this;
+	}
+	
 	public function setYearMonth($year, $month){
 		$monthFirstDay = new DateTime("$year-$month-01");
 		$nextMonthFirstDay = clone($monthFirstDay);
 		$nextMonthFirstDay->add(new DateInterval('P1M'));
 		
-		return $this->setPaymentsDateRange($monthFirstDay->format('Y-m-d'), $nextMonthFirstDay->format('Y-m-d'));
+		return $this->setDateRange($monthFirstDay->format('Y-m-d'), $nextMonthFirstDay->format('Y-m-d'));
 	}
 	
 	public function setCurrentMonth(){

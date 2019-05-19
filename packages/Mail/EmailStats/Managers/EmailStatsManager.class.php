@@ -111,6 +111,27 @@ class EmailStatsManager extends DbAccessor {
 		return false;
 	}
 	
+	public function isEmailSoftBounced($email, $inLastXDays = 30, $cacheMinutes = 0){
+		if(empty($inLastXDays)){
+			return false;
+		}
+		
+		$filter = new EmailStatsFilter();
+		$filter->setEmail($email);
+		$filter->setIsBouncedSoft();
+		$filter->setLastXDays($inLastXDays);
+		$filter->setSelectCount();
+		
+		$this->query->exec($filter->getSQL(), $cacheMinutes);
+		
+		$bouncedCount = $this->query->fetchField('cnt');
+		
+		if($bouncedCount > 0){
+			return true;
+		}
+		return false;
+	}
+	
 	public function setEmailAsRead($emailId){
 		$filter = new EmailStatsFilter();
 		$filter->setEmailId($emailId);

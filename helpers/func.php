@@ -85,7 +85,7 @@ function redirect($url){
 }
 
 /**
- * Checks validity of given email addess
+ * Checks validity of given email address
  * Also checks domain name for validity via DNS
  *
  * @param string $address

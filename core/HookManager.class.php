@@ -50,11 +50,48 @@ class HookManager{
 	 * @param array $arguments
 	 */
 	public static function callHook($hookName, &$arguments = null){
+		$returnArr = array();
 		if(static::isAnyHooksRegistered($hookName)){
 			foreach (static::$hooks[$hookName] as $hook){
-				static::executeHook($hook, $arguments);
+				$returnArr[$hookName] = static::executeHook($hook, $arguments);
 			}
 		}
+		
+		return $returnArr;
+	}
+	
+	/**
+	 * Call registered hook. More than one hook could be registered on one hook name. 
+	 * All return values have to be boolean true to return true, otherwise it will return false
+	 * 
+	 * @param string $hookName
+	 * @param array $arguments
+	 */
+	public static function callBooleanAndHook($hookName, &$arguments = null){
+		$returnArr = static::callHook($hookName, $arguments);
+		foreach($returnArr as $returnItem){
+			if($returnItem !== true){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Call registered hook. More than one hook could be registered on one hook name. 
+	 * One of return values have to be boolean true to return true, otherwise it will return false
+	 * 
+	 * @param string $hookName
+	 * @param array $arguments
+	 */
+	public static function callBooleanOrHook($hookName, &$arguments = null){
+		$returnArr = static::callHook($hookName, $arguments);
+		foreach($returnArr as $returnItem){
+			if($returnItem === true){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**

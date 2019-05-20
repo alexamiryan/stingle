@@ -44,8 +44,7 @@ class LoaderEmailStats extends Loader{
 	}
 	
 	public function hookIsMailSendAllowed(&$args){
-		if($args['isAllowed']){
-			$args['isAllowed'] = !Reg::get('emailStats')->isEmailSoftBounced($args['email'], $this->config->AuxConfig->doNotSendEmailForSoftBouncedInLastXDays);
-		}
+		$isSofBounced = Reg::get('emailStats')->isEmailSoftBounced($args['email'], $this->config->AuxConfig->doNotSendEmailForSoftBouncedInLastXDays);
+		return !$isSofBounced;
 	}
 }

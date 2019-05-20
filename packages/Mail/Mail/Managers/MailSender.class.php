@@ -283,10 +283,8 @@ class MailSender extends Model {
 			return false;
 		}
 		
-		$hookArgs = ['email' => $mail->user->email, 'mail' => $mail, 'isAllowed' => true];
-		HookManager::callHook('IsMailSendAllowed', $hookArgs);
-
-		if(!$hookArgs['isAllowed']){
+		$hookArgs = ['email' => $mail->user->email, 'mail' => $mail];
+		if(!HookManager::callBooleanAndHook('IsMailSendAllowed', $hookArgs)){
 			return false;
 		}
 		

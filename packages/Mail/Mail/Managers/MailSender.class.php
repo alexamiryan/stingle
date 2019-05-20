@@ -279,27 +279,20 @@ class MailSender extends Model {
 			return false;
 		}
 		
-		$hookArgs = ['email' => $mail->user->email, 'isAllowed' => true];
+		if ($mail->user->emailConfirmed != UserManager::STATE_EMAIL_CONFIRMED) {
+			return false;
+		}
+		
+		$hookArgs = ['email' => $mail->user->email, 'mail' => $mail, 'isAllowed' => true];
 		HookManager::callHook('IsMailSendAllowed', $hookArgs);
 
 		if(!$hookArgs['isAllowed']){
 			return false;
 		}
 		
-		if(!$this->isUserAllowedToReceiveMail($mail)){
-			return false;
-		}
-		
 		return true;
 	}
 	
-	protected function isUserAllowedToReceiveMail(Mail $mail){
-		if (!empty($mail->user) and $mail->user->emailConfirmed == UserManager::STATE_EMAIL_CONFIRMED) {
-			return true;
-		}
-		return false;
-	}
-
 	public function convertArrayToMailFlags($flags) {
 
 		$receiveMailFlags = array_fill(0, $this->receiveMailFlagsLength, '0');
@@ -359,8 +352,10 @@ class MailSender extends Model {
 	
 	public function disableEmailReceive(User $user, $isBounced = true){
 		$user->emailConfirmed = 0;
-		$this->additionalEmailDisableActions($user, $isBounced);
-		return Reg::get('userMgr')->updateUser($user);
+		Reg::get('userMgr')->updateUser($user);
+		
+		$hookArgs = ['user' => $user, 'isBounced' => $isBounced];
+		HookManager::callHook('DisableEmailReceive', $hookArgs);
 	}
 	
 	public function handleBounce($email, $bounceType, $mailId = null){
@@ -387,9 +382,6 @@ class MailSender extends Model {
 		}
 	}
 	
-	protected function additionalEmailDisableActions(User $user, $isBounced = true){ }
-	
-
 	protected function checkSenderReceiverObjects(User $to, User $from = null) {
 		if (empty($to->email)) {
 			throw new InvalidArgumentException("User mail have to be non empty string!");

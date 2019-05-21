@@ -196,7 +196,7 @@ class EmailStatsManager extends DbAccessor {
 		}
 	}
 	
-	public function setEmailAsBouncedSoft($emailId, $msgHeaders, $msgBody){
+	public function setEmailAsBouncedSoft($emailId, $msgHeaders = null, $msgBody = null){
 		$filter = new EmailStatsFilter();
 		$filter->setEmailId($emailId);
 		
@@ -204,7 +204,9 @@ class EmailStatsManager extends DbAccessor {
 			$emailStat = $this->getEmailStat($filter);
 			$emailStat->isBouncedSoft = self::STATUS_BOUNCED_YES;
 			$emailStat->dateBounced = date(DEFAULT_DATETIME_FORMAT);
-			$emailStat->bounceMessage = $msgHeaders . "\n\n" . $msgBody;
+			if($msgHeaders !== null || $msgBody !== null){
+				$emailStat->bounceMessage = $msgHeaders . "\n\n" . $msgBody;
+			}
 
 			return $this->updateEmailStat($emailStat);
 		}
@@ -213,7 +215,7 @@ class EmailStatsManager extends DbAccessor {
 		}
 	}
 	
-	public function setEmailAsBouncedHard($emailId, $msgHeaders, $msgBody){
+	public function setEmailAsBouncedHard($emailId, $msgHeaders = null, $msgBody = null){
 		$filter = new EmailStatsFilter();
 		$filter->setEmailId($emailId);
 		
@@ -221,7 +223,9 @@ class EmailStatsManager extends DbAccessor {
 			$emailStat = $this->getEmailStat($filter);
 			$emailStat->isBouncedHard = self::STATUS_BOUNCED_YES;
 			$emailStat->dateBounced = date(DEFAULT_DATETIME_FORMAT);
-			$emailStat->bounceMessage = $msgHeaders . "\n\n" . $msgBody;
+			if($msgHeaders !== null || $msgBody !== null){
+				$emailStat->bounceMessage = $msgHeaders . "\n\n" . $msgBody;
+			}
 
 			return $this->updateEmailStat($emailStat);
 		}
@@ -230,7 +234,7 @@ class EmailStatsManager extends DbAccessor {
 		}
 	}
 	
-	public function setEmailAsBouncedBlock($emailId, $msgHeaders, $msgBody){
+	public function setEmailAsBouncedBlock($emailId, $msgHeaders = null, $msgBody = null){
 		$filter = new EmailStatsFilter();
 		$filter->setEmailId($emailId);
 		
@@ -238,7 +242,9 @@ class EmailStatsManager extends DbAccessor {
 			$emailStat = $this->getEmailStat($filter);
 			$emailStat->isBouncedBlock = self::STATUS_BOUNCED_YES;
 			$emailStat->dateBounced = date(DEFAULT_DATETIME_FORMAT);
-			$emailStat->bounceMessage = $msgHeaders . "\n\n" . $msgBody;
+			if($msgHeaders !== null || $msgBody !== null){
+				$emailStat->bounceMessage = $msgHeaders . "\n\n" . $msgBody;
+			}
 
 			return $this->updateEmailStat($emailStat);
 		}

@@ -50,6 +50,10 @@ class SESBounceHandler {
 					'mailId' => $mailId,
 					'bounceType' => self::translateBounceType($bounceType),
 				];
+				if (!empty($notif->mail) && !empty($notif->mail->headers)) {
+					$hookParams['msgHeaders'] = print_r($notif->mail->headers, true);
+				}
+				
 				HookManager::callHook('EmailBounce', $hookParams);
 
 				$failedAddresses[] = $failedAddress;

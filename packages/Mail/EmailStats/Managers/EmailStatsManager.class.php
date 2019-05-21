@@ -59,7 +59,7 @@ class EmailStatsManager extends DbAccessor {
 			'from'              => $stat->from,
 			'user_id'			=> $stat->userId,
 			'type'              => $stat->type,
-			'data'              => $stat->data
+			'bounce_message'    => $stat->bounceMessage
 		);
 		
         $qb->insert(Tbl::get("TBL_EMAIL_STATS"))
@@ -90,7 +90,7 @@ class EmailStatsManager extends DbAccessor {
 			->set(new Field('date_activated'), $stat->dateActivated)
 			->set(new Field('date_unsubscribed'), $stat->dateUnsubscribed)
 			->set(new Field('date_bounced'), $stat->dateBounced)
-			->set(new Field('data'), $stat->data)
+			->set(new Field('bounce_message'), $stat->bounceMessage)
 			->where($qb->expr()->equal(new Field('id'), $stat->id));
 		
 		try{
@@ -196,7 +196,7 @@ class EmailStatsManager extends DbAccessor {
 		}
 	}
 	
-	public function setEmailAsBouncedSoft($emailId){
+	public function setEmailAsBouncedSoft($emailId, $msgHeaders, $msgBody){
 		$filter = new EmailStatsFilter();
 		$filter->setEmailId($emailId);
 		
@@ -204,6 +204,7 @@ class EmailStatsManager extends DbAccessor {
 			$emailStat = $this->getEmailStat($filter);
 			$emailStat->isBouncedSoft = self::STATUS_BOUNCED_YES;
 			$emailStat->dateBounced = date(DEFAULT_DATETIME_FORMAT);
+			$emailStat->bounceMessage = $msgHeaders . "\n\n" . $msgBody;
 
 			return $this->updateEmailStat($emailStat);
 		}
@@ -212,7 +213,7 @@ class EmailStatsManager extends DbAccessor {
 		}
 	}
 	
-	public function setEmailAsBouncedHard($emailId){
+	public function setEmailAsBouncedHard($emailId, $msgHeaders, $msgBody){
 		$filter = new EmailStatsFilter();
 		$filter->setEmailId($emailId);
 		
@@ -220,6 +221,7 @@ class EmailStatsManager extends DbAccessor {
 			$emailStat = $this->getEmailStat($filter);
 			$emailStat->isBouncedHard = self::STATUS_BOUNCED_YES;
 			$emailStat->dateBounced = date(DEFAULT_DATETIME_FORMAT);
+			$emailStat->bounceMessage = $msgHeaders . "\n\n" . $msgBody;
 
 			return $this->updateEmailStat($emailStat);
 		}
@@ -228,7 +230,7 @@ class EmailStatsManager extends DbAccessor {
 		}
 	}
 	
-	public function setEmailAsBouncedBlock($emailId){
+	public function setEmailAsBouncedBlock($emailId, $msgHeaders, $msgBody){
 		$filter = new EmailStatsFilter();
 		$filter->setEmailId($emailId);
 		
@@ -236,6 +238,7 @@ class EmailStatsManager extends DbAccessor {
 			$emailStat = $this->getEmailStat($filter);
 			$emailStat->isBouncedBlock = self::STATUS_BOUNCED_YES;
 			$emailStat->dateBounced = date(DEFAULT_DATETIME_FORMAT);
+			$emailStat->bounceMessage = $msgHeaders . "\n\n" . $msgBody;
 
 			return $this->updateEmailStat($emailStat);
 		}
@@ -244,7 +247,7 @@ class EmailStatsManager extends DbAccessor {
 		}
 	}
 	
-	public function sendEmail($to, $from, $id = null, $type = null, $userId = null, $data = null){
+	public function sendEmail($to, $from, $id = null, $type = null, $userId = null){
 		$stat = new EmailStat();
 		$stat->email = $to;
 		$stat->from = $from;
@@ -259,10 +262,6 @@ class EmailStatsManager extends DbAccessor {
 		
 		if(!empty($userId)){
 			$stat->userId = $userId;
-		}
-		
-		if(!empty($data)){
-			$stat->data = serialize($data);
 		}
 		
 		return $this->addEmailStat($stat);
@@ -289,7 +288,7 @@ class EmailStatsManager extends DbAccessor {
 		$stat->dateActivated	= $data['date_activated'];
 		$stat->dateUnsubscribed	= $data['date_unsubscribed'];
 		$stat->dateBounced		= $data['date_bounced'];
-		$stat->data				= $data['data'];
+		$stat->bounceMessage	= $data['bounce_message'];
 		
 		return $stat;
 	}

@@ -101,7 +101,9 @@ class BounceHandler extends Model {
 			$hookParams = array(
 				'email' => $email,
 				'mailId' => $mailId,
-				'bounceType' => $bounceType
+				'bounceType' => $bounceType,
+				'msgHeaders' => $headerFull,
+				'msgBody' => $bodyFull
 			);
 			HookManager::callHook('EmailBounce', $hookParams);
 		}

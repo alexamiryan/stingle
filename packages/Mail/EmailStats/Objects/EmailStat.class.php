@@ -20,5 +20,5 @@ class EmailStat {
 	public $dateActivated = null;
 	public $dateUnsubscribed = null;
 	public $dateBounced = null;
-	public $data = null;
+	public $bounceMessage = null;
 }

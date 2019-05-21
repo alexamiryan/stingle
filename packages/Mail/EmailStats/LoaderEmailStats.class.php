@@ -32,13 +32,13 @@ class LoaderEmailStats extends Loader{
 		$stat = Reg::get('emailStats')->getEmailStatById($args['mailId']);
 		if($stat){
 			if($args['bounceType'] == MailSender::BOUNCE_TYPE_BLOCKED){
-				Reg::get('emailStats')->setEmailAsBouncedBlock($stat->emailId);
+				Reg::get('emailStats')->setEmailAsBouncedBlock($stat->emailId, $args['msgHeaders'], $args['msgBody']);
 			}
 			elseif($args['bounceType'] == MailSender::BOUNCE_TYPE_HARD){
-				Reg::get('emailStats')->setEmailAsBouncedHard($stat->emailId);
+				Reg::get('emailStats')->setEmailAsBouncedHard($stat->emailId, $args['msgHeaders'], $args['msgBody']);
 			}
 			else{
-				Reg::get('emailStats')->setEmailAsBouncedSoft($stat->emailId);
+				Reg::get('emailStats')->setEmailAsBouncedSoft($stat->emailId, $args['msgHeaders'], $args['msgBody']);
 			}
 		}
 	}

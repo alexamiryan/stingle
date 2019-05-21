@@ -42,7 +42,7 @@ CREATE TABLE `email_stats` (
   `date_activated` datetime DEFAULT NULL,
   `date_unsubscribed` datetime DEFAULT NULL,
   `date_bounced` datetime DEFAULT NULL,
-  `data` text,
+  `bounce_message` text,
   PRIMARY KEY (`id`),
   KEY `email` (`email`(255)),
   KEY `is_read` (`is_read`),

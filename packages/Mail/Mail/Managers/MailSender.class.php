@@ -105,6 +105,7 @@ class MailSender extends Model {
 			return $this->transport->send($mail, $transportConfigName);
 		}
 		catch (Exception $e) {
+			HookManager::callHook('Exception', $e);
 			return false;
 		}
 	}

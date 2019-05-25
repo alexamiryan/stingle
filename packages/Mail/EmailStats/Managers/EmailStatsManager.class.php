@@ -56,7 +56,7 @@ class EmailStatsManager extends DbAccessor {
 		$insertArr = array(
 			'email_id'          => $stat->emailId,
 			'email'             => $stat->email,
-			'domain'            => substr(strrchr($$stat->email, "@"), 1),
+			'domain'            => static::getDomainFromEmail($stat->email),
 			'from'              => $stat->from,
 			'user_id'			=> $stat->userId,
 			'type'              => $stat->type,
@@ -258,7 +258,6 @@ class EmailStatsManager extends DbAccessor {
 	public function sendEmail($to, $from, $id = null, $type = null, $userId = null){
 		$stat = new EmailStat();
 		$stat->email = $to;
-		$stat->domain = substr(strrchr($to, "@"), 1);
 		$stat->from = $from;
 		
 		if(!empty($id)){
@@ -274,6 +273,10 @@ class EmailStatsManager extends DbAccessor {
 		}
 		
 		return $this->addEmailStat($stat);
+	}
+	
+	public static function getDomainFromEmail($email){
+		return substr(strrchr($email, "@"), 1);
 	}
 	
 	protected function getEmailStatsObjectFromData($data, $initUsers = false){

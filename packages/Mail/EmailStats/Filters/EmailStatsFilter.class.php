@@ -134,6 +134,11 @@ class EmailStatsFilter extends MergeableFilter{
 		return $this;
 	}
 	
+	public function setDomain($domain){
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('domain', $this->primaryTableAlias), $domain));
+		return $this;
+	}
+	
 	public function setFrom($from){
 		$this->qb->andWhere($this->qb->expr()->equal(new Field('from', $this->primaryTableAlias), $from));
 		return $this;
@@ -154,18 +159,23 @@ class EmailStatsFilter extends MergeableFilter{
 		return $this;
 	}
 	
-	public function setIsRead($isRead){
-		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_read', $this->primaryTableAlias), $isRead));
+	public function setIsRead(){
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_read', $this->primaryTableAlias), 1));
 		return $this;
 	}
 	
-	public function setIsClicked($isClicked){
-		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_clicked', $this->primaryTableAlias), $isClicked));
+	public function setIsClicked(){
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_clicked', $this->primaryTableAlias), 1));
 		return $this;
 	}
 	
-	public function setIsUnsubscribed($isUnsubscribed){
-		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_unsubscribed', $this->primaryTableAlias), $isUnsubscribed));
+	public function setIsActivated(){
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_activated', $this->primaryTableAlias), 1));
+		return $this;
+	}
+	
+	public function setIsUnsubscribed(){
+		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_unsubscribed', $this->primaryTableAlias), 1));
 		return $this;
 	}
 	
@@ -181,11 +191,6 @@ class EmailStatsFilter extends MergeableFilter{
 	
 	public function setIsBouncedBlocked(){
 		$this->qb->andWhere($this->qb->expr()->equal(new Field('is_bounced_block', $this->primaryTableAlias), 1));
-		return $this;
-	}
-	
-	public function setBounceType($type){
-		$this->qb->andWhere($this->qb->expr()->equal(new Field('bounce_type', $this->primaryTableAlias), $type));
 		return $this;
 	}
 	

@@ -20,7 +20,7 @@ class EmailStatsManager extends DbAccessor {
 	const STATUS_BOUNCED_YES = 1;
 	
 	
-	public function getEmailStats(EmailStatsFilter $filter = null, MysqlPager $pager = null, $cacheMinutes = 0){
+	public function getEmailStats(EmailStatsFilter $filter = null, MysqlPager $pager = null, $initUsers = false, $cacheMinutes = 0){
 		
 		if($filter == null){
 			$filter = new EmailStatsFilter();
@@ -36,14 +36,14 @@ class EmailStatsManager extends DbAccessor {
 		$stats = array();
 		if($this->query->countRecords()){
 			foreach($this->query->fetchRecords() as $row){
-				$stats[] = $this->getEmailStatsObjectFromData($row);
+				$stats[] = $this->getEmailStatsObjectFromData($row, $initUsers);
 			}
 		}
 		return $stats;
 	}
 	
-	public function getEmailStat(EmailStatsFilter $filter, $cacheMinutes = 0){
-		$stats = $this->getEmailStats($filter, null, $cacheMinutes);
+	public function getEmailStat(EmailStatsFilter $filter, $initUsers = false, $cacheMinutes = 0){
+		$stats = $this->getEmailStats($filter, null, $initUsers, $cacheMinutes);
 		if(count($stats) !== 1){
 			throw new RuntimeException("There is no such email stat or email stat is not unique.");
 		}
@@ -56,6 +56,7 @@ class EmailStatsManager extends DbAccessor {
 		$insertArr = array(
 			'email_id'          => $stat->emailId,
 			'email'             => $stat->email,
+			'domain'            => substr(strrchr($$stat->email, "@"), 1),
 			'from'              => $stat->from,
 			'user_id'			=> $stat->userId,
 			'type'              => $stat->type,
@@ -74,6 +75,7 @@ class EmailStatsManager extends DbAccessor {
 		$qb->update(Tbl::get('TBL_EMAIL_STATS'))
 			->set(new Field('email_id'), $stat->emailId)
 			->set(new Field('email'), $stat->email)
+			->set(new Field('domain'), $stat->domain)
 			->set(new Field('from'), $stat->from)
 			->set(new Field('user_id'), $stat->userId)
 			->set(new Field('type'), $stat->type)
@@ -101,10 +103,10 @@ class EmailStatsManager extends DbAccessor {
         }
 	}
 	
-	public function getEmailStatById($id){
+	public function getEmailStatById($id, $initUsers = false){
 		$filter = new EmailStatsFilter();
 		$filter->setEmailId($id);
-		$stats = $this->getEmailStats($filter);
+		$stats = $this->getEmailStats($filter, null, $initUsers);
 		if(count($stats) == 1){
 			return $stats[0];
 		}
@@ -256,6 +258,7 @@ class EmailStatsManager extends DbAccessor {
 	public function sendEmail($to, $from, $id = null, $type = null, $userId = null){
 		$stat = new EmailStat();
 		$stat->email = $to;
+		$stat->domain = substr(strrchr($to, "@"), 1);
 		$stat->from = $from;
 		
 		if(!empty($id)){
@@ -273,11 +276,12 @@ class EmailStatsManager extends DbAccessor {
 		return $this->addEmailStat($stat);
 	}
 	
-	protected function getEmailStatsObjectFromData($data){
+	protected function getEmailStatsObjectFromData($data, $initUsers = false){
 		$stat = new EmailStat();
 		$stat->id 				= $data['id'];
 		$stat->emailId 			= $data['email_id'];
 		$stat->email 			= $data['email'];
+		$stat->domain 			= $data['domain'];
 		$stat->from 			= $data['from'];
 		$stat->userId			= $data['user_id'];
 		$stat->type 			= $data['type'];
@@ -295,6 +299,10 @@ class EmailStatsManager extends DbAccessor {
 		$stat->dateUnsubscribed	= $data['date_unsubscribed'];
 		$stat->dateBounced		= $data['date_bounced'];
 		$stat->bounceMessage	= $data['bounce_message'];
+		
+		if($initUsers && !empty($data['user_id'])){
+			$stat->user = Reg::get('userMgr')->getUserById($data['user_id']);
+		}
 		
 		return $stat;
 	}

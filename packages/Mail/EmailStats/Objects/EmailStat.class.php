@@ -4,6 +4,7 @@ class EmailStat {
 	public $id;
 	public $emailId = null;
 	public $email;
+	public $domain;
 	public $from;
 	public $userId = null;
 	public $type = null;
@@ -21,4 +22,6 @@ class EmailStat {
 	public $dateUnsubscribed = null;
 	public $dateBounced = null;
 	public $bounceMessage = null;
+	
+	public $user = null;
 }

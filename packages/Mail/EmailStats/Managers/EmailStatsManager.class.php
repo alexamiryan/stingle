@@ -134,6 +134,27 @@ class EmailStatsManager extends DbAccessor {
 		return false;
 	}
 	
+	public function isEmailBlockBounced($email, $inLastXDays = 7, $cacheMinutes = 0){
+		if(empty($inLastXDays)){
+			return false;
+		}
+		
+		$filter = new EmailStatsFilter();
+		$filter->setDomain(static::getDomainFromEmail($email));
+		$filter->setIsBouncedBlocked();
+		$filter->setLastXDays($inLastXDays);
+		$filter->setSelectCount();
+		
+		$this->query->exec($filter->getSQL(), $cacheMinutes);
+		
+		$bouncedCount = $this->query->fetchField('cnt');
+		
+		if($bouncedCount > 0){
+			return true;
+		}
+		return false;
+	}
+	
 	public function setEmailAsRead($emailId){
 		$filter = new EmailStatsFilter();
 		$filter->setEmailId($emailId);
@@ -273,6 +294,24 @@ class EmailStatsManager extends DbAccessor {
 		}
 		
 		return $this->addEmailStat($stat);
+	}
+	
+	public function clearOldLogs($numberOfDays = null){
+		if($numberOfDays === null){
+			$numberOfDays = ConfigManager::getConfig('Mail', 'EmailStats')->AuxConfig->keepStatsForXDays;
+		}
+		
+		$date = new DateTime();
+
+		$date->modify("-$numberOfDays days");
+		$notAfterDate = $date->format(DEFAULT_DATE_FORMAT);
+		
+		$qb = new QueryBuilder();
+		
+		$qb->delete(Tbl::get('TBL_EMAIL_STATS'))
+			->where($qb->expr()->less(new Field('date'), $notAfterDate));
+		
+		return $this->query->exec($qb->getSQL())->affected();
 	}
 	
 	public static function getDomainFromEmail($email){

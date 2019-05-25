@@ -4,7 +4,9 @@ $defaultConfig = array(
 	'AuxConfig' => array(
 		'clickUrl' => 'mail/click/',
 		'shortenLinks' => false,
-		'doNotSendEmailForSoftBouncedInLastXDays' => 30
+		'doNotSendEmailForSoftBouncedInLastXDays' => 30,
+		'doNotSendEmailForBlockBouncedInLastXDays' => 7,
+		'keepStatsForXDays' => 60
 	),
 	'Objects' => array(
 		'EmailStats' => 'emailStats'

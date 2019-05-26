@@ -134,7 +134,7 @@ class EmailStatsManager extends DbAccessor {
 		return false;
 	}
 	
-	public function isEmailBlockBounced($email, $inLastXDays = 7, $cacheMinutes = 0){
+	public function isEmailBlockBounced($email, $inLastXDays = 7, $from = null, $cacheMinutes = 60){
 		if(empty($inLastXDays)){
 			return false;
 		}
@@ -143,6 +143,11 @@ class EmailStatsManager extends DbAccessor {
 		$filter->setDomain(static::getDomainFromEmail($email));
 		$filter->setIsBouncedBlocked();
 		$filter->setLastXDays($inLastXDays);
+		
+		if(!empty($from)){
+			$filter->setFrom($from);
+		}
+		
 		$filter->setSelectCount();
 		
 		$this->query->exec($filter->getSQL(), $cacheMinutes);

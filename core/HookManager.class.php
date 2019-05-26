@@ -52,8 +52,10 @@ class HookManager{
 	public static function callHook($hookName, &$arguments = null){
 		$returnArr = array();
 		if(static::isAnyHooksRegistered($hookName)){
+			$counter = 0;
 			foreach (static::$hooks[$hookName] as $hook){
-				$returnArr[$hookName] = static::executeHook($hook, $arguments);
+				$returnArr[$counter . '-' . $hookName . '-' . $hook->getMethod()] = static::executeHook($hook, $arguments);
+				$counter++;
 			}
 		}
 		

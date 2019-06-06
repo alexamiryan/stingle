@@ -456,7 +456,6 @@ class Image extends Model {
 
 	public function fixOrientation() {
 		if (!empty($this->imageExif) and !empty($this->imageExif['Orientation'])) {
-			DBLogger::logCustom("qaq", $this->imageExif['Orientation']);
 			switch ($this->imageExif['Orientation']) {
 				case 3:
 					$this->rotate(180);

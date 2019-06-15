@@ -3,7 +3,8 @@ class RequestLimiter extends DbAccessor {
 	
 	const TBL_SECURITY_FLOODER_IPS 	= "security_flooder_ips";
 	const TBL_SECURITY_REQUESTS_LOG 	= "security_requests_log";
-	const TBL_SECURITY_INVALID_LOGINS_LOG 	= 'security_invalid_logins_log';
+	
+	const TYPE_GENERAL = 'gen';
 	
 	private $config;
 	
@@ -50,33 +51,35 @@ class RequestLimiter extends DbAccessor {
 	 * Should be called by cron job every minute.
 	 */
 	public function parseLogForFloodingIps(){
-		$this->query->startTransaction();
-		
-		$qb = new QueryBuilder();
-		$qbSelect = new QueryBuilder();
-		$qbSelect->select(new Field('ip'))
-				->from(Tbl::get('TBL_SECURITY_REQUESTS_LOG'))
-				->where($qbSelect->expr()->greaterEqual(new Field('count'),  $this->config->requestsLimit));
-		
-		$qb->insertIgnore(Tbl::get('TBL_SECURITY_FLOODER_IPS'))
-					->fields('ip')
-					->values($qbSelect);
-					
-		$this->query->exec($qb->getSQL());
+		foreach($this->config->limits->toArray() as $name => $limit){
+			$qb = new QueryBuilder();
+			$qbSelect = new QueryBuilder();
+			$qbSelect->select(new Field('ip'))
+					->from(Tbl::get('TBL_SECURITY_REQUESTS_LOG'))
+					->where($qbSelect->expr()->equal(new Field('type'),  $name))
+					->andWhere($qbSelect->expr()->greaterEqual(new Field('count'),  $limit));
+
+			$qb->insertIgnore(Tbl::get('TBL_SECURITY_FLOODER_IPS'))
+						->fields('ip')
+						->values($qbSelect);
+
+			$this->query->exec($qb->getSQL());
+		}
 		
 		$this->query->exec("TRUNCATE TABLE `".Tbl::get('TBL_SECURITY_REQUESTS_LOG')."`");
 		
-		if(!$this->query->commit()){
-			$this->query->rollBack();
-		}
 	}
 	
 	/**
 	 * Record current request in requests log
 	 */
-	public function recordRequest($ip = null){
+	public function recordRequest($type = null, $ip = null){
 		if(Cgi::getMode()){
 			return;
+		}
+		
+		if($type === null){
+			$type = self::TYPE_GENERAL;
 		}
 		
 		if($ip === null){
@@ -84,7 +87,7 @@ class RequestLimiter extends DbAccessor {
 		}
 		$qb = new QueryBuilder();
 		$qb->insert(Tbl::get('TBL_SECURITY_REQUESTS_LOG'))
-			->values(array('ip' => $ip))
+			->values(array('type' => $type, 'ip' => $ip))
 			->onDuplicateKeyUpdate()
 			->set(new Field('count'), $qb->expr()->sum(new Field('count'), 1));
 		$this->query->exec($qb->getSQL());

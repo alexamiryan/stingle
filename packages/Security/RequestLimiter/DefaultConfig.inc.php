@@ -1,20 +1,19 @@
 <?php
 
-$defaultConfig = array(
-	'AuxConfig' => array(
-		'requestsLimit' => 150,
-		'loginBruteForceProtectionEnabled' => true,
-		'failedLoginLimit' => 5
-	),
-	'Hooks' => array(
-		'BeforeController' => 'RequestLimiterRun',
-		'UserAuthSuccess' => 'ClearInvalidLoginsLog',
-		'UserAuthFail' => 'InvalidLoginAttempt'
-	),
-	'Objects' => array(
+$defaultConfig = [
+	'AuxConfig' => [
+		'limits' => [
+			'gen' => 100
+		]
+	],
+	'Objects' => [
 		'RequestLimiter' => 'requestLimiter'
-	),
-	'Memcache' => array(
+	],
+	'Memcache' => [
 		'RequestLimiter' => -1
-	)
-);
+	],
+	'Hooks' => [
+		'BeforeController' => 'RequestLimiterGeneralRun',
+		'RecordRequest' => 'RecordRequest'
+	]
+];

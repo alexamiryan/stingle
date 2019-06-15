@@ -1,4 +1,4 @@
 <?php
-class RequestLimiterBlockedException extends RuntimeException{
+class RequestLimiterBlockedException extends SecurityException{
 	
 }

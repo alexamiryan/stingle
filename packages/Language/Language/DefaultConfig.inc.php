@@ -4,7 +4,9 @@ $defaultConfig = array(
 	'AuxConfig' => array(
 		'memcacheEnabled' => true,
 		'throwExceptionOnNotFound' => false,
-		'defineAllConstsOn' => false
+		'defineAllConstsOn' => false,
+		'useSession' => true,
+		'useCookies' => true
 	),
 	'Objects' => array(
 		'LanguageManager' => 'lm'

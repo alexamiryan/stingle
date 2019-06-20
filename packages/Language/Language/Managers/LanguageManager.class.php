@@ -39,7 +39,12 @@ class LanguageManager extends DbAccessor {
 		}
 		if($language instanceof Language){
 			$this->language = $language;
-			$this->setLanguage($language);
+			if($lmConfig->useSession){
+				$this->setLanguageToSession($language);
+			}
+			if($lmConfig->useCookies){
+				$this->setLanguageToCookie($language);
+			}
 		}
 		else{
 			throw new InvalidArgumentException("Argument should be instanse of Language");
@@ -116,18 +121,17 @@ class LanguageManager extends DbAccessor {
 		return $this->language;
 	}
 
-	/**
-	 * Check and Set $_SESSION['language'] and $_COOKIE['language']
-	 *
-	 * @param Language $language
-	 */
-	public function setLanguage(Language $language){
+	public function setLanguageToSession(Language $language){
 		if (!isset($_SESSION['language']) || $_SESSION['language'] != $language->shortName) {
 			$_SESSION['language'] = $language->shortName;
 		}
-
-		if (!isset($_COOKIE['language']) || $_COOKIE['language'] != $language->shortName) {
-			setcookie('language', $language->shortName, time() + 60 * 60 * 24 * 30, '/', $_SERVER['HTTP_HOST']);
+	}
+	
+	public function setLanguageToCookie(Language $language){
+		if(isset($_SERVER['HTTP_HOST'])){
+			if (!isset($_COOKIE['language']) || $_COOKIE['language'] != $language->shortName) {
+				setcookie('language', $language->shortName, time() + 60 * 60 * 24 * 30, '/', $_SERVER['HTTP_HOST']);
+			}
 		}
 	}
 

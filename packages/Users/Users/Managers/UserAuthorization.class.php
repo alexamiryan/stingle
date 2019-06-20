@@ -111,10 +111,14 @@ class UserAuthorization extends DbAccessor{
 			}
 		}
 		
-		$this->saveUserIdInSession($usr);
-		$this->updateUserLastLoginDateAndIP($usr);
+		if($this->config->useSessions){
+			$this->saveUserIdInSession($usr);
+		}
+		if($this->config->saveLastLoginDateIP){
+			$this->updateUserLastLoginDateAndIP($usr);
+		}
 		
-		if($writeCookie){
+		if($this->config->useCookies && $writeCookie){
 			$this->writeLoginCookie($usr);
 		}
 			
@@ -127,8 +131,12 @@ class UserAuthorization extends DbAccessor{
 	 * Does logout operation
 	 */
 	public function doLogout(){
-		unset($_SESSION[$this->config->sessionVarName]);
-		setcookie($this->config->loginCookieName, null, null, '/', "", true, true);
+		if($this->config->useSessions){
+			unset($_SESSION[$this->config->sessionVarName]);
+		}
+		if($this->config->useCookies){
+			setcookie($this->config->loginCookieName, null, null, '/', "", true, true);
+		}
 	}
 	
 	/**

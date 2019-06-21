@@ -49,8 +49,9 @@ class UserSessionsManager extends DbAccessor {
 		return $sessions[0];
 	}
 	
+	
 	public function getSessionByToken($token){
-		$filter = UserSessionFilter();
+		$filter = new UserSessionFilter();
 		$filter->setToken($token);
 		
 		$session = null;
@@ -61,6 +62,14 @@ class UserSessionsManager extends DbAccessor {
 		catch (RuntimeException $e){}
 		
 		return $session;
+	}
+	
+	public function getUserFromSession($token){
+		$session = $this->getSessionByToken($token);
+		if($session != null){
+			return $session->user;
+		}
+		return null;
 	}
 	
 	public function addSession($userId){
@@ -97,7 +106,7 @@ class UserSessionsManager extends DbAccessor {
 		$sess->token 			= $data['token'];
 		$sess->creationDate		= $data['creation_date'];
 		
-		if (($initObjects & self::INIT_USERS) != 0) {
+		if (($initObjects & self::INIT_USER) != 0) {
 			try{
 				$sess->user = Reg::get('userMgr')->getUserById($data['user_id']);
 			}

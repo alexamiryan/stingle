@@ -1,7 +1,15 @@
 <?php
 
 $defaultConfig = [
-		'Objects' => [
-			'UserSessions' => 'userSess'
-		]
+	'AuxConfig' => [
+		'registerUserObjectFromToken' => false,
+		'tokenPlace' => 'post',
+		'tokenName' => 'token'
+	],
+	'Objects' => [
+		'UserSessions' => 'userSess',
+	],
+	'Hooks' => [
+		'AfterPackagesLoad' => 'GetUserFromToken'
+	],
 ];

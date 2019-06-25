@@ -73,14 +73,14 @@ if(isset($globalConfig->site->site_id)){
 	session_name($globalConfig->site->site_id);
 }
 
-if($sysconfig->Stingle->autostartSession){
-	if(!empty($sysconfig->Stingle->sessionCookieParams)){
-		session_set_cookie_params($sysconfig->Stingle->sessionCookieParams->toArray());
+if($globalConfig->Stingle->autostartSession){
+	if(!empty($globalConfig->Stingle->sessionCookieParams)){
+		session_set_cookie_params($globalConfig->Stingle->sessionCookieParams->toArray());
 	}
 	session_start();
 }
 
-if($sysconfig->Stingle->autoObStart){
+if($globalConfig->Stingle->autoObStart){
 	ob_start('stingleOutputHandler');
 }
 

@@ -11,7 +11,7 @@ class LoaderUserSessions extends Loader{
 	}
 	
 	protected function loadUserSessions(){
-		$this->register(new UserSessionsManager($this->config));
+		$this->register(new UserSessionsManager($this->config->AuxConfig));
 	}
 	
 	public function hookGetUserFromToken(){

@@ -11,7 +11,8 @@ $defaultConfig = [
 		'secondFactorOrder' => [],
 		'useSessions' => true,
 		'useCookies' => true,
-		'saveLastLoginDateIP' => true
+		'saveLastLoginDateIP' => true,
+		'sameSiteCookie' => 'strict'
 	],
 	'Objects' => [
 		'UserManager' => 'userMgr',

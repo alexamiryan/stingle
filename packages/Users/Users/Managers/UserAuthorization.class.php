@@ -195,7 +195,7 @@ class UserAuthorization extends DbAccessor{
 	
 	/**
 	 * Write long term login cookie for the user.
-	 * Ususally used in remember me functionality in login forms.
+	 * Usually used in remember me functionality in login forms.
 	 * 
 	 * @param User $usr
 	 */
@@ -204,7 +204,16 @@ class UserAuthorization extends DbAccessor{
 		$expTime = $dateInfo[0] + (60 * 60 * 24 * $this->config->rememberDaysCount);
 		$cookieValue = AES256::encrypt($usr->id . ":" . hash('sha256', $usr->login . ":" . $usr->password));
 		
-		setcookie($this->config->loginCookieName, $cookieValue, $expTime, '/', "", true, true, ['samesite' => $this->config->sameSiteCookie]);
+		$params = [
+			'expires' => $expTime,
+			'path' => '/',
+			'domain' => '',
+			'secure' => true,
+			'httponly' => true,
+			'samesite' => $this->config->sameSiteCookie
+		];
+		
+		setcookie($this->config->loginCookieName, $cookieValue, $params);
 	}
 	
 	/**

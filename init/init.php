@@ -50,7 +50,7 @@ if($sysconfig->Stingle->BootCompiler === true){
 			}
 			catch(Exception $e){
 				unlink($configCacheFilename);
-				//$globalConfig = ConfigManager::mergeConfigs(new Config($CONFIG), $sysconfig);
+				$globalConfig = ConfigManager::mergeConfigs(new Config($CONFIG), $sysconfig);
 			}
 		}
 		else{
@@ -66,18 +66,12 @@ ConfigManager::setGlobalConfig($globalConfig);
 ConfigManager::initCache();
 
 
-if(isset($globalConfig->site->error_reporting)){
-	error_reporting($globalConfig->site->error_reporting);
-}
-if(isset($globalConfig->site->site_id)){
-	session_name($globalConfig->site->site_id);
+if(isset($globalConfig->Stingle->errorReporting)){
+	error_reporting($globalConfig->Stingle->errorReporting);
 }
 
 if($globalConfig->Stingle->autostartSession){
-	if(!empty($globalConfig->Stingle->sessionCookieParams)){
-		session_set_cookie_params($globalConfig->Stingle->sessionCookieParams->toArray());
-	}
-	session_start();
+	startSession();
 }
 
 if($globalConfig->Stingle->autoObStart){
@@ -177,10 +171,3 @@ HookManager::callHook("Output");
 
 HookManager::callHook("AfterOutput");
 
-/*if(ConfigManager::getGlobalConfig()->Stingle->BootCompiler === true){
-	if(!file_exists($configCacheFilename) and !$isGetConfigFromCache){
-		file_put_contents($configCacheFilename, serialize(ConfigManager::mergeConfigs(ConfigManager::getGlobalConfig(), ConfigManager::getCache())));
-	}
-}*/
-//echo "out - " . (microtime(true) - $time) . "<br>";
-// Finish

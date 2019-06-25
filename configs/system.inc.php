@@ -11,5 +11,7 @@ $SYSCONFIG['Stingle'] = [
 		'httponly' => true,
 		'samesite' => 'Strict'
 	],
-	'autoObStart' => true
+	'autoObStart' => true,
+	'siteName' => 'site',
+	'errorReporting' => E_ALL ^ E_NOTICE
 ];

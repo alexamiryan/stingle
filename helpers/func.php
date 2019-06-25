@@ -1,4 +1,21 @@
 <?php
+
+function startSession($sessionName = null, $cookieParams = null){
+	if($sessionName === null){
+		$sessionName = ConfigManager::getGlobalConfig()->Stingle->siteName;
+	}
+	if($cookieParams === null){
+		$cookieParams = ConfigManager::getGlobalConfig()->Stingle->sessionCookieParams->toArray();
+	}
+	
+	session_name($sessionName);
+	
+	if(!empty($cookieParams)){
+		session_set_cookie_params($cookieParams);
+	}
+	session_start();
+}
+
 function format_exception($e, $insert_pre = false){
 	$message = get_class($e) . "\n" .
 	"Message:\n" . $e->getMessage() . "\n\n" .

@@ -130,7 +130,17 @@ class LanguageManager extends DbAccessor {
 	public function setLanguageToCookie(Language $language){
 		if(isset($_SERVER['HTTP_HOST'])){
 			if (!isset($_COOKIE['language']) || $_COOKIE['language'] != $language->shortName) {
-				setcookie('language', $language->shortName, time() + 60 * 60 * 24 * 30, '/', $_SERVER['HTTP_HOST']);
+				
+				$params = [
+					'expires' => time() + 60 * 60 * 24 * 30,
+					'path' => '/',
+					'domain' => '',
+					'secure' => true,
+					'httponly' => true,
+					'samesite' => 'Lax'
+				];
+
+				setcookie('language', $language->shortName, $params);
 			}
 		}
 	}

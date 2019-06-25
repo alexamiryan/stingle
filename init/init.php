@@ -73,8 +73,16 @@ if(isset($globalConfig->site->site_id)){
 	session_name($globalConfig->site->site_id);
 }
 
-session_start();
-ob_start('stingleOutputHandler');
+if($sysconfig->Stingle->autostartSession){
+	if(!empty($sysconfig->Stingle->sessionCookieParams)){
+		session_set_cookie_params($sysconfig->Stingle->sessionCookieParams->toArray());
+	}
+	session_start();
+}
+
+if($sysconfig->Stingle->autoObStart){
+	ob_start('stingleOutputHandler');
+}
 
 Cgi::setMode(defined("IS_CGI"));
 Debug::setMode($globalConfig->Debug->enabled);

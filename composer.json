@@ -10,11 +10,11 @@
     ],
 	"config": {
         "platform": {
-            "php": "7.3"
+            "php": "7.3.0"
         }
 	},
     "require": {
-		"php": ">=7.3"
+		"php": ">=7.3.0"
     },
 	"suggest": {
 		"aws/aws-sdk-php": "For S3 and SES related plugins",

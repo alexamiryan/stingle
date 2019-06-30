@@ -6,7 +6,7 @@ $defaultConfig = array(
 		'storageProvider' => 'filesystem',
 		'S3Config' => [
 			'configName' => 'default',
-			'path' => 'banner-data/',
+			'path' => 'uploads/',
 			'acl' => 'private'
 		]
 	)

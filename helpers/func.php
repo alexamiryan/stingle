@@ -343,7 +343,7 @@ function isAssoc(array $array){
  * @return string
  */
 function base64_url_encode($input) {
-	return strtr(base64_encode($input), '+/=', '-_,');
+	return rtrim(strtr(base64_encode($input), '+/', '-_'), '=');
 }
 
 /**
@@ -353,7 +353,7 @@ function base64_url_encode($input) {
  * @return mixed
  */
 function base64_url_decode($input) {
-	return base64_decode(strtr($input, '-_,', '+/='));
+	return base64_decode(str_pad(strtr($input, '-_', '+/'), strlen($input) % 4, '=', STR_PAD_RIGHT));
 }
 
 function stingleInclude($file, $precompileCode = null, $postcompileCode = null, $isPathAbsolute = false){
@@ -404,4 +404,11 @@ function clearApcuCache(){
 	if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 		apcu_clear_cache();
 	}
+}
+
+function ensureLastSlash($str){
+	if(substr($str, strlen($str) - 1) !== '/'){
+		$str .= '/';
+	}
+	return $str;
 }

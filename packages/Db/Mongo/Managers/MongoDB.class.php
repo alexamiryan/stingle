@@ -26,4 +26,8 @@ class MongoDB {
 		}
 		return $this->mongo->$dbName->$collectionName;
 	}
+	
+	public static function getMongoDate($date = null){
+		return new MongoDB\BSON\UTCDateTime($date);
+	}
 }

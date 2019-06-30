@@ -33,6 +33,10 @@ class ApiOutput extends Model {
 	public function getStatus() {
 		return $this->status;
 	}
+	
+	public function isStatusOk() {
+		return ($this->status === self::STATUS_OK ? true : false);
+	}
 
 	public function set($partName, $partValue) {
 		if (empty($partName)) {

@@ -91,6 +91,24 @@ class S3Transport {
 		}
 	}
 	
+	public static function getSignedUrl($filePath, $expiration = null, $configName = 'default', $bucketName = null){
+		$config = static::getConfigByName($configName);
+		$s3Client = static::getS3Client($config);
+		
+		if(empty($bucketName)){
+			$bucketName = $config->bucket;
+		}
+		
+		$cmd = $s3Client->getCommand('GetObject', [
+			'Bucket' => $bucketName,
+			'Key' => $filePath
+		]);
+
+		$request = $s3Client->createPresignedRequest($cmd, $expiration);
+
+		return (string)$request->getUri();
+	}
+	
 	public static function fileExists($filePath, $configName = 'default', $bucketName = null) {
 		$config = static::getConfigByName($configName);
 		$s3Client = static::getS3Client($config);

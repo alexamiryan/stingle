@@ -46,6 +46,13 @@ class S3Transport {
 			'SourceFile' => $filePath,
 		]);
 	}
+
+	public static function registerStreamWrapper($configName = 'default', $bucketName = null){
+        $config = static::getConfigByName($configName);
+        $s3Client = static::getS3Client($config);
+
+        $s3Client->registerStreamWrapper();
+    }
 	
 	public static function get($filePath, $configName = 'default', $bucketName = null) {
 		$config = static::getConfigByName($configName);

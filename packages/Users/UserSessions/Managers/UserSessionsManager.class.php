@@ -89,6 +89,15 @@ class UserSessionsManager extends DbAccessor {
 		
 		return $token;
 	}
+    
+    public function revokeAllSessions($userId){
+        $qb = new QueryBuilder();
+        
+        $qb->delete(Tbl::get('TBL_USER_SESSIONS'))
+            ->where($qb->expr()->equal(new Field('user_id'), $userId));
+        
+        return $this->query->exec($qb->getSQL())->affected();
+    }
 	
 	public function revokeToken($token){
 		$qb = new QueryBuilder();

@@ -9,6 +9,7 @@ class ApiOutput extends Model {
 	private $info = null;
 	private $parts = array();
 	private $status = self::STATUS_OK;
+    private $disableOutput = false;
 
 	public function __construct() {
 		$this->error = Reg::get(ConfigManager::getConfig('Info', 'Info')->Objects->Error);
@@ -37,6 +38,14 @@ class ApiOutput extends Model {
 	public function isStatusOk() {
 		return ($this->status === self::STATUS_OK ? true : false);
 	}
+	
+    public function disableOutput(){
+        $this->disableOutput = true;
+    }
+    
+    public function enableOutput(){
+        $this->disableOutput = false;
+    }
 
 	public function set($partName, $partValue) {
 		if (empty($partName)) {
@@ -46,19 +55,21 @@ class ApiOutput extends Model {
 	}
 
 	public function output() {
-		$output = array();
-		$output['parts'] = array();
-
-		$output['status'] = $this->status;
-		$output['infos'] = $this->info->getAll();
-		$output['errors'] = $this->error->getAll();
-
-		foreach ($this->parts as $partName => $partValue) {
-			$output['parts'][$partName] = $partValue;
-		}
-
-		header('Content-Type: application/json');
-		JSON::jsonOutput($output);
+        if(!$this->disableOutput) {
+            $output = array();
+            $output['parts'] = array();
+    
+            $output['status'] = $this->status;
+            $output['infos'] = $this->info->getAll();
+            $output['errors'] = $this->error->getAll();
+    
+            foreach ($this->parts as $partName => $partValue) {
+                $output['parts'][$partName] = $partValue;
+            }
+    
+            header('Content-Type: application/json');
+            JSON::jsonOutput($output);
+        }
 	}
 
 }

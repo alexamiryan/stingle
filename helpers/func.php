@@ -16,22 +16,24 @@ function startSession($sessionName = null, $cookieParams = null){
 	session_start();
 }
 
-function format_exception($e, $insert_pre = false){
-	$message = get_class($e) . "\n" .
-	"Message:\n" . $e->getMessage() . "\n\n" .
-	"File: " . $e->getFile() . " on line " . $e->getLine() . "\n\n" .
-	"Trace:\n" . $e->getTraceAsString() . "\n\n" .
-	"Get:\n". print_r($_GET,true) . "\n\n" .
-	"Post:\n". print_r($_POST,true) . "\n\n" .
-	"Cookie:\n". print_r($_COOKIE,true) . "\n\n" .
-	"Session:\n". print_r($_SESSION,true) . "\n\n" .
-	"Server:\n". print_r($_SERVER,true) . "\n\n" .
-	"Code: " . $e->getCode();
-	if($insert_pre){
-		$message = "<pre>$message</pre>";
-	}
-
-	return $message;
+function format_exception($e, $insert_pre = false) {
+    $message = get_class($e) . "\n" .
+        "Message:\n" . $e->getMessage() . "\n\n" .
+        "File: " . $e->getFile() . " on line " . $e->getLine() . "\n\n" .
+        "Trace:\n" . $e->getTraceAsString() . "\n\n" .
+        "Get:\n" . print_r($_GET, true) . "\n\n" .
+        "Post:\n" . print_r($_POST, true) . "\n\n" .
+        "Cookie:\n" . print_r($_COOKIE, true) . "\n\n";
+    if (isset($_SESSION)) {
+        $message .= "Session:\n" . print_r($_SESSION, true) . "\n\n";
+    }
+    $message .= "Server:\n". print_r($_SERVER,true) . "\n\n" .
+        "Code: " . $e->getCode();
+    if($insert_pre){
+        $message = "<pre>$message</pre>";
+    }
+    
+    return $message;
 }
 
 function ensurePathLastSlash(&$path){

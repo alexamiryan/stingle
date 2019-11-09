@@ -85,6 +85,7 @@ class RewriteURL{
 		if(substr($strUrl, strlen($strUrl) - 1) != '/'){
 			$strUrl .= '/';
 		}
+		return $strUrl;
 	}
 	
 }

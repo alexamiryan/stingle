@@ -241,6 +241,6 @@ abstract class Loader {
 		
 		$registerName = $this->config->Objects->$objectNameToRegister;
 		
-		Reg::register($registerName, $object);
+		Reg::register($registerName, $object, true);
 	}
 }

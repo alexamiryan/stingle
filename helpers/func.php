@@ -414,3 +414,7 @@ function ensureLastSlash($str){
 	}
 	return $str;
 }
+
+function getMilliseconds(){
+    return round(microtime(true) * 1000);
+}

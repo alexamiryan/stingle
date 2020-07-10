@@ -67,7 +67,6 @@ class ApiOutput extends Model {
                 $output['parts'][$partName] = $partValue;
             }
     
-            header('Content-Type: application/json');
             JSON::jsonOutput($output);
         }
 	}

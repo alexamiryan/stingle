@@ -260,6 +260,7 @@ class MailSender extends Model {
 			Reg::get('smarty')->setTemplate($oldTemplate);
 		}
 		catch (RuntimeException $e) {
+            HookManager::callHook('Exception', $e);
 			Reg::get('smarty')->setTemplate($oldTemplate);
 		}
 

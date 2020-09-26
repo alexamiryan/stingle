@@ -15,7 +15,6 @@ $defaultConfig = array(
 		'Language' => 'language'
 	),
 	'Hooks' => array(
-		'AfterThisPluginTreeInit' => 'GetLanguageObj',
 		'AfterPackagesLoad' => 'DefineAllConstants'
 	),
 	'Memcache' => array(

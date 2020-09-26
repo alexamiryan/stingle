@@ -15,10 +15,7 @@ class LoaderLanguage extends Loader{
 	
 	protected function loadLanguageManager(){
 		$this->register(new LanguageManager());
-	}
-	
-	public function hookGetLanguageObj(){
-		Reg::register($this->config->ObjectsIgnored->Language, Reg::get($this->config->Objects->LanguageManager)->getLanguage());
+        Reg::register($this->config->ObjectsIgnored->Language, Reg::get($this->config->Objects->LanguageManager)->getLanguage());
 	}
 	
 	public function hookDefineAllConstants(){

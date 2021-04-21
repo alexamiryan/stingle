@@ -120,7 +120,7 @@ class MySqlDbManager {
 	 *
 	 * @return MySqlQuery
 	 */
-	public static function getQueryObject($instanceName = self::DEFAULT_INSTANCE_NAME) {
+	public static function getQueryObject($instanceName = self::DEFAULT_INSTANCE_NAME) : MySqlQuery {
 		return new static::$queryClassName($instanceName);
 	}
 

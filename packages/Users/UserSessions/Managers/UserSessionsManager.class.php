@@ -11,15 +11,28 @@ class UserSessionsManager extends DbAccessor {
 	// INIT_ALL Should be next power of 2 minus 1
 	const INIT_ALL = 1;
 	
-	protected $config;
-	
+	protected Config $config;
+    
+    /**
+     * UserSessionsManager constructor.
+     * @param Config $config
+     * @param ?string $instanceName
+     */
 	public function __construct(Config $config, $instanceName = null){
 		parent::__construct($instanceName);
 		
 		$this->config = $config;
 	}
-	
-	public function getSessions(UserSessionFilter $filter = null, MysqlPager $pager = null, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF){
+    
+    /**
+     * @param UserSessionFilter|null $filter
+     * @param MysqlPager|null $pager
+     * @param int $initObjects
+     * @param int $cacheMinutes
+     * @return array[UserSession]
+     * @throws MySqlException
+     */
+	public function getSessions(UserSessionFilter $filter = null, MysqlPager $pager = null, $initObjects = self::INIT_ALL, $cacheMinutes = MemcacheWrapper::MEMCACHE_OFF) : array{
 		if($filter == null){
 			$filter = new UserSessionFilter();
 		}
@@ -41,7 +54,7 @@ class UserSessionsManager extends DbAccessor {
 		return $sessions;
 	}
 	
-	public function getSession(UserSessionFilter $filter, $initObjects = self::INIT_ALL){
+	public function getSession(UserSessionFilter $filter, $initObjects = self::INIT_ALL) : ?UserSession {
 		$sessions = $this->getSessions($filter, null, $initObjects);
 		if(count($sessions) !== 1){
 			throw new RuntimeException("There is no such user session or it is not unique.");
@@ -50,7 +63,7 @@ class UserSessionsManager extends DbAccessor {
 	}
 	
 	
-	public function getSessionByToken($token){
+	public function getSessionByToken($token) : ?UserSession {
 		$filter = new UserSessionFilter();
 		$filter->setToken($token);
 		
@@ -64,7 +77,7 @@ class UserSessionsManager extends DbAccessor {
 		return $session;
 	}
 	
-	public function getUserFromSession($token){
+	public function getUserFromSession($token) : ?User{
 		$session = $this->getSessionByToken($token);
 		if($session != null){
 			return $session->user;
@@ -72,7 +85,7 @@ class UserSessionsManager extends DbAccessor {
 		return null;
 	}
 	
-	public function addSession($userId){
+	public function addSession($userId) : string {
 
 		$token = generateRandomString(64, [RANDOM_STRING_LOWERCASE, RANDOM_STRING_UPPERCASE, RANDOM_STRING_DIGITS, RANDOM_STRING_SYMBOLS]);
 		
@@ -80,6 +93,7 @@ class UserSessionsManager extends DbAccessor {
 		$insertArr = array(
 			'user_id' => $userId,
 			'token' => $token,
+            'last_update_date' => new Func('NOW')
 		);
 		
         $qb->insert(Tbl::get("TBL_USER_SESSIONS"))
@@ -89,8 +103,18 @@ class UserSessionsManager extends DbAccessor {
 		
 		return $token;
 	}
+	
+	public function setToNowLastUpdateDate(string $token) : ?int {
+        $qb = new QueryBuilder();
+        
+        $qb->update(Tbl::get('TBL_USER_SESSIONS'))
+            ->set(new Field('last_update_date'), new Func('NOW'))
+            ->where($qb->expr()->equal(new Field('token'), $token));
+        
+        return $this->query->exec($qb->getSQL())->affected();
+    }
     
-    public function revokeAllSessions($userId){
+    public function revokeAllSessions($userId) : ?int {
         $qb = new QueryBuilder();
         
         $qb->delete(Tbl::get('TBL_USER_SESSIONS'))
@@ -99,7 +123,7 @@ class UserSessionsManager extends DbAccessor {
         return $this->query->exec($qb->getSQL())->affected();
     }
 	
-	public function revokeToken($token){
+	public function revokeToken($token) : ?int {
 		$qb = new QueryBuilder();
 		
 		$qb->delete(Tbl::get('TBL_USER_SESSIONS'))
@@ -108,7 +132,7 @@ class UserSessionsManager extends DbAccessor {
 		return $this->query->exec($qb->getSQL())->affected();
 	}
 
-	protected function getUserSessionObjectFromData($data, $initObjects = self::INIT_ALL){
+	protected function getUserSessionObjectFromData($data, $initObjects = self::INIT_ALL) : UserSession{
 		$sess = new UserSession();
 		$sess->id 				= $data['id'];
 		$sess->userId 			= $data['user_id'];

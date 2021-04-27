@@ -1,10 +1,11 @@
 <?php
 class UserSession{
 	
-	public $id;
-	public $userId;
-	public $token;
-	public $creationDate;
+	public int $id;
+	public int $userId;
+	public string $token;
+	public string $creationDate;
+	public string $lastUpdateDate;
 	
-	public $user = null;
+	public ?User $user = null;
 }

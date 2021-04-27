@@ -4,7 +4,8 @@ $defaultConfig = [
 	'AuxConfig' => [
 		'registerUserObjectFromToken' => false,
 		'tokenPlace' => 'post',
-		'tokenName' => 'token'
+		'tokenName' => 'token',
+        'autoUpdateLastUpdateDate' => true
 	],
 	'Objects' => [
 		'UserSessions' => 'userSess',

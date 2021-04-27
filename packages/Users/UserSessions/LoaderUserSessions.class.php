@@ -39,6 +39,9 @@ class LoaderUserSessions extends Loader{
 				$user = Reg::get($this->config->Objects->UserSessions)->getUserFromSession($token);
 				if(is_a($user, "User")){
 					Reg::register(ConfigManager::getConfig('Users', 'Users')->ObjectsIgnored->User, $user);
+					if($this->config->AuxConfig->autoUpdateLastUpdateDate) {
+                        Reg::get($this->config->Objects->UserSessions)->setToNowLastUpdateDate($token);
+                    }
 				}
 			}
 		}

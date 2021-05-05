@@ -182,7 +182,7 @@ abstract class Loader {
 	 * 
 	 * @throws RuntimeException
 	 */
-	private function registerHooks(){
+	public function registerHooks(){
 		if(isset($this->config->Hooks)){
 			foreach (get_object_vars($this->config->Hooks) as $hookName=>$hookMethod){
 				if($this->packageManager->isHookRegistrationIsAllowed($hookMethod, $this->packageName, $this->pluginName)){

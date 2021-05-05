@@ -934,4 +934,11 @@ class SmartyWrapper extends Smarty {
 			}
 		}
 	}
+	
+	public static function replaceMainOutputWithSmarty(){
+	    HookManager::unRegisterHook("Output");
+	    $loader = new LoaderSmarty('Smarty', 'Output', Reg::get('packageMgr'));
+	    $loader->registerHooks();
+        $loader->hookSmartyInit();
+    }
 }

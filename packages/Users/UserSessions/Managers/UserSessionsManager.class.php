@@ -148,4 +148,38 @@ class UserSessionsManager extends DbAccessor {
 		
 		return $sess;
 	}
+	
+	public static function registerUserByToken($tokenPlace){
+	    $config = ConfigManager::getConfig("Users", "UserSessions");
+	    $tokenName = $config->AuxConfig->tokenName;
+        $token = null;
+        switch($tokenPlace){
+            case 'cookie':
+                if(isset($_COOKIE[$tokenName])){
+                    $token = $_COOKIE[$tokenName];
+                }
+                break;
+            case 'post':
+                if(isset($_POST[$tokenName])){
+                    $token = $_POST[$tokenName];
+                }
+                break;
+            case 'get':
+                
+                if(isset($_GET[$tokenName])){
+                    $token = $_GET[$tokenName];
+                }
+                break;
+        }
+        
+        if(!empty($token)){
+            $user = Reg::get($config->Objects->UserSessions)->getUserFromSession($token);
+            if(is_a($user, "User")){
+                Reg::register(ConfigManager::getConfig('Users', 'Users')->ObjectsIgnored->User, $user);
+                if($config->AuxConfig->autoUpdateLastUpdateDate) {
+                    Reg::get($config->Objects->UserSessions)->setToNowLastUpdateDate($token);
+                }
+            }
+        }
+    }
 }

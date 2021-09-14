@@ -13,6 +13,7 @@
     },
 	"suggest": {
 		"aws/aws-sdk-php": "For S3 and SES related plugins",
-		"aws/aws-php-sns-message-validator": "For handling bounce notifications from Amazon SNS"
+		"aws/aws-php-sns-message-validator": "For handling bounce notifications from Amazon SNS",
+        "ext-openssl": "Crypto lib"
     }
 }

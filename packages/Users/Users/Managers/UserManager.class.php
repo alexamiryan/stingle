@@ -192,18 +192,23 @@ class UserManager extends DbAccessor{
 		$user->salt = Crypto::secureRandom(512);
 		$user->password = UserAuthorization::getUserPasswordHash($user->password, $user->salt);
 		
+		$insertArr = array(
+            'enabled' => $user->enabled,
+            'creation_date' => new Func("NOW"),
+            'creation_time' => new Func("NOW"),
+            'login' => $user->login,
+            'password' => $user->password,
+            'salt' => $user->salt,
+            'email' => $user->email,
+            'email_confirmed' => $user->emailConfirmed
+        );
+		
+		if($this->config->saveLastLoginDateIP){
+		    $insertArr['last_login_ip'] = $user->lastLoginIP;
+        }
+		
 		$qb->insert(Tbl::get('TBL_USERS'))
-			->values(array(
-					'enabled' => $user->enabled,
-					'creation_date' => new Func("NOW"),
-					'creation_time' => new Func("NOW"),
-					'login' => $user->login,
-					'password' => $user->password,
-					'salt' => $user->salt,
-					'last_login_ip' => $user->lastLoginIP,
-					'email' => $user->email,
-					'email_confirmed' => $user->emailConfirmed
-					));
+			->values($insertArr);
 		
 		$newUserId = $this->query->exec($qb->getSQL())->getLastInsertId();
 		$user->id = $newUserId;
@@ -249,9 +254,12 @@ class UserManager extends DbAccessor{
 			->set(new Field('enabled'), $user->enabled)
 			->set(new Field('email'), $user->email)
 			->set(new Field('email_confirmed'), $user->emailConfirmed)
-			->set(new Field('last_login_date'), (!empty($user->lastLoginDate) ? $user->lastLoginDate : new Literal('NULL')))
-			->set(new Field('last_login_ip'), $user->lastLoginIP)
 			->where($qb->expr()->equal(new Field('id'), $user->id));
+		
+        if($this->config->saveLastLoginDateIP) {
+            $qb ->set(new Field('last_login_date'), (!empty($user->lastLoginDate) ? $user->lastLoginDate : new Literal('NULL')))
+                ->set(new Field('last_login_ip'), $user->lastLoginIP);
+        }
 		
 		if($user->props != null){
 			$this->updateUserProperties($user->props);
@@ -443,8 +451,10 @@ class UserManager extends DbAccessor{
 		$user->login = $data['login'];
 		$user->password = $data['password'];
 		$user->salt = $data['salt'];
-		$user->lastLoginIP = $data['last_login_ip'];
-		$user->lastLoginDate = $data['last_login_date'];
+        if($this->config->saveLastLoginDateIP) {
+            $user->lastLoginIP = $data['last_login_ip'];
+            $user->lastLoginDate = $data['last_login_date'];
+        }
 		$user->email = $data['email'];
 		$user->emailConfirmed = $data['email_confirmed'];
 		

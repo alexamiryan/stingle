@@ -27,19 +27,24 @@ class DBLogger extends Logger{
 	}
 	
 	public static function logCustom($name, $value){
-		$remoteIP="";
-		if(isset($_SERVER['REMOTE_ADDR'])){
-			$remoteIP=$_SERVER['REMOTE_ADDR'];
+		$ipLoggingEnabled = ConfigManager::getConfig("Logger", "DbLogger")->AuxConfig->saveIPInCustomLog;
+        $isUsingSessions = ConfigManager::getConfig("Logger", "DbLogger")->AuxConfig->isUsingSessions;
+        $insertArr = [
+            "name" => $name,
+            "value" => $value,
+        ];
+        
+		if($ipLoggingEnabled && isset($_SERVER['REMOTE_ADDR'])){
+            $insertArr["ip"] = $_SERVER['REMOTE_ADDR'];
 		}
+		if($isUsingSessions){
+            $insertArr["session_id"] = session_id();
+		}
+		
 		$qb = new QueryBuilder();
 		$qb->insert(Tbl::get('TBL_MIXED_LOG'))
-			->values(array(
-							"session_id" => session_id(), 
-							"name" => $name, 
-							"value" => $value, 
-							"ip" => $remoteIP 
-						)
-					);
+			->values($insertArr);
+		
 		Reg::get('sql')->exec($qb->getSQL());
 	}
 }

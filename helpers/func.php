@@ -17,6 +17,9 @@ function startSession($sessionName = null, $cookieParams = null){
 }
 
 function format_exception($e, $insert_pre = false) {
+    if(ConfigManager::getGlobalConfig()->Stingle->suppressRemoteAddrInExceptions) {
+        $_SERVER['REMOTE_ADDR'] = '';
+    }
     $message = get_class($e) . "\n" .
         "Message:\n" . $e->getMessage() . "\n\n" .
         "File: " . $e->getFile() . " on line " . $e->getLine() . "\n\n" .

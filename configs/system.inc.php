@@ -13,5 +13,6 @@ $SYSCONFIG['Stingle'] = [
 	],
 	'autoObStart' => true,
 	'siteName' => 'site',
-	'errorReporting' => E_ALL ^ E_NOTICE
+	'errorReporting' => E_ALL ^ E_NOTICE,
+    'suppressRemoteAddrInExceptions' => false
 ];

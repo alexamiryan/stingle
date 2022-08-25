@@ -26,6 +26,15 @@ $defaultConfig = [
 	'Hooks' => [
 		'AfterPackagesLoad' => 'UserAuthorization'
 	],
+    'Tables' => [
+        'wum_groups' => 1,
+        'wum_groups_permissions' => 1,
+        'wum_permissions' => 1,
+        'wum_users' => 1,
+        'wum_users_groups' => 1,
+        'wum_users_permissions' => 1,
+        'wum_users_properties' => 1
+    ],
 	'Memcache' => [
 		'UserManager' => 360
 	]

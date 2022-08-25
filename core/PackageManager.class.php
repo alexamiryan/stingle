@@ -7,6 +7,7 @@ class PackageManager {
 	private $objectAllowanceTable = array();
 	private $hookAllowanceTable = array();
 	private $pluginsToLoad = array();
+	private $pluginsPaths = array();
 	
 	/**
 	 * Constructor
@@ -34,6 +35,7 @@ class PackageManager {
 		}
 		
 		$this->checkPluginExistance($packageName, $pluginName);
+		$this->findPluginPath($packageName, $pluginName);
 		
 		if(!isset($this->loadedPackages[$packageName])){
 			$this->loadedPackages[$packageName] = array();
@@ -527,8 +529,8 @@ class PackageManager {
 		if(empty($packageName)){
 			throw new InvalidArgumentException("\$packageName is empty");
 		}
-		if(!is_dir(STINGLE_PATH . "packages/{$packageName}/") and 
-			!is_dir(SITE_PACKAGES_PATH . "{$packageName}/")){
+		if(!is_dir(STINGLE_PATH . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR) and
+			!is_dir(SITE_PACKAGES_PATH . "{$packageName}".DIRECTORY_SEPARATOR)){
 			throw new RuntimeException("There is no package $packageName.");
 		}
 	}
@@ -546,8 +548,8 @@ class PackageManager {
 		if(empty($pluginName)){
 			throw new InvalidArgumentException("\$pluginName is empty.");
 		}
-		if(!is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/") and 
-			!is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/")){
+		if(!is_dir(STINGLE_PATH . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR) and
+			!is_dir(SITE_PACKAGES_PATH . "{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR)){
 			throw new RuntimeException("There is no plugin $pluginName in $packageName package.");
 		}
 		if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
@@ -573,11 +575,11 @@ class PackageManager {
 		$className = "Loader$pluginName";
 		
 		if(!class_exists($className)){
-			if(file_exists(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/{$className}.class.php")){
-				stingleInclude (SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/{$className}.class.php", null, null, true);
+			if(file_exists(SITE_PACKAGES_PATH . "{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR."{$className}.class.php")){
+				stingleInclude (SITE_PACKAGES_PATH . "{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR."{$className}.class.php", null, null, true);
 			}
-			elseif(file_exists(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/{$className}.class.php")){
-				stingleInclude (STINGLE_PATH . "packages/{$packageName}/{$pluginName}/{$className}.class.php", null, null, true);
+			elseif(file_exists(STINGLE_PATH . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR."{$className}.class.php")){
+				stingleInclude (STINGLE_PATH . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR."{$className}.class.php", null, null, true);
 			}
 			else{
 				throw new RuntimeException("Loader file of plugin $pluginName in package $packageName does not exists");
@@ -593,6 +595,35 @@ class PackageManager {
 		
 		return $loader;
 	}
+    
+    private function findPluginPath($packageName, $pluginName){
+        $pluginId = $packageName . '-' . $pluginName;
+        if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
+            $pluginPath = apcu_fetch('PPath-' . $pluginId);
+            if(is_string($pluginPath)){
+                $this->pluginsPaths[$pluginId] = $pluginPath;
+                return;
+            }
+        }
+        
+        $className = "Loader$pluginName";
+        if (file_exists(SITE_PACKAGES_PATH . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")) {
+            $this->pluginsPaths[$pluginId] = SITE_PACKAGES_PATH . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR;
+        } elseif (file_exists(STINGLE_PATH . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")) {
+            $this->pluginsPaths[$pluginId] = STINGLE_PATH . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR;
+        }
+        if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
+            apcu_store('PPath-' . $pluginId, $this->pluginsPaths[$pluginId]);
+        }
+    }
+    
+    public function getPluginPath($packageName, $pluginName){
+        $pluginId = $packageName . '-' . $pluginName;
+        if(isset($this->pluginsPaths[$pluginId])){
+            return $this->pluginsPaths[$pluginId];
+        }
+        return null;
+    }
 	
 	/**
 	 * Get config for given plugin

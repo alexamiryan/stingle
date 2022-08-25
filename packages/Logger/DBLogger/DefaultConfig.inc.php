@@ -6,6 +6,7 @@ $defaultConfig = [
         'isUsingSessions' => true
     ],
     'Hooks' => [
-        'AfterOutput' => 'LogRequest'
+        'AfterOutput' => 'LogRequest',
+        'DBLog' => 'DBLog'
     ]
 ];

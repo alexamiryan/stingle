@@ -13,4 +13,12 @@ class LoaderDBLogger extends Loader{
 			DBLogger::logRequest();
 		}
 	}
+    
+    public function hookDBLog($params){
+        if(is_array($params) and count($params) == 2) {
+            DBLogger::logCustom($params[0], $params[1]);
+            return;
+        }
+        throw new RuntimeException("Invalid use of DBLog hook, Params: [name, value]");
+    }
 }

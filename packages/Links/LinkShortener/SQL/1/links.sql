@@ -19,10 +19,9 @@
 -- Table structure for table `links`
 --
 
-DROP TABLE IF EXISTS `links`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `links` (
+CREATE TABLE IF NOT EXISTS `links` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `link_id` varchar(16) NOT NULL,
   `url` varchar(1024) NOT NULL,

@@ -5,6 +5,9 @@ $defaultConfig = [
 	
 	],
 	'Hooks' => [
-		'AfterPluginInit' => 'RunMigrations'
-	]
+		'BeforePluginLoadObjects' => 'RunMigrations'
+	],
+    'Tables' => [
+        'db_migrations' => 1
+    ],
 ];

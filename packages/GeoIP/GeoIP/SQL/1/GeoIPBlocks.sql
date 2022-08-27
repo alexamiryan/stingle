@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.7.23, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 5.5.35, for Linux (x86_64)
 --
--- Host: localhost    Database: fotorder
+-- Host: 192.168.0.1    Database: edesirs
 -- ------------------------------------------------------
--- Server version       5.7.23
+-- Server version	5.5.34
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,28 +16,20 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `profile_save`
+-- Table structure for table `GeoIPBlocks`
 --
 
-DROP TABLE IF EXISTS `profile_save`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `profile_save` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(10) unsigned NOT NULL,
-  `key_id` int(10) unsigned NOT NULL,
-  `key_group` varchar(255) DEFAULT NULL,
-  `value_id` int(10) unsigned DEFAULT NULL,
-  `value_cust` text,
-  PRIMARY KEY (`id`),
-  KEY `key_id` (`key_id`),
-  KEY `value_id` (`value_id`),
-  KEY `user_id` (`user_id`),
-  KEY `user_val` (`user_id`,`value_id`),
-  CONSTRAINT `profile_save_ibfk_1` FOREIGN KEY (`key_id`) REFERENCES `profile_keys` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `profile_save_ibfk_2` FOREIGN KEY (`value_id`) REFERENCES `profile_values` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `profile_save_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `wum_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE IF NOT EXISTS `GeoIPBlocks` (
+  `startIpNum` int(10) unsigned NOT NULL,
+  `endIpNum` int(10) unsigned NOT NULL,
+  `locId` int(10) unsigned NOT NULL,
+  KEY `startIpNum` (`startIpNum`),
+  KEY `endIpNum` (`endIpNum`),
+  KEY `locId` (`locId`),
+  CONSTRAINT `GeoIPBlocks_ibfk_1` FOREIGN KEY (`locId`) REFERENCES `GeoIPLocation` (`locId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -49,4 +41,4 @@ CREATE TABLE `profile_save` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-10-29 17:53:40
+-- Dump completed on 2014-01-30 16:54:36

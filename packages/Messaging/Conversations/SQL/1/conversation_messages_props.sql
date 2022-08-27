@@ -19,10 +19,9 @@
 -- Table structure for table `conversation_messages_props`
 --
 
-DROP TABLE IF EXISTS `conversation_messages_props`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `conversation_messages_props` (
+CREATE TABLE IF NOT EXISTS `conversation_messages_props` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` int(10) unsigned NOT NULL,
   `message_id` int(10) unsigned NOT NULL,

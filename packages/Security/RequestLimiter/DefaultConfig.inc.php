@@ -12,5 +12,9 @@ $defaultConfig = [
 	'Hooks' => [
 		'BeforeController' => 'RequestLimiterGeneralRun',
 		'RecordRequest' => 'RecordRequest'
-	]
+	],
+    'Tables' => [
+        'security_flooder_ips' => 1,
+        'security_requests_log' => 1
+    ]
 ];

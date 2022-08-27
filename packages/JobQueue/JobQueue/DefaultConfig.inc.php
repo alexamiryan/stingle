@@ -7,5 +7,8 @@ $defaultConfig = [
 	],
 	'Objects' => [
 		'JobQueueManager' => 'jobQueue',
-	]
+	],
+    'Tables' => [
+        'job_queue' => 1
+    ]
 ];

@@ -7,5 +7,8 @@ $defaultConfig = array(
 	),
 	'Objects' => array(
 		'WebPushNotificationsManager' => 'pushNotif'
-	)
+	),
+    'Tables' => [
+        'push_notifications' => 1
+    ]
 );

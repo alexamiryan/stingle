@@ -4,20 +4,12 @@ class LoaderMigrations extends Loader{
 		stingleInclude ('Managers/MigrationsManager.class.php');
 	}
 	
-	protected function loadQuery(){
-		Tbl::restoreCachedData();
-		
-		MySqlDbManager::init($this->config->AuxConfig->instances);
-		
-		$this->register(MySqlDbManager::getQueryObject());
-	}
-    
     protected function customInitBeforeObjects(){
         Tbl::registerTableNames('MigrationsManager');
+        MigrationsManager::runMigrationsIfAny('Db', 'Migrations');
     }
     
 	public function hookRunMigrations($params){
 	    MigrationsManager::runMigrationsIfAny($params['packageName'], $params['pluginName']);
 	}
-	
 }

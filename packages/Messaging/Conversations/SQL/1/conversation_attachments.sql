@@ -16,25 +16,26 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `conversation_messages`
+-- Table structure for table `conversation_attachments`
 --
 
-DROP TABLE IF EXISTS `conversation_messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `conversation_messages` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID of the message',
-  `uuid` int(11) unsigned NOT NULL COMMENT 'UUID of conversation',
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Message sent datetime',
-  `user_id` int(10) unsigned DEFAULT NULL COMMENT 'User ID of sender',
-  `message` text CHARACTER SET utf8 NOT NULL COMMENT 'Message body',
-  `has_attachment` tinyint(1) NOT NULL DEFAULT '0',
-  `data` varchar(255) DEFAULT NULL,
+CREATE TABLE IF NOT EXISTS `conversation_attachments` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `uuid` int(10) unsigned DEFAULT NULL,
+  `message_id` int(10) unsigned DEFAULT NULL,
+  `sender_id` int(10) unsigned DEFAULT NULL,
+  `system_filename` varchar(64) NOT NULL,
+  `filename` varchar(256) NOT NULL,
+  `mime_type` varchar(64) NOT NULL,
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `flag` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
+  KEY `message_id` (`message_id`),
   KEY `uuid` (`uuid`),
-  KEY `sender_id` (`user_id`),
-  KEY `date` (`date`),
-  KEY `system_date` (`date`)
+  KEY `flag` (`flag`),
+  KEY `sender_id` (`sender_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -47,4 +48,4 @@ CREATE TABLE `conversation_messages` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-10-29 17:56:26
+-- Dump completed on 2018-10-29 17:55:50

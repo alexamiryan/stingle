@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.7.26, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.23, for Linux (x86_64)
 --
--- Host: localhost    Database: stingle
+-- Host: localhost    Database: fotorder
 -- ------------------------------------------------------
--- Server version       5.7.26
+-- Server version       5.7.23
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,20 +16,27 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `security_requests_log`
+-- Table structure for table `profile_save`
 --
 
-DROP TABLE IF EXISTS `security_requests_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `security_requests_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ip` varchar(16) NOT NULL,
-  `type` varchar(32) NOT NULL,
-  `count` int(11) NOT NULL DEFAULT '1',
+CREATE TABLE IF NOT EXISTS `profile_save` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `key_id` int(10) unsigned NOT NULL,
+  `key_group` varchar(255) DEFAULT NULL,
+  `value_id` int(10) unsigned DEFAULT NULL,
+  `value_cust` text,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `ip` (`ip`,`type`) USING HASH
-) ENGINE=MEMORY DEFAULT CHARSET=latin1;
+  KEY `key_id` (`key_id`),
+  KEY `value_id` (`value_id`),
+  KEY `user_id` (`user_id`),
+  KEY `user_val` (`user_id`,`value_id`),
+  CONSTRAINT `profile_save_ibfk_1` FOREIGN KEY (`key_id`) REFERENCES `profile_keys` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `profile_save_ibfk_2` FOREIGN KEY (`value_id`) REFERENCES `profile_values` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `profile_save_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `wum_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -41,4 +48,4 @@ CREATE TABLE `security_requests_log` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-06-20  2:12:20
+-- Dump completed on 2018-10-29 17:53:40

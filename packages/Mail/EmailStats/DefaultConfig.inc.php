@@ -15,5 +15,8 @@ $defaultConfig = array(
 		'BeforeEmailSend' => 'AddEmailStat',
 		'EmailBounce' => 'RecordBounce',
 		'IsMailSendAllowed' => 'IsMailSendAllowed'
-	)
+	),
+    'Tables' => [
+        'email_stats' => 1
+    ]
 );

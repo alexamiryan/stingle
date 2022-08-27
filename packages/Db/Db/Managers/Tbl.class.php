@@ -148,6 +148,18 @@ class Tbl
 		
 		return false;
 	}
+    
+    public static function isTableExistsInDb($tableName, $instanceName = MySqlDbManager::DEFAULT_INSTANCE_NAME) : bool{
+        $query = MySqlDbManager::getQueryObject($instanceName);
+        try {
+            $query->exec('select 1 from `' . $tableName . '`');
+            return true;
+        }
+        catch (MySqlException $e){
+        
+        }
+        return false;
+    }
 	
 	private static function getCallerClassName(){
 		$backtrace = debug_backtrace();

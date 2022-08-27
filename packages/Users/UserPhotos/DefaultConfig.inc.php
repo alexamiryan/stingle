@@ -7,5 +7,8 @@ $defaultConfig = array(
 	),
 	'Objects' => array(
 		'UserPhotoManager' => 'photoMgr'
-	)
+	),
+    'Tables' => [
+        'users_photos' => 1
+    ]
 );

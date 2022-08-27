@@ -20,7 +20,6 @@ SET time_zone = "+00:00";
 -- Table structure for table `wum_google_auth_map`
 --
 
-DROP TABLE IF EXISTS `wum_google_auth_map`;
 CREATE TABLE IF NOT EXISTS `wum_google_auth_map` (
   `id` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL,

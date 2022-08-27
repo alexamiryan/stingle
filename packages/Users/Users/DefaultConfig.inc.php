@@ -12,7 +12,8 @@ $defaultConfig = [
 		'useSessions' => true,
 		'useCookies' => true,
 		'saveLastLoginDateIP' => true,
-		'sameSiteCookie' => 'Strict'
+		'sameSiteCookie' => 'Strict',
+        'defaultGroups' => ['admins', 'users']
 	],
 	'Objects' => [
 		'UserManager' => 'userMgr',

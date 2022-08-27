@@ -19,10 +19,9 @@
 -- Table structure for table `conversations`
 --
 
-DROP TABLE IF EXISTS `conversations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `conversations` (
+CREATE TABLE IF NOT EXISTS `conversations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` int(11) unsigned NOT NULL COMMENT 'UUID of conversation',
   `user_id` int(10) unsigned NOT NULL COMMENT 'User ID',

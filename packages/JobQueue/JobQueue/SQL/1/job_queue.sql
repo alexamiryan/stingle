@@ -19,10 +19,9 @@
 -- Table structure for table `job_queue`
 --
 
-DROP TABLE IF EXISTS `job_queue`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
-CREATE TABLE `job_queue` (
+CREATE TABLE IF NOT EXISTS`job_queue` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(256) CHARACTER SET latin1 NOT NULL,
   `params` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,

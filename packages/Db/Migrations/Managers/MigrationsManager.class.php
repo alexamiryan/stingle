@@ -8,6 +8,7 @@ class MigrationsManager {
     
     
     public static function runMigrationsIfAny(string $packageName, string $pluginName){
+        //Reg::get('packageMgr')->usePlugin("Logger", "DBLogger");
         $pluginConfig = ConfigManager::getConfig($packageName, $pluginName);
         $pluginId = $packageName . '-' . $pluginName;
         $query = MySqlDbManager::getQueryObject();
@@ -20,6 +21,8 @@ class MigrationsManager {
                     for($i=$tableVersion+1; $i<=$intendedVersion; $i++){
                         $logMsg = ['DBMigrate', "Migrating table $tableName from version ". ($i-1) ." to $i"];
                         HookManager::callHook("DBLog", $logMsg);
+                        
+                        // Execute migration
                         $query->startTransaction();
     
                         $tableSQLFile = $pluginSqlDir . $i . DIRECTORY_SEPARATOR . $tableName . '.sql';
@@ -38,6 +41,13 @@ class MigrationsManager {
                             $query->rollBack();
                         }
     
+                        // Post migration script
+                        $postMigrateFile = $pluginSqlDir . $i . DIRECTORY_SEPARATOR . 'postMigrate.inc.php';
+                        if(file_exists($postMigrateFile)){
+                            require_once $postMigrateFile;
+                        }
+                        
+                        // Insert into db-Migrations that we have excuted the migration
                         $qb = new QueryBuilder();
     
                         $insertArr = array(
@@ -49,7 +59,8 @@ class MigrationsManager {
                         $qb->insert(Tbl::get("TBL_MIGRATIONS"))
                             ->values($insertArr)
                             ->onDuplicateKeyUpdate()
-                            ->set(new Field('version'), $i);
+                            ->set(new Field('version'), $i)
+                            ->set(new Field('plugin_name'), $pluginId);
                         $query->exec($qb->getSQL());
     
                         $logMsg = ['DBMigrate', "Migrated table $tableName from version ". ($i-1) ." to $i"];
@@ -69,18 +80,21 @@ class MigrationsManager {
      */
     private static function getTableVersionFromDb(string $packageName, string $pluginName, string $tableName) : int{
         $query = MySqlDbManager::getQueryObject();
+        
         $qb = new QueryBuilder();
         $pluginId = $packageName . '-' . $pluginName;
         $qb->select(array(new Field('version')))
             ->from(Tbl::get('TBL_MIGRATIONS'))
-            ->where($qb->expr()->equal(new Field('plugin_name'), $pluginId ))
-            ->andWhere($qb->expr()->equal(new Field('table_name'), $tableName ));
+            ->where($qb->expr()->equal(new Field('table_name'), $tableName ));
     
-        $query->exec($qb->getSQL());
+        try {
+            $query->exec($qb->getSQL());
     
-        if($query->countRecords() == 1){
-            return $query->fetchField('version');
+            if ($query->countRecords() == 1) {
+                return $query->fetchField('version');
+            }
         }
+        catch (MySqlException $e){}
         return 0;
     }
 

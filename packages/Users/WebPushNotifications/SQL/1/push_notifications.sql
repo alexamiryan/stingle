@@ -1,13 +1,13 @@
--- MySQL dump 10.13  Distrib 5.7.23, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.25, for Linux (x86_64)
 --
 -- Host: localhost    Database: fotorder
 -- ------------------------------------------------------
--- Server version       5.7.23
+-- Server version	5.7.25
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -16,26 +16,22 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `profile_keys`
+-- Table structure for table `push_notifications`
 --
 
-DROP TABLE IF EXISTS `profile_keys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `profile_keys` (
+CREATE TABLE IF NOT EXISTS `push_notifications` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `alt_name` varchar(255) DEFAULT NULL,
-  `type` enum('single','multi','range','custom','customBig') NOT NULL,
-  `range_min` int(11) DEFAULT NULL,
-  `range_max` int(11) DEFAULT NULL,
-  `grp` varchar(32) DEFAULT NULL,
-  `sort_id` tinyint(4) NOT NULL DEFAULT '0',
-  `is_enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `endpoint_hash` varchar(32) NOT NULL,
+  `user_id` int(10) unsigned NOT NULL,
+  `endpoint` varchar(2056) NOT NULL,
+  `p256dh` varchar(512) NOT NULL,
+  `auth` varchar(512) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `sort_id` (`sort_id`),
-  KEY `grp` (`grp`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  UNIQUE KEY `endpoint` (`endpoint`) USING BTREE,
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -47,4 +43,4 @@ CREATE TABLE `profile_keys` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-10-29 17:53:00
+-- Dump completed on 2019-03-26 21:04:45

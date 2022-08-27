@@ -16,28 +16,25 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `conversation_attachments`
+-- Table structure for table `profile_keys`
 --
 
-DROP TABLE IF EXISTS `conversation_attachments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `conversation_attachments` (
+CREATE TABLE IF NOT EXISTS `profile_keys` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `uuid` int(10) unsigned DEFAULT NULL,
-  `message_id` int(10) unsigned DEFAULT NULL,
-  `sender_id` int(10) unsigned DEFAULT NULL,
-  `system_filename` varchar(64) NOT NULL,
-  `filename` varchar(256) NOT NULL,
-  `mime_type` varchar(64) NOT NULL,
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `flag` tinyint(4) NOT NULL DEFAULT '0',
+  `name` varchar(255) NOT NULL,
+  `alt_name` varchar(255) DEFAULT NULL,
+  `type` enum('single','multi','range','custom','customBig') NOT NULL,
+  `range_min` int(11) DEFAULT NULL,
+  `range_max` int(11) DEFAULT NULL,
+  `grp` varchar(32) DEFAULT NULL,
+  `sort_id` tinyint(4) NOT NULL DEFAULT '0',
+  `is_enabled` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
-  KEY `message_id` (`message_id`),
-  KEY `uuid` (`uuid`),
-  KEY `flag` (`flag`),
-  KEY `sender_id` (`sender_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  KEY `sort_id` (`sort_id`),
+  KEY `grp` (`grp`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -49,4 +46,4 @@ CREATE TABLE `conversation_attachments` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-10-29 17:55:50
+-- Dump completed on 2018-10-29 17:53:00

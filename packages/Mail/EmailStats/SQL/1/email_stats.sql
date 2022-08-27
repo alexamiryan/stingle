@@ -19,10 +19,9 @@
 -- Table structure for table `email_stats`
 --
 
-DROP TABLE IF EXISTS `email_stats`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
-CREATE TABLE `email_stats` (
+CREATE TABLE IF NOT EXISTS `email_stats` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `email_id` varchar(32) NOT NULL,
   `email` varchar(256) NOT NULL,

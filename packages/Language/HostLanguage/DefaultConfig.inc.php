@@ -6,5 +6,8 @@ $defaultConfig = array(
 	),
 	'Memcache' => array(
 		'HostLanguageManager' => -1
-	)
+	),
+    'Tables' => [
+        'host_language' => 1
+    ]
 );

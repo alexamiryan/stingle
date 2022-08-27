@@ -124,13 +124,14 @@ class MySqlQuery extends Model {
 	public function errorCode() {
 		return $this->link->errno;
 	}
-
-	/**
-	 * Execute SQL query
-	 *
-	 * @param string $sqlStatement
-	 * @return MysqlQuery
-	 */
+    
+    /**
+     * Execute SQL query
+     *
+     * @param string $sqlStatement
+     * @return MysqlQuery
+     * @throws MySqlException
+     */
 	public function exec($sqlStatement) {
 		if(!$this->isInstanceLocked && !$this->isTransactionStarted){
 			$this->chooseDbEndpoint($sqlStatement);
@@ -153,7 +154,7 @@ class MySqlQuery extends Model {
 		else {
 			$errorCode = $this->errorCode();
 			$errorMessage = $this->errorMessage();
-			if ($errorCode == 1146) {
+			/*if ($errorCode == 1146) {
 				preg_match("/Table \'.*?\.(.+?)\' doesn\'t exist/", $errorMessage, $matches);
 
 				if (isset($matches[1])) {
@@ -178,7 +179,7 @@ class MySqlQuery extends Model {
 						}
 					}
 				}
-			}
+			}*/
 			throw new MySqlException("MySQL Error: $errorCode: $errorMessage in query `$sqlStatement`", $errorCode);
 		}
 	}

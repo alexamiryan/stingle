@@ -10,5 +10,8 @@ $defaultConfig = array(
     ),
 	'Hooks' => array(
 		'BeforeRequestParser' => 'ParseLinks'
-	)
+	),
+    'Tables' => [
+        'links' => 1
+    ]
 );

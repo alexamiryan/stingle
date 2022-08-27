@@ -53,6 +53,7 @@ abstract class Loader {
 			$this->includes();
 		}
 		$this->customInitBeforeObjects();
+        HookManager::callHook("BeforePluginLoadObjects", $hookArgs);
 		$this->loadObjects($overrideObjects);
 		$this->customInitAfterObjects();
 		$this->registerHooks();

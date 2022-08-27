@@ -19,10 +19,9 @@
 -- Table structure for table `profile_values`
 --
 
-DROP TABLE IF EXISTS `profile_values`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `profile_values` (
+CREATE TABLE IF NOT EXISTS `profile_values` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `key_id` int(10) unsigned NOT NULL,
   `subgroup` varchar(32) DEFAULT NULL,

@@ -13,4 +13,7 @@ $defaultConfig = [
 	'Hooks' => [
 		'AfterPackagesLoad' => 'GetUserFromToken'
 	],
+    'Tables' => [
+        'user_sessions' => 1
+    ]
 ];

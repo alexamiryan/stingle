@@ -20,7 +20,17 @@ abstract class Loader {
 		}
 		if(!is_dir(STINGLE_PATH . "packages/{$packageName}/") and 
 			!is_dir(SITE_PACKAGES_PATH . "{$packageName}/")){
-			throw new RuntimeException("Package folder does not exist.");
+            $found = false;
+            if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+                foreach(ADDONS_PATHS as $path){
+                    if(is_dir($path . "packages/{$packageName}/")){
+                        $found = true;
+                    }
+                }
+            }
+            if(!$found) {
+                throw new RuntimeException("Package folder does not exist.");
+            }
 		}
 		
 		if(empty($pluginName)){
@@ -28,7 +38,17 @@ abstract class Loader {
 		}
 		if(!is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}") and 
 			!is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}")){
-			throw new RuntimeException("Plugin folder does not exist.");
+            $found = false;
+            if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+                foreach(ADDONS_PATHS as $path){
+                    if(is_dir($path . "packages/{$packageName}/{$pluginName}")){
+                        $found = true;
+                    }
+                }
+            }
+            if(!$found) {
+                throw new RuntimeException("Plugin folder does not exist.");
+            }
 		}
 		
 		$this->packageManager = $packageManager;
@@ -97,14 +117,25 @@ abstract class Loader {
 		$className = "Dependency{$this->pluginName}";
 		try{
 			if(!class_exists($className)){
-				if(file_exists(SITE_PACKAGES_PATH . "{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
-					stingleInclude(SITE_PACKAGES_PATH . "{$this->packageName}/{$this->pluginName}/{$className}.class.php", null, null, true);
-				}
-				elseif(file_exists(STINGLE_PATH . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
-					stingleInclude(STINGLE_PATH . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php", null, null, true);
-				}
-				else{
-					throw new RuntimeException();
+                $found = false;
+                if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+                    foreach(ADDONS_PATHS as $path){
+                        if(file_exists($path . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
+                            stingleInclude($path . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php", null, null, true);
+                            $found = true;
+                        }
+                    }
+                }
+                if(!$found) {
+                    if(file_exists(SITE_PACKAGES_PATH . "{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
+                        stingleInclude(SITE_PACKAGES_PATH . "{$this->packageName}/{$this->pluginName}/{$className}.class.php", null, null, true);
+                    }
+                    elseif(file_exists(STINGLE_PATH . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
+                        stingleInclude(STINGLE_PATH . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php", null, null, true);
+                    }
+                    else{
+                        throw new RuntimeException();
+                    }
 				}
 			}
 			

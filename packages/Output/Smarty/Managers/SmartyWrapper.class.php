@@ -217,6 +217,11 @@ class SmartyWrapper extends Smarty {
 		$this->setCacheDir($config->cacheDir);
 		$this->setCompileDir($config->compileDir);
 		$this->setTemplateDir($config->templateDir);
+        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+            foreach(ADDONS_PATHS as $path){
+                $this->addTemplateDir($path . $config->templateDir);
+            }
+        }
 		
 		$this->setCaching($config->caching);
 		$this->setCacheLifetime($config->defaultCacheTime);
@@ -289,26 +294,37 @@ class SmartyWrapper extends Smarty {
 	 * @throws RuntimeException
 	 */
 	public function getFilePathFromTemplate($filename, $withAbsolutePath = false){
-		$templatePathPrefix = $this->config->templateDir . $this->defaultRelativeTemplatesPath;
-		if($withAbsolutePath){
-			$returnTemplatePathPrefix = $this->config->templateDir . $this->defaultRelativeTemplatesPath;
-		}
-		else{
-			$returnTemplatePathPrefix = $this->defaultRelativeTemplatesPath;
-		}
-
-		$currentTemplate = $this->template;
-		while(true){
-			if(file_exists($templatePathPrefix . $currentTemplate . '/' . $filename)){
-				return $returnTemplatePathPrefix . $currentTemplate . '/' . $filename;
-			}
-			elseif(isset($this->templates->$currentTemplate) and !empty($this->templates->$currentTemplate)){
-				$currentTemplate = $this->templates->$currentTemplate;
-			}
-			else{
-				return false;
-			}
-		}
+        $viewPaths = [];
+        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+            foreach(ADDONS_PATHS as $path){
+                if(is_dir($path . $this->config->templateDir)){
+                    $viewPaths[] = $path;
+                }
+            }
+        }
+        $viewPaths[] = "";
+        
+        foreach ($viewPaths as $viewPath) {
+            $templatePathPrefix = $viewPath . $this->config->templateDir . $this->defaultRelativeTemplatesPath;
+            
+            if ($withAbsolutePath) {
+                $returnTemplatePathPrefix = $viewPath . $this->config->templateDir . $this->defaultRelativeTemplatesPath;
+            } else {
+                $returnTemplatePathPrefix = $viewPath . $this->config->templateDir .$this->defaultRelativeTemplatesPath;
+            }
+            $currentTemplate = $this->template;
+            while (true) {
+                if (file_exists($templatePathPrefix . $currentTemplate . '/' . $filename)) {
+                    return $returnTemplatePathPrefix . $currentTemplate . '/' . $filename;
+                } elseif (isset($this->templates->$currentTemplate) and !empty($this->templates->$currentTemplate)) {
+                    $currentTemplate = $this->templates->$currentTemplate;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+        return false;
 	}
 	
 	
@@ -323,49 +339,61 @@ class SmartyWrapper extends Smarty {
 	 *  @return string
 	 */
 	public function findFilePath($fileName, $alternatePath = null){
-		$templatePathPrefix = $this->config->templateDir . $this->defaultRelativeTemplatesPath;
-		$currentTemplate = $this->template;
-		$nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
-		
-		// while loop for iterating through templates hierarchy
-		while(true){
-			$levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
-			
-			$pagesPath = $this->pagesPath;
-			// Go up
-			for($i = count($levels)-1; $i >= 1 ; $i--){
-				if(isset($nav->{$levels[$i]}) and !empty($nav->{$levels[$i]})){
-					$pagesPath = $this->pagesPath;
-					// Build module path for current nav level
-					for($j=0; $j<$i; $j++){
-						$pagesPath .= $nav->{$levels[$j]} . '/';
-					}
-					
-					// Check if there is file in this level
-					if(file_exists($templatePathPrefix . $currentTemplate .'/'. $pagesPath . $fileName)){
-						return $templatePathPrefix . $currentTemplate .'/'. $pagesPath . $fileName;
-					}
-				}
-			}
-			// Look in template in general
-			if(file_exists($templatePathPrefix . $currentTemplate .'/'. $fileName)){
-				return $templatePathPrefix . $currentTemplate .'/'. $fileName;
-			}
-			
-			// Look in optional alternate lookup location
-			if(!empty($alternatePath) and file_exists($templatePathPrefix . $currentTemplate .'/'. $alternatePath . $fileName)){
-				return $templatePathPrefix . $currentTemplate .'/'. $alternatePath . $fileName;
-			}
-			
-			// If there is parent template let's look there too
-			if(isset($this->templates->$currentTemplate) and !empty($this->templates->$currentTemplate)){
-				$currentTemplate = $this->templates->$currentTemplate;
-			}
-			else{
-				// No parent template left, good bye
-				break;
-			}
-		}
+        
+        $viewPaths = [];
+        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+            foreach(ADDONS_PATHS as $path){
+                if(is_dir($path . $this->config->templateDir)){
+                    $viewPaths[] = $path;
+                }
+            }
+        }
+        $viewPaths[] = "";
+        
+        foreach ($viewPaths as $viewPath) {
+            $templatePathPrefix = $viewPath . $this->config->templateDir . $this->defaultRelativeTemplatesPath;
+            $currentTemplate = $this->template;
+            $nav = Reg::get(ConfigManager::getConfig("SiteNavigation", "SiteNavigation")->ObjectsIgnored->Nav);
+    
+            // while loop for iterating through templates hierarchy
+            while (true) {
+                $levels = ConfigManager::getConfig("RewriteURL", "RewriteURL")->AuxConfig->levels->toArray();
+        
+                $pagesPath = $this->pagesPath;
+                // Go up
+                for ($i = count($levels) - 1; $i >= 1; $i--) {
+                    if (isset($nav->{$levels[$i]}) and !empty($nav->{$levels[$i]})) {
+                        $pagesPath = $this->pagesPath;
+                        // Build module path for current nav level
+                        for ($j = 0; $j < $i; $j++) {
+                            $pagesPath .= $nav->{$levels[$j]} . '/';
+                        }
+                
+                        // Check if there is file in this level
+                        if (file_exists($templatePathPrefix . $currentTemplate . '/' . $pagesPath . $fileName)) {
+                            return $templatePathPrefix . $currentTemplate . '/' . $pagesPath . $fileName;
+                        }
+                    }
+                }
+                // Look in template in general
+                if (file_exists($templatePathPrefix . $currentTemplate . '/' . $fileName)) {
+                    return $templatePathPrefix . $currentTemplate . '/' . $fileName;
+                }
+        
+                // Look in optional alternate lookup location
+                if (!empty($alternatePath) and file_exists($templatePathPrefix . $currentTemplate . '/' . $alternatePath . $fileName)) {
+                    return $templatePathPrefix . $currentTemplate . '/' . $alternatePath . $fileName;
+                }
+        
+                // If there is parent template let's look there too
+                if (isset($this->templates->$currentTemplate) and !empty($this->templates->$currentTemplate)) {
+                    $currentTemplate = $this->templates->$currentTemplate;
+                } else {
+                    // No parent template left, good bye
+                    break;
+                }
+            }
+        }
 		throw new TemplateFileNotFoundException("Unable to find given filename ($fileName) in all available lookup locations!");
 	}
 	
@@ -399,7 +427,6 @@ class SmartyWrapper extends Smarty {
 		if($this->isLayoutSet == true and $override == false){
 			return;
 		}
-		
 		if(file_exists($this->getFilePathFromTemplate('layouts/' . $layout . '.tpl', true))){
 			$this->layoutPath = $this->getFilePathFromTemplate('layouts/' . $layout . '.tpl');
 		}
@@ -885,7 +912,7 @@ class SmartyWrapper extends Smarty {
 		else{
 			$this->fileToDisplay = $this->overridedFileToDisplay;
 		}
-		
+  
 		// Check if page exists and if not show 404 error page
 		$requiredLevelsCount = $nav->existentLevelsCount - 2;
 		if(empty($this->fileToDisplay) or $foundLevelsCount < $requiredLevelsCount){

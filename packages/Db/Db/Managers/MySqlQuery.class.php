@@ -154,32 +154,6 @@ class MySqlQuery extends Model {
 		else {
 			$errorCode = $this->errorCode();
 			$errorMessage = $this->errorMessage();
-			/*if ($errorCode == 1146) {
-				preg_match("/Table \'.*?\.(.+?)\' doesn\'t exist/", $errorMessage, $matches);
-
-				if (isset($matches[1])) {
-					$nonExistantTableName = $matches[1];
-
-					if (!in_array($nonExistantTableName, $this->nonExitentTables)) {
-
-						$sqlFiles = Tbl::getPluginSQLFilePathsByTableName($nonExistantTableName);
-						if ($sqlFiles !== false) {
-							$this->startTransaction();
-							foreach ($sqlFiles as $sqlFilePath) {
-								self::executeSQLFile($sqlFilePath, ';');
-							}
-
-							if ($this->commit()) {
-								array_push($this->nonExitentTables, $nonExistantTableName);
-								return $this->exec($sqlStatement);
-							}
-							else {
-								$this->rollBack();
-							}
-						}
-					}
-				}
-			}*/
 			throw new MySqlException("MySQL Error: $errorCode: $errorMessage in query `$sqlStatement`", $errorCode);
 		}
 	}

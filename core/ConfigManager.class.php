@@ -108,16 +108,25 @@ class ConfigManager
 		if(!$ignoreCache and isset(static::$cache->$packageName) and isset(static::$cache->$packageName->$pluginName)){
 			return static::$cache->$packageName->$pluginName;
 		}
-		
-		if(file_exists(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/DefaultConfig.inc.php")){
-			include(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/DefaultConfig.inc.php");
-		}
-		elseif(file_exists(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/DefaultConfig.inc.php")){
-			include(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/DefaultConfig.inc.php");
-		}
-		else{
-			$defaultConfig = array();
-		}
+        
+        $found = false;
+        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)) {
+            foreach (ADDONS_PATHS as $path) {
+                if (file_exists($path . "packages/{$packageName}/{$pluginName}/DefaultConfig.inc.php")) {
+                    include($path . "packages/{$packageName}/{$pluginName}/DefaultConfig.inc.php");
+                    $found = true;
+                }
+            }
+        }
+        if(!$found) {
+            if (file_exists(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/DefaultConfig.inc.php")) {
+                include(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/DefaultConfig.inc.php");
+            } elseif (file_exists(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/DefaultConfig.inc.php")) {
+                include(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/DefaultConfig.inc.php");
+            } else {
+                $defaultConfig = array();
+            }
+        }
 		$defaultConfigObj = new Config($defaultConfig);
 		
 		$result = static::mergeConfigs($globalConfig, $defaultConfigObj);

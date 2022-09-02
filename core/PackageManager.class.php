@@ -531,7 +531,17 @@ class PackageManager {
 		}
 		if(!is_dir(STINGLE_PATH . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR) and
 			!is_dir(SITE_PACKAGES_PATH . "{$packageName}".DIRECTORY_SEPARATOR)){
-			throw new RuntimeException("There is no package $packageName.");
+            $found = false;
+            if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+                foreach(ADDONS_PATHS as $path){
+                    if(is_dir($path . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR)){
+                        $found = true;
+                    }
+                }
+            }
+            if(!$found) {
+                throw new RuntimeException("There is no package $packageName.");
+            }
 		}
 	}
 	
@@ -550,7 +560,17 @@ class PackageManager {
 		}
 		if(!is_dir(STINGLE_PATH . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR) and
 			!is_dir(SITE_PACKAGES_PATH . "{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR)){
-			throw new RuntimeException("There is no plugin $pluginName in $packageName package.");
+            $found = false;
+            if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+                foreach(ADDONS_PATHS as $path){
+                    if(is_dir($path . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR)){
+                        $found = true;
+                    }
+                }
+            }
+            if(!$found) {
+                throw new RuntimeException("There is no plugin $pluginName in $packageName package.");
+            }
 		}
 		if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
 			apcu_store('exist-' . $packageName . '-' . $pluginName, 'yes');
@@ -575,15 +595,24 @@ class PackageManager {
 		$className = "Loader$pluginName";
 		
 		if(!class_exists($className)){
-			if(file_exists(SITE_PACKAGES_PATH . "{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR."{$className}.class.php")){
-				stingleInclude (SITE_PACKAGES_PATH . "{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR."{$className}.class.php", null, null, true);
-			}
-			elseif(file_exists(STINGLE_PATH . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR."{$className}.class.php")){
-				stingleInclude (STINGLE_PATH . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR."{$className}.class.php", null, null, true);
-			}
-			else{
-				throw new RuntimeException("Loader file of plugin $pluginName in package $packageName does not exists");
-			}
+            $found = false;
+            if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+                foreach(ADDONS_PATHS as $path){
+                    if(file_exists($path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")){
+                        stingleInclude($path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php", null, null, true);
+                        $found = true;
+                    }
+                }
+            }
+            if(!$found) {
+                if (file_exists(SITE_PACKAGES_PATH . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")) {
+                    stingleInclude(SITE_PACKAGES_PATH . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php", null, null, true);
+                } elseif (file_exists(STINGLE_PATH . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")) {
+                    stingleInclude(STINGLE_PATH . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php", null, null, true);
+                } else {
+                    throw new RuntimeException("Loader file of plugin $pluginName in package $packageName does not exists");
+                }
+            }
 		}
 
 		try{
@@ -607,10 +636,21 @@ class PackageManager {
         }
         
         $className = "Loader$pluginName";
-        if (file_exists(SITE_PACKAGES_PATH . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")) {
-            $this->pluginsPaths[$pluginId] = SITE_PACKAGES_PATH . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR;
-        } elseif (file_exists(STINGLE_PATH . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")) {
-            $this->pluginsPaths[$pluginId] = STINGLE_PATH . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR;
+        $found = false;
+        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+            foreach(ADDONS_PATHS as $path){
+                if(file_exists($path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")){
+                    $this->pluginsPaths[$pluginId] = $path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php";
+                    $found = true;
+                }
+            }
+        }
+        if(!$found) {
+            if (file_exists(SITE_PACKAGES_PATH . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")) {
+                $this->pluginsPaths[$pluginId] = SITE_PACKAGES_PATH . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR;
+            } elseif (file_exists(STINGLE_PATH . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")) {
+                $this->pluginsPaths[$pluginId] = STINGLE_PATH . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR;
+            }
         }
         if(!defined('DISABLE_APCU') && extension_loaded('apcu')){
             apcu_store('PPath-' . $pluginId, $this->pluginsPaths[$pluginId]);

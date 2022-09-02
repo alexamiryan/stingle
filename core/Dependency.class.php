@@ -24,10 +24,22 @@ class Dependency
 			throw new InvalidArgumentException("\$pluginName is empty.");
 		}
 		
-		if(!is_dir(STINGLE_PATH . "packages/{$packageName}/") and !is_dir(SITE_PACKAGES_PATH . "{$packageName}/")){
-			throw new RuntimeException("There is no package $packageName.");
+        $found = false;
+        if(is_dir(STINGLE_PATH . "packages/{$packageName}/") && is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/")){
+            $found = true;
+        }
+		if(is_dir(SITE_PACKAGES_PATH . "{$packageName}/") && is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/")){
+            $found = true;
 		}
-		if(!is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/") and !is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/")){
+        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+            foreach(ADDONS_PATHS as $path){
+                if(is_dir($path . "packages/{$packageName}/") && is_dir($path . "packages/{$packageName}/{$pluginName}/")){
+                    $found = true;
+                }
+            }
+        }
+        
+		if(!$found){
 			throw new RuntimeException("There is no plugin $pluginName in $packageName package.");
 		}
 		if(!in_array($packageName, array_keys($this->deps))){

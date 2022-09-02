@@ -29,7 +29,17 @@ class LoaderSmarty extends Loader {
 
 	public function hookCollectSmartyPluginsDir(Array $params) {
 		extract($params);
-
+        
+        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+            foreach(ADDONS_PATHS as $path){
+                if(is_dir($path . "packages/{$packageName}/") && is_dir($path . "packages/{$packageName}/{$pluginName}")){
+                    if (is_dir($path . "packages/{$packageName}/{$pluginName}/SmartyPlugins")) {
+                        array_push($this->pluginsDirs, $path . "packages/{$packageName}/{$pluginName}/SmartyPlugins");
+                    }
+                }
+            }
+        }
+        
 		if (is_dir(STINGLE_PATH . "packages/{$packageName}/") and is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}")) {
 			if (is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}/SmartyPlugins")) {
 				array_push($this->pluginsDirs, STINGLE_PATH . "packages/{$packageName}/{$pluginName}/SmartyPlugins");

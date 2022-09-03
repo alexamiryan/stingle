@@ -1,13 +1,23 @@
 <?php
-$defaultConfig = array(	
-						'AuxConfig' => array(	'firstLevelDefaultValue' => 'home',
-												'actionName' => 'action',
-												'validationRegExp' => '/^[a-zA-Z0-9_\-]+$/',
-												'controllersDir' => 'controllers',
-												'defaultControllerPath' => 'default'),
-		
-						'Objects' => array(	'RequestParser' => 'requestParser',
-											'Controller' => 'controller'  ),
-						'ObjectsIgnored' => array(	'Nav' => 'nav'  ),
-						'Hooks' => array(	'RequestParser' => 'Parse', 'Controller' => 'ExecController'  )
-					);
+$defaultConfig = array(
+    'AuxConfig' => [
+        'firstLevelDefaultValue' => 'home',
+        'secondLevelDefaultValue' => 'home',
+        'actionName' => 'action',
+        'validationRegExp' => '/^[a-zA-Z0-9_\-]+$/',
+        'controllersDir' => 'controllers',
+        'defaultControllerPath' => 'default'
+    ],
+    
+    'Objects' => [
+        'RequestParser' => 'requestParser',
+        'Controller' => 'controller'
+    ],
+    'ObjectsIgnored' => [
+        'Nav' => 'nav'
+    ],
+    'Hooks' => [
+        'RequestParser' => 'Parse',
+        'Controller' => 'ExecController'
+    ]
+);

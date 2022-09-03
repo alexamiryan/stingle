@@ -65,6 +65,14 @@ else{
 ConfigManager::setGlobalConfig($globalConfig);
 ConfigManager::initCache();
 
+// Init addons
+if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
+    foreach(ADDONS_PATHS as $path){
+        if(file_exists($path . "init.inc.php")){
+            require_once ($path . "init.inc.php");
+        }
+    }
+}
 
 if(isset($globalConfig->Stingle->errorReporting)){
 	error_reporting($globalConfig->Stingle->errorReporting);

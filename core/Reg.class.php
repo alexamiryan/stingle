@@ -16,7 +16,7 @@ class Reg
 		if(empty($key)){
 			throw new InvalidArgumentException("\$key have to be non empty string.");
 		}
-		if(!$override and isset(static::$reg[$key])){
+		if(!$override && isset(static::$reg[$key])){
 			throw new RuntimeException("Key $key is already registered in registry.");
 		}
 		static::$reg[$key] = $value;

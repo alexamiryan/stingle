@@ -35,12 +35,16 @@ class RequestParser
 				break;
 			}
 		}
-		
-		// If no levels specified in $_GET we just take default first level value 
+  
+		// If no levels specified in $_GET we just take default first and second level value
 		if($existentLevelsCount == 0){
 			$nav->{$levels[0]} = $this->config->firstLevelDefaultValue;
-			$existentLevelsCount++;
+            $existentLevelsCount++;
 		}
+        elseif($existentLevelsCount == 1){
+            $nav->{$levels[1]} = $this->config->secondLevelDefaultValue;
+            $existentLevelsCount++;
+        }
 		
 		// If we haven't gone to the end duplicate last level
 		if($existentLevelsCount < count($levels)){
@@ -59,6 +63,9 @@ class RequestParser
 	}
 	
 	public function setFirstLevelDefaultValue($value){
-		$this->firstLevelDefaultValue = $value;
+		$this->config->firstLevelDefaultValue = $value;
+	}
+	public function setSecondLevelDefaultValue($value){
+		$this->config->secondLevelDefaultValue = $value;
 	}
 }

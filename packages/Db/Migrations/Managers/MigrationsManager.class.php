@@ -59,8 +59,7 @@ class MigrationsManager {
                         $qb->insert(Tbl::get("TBL_MIGRATIONS"))
                             ->values($insertArr)
                             ->onDuplicateKeyUpdate()
-                            ->set(new Field('version'), $i)
-                            ->set(new Field('plugin_name'), $pluginId);
+                            ->set(new Field('version'), $i);
                         $query->exec($qb->getSQL());
     
                         $logMsg = ['DBMigrate', "Migrated table $tableName from version ". ($i-1) ." to $i"];
@@ -85,7 +84,8 @@ class MigrationsManager {
         $pluginId = $packageName . '-' . $pluginName;
         $qb->select(array(new Field('version')))
             ->from(Tbl::get('TBL_MIGRATIONS'))
-            ->where($qb->expr()->equal(new Field('table_name'), $tableName ));
+            ->where($qb->expr()->equal(new Field('table_name'), $tableName ))
+            ->andWhere($qb->expr()->equal(new Field('plugin_name'), $pluginId ));
     
         try {
             $query->exec($qb->getSQL());

@@ -640,7 +640,7 @@ class PackageManager {
         if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
             foreach(ADDONS_PATHS as $path){
                 if(file_exists($path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")){
-                    $this->pluginsPaths[$pluginId] = $path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php";
+                    $this->pluginsPaths[$pluginId] = $path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR;
                     $found = true;
                 }
             }

@@ -8,7 +8,7 @@ if(defined('ADDONS_FOLDER_PATH') && is_dir(ADDONS_FOLDER_PATH) && !defined('ADDO
     $files = scandir($addonsPath);
     foreach($files as $file) {
         if(is_dir($addonsPath . $file) && $file != '.' && $file != '..') {
-            $folders[] = $addonsPath . $file;
+            $folders[] = $addonsPath . $file . '/';
         }
     }
     define ("ADDONS_PATHS", $folders);

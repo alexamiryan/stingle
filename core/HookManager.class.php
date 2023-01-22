@@ -47,7 +47,7 @@ class HookManager{
 	 * key of returned value.
 	 * 
 	 * @param string $hookName
-	 * @param array $arguments
+	 * @param mixed $arguments
 	 */
 	public static function callHook($hookName, &$arguments = null){
 		$returnArr = array();
@@ -61,6 +61,20 @@ class HookManager{
 		
 		return $returnArr;
 	}
+    
+    /**
+     * Call registered hook, without any feedback. More than one hook could be registered on one hook name.
+     *
+     * @param string $hookName
+     * @param mixed $arguments
+     */
+    public static function callHookSimple($hookName, $arguments = null){
+        if(static::isAnyHooksRegistered($hookName)){
+            foreach (static::$hooks[$hookName] as $hook){
+                static::executeHook($hook, $arguments);
+            }
+        }
+    }
 	
 	/**
 	 * Call registered hook. More than one hook could be registered on one hook name. 

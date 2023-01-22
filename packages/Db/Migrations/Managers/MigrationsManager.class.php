@@ -62,8 +62,7 @@ class MigrationsManager {
                             ->set(new Field('version'), $i);
                         $query->exec($qb->getSQL());
     
-                        $logMsg = ['DBMigrate', "Migrated table $tableName from version ". ($i-1) ." to $i"];
-                        HookManager::callHook("DBLog", $logMsg);
+                        HookManager::callHookSimple("DBLog", ['DBMigrate', "Migrated table $tableName from version ". ($i-1) ." to $i"]);
                     }
                 }
             }

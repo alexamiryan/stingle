@@ -7,7 +7,7 @@ class Reg
 	 * Register new registry item
 	 * 
 	 * @param string $key
-	 * @param string $value
+	 * @param object $value
 	 * @param boolean $override
 	 * @throws InvalidArgumentException
 	 * @throws RuntimeException

@@ -32,11 +32,9 @@ class Controller
         
         // Base include path in chosen controllers group
         $includePaths = [];
-        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-            foreach(ADDONS_PATHS as $path){
-                if(is_dir($path . $this->config->controllersDir . '/' . $this->controllersPath . '/')){
-                    $includePaths[] = $path . $this->config->controllersDir . '/' . $this->controllersPath . '/';
-                }
+        foreach(AddonManager::get() as $path){
+            if(is_dir($path . $this->config->controllersDir . '/' . $this->controllersPath . '/')){
+                $includePaths[] = $path . $this->config->controllersDir . '/' . $this->controllersPath . '/';
             }
         }
         $includePaths[] = $this->config->controllersDir . '/' . $this->controllersPath . '/';

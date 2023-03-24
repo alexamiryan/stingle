@@ -31,11 +31,9 @@ class Dependency
 		if(is_dir(SITE_PACKAGES_PATH . "{$packageName}/") && is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}/")){
             $found = true;
 		}
-        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-            foreach(ADDONS_PATHS as $path){
-                if(is_dir($path . "packages/{$packageName}/") && is_dir($path . "packages/{$packageName}/{$pluginName}/")){
-                    $found = true;
-                }
+        foreach(AddonManager::get() as $path){
+            if(is_dir($path . "packages/{$packageName}/") && is_dir($path . "packages/{$packageName}/{$pluginName}/")){
+                $found = true;
             }
         }
         

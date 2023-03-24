@@ -110,12 +110,10 @@ class ConfigManager
 		}
         
         $found = false;
-        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)) {
-            foreach (ADDONS_PATHS as $path) {
-                if (file_exists($path . "packages/{$packageName}/{$pluginName}/DefaultConfig.inc.php")) {
-                    include($path . "packages/{$packageName}/{$pluginName}/DefaultConfig.inc.php");
-                    $found = true;
-                }
+        foreach (AddonManager::get() as $path) {
+            if (file_exists($path . "packages/{$packageName}/{$pluginName}/DefaultConfig.inc.php")) {
+                include($path . "packages/{$packageName}/{$pluginName}/DefaultConfig.inc.php");
+                $found = true;
             }
         }
         if(!$found) {

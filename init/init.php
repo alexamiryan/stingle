@@ -1,4 +1,5 @@
 <?php
+require_once(STINGLE_PATH . "core/AddonManager.class.php");
 require_once(STINGLE_PATH . "core/Cgi.class.php");
 require_once(STINGLE_PATH . "core/Config.class.php");
 require_once(STINGLE_PATH . "core/ConfigManager.class.php");
@@ -66,13 +67,7 @@ ConfigManager::setGlobalConfig($globalConfig);
 ConfigManager::initCache();
 
 // Init addons
-if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-    foreach(ADDONS_PATHS as $path){
-        if(file_exists($path . "init.inc.php")){
-            require_once ($path . "init.inc.php");
-        }
-    }
-}
+AddonManager::init();
 
 if(isset($globalConfig->Stingle->errorReporting)){
 	error_reporting($globalConfig->Stingle->errorReporting);

@@ -217,10 +217,8 @@ class SmartyWrapper extends Smarty {
 		$this->setCacheDir($config->cacheDir);
 		$this->setCompileDir($config->compileDir);
 		$this->setTemplateDir($config->templateDir);
-        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-            foreach(ADDONS_PATHS as $path){
-                $this->addTemplateDir($path . $config->templateDir);
-            }
+        foreach(AddonManager::get() as $path){
+            $this->addTemplateDir($path . $config->templateDir);
         }
 		
 		$this->setCaching($config->caching);
@@ -295,11 +293,9 @@ class SmartyWrapper extends Smarty {
 	 */
 	public function getFilePathFromTemplate($filename, $withAbsolutePath = false){
         $viewPaths = [];
-        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-            foreach(ADDONS_PATHS as $path){
-                if(is_dir($path . $this->config->templateDir)){
-                    $viewPaths[] = $path;
-                }
+        foreach(AddonManager::get() as $path){
+            if(is_dir($path . $this->config->templateDir)){
+                $viewPaths[] = $path;
             }
         }
         $viewPaths[] = "";
@@ -341,11 +337,9 @@ class SmartyWrapper extends Smarty {
 	public function findFilePath($fileName, $alternatePath = null){
         
         $viewPaths = [];
-        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-            foreach(ADDONS_PATHS as $path){
-                if(is_dir($path . $this->config->templateDir)){
-                    $viewPaths[] = $path;
-                }
+        foreach(AddonManager::get() as $path){
+            if(is_dir($path . $this->config->templateDir)){
+                $viewPaths[] = $path;
             }
         }
         $viewPaths[] = "";

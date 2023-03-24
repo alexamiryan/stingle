@@ -21,11 +21,9 @@ abstract class Loader {
 		if(!is_dir(STINGLE_PATH . "packages/{$packageName}/") and 
 			!is_dir(SITE_PACKAGES_PATH . "{$packageName}/")){
             $found = false;
-            if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-                foreach(ADDONS_PATHS as $path){
-                    if(is_dir($path . "packages/{$packageName}/")){
-                        $found = true;
-                    }
+            foreach(AddonManager::get() as $path){
+                if(is_dir($path . "packages/{$packageName}/")){
+                    $found = true;
                 }
             }
             if(!$found) {
@@ -39,11 +37,9 @@ abstract class Loader {
 		if(!is_dir(STINGLE_PATH . "packages/{$packageName}/{$pluginName}") and 
 			!is_dir(SITE_PACKAGES_PATH . "{$packageName}/{$pluginName}")){
             $found = false;
-            if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-                foreach(ADDONS_PATHS as $path){
-                    if(is_dir($path . "packages/{$packageName}/{$pluginName}")){
-                        $found = true;
-                    }
+            foreach(AddonManager::get() as $path){
+                if(is_dir($path . "packages/{$packageName}/{$pluginName}")){
+                    $found = true;
                 }
             }
             if(!$found) {
@@ -118,12 +114,10 @@ abstract class Loader {
 		try{
 			if(!class_exists($className)){
                 $found = false;
-                if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-                    foreach(ADDONS_PATHS as $path){
-                        if(file_exists($path . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
-                            stingleInclude($path . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php", null, null, true);
-                            $found = true;
-                        }
+                foreach(AddonManager::get() as $path){
+                    if(file_exists($path . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php")){
+                        stingleInclude($path . "packages/{$this->packageName}/{$this->pluginName}/{$className}.class.php", null, null, true);
+                        $found = true;
                     }
                 }
                 if(!$found) {

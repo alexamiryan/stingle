@@ -532,11 +532,9 @@ class PackageManager {
 		if(!is_dir(STINGLE_PATH . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR) and
 			!is_dir(SITE_PACKAGES_PATH . "{$packageName}".DIRECTORY_SEPARATOR)){
             $found = false;
-            if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-                foreach(ADDONS_PATHS as $path){
-                    if(is_dir($path . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR)){
-                        $found = true;
-                    }
+            foreach(AddonManager::get() as $path){
+                if(is_dir($path . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR)){
+                    $found = true;
                 }
             }
             if(!$found) {
@@ -561,11 +559,9 @@ class PackageManager {
 		if(!is_dir(STINGLE_PATH . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR) and
 			!is_dir(SITE_PACKAGES_PATH . "{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR)){
             $found = false;
-            if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-                foreach(ADDONS_PATHS as $path){
-                    if(is_dir($path . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR)){
-                        $found = true;
-                    }
+            foreach(AddonManager::get() as $path){
+                if(is_dir($path . "packages".DIRECTORY_SEPARATOR."{$packageName}".DIRECTORY_SEPARATOR."{$pluginName}".DIRECTORY_SEPARATOR)){
+                    $found = true;
                 }
             }
             if(!$found) {
@@ -596,12 +592,10 @@ class PackageManager {
 		
 		if(!class_exists($className)){
             $found = false;
-            if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-                foreach(ADDONS_PATHS as $path){
-                    if(file_exists($path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")){
-                        stingleInclude($path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php", null, null, true);
-                        $found = true;
-                    }
+            foreach(AddonManager::get() as $path){
+                if(file_exists($path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")){
+                    stingleInclude($path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php", null, null, true);
+                    $found = true;
                 }
             }
             if(!$found) {
@@ -637,12 +631,10 @@ class PackageManager {
         
         $className = "Loader$pluginName";
         $found = false;
-        if(defined('ADDONS_PATHS') && is_array(ADDONS_PATHS)){
-            foreach(ADDONS_PATHS as $path){
-                if(file_exists($path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")){
-                    $this->pluginsPaths[$pluginId] = $path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR;
-                    $found = true;
-                }
+        foreach(AddonManager::get() as $path){
+            if(file_exists($path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR . "{$className}.class.php")){
+                $this->pluginsPaths[$pluginId] = $path . "packages" . DIRECTORY_SEPARATOR . "{$packageName}" . DIRECTORY_SEPARATOR . "{$pluginName}" . DIRECTORY_SEPARATOR;
+                $found = true;
             }
         }
         if(!$found) {

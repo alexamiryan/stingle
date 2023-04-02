@@ -1,10 +1,13 @@
 <?php
 
-$defaultConfig = array(
-	'Hooks' => array(
+$defaultConfig = [
+	'Hooks' => [
 		'AfterRequestParser' => 'SetTemplateByHost'
-	),
-	'Memcache' => array(
+	],
+	'Memcache' => [
 		'HostControllerTemplate' => -1
-	)
-);
+	],
+    'Tables' => [
+        'host_controller_template' => 1
+    ]
+];

@@ -37,14 +37,10 @@ class RequestParser
 		}
   
 		// If no levels specified in $_GET we just take default first and second level value
-		if($existentLevelsCount == 0){
-			$nav->{$levels[0]} = $this->config->firstLevelDefaultValue;
+		if($existentLevelsCount == $this->config->applyDefaultValueFromLevel){
+			$nav->{$levels[$existentLevelsCount]} = $this->config->firstLevelDefaultValue;
             $existentLevelsCount++;
 		}
-        elseif($existentLevelsCount == 1){
-            $nav->{$levels[1]} = $this->config->secondLevelDefaultValue;
-            $existentLevelsCount++;
-        }
 		
 		// If we haven't gone to the end duplicate last level
 		if($existentLevelsCount < count($levels)){

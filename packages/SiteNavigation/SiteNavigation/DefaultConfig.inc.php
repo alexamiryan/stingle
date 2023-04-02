@@ -2,7 +2,7 @@
 $defaultConfig = array(
     'AuxConfig' => [
         'firstLevelDefaultValue' => 'home',
-        'secondLevelDefaultValue' => 'home',
+        'applyDefaultValueFromLevel' => 0,
         'actionName' => 'action',
         'validationRegExp' => '/^[a-zA-Z0-9_\-]+$/',
         'controllersDir' => 'controllers',

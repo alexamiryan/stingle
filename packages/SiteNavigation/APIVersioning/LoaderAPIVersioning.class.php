@@ -5,6 +5,7 @@ class LoaderAPIVersioning extends Loader{
 	}
     
     public function hookAPIUrlParse(){
+        ConfigManager::addConfig(['SiteNavigation', 'SiteNavigation', 'AuxConfig'], 'applyDefaultValueFromLevel', 1);
         APIVersioning::parseApiVersioningURL($this->config->AuxConfig);
     }
 }

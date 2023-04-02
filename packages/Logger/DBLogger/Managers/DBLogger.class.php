@@ -27,8 +27,8 @@ class DBLogger extends Logger{
 	}
 	
 	public static function logCustom($name, $value){
-		$ipLoggingEnabled = ConfigManager::getConfig("Logger", "DbLogger")->AuxConfig->saveIPInCustomLog;
-        $isUsingSessions = ConfigManager::getConfig("Logger", "DbLogger")->AuxConfig->isUsingSessions;
+		$ipLoggingEnabled = ConfigManager::getConfig("Logger", "DBLogger")->AuxConfig->saveIPInCustomLog;
+        $isUsingSessions = ConfigManager::getConfig("Logger", "DBLogger")->AuxConfig->isUsingSessions;
         $insertArr = [
             "name" => $name,
             "value" => $value,

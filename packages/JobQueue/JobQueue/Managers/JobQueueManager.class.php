@@ -66,8 +66,13 @@ class JobQueueManager extends DbAccessor {
 	
 	protected function runQueueItem(array $jobDbRow){
 		if($this->isChunkRegistered($jobDbRow['name'])){
-			$this->chunks[$jobDbRow['name']]->run(unserialize($jobDbRow['params']));
-			return true;
+            try {
+                $this->chunks[$jobDbRow['name']]->run(unserialize($jobDbRow['params']));
+                return true;
+            }
+            catch (Exception $e){
+                HookManager::callHookSimple("DBLog", ['JobQueue', "Error while running job {$jobDbRow['name']}\n\n" . format_exception($e)]);
+            }
 		}
 		return false;
 	}

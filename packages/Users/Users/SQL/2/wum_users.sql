@@ -1,0 +1,2 @@
+ALTER TABLE `wum_users` CHANGE `login` `login` VARCHAR(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT 'Username';
+ALTER TABLE `wum_users` CHANGE `email` `email` VARCHAR(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT 'Email address';

@@ -4,7 +4,8 @@ $defaultConfig = [
 	'AuxConfig' => [
 		'limits' => [
 			'gen' => 100
-		]
+		],
+        'defaultReleaseTime' => 20 //minutes
 	],
 	'Objects' => [
 		'RequestLimiter' => 'requestLimiter'
@@ -14,7 +15,7 @@ $defaultConfig = [
 		'RecordRequest' => 'RecordRequest'
 	],
     'Tables' => [
-        'security_flooder_ips' => 1,
+        'security_flooder_ips' => 2,
         'security_requests_log' => 1
     ]
 ];

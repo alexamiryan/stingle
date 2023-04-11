@@ -1,0 +1,1 @@
+ALTER TABLE `security_flooder_ips` ADD `date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `ip`, ADD INDEX (`date`);

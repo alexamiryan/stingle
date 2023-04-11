@@ -172,7 +172,7 @@ class UserSessionsManager extends DbAccessor {
                 break;
         }
         
-        if(!empty($token)){
+        if(!empty($token) && is_string($token)){
             $user = Reg::get($config->Objects->UserSessions)->getUserFromSession($token);
             if(is_a($user, "User")){
                 Reg::register(ConfigManager::getConfig('Users', 'Users')->ObjectsIgnored->User, $user);

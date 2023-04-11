@@ -120,4 +120,15 @@ class RequestLimiter extends DbAccessor {
 			->where($qb->expr()->equal(new Field("ip"), $ip));	
 		$this->query->exec($qb->getSQL());
 	}
+    
+    /**
+     * Release IPs that are blocked for more than defaultReleaseTime
+     */
+    public function releaseIPs() : int {
+        $qb = new QueryBuilder();
+        $qb->delete(Tbl::get('TBL_SECURITY_FLOODER_IPS'))
+            ->where($qb->expr()->less(new Field("date"), new Literal("NOW() - INTERVAL " . $this->config->defaultReleaseTime . " MINUTE")));
+        $this->query->exec($qb->getSQL());
+        return $this->query->affected();
+    }
 }

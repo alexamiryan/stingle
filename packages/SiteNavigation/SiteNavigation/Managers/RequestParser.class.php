@@ -43,7 +43,7 @@ class RequestParser
 		}
 		
 		// If we haven't gone to the end duplicate last level
-		if($existentLevelsCount < count($levels)){
+		if($existentLevelsCount < count($levels) && $existentLevelsCount > 0){
 			$lastLevelValue = $nav->{$levels[$existentLevelsCount-1]};
 			$nav->{$levels[$existentLevelsCount]} = $lastLevelValue;
 		}
